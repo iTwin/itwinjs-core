@@ -4966,6 +4966,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
     // (undocumented)
+    queryAllUsedSpatialSubCategories(_iModelToken: IModelRpcProps): Promise<SubCategoryResultRow[]>;
+    // (undocumented)
     queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
     // (undocumented)
     queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
@@ -4980,7 +4982,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse>;
     // (undocumented)
-    querySubCategories(_iModelToken: IModelRpcProps, _categoryIds?: CompressedId64Set): Promise<SubCategoryResultRow[]>;
+    querySubCategories(_iModelToken: IModelRpcProps, _categoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // (undocumented)

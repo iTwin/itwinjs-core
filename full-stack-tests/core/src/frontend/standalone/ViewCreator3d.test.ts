@@ -80,13 +80,7 @@ describe("ViewCreator3d", async () => {
     imodel.subcategories.add("0x17", "0x20", new SubCategoryAppearance(), true);
 
     const loadSpy = sinon.spy(imodel.subcategories, "load");
-    const queryStub = sinon.stub(imodel, "querySubCategories");
-    queryStub.callsFake(function () {
-      // Immediately restore the stub to ensure only the first call is thrown.
-      queryStub.restore();
-      // Throw an error for the first call
-      throw new Error("Internal Server Error");
-    });
+    const queryStub = sinon.stub(imodel, "queryAllUsedSpatialSubCategories").rejects(new Error("Internal Server Error"));
 
     const creator = new ViewCreator3d(imodel);
     const view = await creator.createDefaultView();
@@ -99,6 +93,7 @@ describe("ViewCreator3d", async () => {
     expectVisible(true, true);
     expect(loadSpy).to.be.calledOnce;
     loadSpy.restore();
+    queryStub.restore();
   });
 });
 

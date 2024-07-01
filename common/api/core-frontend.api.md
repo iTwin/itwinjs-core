@@ -7043,11 +7043,13 @@ export abstract class IModelConnection extends IModel {
     get projectCenterAltitude(): number | undefined;
     // @deprecated
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    // @internal
+    queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     // @deprecated
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
-    querySubCategories(compressedCategoryIds?: CompressedId64Set): Promise<SubCategoryResultRow[]>;
+    querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;

@@ -707,25 +707,41 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
+   * queries the BisCore.SubCategory table for entries that are children of used spatial categories and 3D elements.
+   * @returns array of SubCategoryResultRow
+   * @internal
+   */
+  public async queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]> {
+    const result: SubCategoryResultRow[] = [];
+    const parentCategoriesQuery = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
+    const parentCategories: Id64Array = [];
+    for await (const row of this.createQueryReader(parentCategoriesQuery)) {
+      parentCategories.push(row.id);
+    };
+    const where = [...parentCategories].join(",");
+    const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
+
+    try {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        result.push(row.toRow() as SubCategoryResultRow);
+      }
+    } catch {
+      // We can ignore the error here, and just return whatever we were able to query.
+    }
+    return result;
+  }
+
+  /**
    * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds.
-   * If no iterable is passed, all subcategories that are part of parent categories containing an element are returned. If an empty iterable is passed, no subcategories are returned.
    * @param categoryIds categoryIds to query
    * @returns array of SubCategoryResultRow
    * @internal
    */
-  public async querySubCategories(categoryIds?: Iterable<Id64String>): Promise<SubCategoryResultRow[]> {
+  public async querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]> {
     const result: SubCategoryResultRow[] = [];
-    if (!categoryIds) {
-      const parentCategoriesQuery = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
-      const parentCategories: Id64Array = [];
-      for await (const row of this.createQueryReader(parentCategoriesQuery)) {
-        parentCategories.push(row.id);
-      };
-      categoryIds = parentCategories;
-    }
+
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
-
     try {
       for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);

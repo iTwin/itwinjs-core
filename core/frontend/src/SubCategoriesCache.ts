@@ -43,7 +43,6 @@ export class SubCategoriesCache {
 
   /** Request that the subcategory information for all of the specified categories is loaded.
    * If all such information has already been loaded, returns undefined.
-   * If no categories are specified, dispatches an asynchronous request to load all subcategories and returns a cancellable request object
    * Otherwise, dispatches an asynchronous request to load those categories which are not already loaded and returns a cancellable request object
    * containing the corresponding promise and the set of categories still to be loaded.
    */
@@ -66,10 +65,10 @@ export class SubCategoriesCache {
     };
   }
 
-  /** Load all subcategories of the iModel into the cache. */
+  /** Load all subcategories that come from used spatial categories of the iModel into the cache. */
   public async loadAllSubCategories(): Promise<void> {
     try {
-      const results = await this._imodel.querySubCategories();
+      const results = await this._imodel.queryAllUsedSpatialSubCategories();
       if (undefined !== results){
         this.processResults(results, new Set<string>(), false);
       }

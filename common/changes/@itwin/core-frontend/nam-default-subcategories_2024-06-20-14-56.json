@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Load all subcategories when creating a default view.",
+      "comment": "Load up front all subcategories of used spatial categories and 3D elements when creating a default view.",
       "type": "none"
     }
   ],

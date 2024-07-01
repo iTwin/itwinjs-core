@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Update querySubCategories to fetch all subcategories when no categoryId iterable is passed in.",
+      "comment": "Add RPC method queryAllUsedSpatialSubCategories() to fetch all subcategories of used spatial categories and 3D elements.",
       "type": "none"
     }
   ],
