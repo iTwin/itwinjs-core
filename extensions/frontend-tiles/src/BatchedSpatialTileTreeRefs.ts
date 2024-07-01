@@ -13,7 +13,7 @@ import {
 import {  BatchedTileTreeReference, BatchedTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
 import { BatchedModels } from "./BatchedModels";
-import { ComputeSpatialTilesetBaseUrl } from "./GraphicsProvider/TilesetCreators/IModelTileset";
+import { ComputeSpatialTilesetBaseUrl } from "./graphics-provider/tileset-creators/IModelTileset";
 import { BatchedTilesetSpec } from "./BatchedTilesetReader";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedModelGroups } from "./BatchedModelGroups";

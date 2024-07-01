@@ -5,7 +5,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { loggerCategory } from "../../LoggerCategory";
-import { BaseGeoscienceArgs, getGeoscienceTilesetUrl } from "../UrlProviders/GeoscienceUrlProvider";
+import { BaseGeoscienceArgs, getGeoscienceTilesetUrl } from "../url-providers/GeoscienceUrlProvider";
 import { createRealityModelTilesetFromUrl } from "./RealityModelTileset";
 /**
  * Represents the arguments required to initialize geoscience tileset.

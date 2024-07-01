@@ -6,7 +6,7 @@
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "../../BatchedSpatialTileTreeRefs";
 import { createRealityModelTilesetFromUrl } from "./RealityModelTileset";
-import { getIModelTilesetUrlFromConnection, GetIModelTilesetUrlFromConnectionArgs } from "../UrlProviders/IModelUrlProvider";
+import { getIModelTilesetUrlFromConnection, GetIModelTilesetUrlFromConnectionArgs } from "../url-providers/IModelUrlProvider";
 
 /** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
  * The tileset is expected to reside at "baseUrl/tileset.json" and to have been produced by the [mesh export service](https://developer.bentley.com/apis/mesh-export/).

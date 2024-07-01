@@ -9,7 +9,7 @@ import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection, IModelApp } from "@itwin/core-frontend";
 import { MeshExport, MeshExports } from "../../FrontendTiles";
-import { getIModelTilesetUrlFromConnection } from "../../GraphicsProvider/UrlProviders/IModelUrlProvider";
+import { getIModelTilesetUrlFromConnection } from "../../graphics-provider/url-providers/IModelUrlProvider";
 
 use(chaiAsPromised);
 

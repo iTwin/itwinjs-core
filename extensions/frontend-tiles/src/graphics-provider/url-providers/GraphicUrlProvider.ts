@@ -79,7 +79,7 @@ export type GraphicRepresentation = {
 });
 
 /** Creates a URL used to query for Graphic Representations */
-function createGraphicRepresentationsQueryUrl(args: { sourceId: string, exportType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
+function createGraphicRepresentationsQueryUrl(args: { sourceId: string, format: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
   if (args.changeId)
@@ -88,7 +88,7 @@ function createGraphicRepresentationsQueryUrl(args: { sourceId: string, exportTy
   if (args.enableCDN)
     url = `${url}&cdn=1`;
 
-  const exportType = args.exportType === "3DTILES" ? "CESIUM" : "IMODEL";
+  const exportType = args.format === "3DTILES" ? "CESIUM" : "IMODEL";
   const tileVersion = IModelApp.tileAdmin.maximumMajorTileFormatVersion.toString();
   const sessionId = IModelApp.sessionId.toString();
   url = `${url}&tileVersion=${tileVersion}&iTwinJS=${ITWINJS_CORE_VERSION}&exportType=${exportType}&sessionId=${sessionId}`;
@@ -165,7 +165,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     Prefer: "return=representation",
   };
 
-  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, exportType: args.format, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
+  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, format: args.format, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
   while (url) {
     let result;
     try {
@@ -177,7 +177,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
       break;
     }
 
-    const foundSources = result.exports.filter((x) => x.request.exportType === args.format && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
+    const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
     for (const foundSource of foundSources) {
       const graphicRepresentation = {
         displayName: foundSource.displayName,

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { FrontendTilesOptions, initializeFrontendTiles } from "../FrontendTiles";
-import { frontendTilesOptions } from "../GraphicsProvider/TilesetCreators/IModelTileset";
+import { frontendTilesOptions } from "../graphics-provider/tileset-creators/IModelTileset";
 
 describe("FrontendTiles", () => {
   it("should initialize frontend tiles with default values", () => {
