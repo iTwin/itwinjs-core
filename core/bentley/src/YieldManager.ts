@@ -48,8 +48,7 @@ export class YieldManager {
     }
   }
 
-  /** @internal */
-  protected async actualYield() {
+  private async actualYield() {
     await new Promise((r) => setTimeout(r, 0));
   }
 }
