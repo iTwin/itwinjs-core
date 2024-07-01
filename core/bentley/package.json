@@ -20,7 +20,8 @@
     "test": "mocha",
     "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
     "cover": "nyc npm -s test",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
     "Bentley",
