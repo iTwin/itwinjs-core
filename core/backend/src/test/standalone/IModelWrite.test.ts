@@ -190,7 +190,8 @@ describe.only("IModelWriteTest", () => {
     // trigger watcher via stub
     fsWatcher.callback();
 
-    expect(roBC.changeset, "changeset should be updated").equal(postPushChangeset); // FAILS
+    expect(roBC.changeset.id, "changeset should be updated").equal(postPushChangeset.id);
+    expect(roBC.changeset.index, "changeset should be updated").equal(postPushChangeset.index);
     expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
 
     roBC.close();
@@ -257,7 +258,8 @@ describe.only("IModelWriteTest", () => {
     console.error(postPullChangeset);
     console.error(roBC.changeset);
 
-    expect(roBC.changeset, "changeset should be updated").equal(postPullChangeset); // FAILS
+    expect(roBC.changeset.id, "changeset should be updated").equal(postPullChangeset.id);
+    expect(roBC.changeset.index, "changeset should be updated").equal(postPullChangeset.index);
     expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
 
     roBC.close();
