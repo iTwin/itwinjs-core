@@ -5656,6 +5656,8 @@ export class TxnManager {
     reverseSingleTxn(): IModelStatus;
     reverseTo(txnId: TxnIdString): IModelStatus;
     reverseTxns(numOperations: number): IModelStatus;
+    // @internal
+    touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
 }
 
