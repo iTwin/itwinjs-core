@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./FrontendTiles";
-export * from "./GraphicsProvider/TilesetCreators/IModelTileset";
-export * from "./GraphicsProvider/TilesetCreators/GeoscienceTileset";
-export * from "./GraphicsProvider/GraphicsProvider";
+export * from "./graphics-provider/tileset-creators/IModelTileset";
+export * from "./graphics-provider/tileset-creators/GeoscienceTileset";
+export * from "./graphics-provider/tileset-creators/RealityModelTileset";
 
