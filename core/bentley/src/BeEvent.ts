@@ -171,3 +171,22 @@ export class BeEventList<T extends Listener> {
     this._events[name] = undefined;
   }
 }
+
+/**
+ * Retrieves the type of the callback function for an event type like [[BeEvent]].
+ * For example:
+ * ```ts
+ * const event = new BeEvent<(x: number, y: string) => void>();
+ * const callback: ListenerType<typeof event> = (x, y) => {
+ *   console.log(`${x}, ${y}`);
+ * };
+ * ```
+ *
+ * @public
+ */
+export type ListenerType<TEvent extends {
+  addListener(listener: Listener): () => void;
+}> =
+  TEvent extends {
+    addListener(listener: infer TListener): () => void;
+  } ? TListener : never;
