@@ -200,6 +200,7 @@ beta;ToggleDPIForLODTool
 beta;ToggleDrapeFrustumTool 
 beta;ToggleDrawingGraphicsTool 
 beta;ToggleFrustumSnapshotTool 
+beta;ToggleMaskFrustumTool 
 beta;ToggleNormalMaps 
 beta;ToggleOSMBuildingDisplay 
 beta;TogglePrimitiveVisibilityTool 
