@@ -12,7 +12,7 @@ import { Camera, ColorDef, Hilite } from "@itwin/core-common";
 import {
   DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, IModelApp, TileBoundingBoxes, Tool, Viewport,
 } from "@itwin/core-frontend";
-import { GraphicsProvider } from "@itwin/frontend-tiles";
+import { createGeoscienceTileset } from "@itwin/frontend-tiles";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 
@@ -492,7 +492,7 @@ export class SeequentDemo extends Tool {
       geoscienceObjectId: process.env.SEEQUENT_GEOSCIENCE_OBJECT_ID,
     };
 
-    GraphicsProvider.getInstance().createGeoscienceTileset(args);
+    createGeoscienceTileset(args);
     return true;
   }
 
