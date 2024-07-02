@@ -6,9 +6,11 @@
  * @module Logging
  */
 
+import { BeEvent } from "./BeEvent";
 import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
+import { staticLoggerMetadata } from "./internal/staticLoggerMetadata";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -56,29 +58,43 @@ export class Logger {
   protected static _logWarning: LogFunction | undefined;
   protected static _logInfo: LogFunction | undefined;
   protected static _logTrace: LogFunction | undefined;
-  /** @internal */
-  public static logLevelChangedFn?: VoidFunction;
 
-  private static _categoryFilter: {[categoryName: string]: LogLevel} = {};
-  /** @internal */
-  public static get categoryFilter() {
-    return { ...Logger._categoryFilter };
+  private static _onLogLevelChanged: BeEvent<() => void> | undefined;
+
+  /** An event raised whenever [[setLevel]] or [[setLevelDefault]] is called. */
+  public static get onLogLevelChanged(): BeEvent<() => void> {
+    // We have to lazily initialize because it's static and BeEvent imports UnexpectedErrors which imports Logger which wants to instantiate BeEvent.
+    if (undefined === Logger._onLogLevelChanged) {
+      Logger._onLogLevelChanged = new BeEvent<() => void>();
+    }
+
+    return Logger._onLogLevelChanged;
+  }
+
+  private static _categoryFilter: {[categoryName: string]: LogLevel | undefined} = {};
+
+  /** Maps category names to the least severe level at which messages in that category should be displayed,
+   * or `undefined` if a minimum has not been defined.
+   * @see [[setLevel]] to change the minimum logging level for a category.
+   */
+  public static get categoryFilter(): Readonly<{[categoryName: string]: LogLevel | undefined}> {
+    // NOTE: this property is accessed by native code.
+    return this._categoryFilter;
   }
 
   private static _minLevel: LogLevel | undefined;
-  /** @internal */
-  public static get minLevel() {
-    return Logger._minLevel;
+
+  /** The least severe level at which messages should be displayed by default.
+   * @see [[setLevelDefault]] to change this default.
+   * @see [[setLevel]] to override this default for specific categories.
+   */
+  public static get minLevel(): LogLevel | undefined {
+    // NOTE: this property is accessed by native code. */
+    return this._minLevel;
   }
 
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
-
-  /** All static metadata is combined with per-call metadata and stringified in every log message.
-   * Static metadata can either be an object or a function that returns an object.
-   * Use a key to identify entries in the map so the can be removed individually.
-   * @internal */
-  public static staticMetaData = new Map<string, LoggingMetaData>();
 
   /** Initialize the logger streams. Should be called at application initialization time. */
   public static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void {
@@ -101,7 +117,7 @@ export class Logger {
   /** merge the supplied metadata with all static metadata into one object */
   public static getMetaData(metaData?: LoggingMetaData): object {
     const metaObj = {};
-    for (const meta of Logger.staticMetaData) {
+    for (const meta of staticLoggerMetadata) {
       const val = BentleyError.getMetaData(meta[1]);
       if (val)
         Object.assign(metaObj, val);
@@ -119,7 +135,7 @@ export class Logger {
   /** Set the least severe level at which messages should be displayed by default. Call setLevel to override this default setting for specific categories. */
   public static setLevelDefault(minLevel: LogLevel): void {
     this._minLevel = minLevel;
-    this.logLevelChangedFn?.();
+    this.onLogLevelChanged.raiseEvent();
   }
 
   /** Set the minimum logging level for the specified category. The minimum level is least severe level at which messages in the
@@ -127,7 +143,7 @@ export class Logger {
    */
   public static setLevel(category: string, minLevel: LogLevel) {
     Logger._categoryFilter[category] = minLevel;
-    this.logLevelChangedFn?.();
+    this.onLogLevelChanged.raiseEvent();
   }
 
   /** Interpret a string as the name of a LogLevel */
@@ -187,7 +203,7 @@ export class Logger {
   /** Get the minimum logging level for the specified category. */
   public static getLevel(category: string): LogLevel | undefined {
     // Prefer the level set for this category specifically
-    const minLevelForThisCategory = Logger._categoryFilter[category];
+    const minLevelForThisCategory = Logger.categoryFilter[category];
     if (minLevelForThisCategory !== undefined)
       return minLevelForThisCategory;
 
@@ -197,7 +213,7 @@ export class Logger {
       return Logger.getLevel(category.slice(0, parent));
 
     // Fall back on the default level.
-    return Logger._minLevel;
+    return Logger.minLevel;
   }
 
   /** Turns off the least severe level at which messages should be displayed by default.

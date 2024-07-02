@@ -27,7 +27,6 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  * @public
  */
 export class ModelSelector extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "ModelSelector"; }
 
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
@@ -99,7 +98,6 @@ export class ModelSelector extends DefinitionElement {
  * @public
  */
 export class CategorySelector extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: Id64String[];
@@ -173,7 +171,6 @@ export class CategorySelector extends DefinitionElement {
  * @public
  */
 export abstract class ViewDefinition extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "ViewDefinition"; }
   /** The element Id of the [[CategorySelector]] for this ViewDefinition */
   public categorySelectorId: Id64String;
@@ -218,7 +215,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     displayStyleId: ConcreteEntityTypes.Element,
   };
 
-  /** @internal */
+  /** @beta */
   protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
@@ -275,7 +272,6 @@ export abstract class ViewDefinition extends DefinitionElement {
  */
 export abstract class ViewDefinition3d extends ViewDefinition {
   private readonly _details: ViewDetails3d;
-  /** @internal */
   public static override get className(): string { return "ViewDefinition3d"; }
   /** If true, camera is used. Otherwise, use an orthographic projection. */
   public cameraOn: boolean;
@@ -328,7 +324,6 @@ export abstract class ViewDefinition3d extends ViewDefinition {
  * @public
  */
 export class SpatialViewDefinition extends ViewDefinition3d {
-  /** @internal */
   public static override get className(): string { return "SpatialViewDefinition"; }
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
@@ -424,7 +419,6 @@ export class SpatialViewDefinition extends ViewDefinition3d {
  * @public
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
-  /** @internal */
   public static override get className(): string { return "OrthographicViewDefinition"; }
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
@@ -497,7 +491,6 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 export class ViewDefinition2d extends ViewDefinition {
   private readonly _details: ViewDetails;
 
-  /** @internal */
   public static override get className(): string { return "ViewDefinition2d"; }
   /** The Id of the Model displayed by this view. */
   public baseModelId: Id64String;
@@ -542,7 +535,6 @@ export class ViewDefinition2d extends ViewDefinition {
  * @public
  */
 export class DrawingViewDefinition extends ViewDefinition2d {
-  /** @internal */
   public static override get className(): string { return "DrawingViewDefinition"; }
 
   protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
@@ -599,7 +591,6 @@ export class DrawingViewDefinition extends ViewDefinition2d {
  * @public
  */
 export class SheetViewDefinition extends ViewDefinition2d {
-  /** @internal */
   public static override get className(): string { return "SheetViewDefinition"; }
 }
 
@@ -607,7 +598,6 @@ export class SheetViewDefinition extends ViewDefinition2d {
  * @internal
  */
 export class TemplateViewDefinition2d extends ViewDefinition2d {
-  /** @internal */
   public static override get className(): string { return "TemplateViewDefinition2d"; }
 }
 
@@ -615,7 +605,6 @@ export class TemplateViewDefinition2d extends ViewDefinition2d {
  * @internal
  */
 export class TemplateViewDefinition3d extends ViewDefinition3d {
-  /** @internal */
   public static override get className(): string { return "TemplateViewDefinition3d"; }
 }
 
@@ -624,7 +613,6 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
  * @public
  */
 export abstract class AuxCoordSystem extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "AuxCoordSystem"; }
   public type!: number;
   public description?: string;
@@ -635,7 +623,6 @@ export abstract class AuxCoordSystem extends DefinitionElement {
  * @public
  */
 export class AuxCoordSystem2d extends AuxCoordSystem {
-  /** @internal */
   public static override get className(): string { return "AuxCoordSystem2d"; }
   public origin?: Point2d;
   public angle!: number;
@@ -656,7 +643,6 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
  * @public
  */
 export class AuxCoordSystem3d extends AuxCoordSystem {
-  /** @internal */
   public static override get className(): string { return "AuxCoordSystem3d"; }
   public origin?: Point3d;
   public yaw!: number;
@@ -679,7 +665,6 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
  * @public
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
-  /** @internal */
   public static override get className(): string { return "AuxCoordSystemSpatial"; }
   /** Create a Code for a AuxCoordSystemSpatial element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -696,7 +681,6 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * @public
  */
 export class ViewAttachment extends GraphicalElement2d {
-  /** @internal */
   public static override get className(): string { return "ViewAttachment"; }
   public view: RelatedElement;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
@@ -714,7 +698,6 @@ export class ViewAttachment extends GraphicalElement2d {
  * @internal
  */
 export class LightLocation extends SpatialLocationElement {
-  /** @internal */
   public static override get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */
   public enabled!: boolean;
