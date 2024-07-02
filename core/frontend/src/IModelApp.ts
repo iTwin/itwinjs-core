@@ -404,7 +404,7 @@ export class IModelApp {
     ].forEach((module) => this.registerModuleEntities(module));
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
-    this._wgRenderSystem = this.wgCreateRenderSys();
+    this._wgRenderSystem = await this.wgCreateRenderSys(opts.renderSys instanceof RenderSystem ? undefined : opts.renderSys);
     if (opts.userPreferences)
       this._userPreferences = opts.userPreferences;
     this._viewManager = opts.viewManager ?? new ViewManager();
@@ -565,7 +565,10 @@ export class IModelApp {
   public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
 
   /** @internal */
-  public static wgCreateRenderSys(opts?: RenderSystem.Options): RenderSystem { return WebGPUSystem.create(opts); }
+  public static async wgCreateRenderSys(opts?: RenderSystem.Options): Promise<RenderSystem> {
+    const webGPUSystem = await WebGPUSystem.create(opts);
+    return webGPUSystem;
+  }
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {

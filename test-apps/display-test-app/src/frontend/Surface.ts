@@ -19,6 +19,7 @@ import { openIModel, OpenIModelProps } from "./openIModel";
 import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
 import { openDecorationGeometryExample } from "./DecorationGeometryExample";
+import { WebGPUSystem } from "@itwin/core-frontend/src/render/webgpu/System";
 
 // cspell:ignore textbox topdiv
 
@@ -585,13 +586,21 @@ export class CreateWebGPUWindowTool extends Tool {
   public static override get maxArgs() { return 0; }
 
   public override async run(): Promise<boolean> {
+
     const props: NamedWindowProps = {
       id: "WebGPU",
       title: "WebGPU",
       width: 800,
-      height: 600,
+      height: 800,
     };
-    DisplayTestApp.surface.createNamedWindow(props);
+    const window = DisplayTestApp.surface.createNamedWindow(props);
+
+    const wgRenderSystem = IModelApp.wgRenderSystem as unknown as WebGPUSystem;
+    wgRenderSystem.render();
+    const canvas = wgRenderSystem.canvas;
+    window.resizeContent(canvas.width, canvas.height);
+    console.log(canvas.width, canvas.height);
+    window.container.appendChild(canvas);
     return true;
   }
 
