@@ -34,6 +34,7 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
+import { _requestSnap } from "./internal/Symbols";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -367,8 +368,15 @@ export abstract class IModelConnection extends IModel {
    * @note callers must gracefully handle Promise rejected with AbandonedError
    * @internal
    */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async [_requestSnap](props: SnapRequestProps): Promise<SnapResponseProps> {
     return this.isOpen ? this._snapRpc.request(props) : { status: 2 };
+  }
+
+  /** @internal
+   * @deprecated in 4.8. Use AccuSnap.doSnapRequest.
+   */
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+    return this[_requestSnap](props);
   }
 
   private _toolTipRpc = new OneAtATimeAction<string[]>(async (id: string) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id));
