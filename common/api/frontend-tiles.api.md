@@ -36,6 +36,9 @@ export function createIModelTilesetAs3DTiles(args: CreateIModelTilesetAs3DTilesA
 // @beta
 export type CreateIModelTilesetAs3DTilesArgs = GetIModelTilesetUrlFromConnectionArgs;
 
+// @alpha
+export function createRealityModelTilesetFromUrl(url: string): Promise<void>;
+
 // @beta
 export type FrontendTilesOptions = CreateIModelTilesetArgs;
 
@@ -45,22 +48,6 @@ export const frontendTilesOptions: {
     enableEdges: boolean;
     useIndexedDBCache: boolean;
 };
-
-// @beta
-export class GraphicsProvider {
-    // @alpha
-    createGeoscienceTileset: typeof createGeoscienceTileset;
-    // (undocumented)
-    createIModelTileset: typeof createIModelTileset;
-    // @alpha
-    createIModelTilesetAs3DTiles: typeof createIModelTilesetAs3DTiles;
-    // @alpha
-    createRealityModelTilesetFromUrl: typeof createRealityModelTilesetFromUrl;
-    // (undocumented)
-    getIModelTilesetUrlFromConnection: typeof getIModelTilesetUrlFromConnection;
-    // (undocumented)
-    static getInstance(): GraphicsProvider;
-}
 
 // @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;

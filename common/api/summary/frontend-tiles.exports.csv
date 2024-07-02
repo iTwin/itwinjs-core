@@ -7,9 +7,9 @@ beta;createIModelTileset(options: CreateIModelTilesetArgs): void
 beta;CreateIModelTilesetArgs
 beta;createIModelTilesetAs3DTiles(args: CreateIModelTilesetAs3DTilesArgs): Promise
 beta;CreateIModelTilesetAs3DTilesArgs = GetIModelTilesetUrlFromConnectionArgs
+alpha;createRealityModelTilesetFromUrl(url: string): Promise
 beta;FrontendTilesOptions = CreateIModelTilesetArgs
 internal;frontendTilesOptions:
-beta;GraphicsProvider
 beta;initializeFrontendTiles(options: FrontendTilesOptions): void
 beta;MeshExport
 internal;MeshExports
