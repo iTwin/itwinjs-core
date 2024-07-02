@@ -129,19 +129,21 @@ export interface ElementGeometryRequest {
   minBRepFeatureSize?: number;
 }
 
-/** Parameters for building the geometry stream of a [[GeometricElement]] using ElementGeometry.Builder
- * Note: The geometry stream is always in local coordinates, that is, relative to the element's [[Placement]].
- * @beta
+/** Parameters for building the geometry stream of a GeometricElement](@backend) using [[ElementGeometry.Builder]].
+ * You can assign an object of this type to [[GeometricElementProps.elementGeometryBuilderParams]] when inserting or updating a geometric element.
+ * @note The geometry stream is always in local coordinates - that is, relative to the element's [[Placement]].
+ * @public
  */
 export interface ElementGeometryBuilderParams {
   /** The geometry stream data. Calling update element with a zero length array will clear the geometry stream and invalidate the placement. */
   entryArray: ElementGeometryDataEntry[];
-  /** If true, create geometry that displays oriented to face the camera */
+  /** If true, create geometry that always displays oriented to face the camera */
   viewIndependent?: boolean;
 }
 
-/** Parameters for building the geometry stream of a [[GeometryPart]] using ElementGeometry.Builder.
- * @beta
+/** Parameters for building the geometry stream of a GeometryPart](@backend) using [[ElementGeometry.Builder]].
+ * You can assign an object of this type to [[GeometryPartProps.elementGeometryBuilderParams]] when inserting or updating a part.
+ * @public
  */
 export interface ElementGeometryBuilderParamsForPart {
   /** The geometry stream data */

@@ -107,8 +107,8 @@ export interface GeometricElementProps extends ElementProps {
   category: Id64String;
   /** The geometry stream properties */
   geom?: GeometryStreamProps;
-  /** How to build the element's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
-   * @beta
+  /** Describes how to build the element's GeometryStream, as an alternative to [[geom]]. This is used for insert and update operations only.
+   * It is not a persistent property - it will always be undefined in the properties returned by functions that read a persistent element.
    */
   elementGeometryBuilderParams?: ElementGeometryBuilderParams;
   /** The placement properties */
@@ -255,8 +255,8 @@ export interface TextAnnotation2dProps extends GeometricElement2dProps {
  */
 export interface GeometryPartProps extends ElementProps {
   geom?: GeometryStreamProps;
-  /** How to build the part's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
-   * @beta
+  /** Describes how to build the part's GeometryStream, as an alternative to [[geom]]. This is used for insert and update operations only.
+   * It is not a persistent property - it will always be undefined in the properties returned by functions that read a persistent part.
    */
   elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
   bbox?: LowAndHighXYZProps;
