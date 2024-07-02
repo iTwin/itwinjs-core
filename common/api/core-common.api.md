@@ -1167,11 +1167,6 @@ export enum ChangesetType {
     SchemaSync = 65
 }
 
-// @alpha
-export class ChannelConstraintError extends IModelError {
-    constructor(message: string, getMetaData?: LoggingMetaData);
-}
-
 // @public
 export interface ChannelRootAspectProps extends ElementAspectProps {
     owner: string;
@@ -4967,6 +4962,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // (undocumented)
     loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
+    // (undocumented)
+    queryAllUsedSpatialSubCategories(_iModelToken: IModelRpcProps): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
     // (undocumented)
