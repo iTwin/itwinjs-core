@@ -8,7 +8,7 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IpcHost } from "@itwin/core-backend";
+import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IModelNative, IpcHost } from "@itwin/core-backend";
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
@@ -114,7 +114,7 @@ describe("PresentationManager", () => {
     } catch (e) {
       let isLoaded = false;
       try {
-        IModelHost.platform;
+        IModelNative.platform;
         isLoaded = true;
       } catch (_e) {}
       if (!isLoaded) {
@@ -153,9 +153,9 @@ describe("PresentationManager", () => {
   describe("constructor", () => {
     describe("uses default native library implementation if not overridden", () => {
       it("creates without props", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         using(new PresentationManager(), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -170,7 +170,7 @@ describe("PresentationManager", () => {
       });
 
       it("creates with props", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         const testThreadsCount = 999;
         const hierarchyCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -207,7 +207,7 @@ describe("PresentationManager", () => {
           mode: HierarchyCacheMode.Memory,
         };
         using(new PresentationManager(props), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: props.id,
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
@@ -225,9 +225,9 @@ describe("PresentationManager", () => {
       });
 
       it("creates with disk cache config", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         using(new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Disk } } }), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -247,7 +247,7 @@ describe("PresentationManager", () => {
         };
         const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
         using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -262,9 +262,9 @@ describe("PresentationManager", () => {
       });
 
       it("creates with hybrid cache config", () => {
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         using(new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Hybrid } } }), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -290,7 +290,7 @@ describe("PresentationManager", () => {
           disk: { ...cacheConfig.disk, directory: path.resolve(cacheConfig.disk!.directory!) },
         };
         using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
+          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -306,7 +306,7 @@ describe("PresentationManager", () => {
 
       it("creates with ipc updates handler for IPC hosts", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
-        const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
+        const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         using(new PresentationManager(), (_) => {
           expect(constructorSpy.firstCall.firstArg.updateCallback).to.eq(ipcUpdatesHandler);
         });

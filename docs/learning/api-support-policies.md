@@ -41,15 +41,17 @@ The iTwin.js team strives to avoid breaking changes whenever possible. We also e
 iTwin.js uses [API Extractor](https://api-extractor.com/) to help manage its APIs. Each API exported by a package is marked with one of four ["release tags"](https://api-extractor.com/pages/tsdoc/doc_comment_syntax/) categorizing its level of maturity.
 
 - ["internal"](https://api-extractor.com/pages/tsdoc/tag_internal/) indicates an API that is intended strictly to be used inside the iTwin.js libraries - never by users.
-- ["alpha"](https://api-extractor.com/pages/tsdoc/tag_alpha/) indicates a highly-experimental API that is not yet ready for testing by users. These are rare in iTwin.js as we are typically interested in early feedback.
-- ["beta"](https://api-extractor.com/pages/tsdoc/tag_beta/) indicates an API currently under development. Users are encouraged to experiment with the API and provide feedback, but should not use it in production.
-- ["public"](https://api-extractor.com/pages/tsdoc/tag_public/) indicates a stable API suitable for use in production.
+- ["alpha"](https://api-extractor.com/pages/tsdoc/tag_alpha/) indicates a highly-experimental API likely to undergo significant, frequent change and/or abrupt removal. These are rare in iTwin.js as we are typically interested in early feedback.
+- ["beta"](https://api-extractor.com/pages/tsdoc/tag_beta/) indicates an API currently under development. Users are encouraged to experiment with the API and provide feedback, with the understanding that breaking changes may occur at any time.
+- ["public"](https://api-extractor.com/pages/tsdoc/tag_public/) indicates a stable API suitable for use in production, to which breaking changes will only be introduced under the strict policies described in this document.
 
 In addition to any one of the above release tags, an API may also be tagged as ["deprecated"](https://api-extractor.com/pages/tsdoc/tag_deprecated/), indicating that it should no longer be used and may be removed in a future release. A deprecated tag is typically accompanied by information about the package version in which it became deprecated and guidance for adjusting existing usage of the API, e.g., what API to use instead. A "public" deprecated API will only be removed according to the [deprecation policy](#api-deprecation-policy).
 
 Only "public" and "beta" APIs are included in the [published documentation](https://www.itwinjs.org/reference/). An API typically starts out as "beta". It may evolve rapidly in response to feedback before stabilizing and being promoted to "public". On occasion, a "beta" API may be abandoned - not all experiments succeed.
 
 The "public API" of a package comprises the set of all APIs it contains that are marked with the "public" release tag. The package's public API enjoys stability guarantees provided by the [package versioning policy](#package-versioning-policy).
+
+Contributors to iTwin.js should follow the [provided guidelines](./guidelines/release-tags-guidelines.md) when applying release tags to their APIs.
 
 ## Package versioning policy
 
