@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
+import * as fs from "node:fs";
 import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
-import { IpcHandler } from "@itwin/core-backend";
+import { IpcHandler, WorkspaceEditor } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
+import { TextStyleProps } from "@itwin/core-common";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -39,6 +41,42 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult> {
     return createSectionDrawing(args);
+  }
+
+  public async saveTextStyle(style: TextStyleProps): Promise<void> {
+    const containerId = "local-container-for-styles";
+    const workspaceName = "workspace-for-styles";
+
+    const editor = WorkspaceEditor.construct();
+    try {
+      const container = editor.getContainer({ containerId, baseUri: "", storageType: "azure", accessToken: "" });
+      const workspaceDb = fs.existsSync(container.resolveDbFileName({ dbName: workspaceName }))
+        ? container.getEditableDb({ dbName: workspaceName })
+        : await container.createDb({ dbName: workspaceName, manifest: { workspaceName } });
+      workspaceDb.open();
+
+      workspaceDb.removeString(style.name);
+      workspaceDb.addString(style.name, JSON.stringify(style));
+    } finally {
+      editor.close();
+    }
+  }
+
+  public async getTextStyle(styleName: string): Promise<TextStyleProps | undefined> {
+    const containerId = "local-container-for-styles";
+    const workspaceName = "workspace-for-styles";
+
+    const editor = WorkspaceEditor.construct();
+    const container = editor.getContainer({ containerId, baseUri: "", storageType: "azure", accessToken: "" });
+    const workspaceDb = container.getEditableDb({ dbName: workspaceName });
+    const json = workspaceDb.getString(styleName);
+
+    editor.close();
+
+    if (json)
+      return JSON.parse(json) as TextStyleProps;
+
+    return undefined;
   }
 }
 

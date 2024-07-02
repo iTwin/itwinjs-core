@@ -8,6 +8,7 @@ import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, r
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { dtaIpc } from "./App";
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -284,6 +285,20 @@ export class TextDecorationTool extends Tool {
             break;
           default:
             throw new Error("Expected top, middle, bottom, left, center, or right");
+        }
+        break;
+      }
+      case "style": {
+        switch (arg.toLowerCase()) {
+          case "save":
+            await dtaIpc.saveTextStyle({ name: inArgs[2], settings: editor.runStyle });
+            break;
+          case "load":
+            const style = await dtaIpc.getTextStyle(inArgs[2]);
+            if (!style)
+              throw new Error(`Style "${inArgs[2]}" not found`);
+            editor.runStyle = { ...style.settings };
+            break;
         }
         break;
       }

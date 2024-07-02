@@ -34,7 +34,7 @@ export interface TextStyleSettingsProps {
    */
   fontName?: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
-   * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
+   * For example, the height and offset from baseline of a subscript [[TextRun]] are computed as lineHeight * [[subScriptScale]] and
    * lineHeight * [[subScriptOffsetFactor]], respectively.
    * Default: 1.0. */
   lineHeight?: number;

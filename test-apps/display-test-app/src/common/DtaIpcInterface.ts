@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String } from "@itwin/core-bentley";
-import { DisplayStyle3dProps, SpatialViewDefinitionProps } from "@itwin/core-common";
+import { DisplayStyle3dProps, SpatialViewDefinitionProps, TextStyleProps } from "@itwin/core-common";
 import { TransformProps } from "@itwin/core-geometry";
 
 export const dtaChannel = "display-test-app/dta";
@@ -39,4 +39,10 @@ export interface DtaIpcInterface {
    * Returns the Id of the section drawing view.
    */
   createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult>;
+
+  /** Saves TextStyleProps to the local workspace container */
+  saveTextStyle(style: TextStyleProps): Promise<void>;
+
+  /** Load saved TextStyleProps from the local workspace container */
+  getTextStyle(styleName: string): Promise<TextStyleProps | undefined>;
 }
