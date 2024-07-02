@@ -7,7 +7,7 @@
  */
 
 import {
-  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelHubStatus, IModelStatus, LoggingMetaData, RepositoryStatus,
+  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelHubStatus, IModelStatus, LoggingMetaData,
 } from "@itwin/core-bentley";
 
 export {
@@ -97,16 +97,6 @@ export class BackendError extends IModelError {
   public constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) {
     super(errorNumber, message, getMetaData);
     this.name = name;
-  }
-}
-
-/**
- * Channel constraint error
- * @alpha
- */
-export class ChannelConstraintError extends IModelError {
-  public constructor(message: string, getMetaData?: LoggingMetaData) {
-    super(RepositoryStatus.ChannelConstraintViolation, message, getMetaData);
   }
 }
 
