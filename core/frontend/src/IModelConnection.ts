@@ -285,6 +285,15 @@ export abstract class IModelConnection extends IModel {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(this.getRpcProps(), compressedCategoryIds);
   }
 
+  /**
+   * queries the BisCore.SubCategory table for entries that are children of used spatial categories and 3D elements.
+   * @returns array of SubCategoryResultRow
+   * @internal
+   */
+  public async queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryAllUsedSpatialSubCategories(this.getRpcProps());
+  }
+
   /** Execute a query and stream its results
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
