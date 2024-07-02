@@ -5,9 +5,8 @@
 
 import { queryGraphicRepresentations } from "./graphics-provider/url-providers/GraphicUrlProvider";
 import { AccessToken } from "@itwin/core-bentley";
-import { CreateIModelTilesetArgs } from "./graphics-provider/tileset-creators/IModelTileset";
-import { GetIModelTilesetUrlFromConnectionArgs } from "./graphics-provider/url-providers/IModelUrlProvider";
-import { GraphicsProvider } from "./graphics-provider/GraphicsProvider";
+import { createIModelTileset, CreateIModelTilesetArgs } from "./graphics-provider/tileset-creators/IModelTileset";
+import { getIModelTilesetUrlFromConnection, GetIModelTilesetUrlFromConnectionArgs } from "./graphics-provider/url-providers/IModelUrlProvider";
 
 /** Represents the result of a [mesh export](https://developer.bentley.com/apis/mesh-export/operations/get-export/#export).
  * @see [[queryCompletedMeshExports]].
@@ -123,7 +122,7 @@ export type ObtainMeshExportTilesetUrlArgs = GetIModelTilesetUrlFromConnectionAr
  * @beta
  */
 export async function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined> {
-  return GraphicsProvider.getIModelTilesetUrlFromConnection(args);
+  return getIModelTilesetUrlFromConnection(args);
 }
 
 /** Arguments supplied to [[InitIModelTilesArgs]].
@@ -135,5 +134,5 @@ export type FrontendTilesOptions = CreateIModelTilesetArgs;
  * @beta
  */
 export function initializeFrontendTiles(options: FrontendTilesOptions): void {
-  GraphicsProvider.createIModelTileset(options);
+  createIModelTileset(options);
 }
