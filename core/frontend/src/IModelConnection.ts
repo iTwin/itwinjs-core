@@ -358,7 +358,11 @@ export abstract class IModelConnection extends IModel {
     return new Set(this.isOpen ? await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryEntityIds(this.getRpcProps(), params) : undefined);
   }
 
-  private _snapRpc = new OneAtATimeAction<SnapResponseProps>(async (props: SnapRequestProps) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props));
+  private _snapRpc = new OneAtATimeAction<SnapResponseProps>(
+    async (props: SnapRequestProps) =>
+      IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props)
+  );
+
   /** Request a snap from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
    * @internal
