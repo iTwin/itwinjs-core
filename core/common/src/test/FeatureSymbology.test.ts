@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef } from "../ColorDef";
 import { RgbColor } from "../RgbColor";

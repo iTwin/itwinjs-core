@@ -41,7 +41,6 @@
     "@itwin/eslint-plugin": "^4.0.2",
     "@types/flatbuffers": "~1.10.0",
     "@types/node": "~18.16.20",
-    "debug": "^2.6.9",
     "eslint": "^8.56.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
