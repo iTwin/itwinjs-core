@@ -5,9 +5,9 @@
 
 import { assert, expect } from "chai";
 import { BeDuration, BeEvent, DbResult, Guid, GuidString, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Arc3d, IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, ModelProps, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  Code, ColorByName, ColorDef, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, ModelProps, PhysicalElementProps, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@itwin/core-common";
 import {
   BriefcaseDb,
@@ -41,13 +41,6 @@ function getCount(imodel: BriefcaseDb, className: string): number {
     result = stmt.getValue(0).getInteger();
   });
   return result;
-}
-
-interface TestClassProps extends ModelProps {
-  a?: string;
-  b?: string;
-  c?: string;
-  d?: string;
 }
 
 describe("TxnManager", () => {
@@ -1063,7 +1056,14 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
   }); // describe
 } // for each pullMergeMethod
 
-describe.skip("TxnManager mixed PullMergeMethods", () => {
+interface TestClassProps extends PhysicalElementProps {
+  a?: string;
+  b?: string;
+  c?: string;
+  d?: string;
+}
+
+describe("TxnManager mixed PullMergeMethods", () => {
   // This will use 4 briefcases to test element property merging between methods
   // [0]: Source Briefcase to initialize data
   // [1]: Briefcase with Rebase
@@ -1097,7 +1097,7 @@ describe.skip("TxnManager mixed PullMergeMethods", () => {
   afterEach(async () => {
     for (const briefcase of briefcases) {
       if (briefcase.isOpen) {
-        briefcase.abandonChanges();
+        // briefcase.abandonChanges();
         briefcase.close();
       }
     }
@@ -1108,7 +1108,7 @@ describe.skip("TxnManager mixed PullMergeMethods", () => {
     <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="01.00.15" alias="bis"/>
         <ECEntityClass typeName="TestClass" modifier="Sealed">
-            <BaseClass>bis:PhysicalModel</BaseClass>
+            <BaseClass>bis:PhysicalElement</BaseClass>
             <ECProperty propertyName="A" typeName="string"/>
             <ECProperty propertyName="B" typeName="string"/>
             <ECProperty propertyName="C" typeName="string"/>
@@ -1117,53 +1117,60 @@ describe.skip("TxnManager mixed PullMergeMethods", () => {
     </ECSchema>`;
     await briefcases[0].importSchemaStrings([schema]);
 
-    const partitionId = briefcases[0].elements.insertElement({
-      classFullName: PhysicalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      code: PhysicalPartition.createCode(briefcases[0], IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
-    });
+    const spatialCategoryId = SpatialCategory.insert(briefcases[0], IModel.dictionaryId, "MyCategory",
+      new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
+    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[0], Code.createEmpty(), true);
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+    const geometryStream: GeometryStreamProps = [];
+    for (const geom of geomArray) {
+      const arcData = IModelJson.Writer.toIModelJson(geom);
+      geometryStream.push(arcData);
+    }
 
     const testClassProps: TestClassProps = {
       classFullName: "TestSchema:TestClass",
-      modeledElement: { id: partitionId },
+      model: modelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
       a: "A1",
       b: "B1",
       c: "C1",
       d: "D1",
     };
-    const model = briefcases[0].models.createModel(testClassProps);
-    const modelId = briefcases[0].models.insertModel(model.toJSON());
-    briefcases[0].saveChanges("created first model");
+    const element = briefcases[0].elements.createElement(testClassProps);
+    const elementId = briefcases[0].elements.insertElement(element.toJSON());
+    briefcases[0].saveChanges();
     await briefcases[0].pushChanges({ accessToken: accessTokens[0], description: "initial setup" });
 
     await briefcases[1].pullChanges();
-    const model1Props = briefcases[1].models.getModelProps<TestClassProps>(modelId);
-    model1Props.b = "B2";
-    briefcases[1].models.updateModel(model1Props);
-    briefcases[1].saveChanges("updated model property B");
-    await briefcases[1].pushChanges({ accessToken: accessTokens[1], description: "updated model property B" });
+    const element1Props = briefcases[1].elements.getElementProps<TestClassProps>(elementId);
+    element1Props.b = "B2";
+    briefcases[1].elements.updateElement(element1Props);
+    briefcases[1].saveChanges();
+    await briefcases[1].pushChanges({ accessToken: accessTokens[1], description: "updated element property B" });
 
     await briefcases[2].pullChanges();
-    const model2Props = briefcases[2].models.getModelProps<TestClassProps>(modelId);
-    model2Props.c = "C3";
-    briefcases[2].models.updateModel(model2Props);
-    briefcases[2].saveChanges("updated model property C");
-    await briefcases[2].pushChanges({ accessToken: accessTokens[2], description: "updated model property C" });
+    const element2Props = briefcases[2].elements.getElementProps<TestClassProps>(elementId);
+    element2Props.c = "C3";
+    briefcases[2].elements.updateElement(element2Props);
+    briefcases[2].saveChanges();
+    await briefcases[2].pushChanges({ accessToken: accessTokens[2], description: "updated element property C" });
 
     await briefcases[3].pullChanges();
-    const model3Props = briefcases[3].models.getModelProps<TestClassProps>(modelId);
-    model3Props.d = "D4";
-    briefcases[3].models.updateModel(model3Props);
-    briefcases[3].saveChanges("updated model property D");
-    await briefcases[3].pushChanges({ accessToken: accessTokens[3], description: "updated model property D" });
+    const element3Props = briefcases[3].elements.getElementProps<TestClassProps>(elementId);
+    element3Props.d = "D4";
+    briefcases[3].elements.updateElement(element3Props);
+    briefcases[3].saveChanges();
+    await briefcases[3].pushChanges({ accessToken: accessTokens[3], description: "updated element property D" });
 
-    await briefcases[0].pullChanges();
-    await briefcases[1].pullChanges();
-    await briefcases[2].pullChanges();
-    await briefcases[3].pullChanges();
     for(const briefcase of briefcases) {
-      const finalModelProps = briefcase.models.getModelProps<TestClassProps>(modelId);
+      await briefcase.pullChanges();
+      const finalModelProps = briefcase.elements.getElementProps<TestClassProps>(elementId);
       assert.strictEqual(finalModelProps.a, "A1");
       assert.strictEqual(finalModelProps.b, "B2");
       assert.strictEqual(finalModelProps.c, "C3");
