@@ -586,6 +586,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
+      '@webgpu/types': ^0.1.42
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
@@ -629,6 +630,7 @@ importers:
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
       '@types/sinon': 17.0.2
+      '@webgpu/types': 0.1.42
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
@@ -5539,6 +5541,10 @@ packages:
     dependencies:
       '@webassemblyjs/ast': 1.11.1
       '@xtuc/long': 4.2.2
+
+  /@webgpu/types/0.1.42:
+    resolution: {integrity: sha512-uvJtt4OD1Vjdebrrz3kNLgpOicYbikwnM8WPG6YD2lkCOHDtPdEtCINJFIFtbOCtPfA8SreR/vKyUNbAt92IwQ==}
+    dev: true
 
   /@webpack-cli/configtest/2.1.1_66fuqojgvlon52mqukkfkspvqe:
     resolution: {integrity: sha512-wy0mglZpDSiSS0XHrVR+BAdId2+yxPSoJW8fsna3ZpYSlufjvxnP4YbKTCBZnNIcGN4r6ZPXV55X4mYExOfLmw==}

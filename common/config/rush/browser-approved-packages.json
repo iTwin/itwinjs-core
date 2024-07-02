@@ -387,6 +387,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@webgpu/types",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@xmldom/xmldom",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
