@@ -173,10 +173,8 @@ export class BeEventList<T extends Listener> {
 }
 
 /**
- * Retrieves the listener type of a {@link BeEvent}.
- * @note This can be used with a narrowed event type.
- *
- * @example
+ * Retrieves the type of the callback function for an event type like [[BeEvent]].
+ * For example:
  * ```ts
  * const ev = new BeEvent<(x: number, y: string) => void>();
  *
