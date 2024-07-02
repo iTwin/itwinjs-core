@@ -757,7 +757,9 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** @internal */
+  /** @internal
+   * @deprecated in 4.8. Use `txns.reverseTxns`.
+   */
   public reverseTxns(numOperations: number): IModelStatus {
     return this.nativeDb.reverseTxns(numOperations);
   }
