@@ -142,9 +142,9 @@ export abstract class IModelConnection extends IModel {
    */
   public abstract get isClosed(): boolean;
 
-  /** Event called immediately before *any* IModelConnection is closed.
-   * @note This static event is called when *any* IModelConnection is closed, and the specific IModelConnection is passed as its argument. To
-   * monitor closing a specific IModelConnection, use the `onClose` instance event.
+  /** Event raised immediately before *any* IModelConnection is [[close]]d.
+   * @note This static event is raised when *any* IModelConnection is closed, and the specific IModelConnection is passed as its argument. To
+   * monitor closing a specific IModelConnection, listen for the `onClose` instance event instead.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
@@ -152,10 +152,9 @@ export abstract class IModelConnection extends IModel {
   /** Event called immediately after *any* IModelConnection is opened. */
   public static readonly onOpen = new BeEvent<(_imodel: IModelConnection) => void>();
 
-  /** Event called immediately before *this* IModelConnection is closed.
-   * @note This event is called only for this IModelConnection. To monitor *all* IModelConnections,use the static event.
+  /** Event raised immediately before this IModelConnection is [[close]]d.
+   * @note This event is raised only for this specific IModelConnection. To monitor *all* IModelConnections, listen for the static `onClose` event instead.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
-   * @beta
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
