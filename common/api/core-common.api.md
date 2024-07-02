@@ -2731,13 +2731,13 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
-// @beta
+// @public
 export interface ElementGeometryBuilderParams {
     entryArray: ElementGeometryDataEntry[];
     viewIndependent?: boolean;
 }
 
-// @beta
+// @public
 export interface ElementGeometryBuilderParamsForPart {
     entryArray: ElementGeometryDataEntry[];
     is2dPart?: boolean;
@@ -3773,7 +3773,6 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
-    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     placement?: PlacementProps;
@@ -3882,7 +3881,6 @@ export interface GeometryPartInstanceProps {
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZProps;
-    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
@@ -6776,20 +6774,16 @@ export interface PolylineFlags {
     is2d?: boolean;
     isDisjoint?: boolean;
     isPlanar?: boolean;
-    // @alpha
     type?: PolylineTypeFlags;
 }
 
 // @public
 export type PolylineIndices = number[];
 
-// @alpha
+// @public
 export enum PolylineTypeFlags {
-    // (undocumented)
-    Edge = 1,// Just an ordinary polyline
-    // (undocumented)
-    Normal = 0,// A polyline used to define the edges of a planar region.
-    // (undocumented)
+    Edge = 1,
+    Normal = 0,
     Outline = 2
 }
 
@@ -8820,7 +8814,7 @@ export interface RunLayoutResult {
 // @beta
 export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
 
-// @beta
+// @public
 export enum SchemaState {
     TooNew = 4,
     TooOld = 3,

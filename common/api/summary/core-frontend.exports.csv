@@ -111,7 +111,7 @@ public;CheckboxFormatPropEditorSpec
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
-beta;CollectTileStatus = "accept" | "reject" | "continue"
+public;CollectTileStatus = "accept" | "reject" | "continue"
 internal;collectTransferables(document: ImdlModel.Document): Transferable[]
 internal;ColorMap 
 public;CompassMode
@@ -271,7 +271,7 @@ internal;GeometryAccumulator
 internal;GeometryList
 internal;class GeometryListBuilder 
 internal;GeometryOptions
-beta;GeometryTileTreeReference 
+public;GeometryTileTreeReference 
 public;GeoServices
 internal;GeoServicesOptions = Omit
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
@@ -472,7 +472,6 @@ public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => it
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 internal;isValidSurfaceType(value: number): boolean
 public;ItemField
-beta;ITwinIdArg
 public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
@@ -661,8 +660,6 @@ public;PolylineArgs
 public;PolylineArgs
 internal;fromMesh(mesh: Mesh): PolylineArgs | undefined
 internal;PolylineParams
-beta;PreferenceArg 
-beta;PreferenceKeyArg
 internal;PreserveOrder
 internal;PrimitiveBuilder 
 internal;PrimitiveGeometryType = Loop | Path | IndexedPolyface | SolidPrimitive
@@ -723,7 +720,7 @@ internal;RealityModelTileUtils
 public;RealityTile 
 internal;RealityTileContent 
 internal;RealityTileDrawArgs 
-beta;RealityTileGeometry
+public;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion
@@ -770,6 +767,7 @@ public;RotateViewTool
 public;RotationMode
 internal;RoundOff
 internal;SavedState
+public;SaveUserPreferenceArgs 
 public;Scene
 public;SceneContext 
 internal;SceneVolumeClassifier
@@ -885,8 +883,8 @@ internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): voi
 internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
-beta;TileGeometryCollector
-beta;TileGeometryCollectorOptions
+public;TileGeometryCollector
+public;TileGeometryCollectorOptions
 public;TileGraphicType
 public;TileLoadPriority
 public;TileLoadStatus
@@ -913,7 +911,6 @@ public;TileUser
 internal;TileUserIdSet 
 internal;TileUserIdSets 
 public;TileVisibility
-beta;TokenArg
 internal;ToleranceRatio
 internal;toMaterialParams(mat: ImdlModel.SurfaceMaterialParams): MaterialParams
 public;Tool
@@ -964,7 +961,8 @@ internal;UniqueTileUserSets
 public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
 internal;UpsampledMapTile 
-beta;UserPreferencesAccess
+public;UserPreferenceKeyArgs
+public;UserPreferencesAccess
 beta;ValidateSourceArgs
 public;VaryingType
 internal;VertexIndices 

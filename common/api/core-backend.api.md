@@ -3084,7 +3084,6 @@ export abstract class IModelDb extends IModel {
     isStandaloneDb(): this is StandaloneDb;
     // @internal (undocumented)
     protected loadWorkspaceSettings(): Promise<void>;
-    // @beta
     get locks(): LockControl;
     // @internal (undocumented)
     protected _locks?: LockControl;
@@ -3134,7 +3133,7 @@ export abstract class IModelDb extends IModel {
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;

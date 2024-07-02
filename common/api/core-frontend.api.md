@@ -2161,7 +2161,7 @@ export class Cluster<T extends Marker> {
     get position(): Point3d;
 }
 
-// @beta
+// @public
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
 // @internal
@@ -4326,7 +4326,7 @@ export class GeometryOptions {
     get wantSurfacesOnly(): boolean;
 }
 
-// @beta
+// @public
 export interface GeometryTileTreeReference extends TileTreeReference {
     collectTileGeometry: (collector: TileGeometryCollector) => void;
 }
@@ -6904,7 +6904,6 @@ export class IModelApp {
     static get notifications(): NotificationManager;
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
-    // @beta
     static get publicPath(): string;
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
@@ -6936,7 +6935,6 @@ export class IModelApp {
     // @beta
     static translateStatus(status: number): string;
     static get uiAdmin(): UiAdmin;
-    // @beta
     static get userPreferences(): UserPreferencesAccess | undefined;
     static get viewManager(): ViewManager;
 }
@@ -6957,7 +6955,6 @@ export interface IModelAppOptions {
     // @internal
     noRender?: boolean;
     notifications?: NotificationManager;
-    // @beta
     publicPath?: string;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
@@ -6973,13 +6970,14 @@ export interface IModelAppOptions {
     tileAdmin?: TileAdmin.Props;
     toolAdmin?: ToolAdmin;
     uiAdmin?: UiAdmin;
-    // @beta
     userPreferences?: UserPreferencesAccess;
     viewManager?: ViewManager;
 }
 
 // @public
 export abstract class IModelConnection extends IModel {
+    // @internal
+    [_requestSnap](props: SnapRequestProps): Promise<SnapResponseProps>;
     // @internal
     protected constructor(iModelProps: IModelConnectionProps);
     // @internal
@@ -7034,7 +7032,6 @@ export abstract class IModelConnection extends IModel {
     // @internal
     get noGcsDefined(): boolean;
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
-    // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
     readonly onMapElevationLoaded: BeEvent<(_imodel: IModelConnection) => void>;
@@ -7049,7 +7046,7 @@ export abstract class IModelConnection extends IModel {
     // @internal
     querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
-    // @internal
+    // @internal @deprecated (undocumented)
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     // @deprecated
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
@@ -7490,15 +7487,16 @@ export class IntersectDetail extends SnapDetail {
 
 // @public
 export class IpcApp {
+    // @internal
+    static [_callIpcChannel](channelName: string, methodName: string, ...args: any[]): Promise<any>;
     static addListener(channel: string, handler: IpcListener): RemoveFunction;
     static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
-    // @internal
+    // @internal @deprecated (undocumented)
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
     // @deprecated (undocumented)
     static callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
-    // @internal
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
     static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K>;
     static removeListener(channel: string, listener: IpcListener): void;
@@ -7539,14 +7537,6 @@ export enum ItemField {
     X_Item = 2,
     Y_Item = 3,
     Z_Item = 4
-}
-
-// @beta
-export interface ITwinIdArg {
-    // (undocumented)
-    readonly iModelId?: GuidString;
-    // (undocumented)
-    readonly iTwinId?: GuidString;
 }
 
 // @public (undocumented)
@@ -10711,20 +10701,6 @@ export interface PolylineParams {
     weight: number;
 }
 
-// @beta
-export interface PreferenceArg extends PreferenceKeyArg {
-    // (undocumented)
-    readonly content?: any;
-}
-
-// @beta
-export interface PreferenceKeyArg {
-    // (undocumented)
-    readonly key: string;
-    // (undocumented)
-    readonly namespace?: string;
-}
-
 // @internal (undocumented)
 export enum PreserveOrder {
     // (undocumented)
@@ -11344,7 +11320,6 @@ export class RealityTile extends Tile {
     protected forceSelectRealityTile(): boolean;
     // @internal (undocumented)
     freeMemory(): void;
-    // @beta
     get geometry(): RealityTileGeometry | undefined;
     // @internal (undocumented)
     protected _geometry?: RealityTileGeometry;
@@ -11441,7 +11416,7 @@ export class RealityTileDrawArgs extends TileDrawArgs {
     get worldToViewMap(): Map4d;
 }
 
-// @beta
+// @public
 export interface RealityTileGeometry {
     polyfaces?: IndexedPolyface[];
 }
@@ -12399,6 +12374,11 @@ export class SavedState {
     rotationMode: RotationMode;
     // (undocumented)
     state: CurrentState;
+}
+
+// @public
+export interface SaveUserPreferenceArgs extends UserPreferenceKeyArgs {
+    content?: any;
 }
 
 // @public
@@ -14527,7 +14507,7 @@ export class TileDrawArgs {
     get worldToViewMap(): Map4d;
 }
 
-// @beta
+// @public
 export class TileGeometryCollector {
     constructor(options: TileGeometryCollectorOptions);
     addMissingTile(tile: Tile): void;
@@ -14539,7 +14519,7 @@ export class TileGeometryCollector {
     requestMissingTiles(): void;
 }
 
-// @beta
+// @public
 export interface TileGeometryCollectorOptions {
     chordTolerance: number;
     range: Range3d;
@@ -14859,18 +14839,14 @@ export abstract class TileTreeReference {
     canSupplyToolTip(_hit: HitDetail): boolean;
     get castsShadows(): boolean;
     collectStatistics(stats: RenderMemory.Statistics): void;
-    // @beta
     collectTileGeometry?: (collector: TileGeometryCollector) => void;
-    // @beta
     protected _collectTileGeometry(collector: TileGeometryCollector): void;
     protected computeTransform(tree: TileTree): Transform;
     computeWorldContentRange(): ElementAlignedBox3d;
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // @beta
     static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference;
-    // @beta
     createGeometryTreeReference(): GeometryTileTreeReference | undefined;
-    // @beta
     protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
@@ -14985,12 +14961,6 @@ export enum TileVisibility {
     OutsideFrustum = 0,
     TooCoarse = 1,
     Visible = 2
-}
-
-// @beta
-export interface TokenArg {
-    // (undocumented)
-    accessToken?: AccessToken;
 }
 
 // @internal (undocumented)
@@ -15657,11 +15627,21 @@ export class UpsampledMapTile extends MapTile {
     get renderGeometry(): RenderTerrainGeometry | undefined;
 }
 
-// @beta
+// @public
+export interface UserPreferenceKeyArgs {
+    // (undocumented)
+    accessToken?: AccessToken;
+    iModelId?: GuidString;
+    iTwinId?: GuidString;
+    key: string;
+    namespace?: string;
+}
+
+// @public
 export interface UserPreferencesAccess {
-    delete: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<void>;
-    get: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<any>;
-    save: (arg: PreferenceArg & ITwinIdArg & TokenArg) => Promise<void>;
+    delete: (args: UserPreferenceKeyArgs) => Promise<void>;
+    get: (args: UserPreferenceKeyArgs) => Promise<any>;
+    save: (args: SaveUserPreferenceArgs) => Promise<void>;
 }
 
 // @beta
@@ -16551,7 +16531,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     // @internal
     getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
-    // @beta
     getElementToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getFirstOpenView(): ScreenViewport | undefined;
     // (undocumented)
@@ -16561,7 +16540,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     hasViewport(viewport: ScreenViewport): boolean;
     // (undocumented)
     inDynamicsMode: boolean;
-    // @beta
     invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void;
     invalidateDecorationsAllViews(): void;
     invalidateScenes(): void;

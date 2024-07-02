@@ -220,8 +220,8 @@ public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
 beta;ElementGeometry
-beta;ElementGeometryBuilderParams
-beta;ElementGeometryBuilderParamsForPart
+public;ElementGeometryBuilderParams
+public;ElementGeometryBuilderParamsForPart
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
 public;ElementGeometryDataEntry
@@ -586,7 +586,7 @@ internal;POLICY: unique symbol
 internal;PolylineEdgeArgs
 public;PolylineFlags
 public;PolylineIndices = number[]
-alpha;PolylineTypeFlags
+public;PolylineTypeFlags
 public;PositionalVectorTransform 
 public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
@@ -742,7 +742,7 @@ beta;Run = TextRun | FractionRun | LineBreakRun
 beta;Run
 beta;RunLayoutResult
 beta;RunProps = TextRunProps | FractionRunProps | LineBreakRunProps
-beta;SchemaState
+public;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
 public;SectionDrawingViewProps
