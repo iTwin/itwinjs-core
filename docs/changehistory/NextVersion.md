@@ -8,6 +8,7 @@ Table of contents:
 
 - [Workspaces](#workspaces)
 - [Electron 31 support](#electron-31-support)
+- [`ListenerType` helper](#listenertype-helper)
 - [Internal APIs](#internal-apis)
 
 ## Workspaces
@@ -17,6 +18,10 @@ The `beta` [Workspace]($backend) and [Settings]($backend) APIs have been updated
 ## Electron 31 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 31](https://www.electronjs.org/blog/electron-31-0).
+
+## `ListenerType` helper
+
+Added a new helper type [ListenerType]($core-bentley) to retrieve the listener type of a [BeEvent]($core-bentley). This type is useful when implicit types can not be used i.e. you need to define a listener outside of [BeEvent.addListener]($core-bentley).
 
 # Internal APIs
 

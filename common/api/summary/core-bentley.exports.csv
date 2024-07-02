@@ -74,6 +74,7 @@ public;JSONSchemaType = string | number | boolean | object | JSONSchemaType[]
 public;JSONSchemaTypeName = "string" | "number" | "integer" | "boolean" | "null" | "array" | "object"
 public;JsonUtils
 public;Listener = (...arg: any[]) => void
+public;ListenerType
 public;LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void
 public;Logger
 public;LoggerCategoryAndLevel
