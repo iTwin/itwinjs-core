@@ -361,7 +361,7 @@ export abstract class IModelConnection extends IModel {
 
   private _snapRpc = new OneAtATimeAction<SnapResponseProps>(
     async (props: SnapRequestProps) =>
-      IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props)
+      IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props),
   );
 
   /** Request a snap from the backend.

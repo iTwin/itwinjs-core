@@ -12,7 +12,7 @@ import {
   iTwinChannel, RemoveFunction,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { _callIpcChannel } from "./internal/Symbols"; 
+import { _callIpcChannel } from "./internal/Symbols";
 
 /**
  * Options for [[IpcApp.startup]]
@@ -108,7 +108,7 @@ export class IpcApp {
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     return this[_callIpcChannel](channelName, methodName, args);
   }
-  
+
   /** Create a type safe Proxy object to make IPC calls to a registered backend interface.
    * @param channelName the channel registered by the backend handler.
    */

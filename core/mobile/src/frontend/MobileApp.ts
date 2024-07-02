@@ -41,6 +41,7 @@ export class MobileApp {
   public static onWillTerminate = new BeEvent<() => void>();
   public static onAuthAccessTokenChanged = new BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>();
   public static async callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(methodName: T, ...args: Parameters<MobileAppFunctions[T]>) {
+    // eslint-disable-next-line deprecation/deprecation
     return IpcApp.callIpcChannel(mobileAppStrings.mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
   }
 

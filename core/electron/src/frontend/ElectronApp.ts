@@ -86,6 +86,7 @@ export class ElectronApp {
    * @deprecated in 3.x. use [[dialogIpc]]
    */
   public static async callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
+    // eslint-disable-next-line deprecation/deprecation
     return IpcApp.callIpcChannel(electronIpcStrings.dialogChannel, "callDialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
   }
 

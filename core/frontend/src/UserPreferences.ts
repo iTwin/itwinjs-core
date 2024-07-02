@@ -16,7 +16,7 @@ export interface UserPreferenceKeyArgs {
   /** If supplied, indicates the user preference is defined at the level of this iTwin. */
   iTwinId?: GuidString;
   /** If supplied, indicates the user preference is defined at the level of this iModel. */
-  iModelId?: GuidString
+  iModelId?: GuidString;
   accessToken?: AccessToken;
   /** A unique namespace for [[key]]. */
   namespace?: string;
