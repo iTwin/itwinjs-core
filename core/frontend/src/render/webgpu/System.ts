@@ -76,7 +76,7 @@ export class WebGPUSystem extends RenderSystem {
 
   public override onInitialized(): void {}
 
-  public dispose(): void { }
+  public dispose(): void {}
 
   public createTarget(_canvas: HTMLCanvasElement): RenderTarget {
     return new WebGPUTarget(this);
