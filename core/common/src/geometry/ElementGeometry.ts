@@ -129,7 +129,7 @@ export interface ElementGeometryRequest {
   minBRepFeatureSize?: number;
 }
 
-/** Parameters for building the geometry stream of a GeometricElement](@backend) using [[ElementGeometry.Builder]].
+/** Parameters for building the geometry stream of a [GeometricElement]($backend) using [[ElementGeometry.Builder]].
  * You can assign an object of this type to [[GeometricElementProps.elementGeometryBuilderParams]] when inserting or updating a geometric element.
  * @note The geometry stream is always in local coordinates - that is, relative to the element's [[Placement]].
  * @public
@@ -141,7 +141,7 @@ export interface ElementGeometryBuilderParams {
   viewIndependent?: boolean;
 }
 
-/** Parameters for building the geometry stream of a GeometryPart](@backend) using [[ElementGeometry.Builder]].
+/** Parameters for building the geometry stream of a [GeometryPart]($backend) using [[ElementGeometry.Builder]].
  * You can assign an object of this type to [[GeometryPartProps.elementGeometryBuilderParams]] when inserting or updating a part.
  * @public
  */
