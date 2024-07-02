@@ -109,7 +109,6 @@ public;ChangesetIndexOrId = ChangesetIndexAndId |
 public;ChangesetProps
 public;ChangesetRange
 public;ChangesetType
-alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
 public;ClipIntersectionStyle

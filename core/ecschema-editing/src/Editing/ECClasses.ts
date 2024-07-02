@@ -10,7 +10,7 @@ import {
   CustomAttribute,
   CustomAttributeContainerProps,
   DelayedPromiseWithProps,
-  ECClass, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
+  ECClass, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
   PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
@@ -263,38 +263,6 @@ export class ECClasses extends SchemaItems{
       }
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToClass, new ClassId(this.schemaItemType, classKey), e);
-    }
-  }
-
-  /**
-   * Sets the name of the ECClass.
-   * @param classKey The SchemaItemKey of the class.
-   * @param name The new name of the class.
-   * @throws ECObjectsError if `name` does not meet the criteria for a valid EC name
-   */
-  public async setName(classKey: SchemaItemKey, name: string): Promise<SchemaItemKey> {
-    try {
-      const schema = await this.getSchema(classKey.schemaKey);
-      const ecClass = await schema.getItem<MutableClass>(name);
-      if (ecClass !== undefined)
-        throw new SchemaEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, new ClassId(this.schemaItemType, name, schema.schemaKey));
-
-      const mutableClass = await this.getClass(classKey);
-
-      const existingName = classKey.name;
-      mutableClass.setName(name);
-
-      // Must reset in schema item map
-      await schema.deleteClass(existingName);
-      schema.addItem(mutableClass);
-      return mutableClass.key;
-    } catch(e: any) {
-      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
-        throw new SchemaEditingError(ECEditingStatus.SetClassName, new ClassId(this.schemaItemType, classKey),
-          new SchemaEditingError(ECEditingStatus.InvalidECName, new ClassId(this.schemaItemType, classKey)));
-      }
-
-      throw new SchemaEditingError(ECEditingStatus.SetClassName, new ClassId(this.schemaItemType, classKey), e);
     }
   }
 

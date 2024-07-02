@@ -7043,6 +7043,8 @@ export abstract class IModelConnection extends IModel {
     get projectCenterAltitude(): number | undefined;
     // @deprecated
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    // @internal
+    queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     // @deprecated
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
@@ -10587,6 +10589,8 @@ export class PlanarClipMaskState {
     getTileTrees(view: SpatialViewState, classifiedModelId: Id64String): TileTreeReference[] | undefined;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
+    // (undocumented)
+    get usingViewportOverrides(): boolean;
 }
 
 // @alpha
@@ -13404,7 +13408,7 @@ export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList>
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
-    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance): void;
+    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
@@ -13414,6 +13418,7 @@ export class SubCategoriesCache {
     // (undocumented)
     getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>>;
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
+    loadAllUsedSpatialSubCategories(): Promise<void>;
     // (undocumented)
     onIModelConnectionClose(): void;
 }
