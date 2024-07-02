@@ -541,8 +541,8 @@ export abstract class GraphicBuilder {
   }
 
   /** Add Frustum sides. Useful for debugging. */
-  public addFrustumShapes(frustum: Frustum) {
-    this.addRangeBoxShapesFromCorners(frustum.points);
+  public addFrustumSides(frustum: Frustum) {
+    this.addRangeBoxSidesFromCorners(frustum.points);
   }
 
   /** Add range edges from corner points */
@@ -565,8 +565,8 @@ export abstract class GraphicBuilder {
     this.addLineString([p[Npc.LeftBottomRear].clone(), p[Npc.RightBottomRear].clone()]);
   }
 
-  /** Add range edges from corner points */
-  public addRangeBoxShapesFromCorners(p: Point3d[]) {
+  /** Add range sides from corner points */
+  public addRangeBoxSidesFromCorners(p: Point3d[]) {
     this.addShape([
       p[Npc.LeftBottomFront].clone(),
       p[Npc.LeftTopFront].clone(),

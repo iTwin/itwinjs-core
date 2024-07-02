@@ -440,8 +440,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
       const frustumPlanes = this._frustum ? FrustumPlanes.fromFrustum(this._frustum) : FrustumPlanes.createEmpty();
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, frustumPlanes!, projection.worldToViewMap!);
+      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, frustumPlanes, projection.worldToViewMap!);
       if (undefined !== drawArgs)
         treeRef.draw(drawArgs);
 
@@ -463,18 +462,16 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       builder.setSymbology(ColorDef.green, ColorDef.green, 2);
       builder.addFrustum(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.red, ColorDef.red, 2);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       builder.addFrustum(this._debugFrustum!);
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
       builder.addFrustum(this._frustum);
 
       builder.setSymbology(ColorDef.from(0,200,0,222), ColorDef.from(0,200,0,222), 2);
-      builder.addFrustumShapes(context.viewingSpace.getFrustum());
+      builder.addFrustumSides(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.from(200,0,0,222), ColorDef.from(200,0,0,222), 2);
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      builder.addFrustumShapes(this._debugFrustum!);
+      builder.addFrustumSides(this._debugFrustum!);
       builder.setSymbology(ColorDef.from(0,0,200,222), ColorDef.from(0,0,200,222), 2);
-      builder.addFrustumShapes(this._frustum);
+      builder.addFrustumSides(this._frustum);
       this._debugFrustumGraphic = builder.finish();
       context.outputGraphic(this._debugFrustumGraphic);
     }

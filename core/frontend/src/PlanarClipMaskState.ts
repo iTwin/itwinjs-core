@@ -48,6 +48,7 @@ export class PlanarClipMaskState {
   public getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined {
     if (this.settings.mode === PlanarClipMaskMode.Priority) {
       // For priority mode we simply want refs for all viewed models if the priority is higher than the mask priority.
+      // For this case, we don't need a maskRange so leave it as null.
       const viewTrees = new Array<TileTreeReference>();
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
       view.forEachTileTreeRef((ref) => {
@@ -69,7 +70,7 @@ export class PlanarClipMaskState {
       }
       this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
       maskRange.clone(this._maskRange);
-    } else
+    } else  // If already loaded, just set the maskRange to the saved maskRange.
       this._maskRange.clone(maskRange);
 
     return this._allLoaded ? this._tileTreeRefs : undefined;
