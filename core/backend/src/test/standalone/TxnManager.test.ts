@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, DbResult, Guid, GuidString, Id64, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, DbResult, Guid, GuidString, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, ModelProps, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@itwin/core-common";
 import {
   BriefcaseDb,
@@ -15,7 +15,7 @@ import {
   ChannelControl,
   ECSqlStatement,
   HubMock,
-  IModelHost, IModelJsFs, PhysicalModel, PullMergeMethod, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
+  IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, PullMergeMethod, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements, TxnChangedEntities, TxnManager,
 } from "../../core-backend";
 import { HubWrappers, IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -41,6 +41,13 @@ function getCount(imodel: BriefcaseDb, className: string): number {
     result = stmt.getValue(0).getInteger();
   });
   return result;
+}
+
+interface TestClassProps extends ModelProps {
+  a?: string;
+  b?: string;
+  c?: string;
+  d?: string;
 }
 
 describe("TxnManager", () => {
@@ -957,9 +964,6 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
     before(() => {
       HubMock.startup("MergeConflictTest", KnownTestLocations.outputDir);
       iTwinId = HubMock.iTwinId;
-
-      Logger.initializeToConsole();
-      Logger.setLevel("TxnManager", LogLevel.Trace);
     });
 
     after(() => HubMock.shutdown());
@@ -1058,3 +1062,112 @@ for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
     });
   }); // describe
 } // for each pullMergeMethod
+
+describe.skip("TxnManager mixed PullMergeMethods", () => {
+  // This will use 4 briefcases to test element property merging between methods
+  // [0]: Source Briefcase to initialize data
+  // [1]: Briefcase with Rebase
+  // [2]: Briefcase with Merge
+  // [3]: another Briefcase with Rebase
+  let iTwinId: GuidString;
+  const accessTokens: string[] = [];
+  const briefcases: BriefcaseDb[] = [];
+  const txns: TxnManager[] = [];
+  const iModelName = "TxnManagerPullMergeRebaseTest2";
+
+  before(() => {
+    HubMock.startup("MergeConflictTest", KnownTestLocations.outputDir);
+    iTwinId = HubMock.iTwinId;
+  });
+
+  after(() => HubMock.shutdown());
+
+  beforeEach(async () => {
+    const iModelId = await HubMock.createNewIModel({ accessToken: accessTokens[0], iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    assert.isNotEmpty(iModelId);
+
+    for (let i = 0; i < 4; i++) {
+      accessTokens[i] = await HubWrappers.getAccessToken(TestUserType.Regular);
+      briefcases[i] = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessTokens[i], iTwinId, iModelId, noLock: true, pullMergeMethod: (i === 2 ? "Merge" : "Rebase") });
+      briefcases[i].channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      txns[i] = briefcases[i].txns;
+    }
+  });
+
+  afterEach(async () => {
+    for (const briefcase of briefcases) {
+      if (briefcase.isOpen) {
+        briefcase.abandonChanges();
+        briefcase.close();
+      }
+    }
+  });
+
+  it("Merge element properties from various briefcases combining different pull merge methods", async () => {
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.15" alias="bis"/>
+        <ECEntityClass typeName="TestClass" modifier="Sealed">
+            <BaseClass>bis:PhysicalModel</BaseClass>
+            <ECProperty propertyName="A" typeName="string"/>
+            <ECProperty propertyName="B" typeName="string"/>
+            <ECProperty propertyName="C" typeName="string"/>
+            <ECProperty propertyName="D" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await briefcases[0].importSchemaStrings([schema]);
+
+    const partitionId = briefcases[0].elements.insertElement({
+      classFullName: PhysicalPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      code: PhysicalPartition.createCode(briefcases[0], IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
+    });
+
+    const testClassProps: TestClassProps = {
+      classFullName: "TestSchema:TestClass",
+      modeledElement: { id: partitionId },
+      a: "A1",
+      b: "B1",
+      c: "C1",
+      d: "D1",
+    };
+    const model = briefcases[0].models.createModel(testClassProps);
+    const modelId = briefcases[0].models.insertModel(model.toJSON());
+    briefcases[0].saveChanges("created first model");
+    await briefcases[0].pushChanges({ accessToken: accessTokens[0], description: "initial setup" });
+
+    await briefcases[1].pullChanges();
+    const model1Props = briefcases[1].models.getModelProps<TestClassProps>(modelId);
+    model1Props.b = "B2";
+    briefcases[1].models.updateModel(model1Props);
+    briefcases[1].saveChanges("updated model property B");
+    await briefcases[1].pushChanges({ accessToken: accessTokens[1], description: "updated model property B" });
+
+    await briefcases[2].pullChanges();
+    const model2Props = briefcases[2].models.getModelProps<TestClassProps>(modelId);
+    model2Props.c = "C3";
+    briefcases[2].models.updateModel(model2Props);
+    briefcases[2].saveChanges("updated model property C");
+    await briefcases[2].pushChanges({ accessToken: accessTokens[2], description: "updated model property C" });
+
+    await briefcases[3].pullChanges();
+    const model3Props = briefcases[3].models.getModelProps<TestClassProps>(modelId);
+    model3Props.d = "D4";
+    briefcases[3].models.updateModel(model3Props);
+    briefcases[3].saveChanges("updated model property D");
+    await briefcases[3].pushChanges({ accessToken: accessTokens[3], description: "updated model property D" });
+
+    await briefcases[0].pullChanges();
+    await briefcases[1].pullChanges();
+    await briefcases[2].pullChanges();
+    await briefcases[3].pullChanges();
+    for(const briefcase of briefcases) {
+      const finalModelProps = briefcase.models.getModelProps<TestClassProps>(modelId);
+      assert.strictEqual(finalModelProps.a, "A1");
+      assert.strictEqual(finalModelProps.b, "B2");
+      assert.strictEqual(finalModelProps.c, "C3");
+      assert.strictEqual(finalModelProps.d, "D4");
+    }
+  });
+}); // describe
