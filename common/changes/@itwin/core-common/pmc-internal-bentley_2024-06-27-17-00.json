@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Begin deprecating @internal APis.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

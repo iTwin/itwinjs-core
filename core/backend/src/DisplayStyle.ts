@@ -21,7 +21,6 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  * @public
  */
 export abstract class DisplayStyle extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
 
@@ -129,7 +128,6 @@ export abstract class DisplayStyle extends DefinitionElement {
  * @public
  */
 export class DisplayStyle2d extends DisplayStyle {
-  /** @internal */
   public static override get className(): string { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -196,7 +194,6 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
  * @public
  */
 export class DisplayStyle3d extends DisplayStyle {
-  /** @internal */
   public static override get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
 

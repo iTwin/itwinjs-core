@@ -18,6 +18,7 @@ import { DefinitionPartition, DocumentPartition, InformationRecordPartition, Phy
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
+import { _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta
@@ -65,7 +66,6 @@ export interface OnElementInModelIdArg extends OnModelIdArg {
  * @public
  */
 export class Model extends Entity {
-  /** @internal */
   public static override get className(): string { return "Model"; }
   /** @internal */
   public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
@@ -98,7 +98,7 @@ export class Model extends Entity {
    */
   protected static onInsert(arg: OnModelPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels.verifyChannel(props.modeledElement.id);
+    iModel.channels[_verifyChannel](props.modeledElement.id);
     if (props.parentModel)   // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parentModel, "parent model", "insert");
   }
@@ -120,7 +120,7 @@ export class Model extends Entity {
    */
   protected static onUpdate(arg: OnModelPropsArg): void {
     const id = arg.props.id!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-    arg.iModel.channels.verifyChannel(id);
+    arg.iModel.channels[_verifyChannel](id);
     arg.iModel.locks.checkExclusiveLock(id, "model", "update");
   }
 
@@ -139,7 +139,7 @@ export class Model extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnModelIdArg): void {
-    arg.iModel.channels.verifyChannel(arg.id);
+    arg.iModel.channels[_verifyChannel](arg.id);
     arg.iModel.locks.checkExclusiveLock(arg.id, "model", "delete");
   }
 
@@ -235,7 +235,6 @@ export class Model extends Entity {
 export class GeometricModel extends Model {
   public geometryGuid?: GuidString; // Initialized by the Entity constructor
 
-  /** @internal */
   public static override get className(): string { return "GeometricModel"; }
 
   protected constructor(props: GeometricModelProps, iModel: IModelDb) { super(props, iModel); }
@@ -269,7 +268,6 @@ export abstract class GeometricModel3d extends GeometricModel {
   /** If true, then the elements in this GeometricModel3d are in real-world coordinates and will be in the spatial index. */
   public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 
-  /** @internal */
   public static override get className(): string { return "GeometricModel3d"; }
 
   protected constructor(props: GeometricModel3dProps, iModel: IModelDb) {
@@ -296,7 +294,6 @@ export abstract class GeometricModel3d extends GeometricModel {
 export abstract class GeometricModel2d extends GeometricModel {
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
   public globalOrigin?: Point2d; // Initialized by the Entity constructor
-  /** @internal */
   public static override get className(): string { return "GeometricModel2d"; }
 
   protected constructor(props: GeometricModel2dProps, iModel: IModelDb) { super(props, iModel); }
@@ -314,7 +311,6 @@ export abstract class GeometricModel2d extends GeometricModel {
  * @public
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
-  /** @internal */
   public static override get className(): string { return "GraphicalModel2d"; }
 }
 
@@ -324,7 +320,6 @@ export abstract class GraphicalModel2d extends GeometricModel2d {
  * @public
  */
 export abstract class GraphicalModel3d extends GeometricModel3d {
-  /** @internal */
   public static override get className(): string { return "GraphicalModel3d"; }
 }
 
@@ -332,7 +327,6 @@ export abstract class GraphicalModel3d extends GeometricModel3d {
  * @public
  */
 export abstract class SpatialModel extends GeometricModel3d {
-  /** @internal */
   public static override get className(): string { return "SpatialModel"; }
 }
 
@@ -341,7 +335,6 @@ export abstract class SpatialModel extends GeometricModel3d {
  * @public
  */
 export class PhysicalModel extends SpatialModel {
-  /** @internal */
   public static override get className(): string { return "PhysicalModel"; }
   /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -373,7 +366,6 @@ export class PhysicalModel extends SpatialModel {
  * @public
  */
 export class SpatialLocationModel extends SpatialModel {
-  /** @internal */
   public static override get className(): string { return "SpatialLocationModel"; }
   /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -404,7 +396,6 @@ export class SpatialLocationModel extends SpatialModel {
  * @public
  */
 export class DrawingModel extends GraphicalModel2d {
-  /** @internal */
   public static override get className(): string { return "DrawingModel"; }
 }
 
@@ -412,7 +403,6 @@ export class DrawingModel extends GraphicalModel2d {
  * @public
  */
 export class SectionDrawingModel extends DrawingModel {
-  /** @internal */
   public static override get className(): string { return "SectionDrawingModel"; }
 }
 
@@ -422,7 +412,6 @@ export class SectionDrawingModel extends DrawingModel {
  * @public
  */
 export class SheetModel extends GraphicalModel2d {
-  /** @internal */
   public static override get className(): string { return "SheetModel"; }
 }
 
@@ -430,7 +419,6 @@ export class SheetModel extends GraphicalModel2d {
  * @public
  */
 export class RoleModel extends Model {
-  /** @internal */
   public static override get className(): string { return "RoleModel"; }
 }
 
@@ -438,7 +426,6 @@ export class RoleModel extends Model {
  * @public
  */
 export abstract class InformationModel extends Model {
-  /** @internal */
   public static override get className(): string { return "InformationModel"; }
 }
 
@@ -447,7 +434,6 @@ export abstract class InformationModel extends Model {
  * @public
  */
 export abstract class GroupInformationModel extends InformationModel {
-  /** @internal */
   public static override get className(): string { return "GroupInformationModel"; }
 }
 
@@ -456,7 +442,6 @@ export abstract class GroupInformationModel extends InformationModel {
  * @public
  */
 export class InformationRecordModel extends InformationModel {
-  /** @internal */
   public static override get className(): string { return "InformationRecordModel"; }
 
   /** Insert a InformationRecordPartition and a InformationRecordModel that sub-models it.
@@ -486,7 +471,6 @@ export class InformationRecordModel extends InformationModel {
  * @public
  */
 export class DefinitionModel extends InformationModel {
-  /** @internal */
   public static override get className(): string { return "DefinitionModel"; }
 
   /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
@@ -515,7 +499,6 @@ export class DefinitionModel extends InformationModel {
  * @public
  */
 export class RepositoryModel extends DefinitionModel {
-  /** @internal */
   public static override get className(): string { return "RepositoryModel"; }
 }
 
@@ -524,7 +507,6 @@ export class RepositoryModel extends DefinitionModel {
  * @public
  */
 export class DocumentListModel extends InformationModel {
-  /** @internal */
   public static override get className(): string { return "DocumentListModel"; }
   /** Insert a DocumentPartition and a DocumentListModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -553,7 +535,6 @@ export class DocumentListModel extends InformationModel {
  * @public
  */
 export class LinkModel extends InformationModel {
-  /** @internal */
   public static override get className(): string { return "LinkModel"; }
 }
 
@@ -561,7 +542,6 @@ export class LinkModel extends InformationModel {
  * @public
  */
 export class DictionaryModel extends DefinitionModel {
-  /** @internal */
   public static override get className(): string { return "DictionaryModel"; }
 }
 
@@ -569,6 +549,5 @@ export class DictionaryModel extends DefinitionModel {
  * @public
  */
 export class WebMercatorModel extends SpatialModel {
-  /** @internal */
   public static override get className(): string { return "WebMercatorModel"; }
 }

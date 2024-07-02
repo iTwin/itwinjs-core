@@ -16,7 +16,7 @@ import {
 } from "./Workspace";
 import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
-import { implementationProhibited } from "../internal/ImplementationProhibited";
+import { _implementationProhibited } from "../internal/Symbols";
 
 /** @beta */
 export namespace WorkspaceEditor {
@@ -248,7 +248,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
  */
 export interface WorkspaceEditor {
   /** @internal */
-  [implementationProhibited]: unknown;
+  [_implementationProhibited]: unknown;
 
   /**
    * The workspace dedicated to this editor.

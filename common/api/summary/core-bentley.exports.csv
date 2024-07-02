@@ -119,9 +119,9 @@ public;shallowClone
 public;SortedArray
 public;SpanKind
 deprecated;SpanKind
+internal;staticLoggerMetadata: Map
 alpha;class StatusCategory
 alpha;StatusCategoryHandler = (error: Error) => StatusCategory | undefined
-internal;StatusCodeWithMessage
 public;StopWatch
 alpha;class SuccessCategory 
 public;Tracing
@@ -139,6 +139,5 @@ public;UintArrayBuilderOptions
 public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
-internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
 public;YieldManager
 public;YieldManagerOptions
