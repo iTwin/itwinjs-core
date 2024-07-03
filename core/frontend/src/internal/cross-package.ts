@@ -6,10 +6,5 @@
  * @module Utils
  */
 
-function sym(name: string): string {
-  return `${name}_core-frontend_INTERNAL_ONLY_DO_NOT_USE`;
-}
-
 /** @internal */
-export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
-export const _requestSnap = Symbol.for(sym("requestSnap"));
+export { _callIpcChannel } from "./Symbols";

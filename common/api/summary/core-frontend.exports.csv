@@ -98,6 +98,7 @@ internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
 internal;calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes: number, maxSize: number): EdgeTableInfo
+internal;_callIpcChannel: unique symbol
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined

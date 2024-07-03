@@ -5,7 +5,7 @@
 
 import { AsyncMethodsOf, BeEvent, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@itwin/core-common";
-import { IModelAppOptions, IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/core-frontend";
+import { _callIpcChannel, IModelAppOptions, IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/core-frontend";
 import { mobileAppStrings } from "../common/MobileAppChannel";
 import { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
@@ -41,8 +41,7 @@ export class MobileApp {
   public static onWillTerminate = new BeEvent<() => void>();
   public static onAuthAccessTokenChanged = new BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>();
   public static async callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(methodName: T, ...args: Parameters<MobileAppFunctions[T]>) {
-    // eslint-disable-next-line deprecation/deprecation
-    return IpcApp.callIpcChannel(mobileAppStrings.mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
+    return IpcApp[_callIpcChannel](mobileAppStrings.mobileAppChannel, methodName, ...args) as PromiseReturnType<MobileAppFunctions[T]>;
   }
 
   private static _isValid = false;

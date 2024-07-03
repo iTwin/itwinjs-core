@@ -2017,6 +2017,9 @@ export function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: 
 // @internal (undocumented)
 export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes: number, maxSize: number): EdgeTableInfo;
 
+// @internal (undocumented)
+export const _callIpcChannel: unique symbol;
+
 // @public
 export interface CanvasDecoration {
     decorationCursor?: string;

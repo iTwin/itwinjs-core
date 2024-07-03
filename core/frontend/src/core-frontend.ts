@@ -176,6 +176,9 @@ export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
 export * from "./request/utils";
 export * from "./RealityDataSource";
+
+export * from "./internal/cross-package";
+
 // TODO/FIX: "./extension/ExtensionRuntime" import has to be last to avoid circular dependency errors.
 import "./extension/ExtensionRuntime";
 
