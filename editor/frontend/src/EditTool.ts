@@ -7,7 +7,7 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { IModelApp, IpcApp, _callIpcChannel } from "@itwin/core-frontend";
+import { _callIpcChannel, IModelApp, IpcApp } from "@itwin/core-frontend";
 import { editorIpcStrings } from "@itwin/editor-common";
 
 import * as UndoRedoTools from "./UndoRedoTool";
