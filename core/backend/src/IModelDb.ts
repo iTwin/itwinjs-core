@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import { join } from "path";
 import * as touch from "touch";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative, InstanceSerializationMethod } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
@@ -21,7 +21,7 @@ import {
   ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometryStreamBuilder, GeometryStreamProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeElementProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, NativeInterfaceMap, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
@@ -1799,39 +1799,39 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return undefined;
 
       let elementId: string | undefined;
+      let classId: string | undefined;
 
       if (id !== undefined) {
-        elementId = id;
+        [elementId, classId] = this._iModel.withPreparedStatement("SELECT ECClassId FROM Bis.Element WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [id, stmt.getValue(0).getId()] : [id, undefined];
+        });
       } else if (federationGuid !== undefined) {
-        elementId = this._iModel.withPreparedStatement("SELECT Id FROM Bis.Element WHERE FederationGuid=?", (stmt: ECSqlStatement) => {
+        [elementId, classId] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE FederationGuid=?", (stmt: ECSqlStatement) => {
           stmt.bindGuid(1, federationGuid);
-          return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getId() : undefined;
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getId()] : [undefined, undefined];
         });
       } else if (code !== undefined) {
-        elementId = this._iModel.withPreparedStatement("SELECT Id FROM Bis.Element WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
+        [elementId, classId] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
           stmt.bindId(1, code.spec);
           stmt.bindId(2, code.scope);
           code.value !== undefined ? stmt.bindString(3, code.value) : stmt.bindNull(3);
-          return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getId() : undefined;
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getId()] : [undefined, undefined];
         });
       }
 
-      if (elementId === undefined)
+      if (elementId === undefined || classId === undefined)
         return undefined;
 
-      const elementProps = this._iModel.withPreparedStatement("SELECT $ FROM Bis.Element WHERE ECInstanceId=? OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB", (statement: ECSqlStatement) => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        statement.bindId(1, elementId!); // elementId can't be null here, but eslint recognizes it as an error.
-
-        if (statement.step() !== DbResult.BE_SQLITE_ROW)
-          return undefined;
-
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        return mapNativeElementProps(JSON.parse(statement.getValue(0).getString()), loadProps) as T;
-      });
-
-      if (!elementProps)
+      let nativeInstance: NativeInterfaceMap<T>;
+      try {
+        nativeInstance = this._iModel.nativeDb.getInstance({ id: elementId, classId, serializationMethod: InstanceSerializationMethod.BeJsNapi, useJsNames: true, classIdsToClassNames: true, abbreviateBlobs: false }) as NativeInterfaceMap<T>;
+      } catch (err) {
+        err; // TODO: remove
         return undefined;
+      }
+
+      const elementProps = mapNativeElementProps(nativeInstance, loadProps) as T;
 
       if (loadProps.wantGeometry) {
         const geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData);
