@@ -1,8 +1,8 @@
 sep=;
 Release Tag;API Item
 public;BackendDiagnosticsAttribute
-beta;BackendDiagnosticsHandler
-beta;BackendDiagnosticsOptions
+public;BackendDiagnosticsHandler
+public;BackendDiagnosticsOptions
 internal;combineDiagnosticsOptions(...options: Array
 public;ContentCacheConfig
 public;DiskHierarchyCacheConfig 
