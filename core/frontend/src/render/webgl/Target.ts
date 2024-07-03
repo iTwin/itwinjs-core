@@ -145,6 +145,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public drawingBackgroundForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
   public displayDrapeFrustum = false;
+  public displayMaskFrustum = false;
   public displayRealityTilePreload = false;
   public displayRealityTileRanges = false;
   public logRealityTiles = false;

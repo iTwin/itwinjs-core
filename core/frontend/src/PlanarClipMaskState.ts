@@ -12,6 +12,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
 import { SpatialViewState } from "./SpatialViewState";
+import { Range3d } from "@itwin/core-geometry";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
  * Handles loading models and their associated tiles for models that are used by masks but may not be otherwise loaded or displayed.
@@ -22,6 +23,7 @@ export class PlanarClipMaskState {
   private _tileTreeRefs?: TileTreeReference[];
   private _allLoaded = false;
   private _usingViewportOverrides = false;
+  private _maskRange: Range3d = Range3d.createNull();
 
   private constructor(settings: PlanarClipMaskSettings) {
     this.settings = settings;
@@ -42,10 +44,11 @@ export class PlanarClipMaskState {
       this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
   }
 
-  // Returns the TileTreeReferences for the models that need to be drawn to create the planar clip mask.
-  public getTileTrees(view: SpatialViewState, classifiedModelId: Id64String): TileTreeReference[] | undefined {
+  // Returns the TileTreeReferences for the models that need to be drawn to create the planar clip mask, and extend the maskRange if needed.
+  public getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined {
     if (this.settings.mode === PlanarClipMaskMode.Priority) {
       // For priority mode we simply want refs for all viewed models if the priority is higher than the mask priority.
+      // For this case, we don't need a maskRange so leave it as null.
       const viewTrees = new Array<TileTreeReference>();
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
       view.forEachTileTreeRef((ref) => {
@@ -59,14 +62,16 @@ export class PlanarClipMaskState {
 
     // For all other modes we need to let the tree refs in the view state decide which refs need to be drawn
     // since batched tiles cannot turn on/off individual models just by their tile tree refs.
-    if (!this._tileTreeRefs) {
+    // Keep calling this until loaded so that the range is valid.
+    if (!this._allLoaded) {
       this._tileTreeRefs = new Array<TileTreeReference>();
-      if (this.settings.modelIds)
-        view.collectMaskRefs(this.settings.modelIds, this._tileTreeRefs);
-    }
-
-    if (!this._allLoaded)
+      if (this.settings.modelIds) {
+        view.collectMaskRefs(this.settings.modelIds, this._tileTreeRefs, maskRange);
+      }
       this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
+      maskRange.clone(this._maskRange);
+    } else  // If already loaded, just set the maskRange to the saved maskRange.
+      this._maskRange.clone(maskRange);
 
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
