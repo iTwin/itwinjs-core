@@ -336,6 +336,7 @@ export class RulesetEmbedder {
 // @public
 export interface RulesetEmbedderProps {
     imodel: IModelDb;
+    parentSubjectId?: Id64String;
 }
 
 // @public

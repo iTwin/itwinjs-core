@@ -118,6 +118,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return viewHydrater.getHydrateResponseProps(options);
   }
 
+  public async queryAllUsedSpatialSubCategories(tokenProps: IModelRpcProps): Promise<SubCategoryResultRow[]> {
+    const iModelDb = await getIModelForRpc(tokenProps);
+    return iModelDb.queryAllUsedSpatialSubCategories();
+  }
+
   public async querySubCategories(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
     const iModelDb = await getIModelForRpc(tokenProps);
     const decompressedIds = CompressedId64Set.decompressArray(compressedCategoryIds);

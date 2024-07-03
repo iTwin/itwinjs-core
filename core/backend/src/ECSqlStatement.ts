@@ -6,12 +6,12 @@
  * @module ECSQL
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
-import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *
@@ -80,14 +80,14 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param ecsql The ECSQL statement string to prepare
    * @param logErrors Determine if errors are logged or not, its set to false by default for tryPrepare()
-   * @returns A [StatusCodeWithMessage]($bentley) object with a `status` member equal to [DbResult.BE_SQLITE_OK]($bentley) on success. Upon error, the `message` member will provide details.
+   * @returns An object with a `status` member equal to [DbResult.BE_SQLITE_OK]($bentley) on success. Upon error, the `message` member will provide details.
    * @internal
    */
-  public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = false): StatusCodeWithMessage<DbResult> {
+  public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = false): { status: DbResult, message: string } {
     if (this.isPrepared)
       throw new Error("ECSqlStatement is already prepared");
     this._sql = ecsql;
-    this._stmt = new IModelHost.platform.ECSqlStatement();
+    this._stmt = new IModelNative.platform.ECSqlStatement();
     return this._stmt.prepare(db, ecsql, logErrors);
   }
 
