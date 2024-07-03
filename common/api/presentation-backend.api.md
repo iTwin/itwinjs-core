@@ -130,12 +130,8 @@ export interface MultiElementPropertiesResponse<TParsedContent = ElementProperti
     total: number;
 }
 
-// @public
-export interface MultiManagerPresentationProps extends PresentationPropsBase {
-    // @internal
-    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-    unusedClientLifetime?: number;
-}
+// @public @deprecated
+export type MultiManagerPresentationProps = PresentationProps;
 
 // @internal (undocumented)
 export function normalizeVersion(version?: string): string;
@@ -315,13 +311,16 @@ export interface PresentationManagerProps {
 }
 
 // @public
-export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
-
-// @public
-export interface PresentationPropsBase extends PresentationManagerProps {
+export interface PresentationProps extends PresentationManagerProps {
+    // @internal
+    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
     enableSchemasPreload?: boolean;
     requestTimeout?: number;
+    unusedClientLifetime?: number;
 }
+
+// @public @deprecated
+export type PresentationPropsBase = PresentationProps;
 
 // @internal (undocumented)
 export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext): void;
@@ -410,11 +409,8 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     unset(variableId: string): void;
 }
 
-// @public
-export interface SingleManagerPresentationProps extends PresentationPropsBase {
-    // @alpha
-    useSingleManager?: boolean;
-}
+// @public @deprecated
+export type SingleManagerPresentationProps = Omit<PresentationProps, "clientManagerFactory" | "unusedClientLifetime">;
 
 // @public @deprecated
 export type UnitSystemFormat = UnitSystemFormat_2;
