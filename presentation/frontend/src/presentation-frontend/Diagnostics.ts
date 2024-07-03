@@ -17,7 +17,7 @@ import {
 
 /**
  * A function which logs messages to the console.
- * @beta
+ * @public
  */
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
   // eslint-disable-next-line no-console
@@ -37,7 +37,7 @@ export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
 
 /**
  * A function which calls all diagnostics handlers passed to it.
- * @beta
+ * @public
  */
 export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]) {
   return (diagnostics: ClientDiagnostics) => {
