@@ -70,7 +70,7 @@ export class PlanarTextureProjection {
     const viewPlanes = FrustumPlanes.fromFrustum(viewFrustum);
     const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes);
 
-    const contentUnBoundedRange = Range3d.createNull();
+    const contentUnBoundedRange = Range1d.createNull();
 
     // calculate drapeRange from drapeRefs (mask references or drape reference).
     const drapeRange = Range3d.createNull();
@@ -82,8 +82,8 @@ export class PlanarTextureProjection {
         let heightRange = viewingSpace.getTerrainHeightRange();
         if (!heightRange)
           heightRange = ApproximateTerrainHeights.instance.globalHeightRange;
-        contentUnBoundedRange.low.x = Math.min(contentUnBoundedRange.low.x, heightRange.low);
-        contentUnBoundedRange.high.x = Math.max(contentUnBoundedRange.high.x, heightRange.high);
+        contentUnBoundedRange.low = Math.min(contentUnBoundedRange.low, heightRange.low);
+        contentUnBoundedRange.high = Math.max(contentUnBoundedRange.high, heightRange.high);
       } else if (maskRange.isNull) {
         const r = Range3d.createNull();
         drapeRef.unionFitRange(r);
@@ -113,8 +113,8 @@ export class PlanarTextureProjection {
 
     if (!contentUnBoundedRange.isNull) {
       // Union of height
-      textureRange.low.x = Math.min(textureRange.low.x, contentUnBoundedRange.low.x);
-      textureRange.high.x = Math.max(textureRange.high.x, contentUnBoundedRange.high.x);
+      textureRange.low.x = Math.min(textureRange.low.x, contentUnBoundedRange.low);
+      textureRange.high.x = Math.max(textureRange.high.x, contentUnBoundedRange.high);
     }
 
     if (!drapeRange.isNull) {
