@@ -162,21 +162,15 @@ export interface KindOfQuantityInfo {
   name: string;
   /** Label of KindOfQuantity */
   label: string;
-  /**
-   * Persistence unit identifier.
-   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
-   */
+  /** Persistence unit full class name in format `SchemaName:UnitName`. */
   persistenceUnit: string;
-  /**
-   * Active format that was used to format property value.
-   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
-   */
+  /** Active format that was used to format property value. */
   activeFormat?: FormatProps;
 }
 
 /**
  * A data structure for storing navigation property information.
- * @beta
+ * @public
  */
 export interface NavigationPropertyInfo {
   /** Information about ECProperty's relationship class */
@@ -191,7 +185,7 @@ export interface NavigationPropertyInfo {
 
 /**
  * Contains utilities for working with objects of [[NavigationPropertyInfo]] type.
- * @beta
+ * @public
  */
 export namespace NavigationPropertyInfo {
   /**
@@ -244,7 +238,7 @@ export namespace NavigationPropertyInfo {
 
 /**
  * A serialized version of [[NavigationPropertyInfo]]
- * @beta
+ * @public
  */
 // eslint-disable-next-line deprecation/deprecation
 export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
@@ -271,10 +265,7 @@ export interface PropertyInfo {
   kindOfQuantity?: KindOfQuantityInfo;
   /** Extended type name of the ECProperty if it has one */
   extendedType?: string;
-  /**
-   * Navigation property info if the field is navigation type
-   * @beta
-   */
+  /** Navigation property info if the field is navigation type */
   navigationPropertyInfo?: NavigationPropertyInfo;
 }
 
@@ -323,7 +314,6 @@ export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   type: string;
   enumerationInfo?: EnumerationInfo;
   kindOfQuantity?: KindOfQuantityInfo;
-  /** @beta */
   navigationPropertyInfo?: NavigationPropertyInfoJSON<TClassInfoJSON>;
 }
 
