@@ -381,6 +381,7 @@ export abstract class IModel implements IModelProps {
   private _ecefLocation?: EcefLocation;
   private _geographicCoordinateSystem?: GeographicCRS;
   private _iModelId?: GuidString;
+  private _changeset: ChangesetIdWithIndex;
 
   /** The Id of the repository model. */
   public static readonly repositoryModelId: Id64String = "0x1";
@@ -401,6 +402,8 @@ export abstract class IModel implements IModelProps {
   public readonly onEcefLocationChanged = new BeEvent<(previousLocation: EcefLocation | undefined) => void>();
   /** Event raised after [[geographicCoordinateSystem]] changes. */
   public readonly onGeographicCoordinateSystemChanged = new BeEvent<(previousGCS: GeographicCRS | undefined) => void>();
+  /** Event raised after [[changeset]] changes. */
+  public readonly onChangesetChanged = new BeEvent<(previousChangeset: ChangesetIdWithIndex) => void>();
 
   /** Name of the iModel */
   public get name(): string {
@@ -557,7 +560,16 @@ export abstract class IModel implements IModelProps {
   public get iModelId(): GuidString | undefined { return this._iModelId; }
 
   /** @public */
-  public changeset: ChangesetIdWithIndex;
+  public get changeset(): ChangesetIdWithIndex {
+    return { ...this._changeset };
+  }
+  public set changeset(changeset: ChangesetIdWithIndex) {
+    const prev = this._changeset;
+    if (prev.id !== changeset.id || prev.index !== changeset.index) {
+      this._changeset = { id: changeset.id, index: changeset.index };
+      this.onChangesetChanged.raiseEvent(prev);
+    }
+  }
 
   protected _openMode = OpenMode.Readonly;
   /** The [[OpenMode]] used for this IModel. */
@@ -588,14 +600,12 @@ export abstract class IModel implements IModelProps {
 
   /** @internal */
   protected constructor(tokenProps?: IModelRpcProps) {
-    this.changeset = { id: "", index: 0 };
+    this._changeset = tokenProps?.changeset ?? { id: "", index: 0 };
     this._fileKey = "";
     if (tokenProps) {
       this._fileKey = tokenProps.key;
       this._iTwinId = tokenProps.iTwinId;
       this._iModelId = tokenProps.iModelId;
-      if (tokenProps.changeset)
-        this.changeset = tokenProps.changeset;
     }
   }
 

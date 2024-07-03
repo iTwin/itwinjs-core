@@ -2283,6 +2283,14 @@ export class ToggleFrustumSnapshotTool extends Tool {
 }
 
 // @beta
+export class ToggleMaskFrustumTool extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleNormalMaps extends RenderTargetDebugControlToggleTool {
     // (undocumented)
     get aspect(): DebugControlBoolean;

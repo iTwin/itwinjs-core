@@ -76,7 +76,6 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
   contentClassInfo: TClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
   relationshipMeaning?: RelationshipMeaning;
-  /** @beta */
   actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
   nestedFields: FieldJSON<TClassInfoJSON>[];
@@ -299,7 +298,6 @@ export class Field {
   /**
    * Checks if this field matches given field descriptor
    * @see [[getFieldDescriptor]]
-   * @beta
    */
   public matchesDescriptor(descriptor: FieldDescriptor) {
     return FieldDescriptor.isNamed(descriptor) && descriptor.fieldName === this.name;
@@ -449,7 +447,6 @@ export class PropertiesField extends Field {
   /**
    * Checks if this field matches given field descriptor
    * @see [[getFieldDescriptor]]
-   * @beta
    */
   public override matchesDescriptor(descriptor: FieldDescriptor) {
     if (!FieldDescriptor.isProperties(descriptor)) {
@@ -688,8 +685,6 @@ export class NestedContentField extends Field {
    * When content descriptor is requested for class `A` polymorphically, it's going to contain fields for all properties of class `B`,
    * class `C` and a nested content field for the `B -> D` relationship. The nested content field's `actualPrimaryClassIds` attribute
    * will contain ID of class `B`, identifying that only this specific class has the relationship.
-   *
-   * @beta
    */
   public actualPrimaryClassIds: Id64String[];
   /** Contained nested fields */

@@ -1167,11 +1167,6 @@ export enum ChangesetType {
     SchemaSync = 65
 }
 
-// @alpha
-export class ChannelConstraintError extends IModelError {
-    constructor(message: string, getMetaData?: LoggingMetaData);
-}
-
 // @public
 export interface ChannelRootAspectProps extends ElementAspectProps {
     owner: string;
@@ -1638,6 +1633,20 @@ export enum ConcreteEntityTypes {
 export namespace ConcreteEntityTypes {
     // @internal
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
+}
+
+// @public
+export interface ConflictingLock {
+    briefcaseIds: number[];
+    objectId: string;
+    state: LockState;
+}
+
+// @public
+export class ConflictingLocksError extends IModelError {
+    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+    // (undocumented)
+    conflictingLocks?: ConflictingLock[];
 }
 
 // @alpha
@@ -2722,13 +2731,13 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
-// @beta
+// @public
 export interface ElementGeometryBuilderParams {
     entryArray: ElementGeometryDataEntry[];
     viewIndependent?: boolean;
 }
 
-// @beta
+// @public
 export interface ElementGeometryBuilderParamsForPart {
     entryArray: ElementGeometryDataEntry[];
     is2dPart?: boolean;
@@ -3764,7 +3773,6 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
-    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     placement?: PlacementProps;
@@ -3873,7 +3881,6 @@ export interface GeometryPartInstanceProps {
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZProps;
-    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
@@ -4799,7 +4806,8 @@ export abstract class IModel implements IModelProps {
     protected constructor(tokenProps?: IModelRpcProps);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
-    changeset: ChangesetIdWithIndex;
+    get changeset(): ChangesetIdWithIndex;
+    set changeset(changeset: ChangesetIdWithIndex);
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     set ecefLocation(ecefLocation: EcefLocation | undefined);
@@ -4831,6 +4839,7 @@ export abstract class IModel implements IModelProps {
     get key(): string;
     get name(): string;
     set name(name: string);
+    readonly onChangesetChanged: BeEvent<(previousChangeset: ChangesetIdWithIndex) => void>;
     readonly onEcefLocationChanged: BeEvent<(previousLocation: EcefLocation | undefined) => void>;
     readonly onGeographicCoordinateSystemChanged: BeEvent<(previousGCS: GeographicCRS | undefined) => void>;
     readonly onGlobalOriginChanged: BeEvent<(previousOrigin: Point3d) => void>;
@@ -4951,6 +4960,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // (undocumented)
     loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
+    // (undocumented)
+    queryAllUsedSpatialSubCategories(_iModelToken: IModelRpcProps): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
     // (undocumented)
@@ -5531,6 +5542,13 @@ export interface Localization {
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
     unregisterNamespace(namespace: string): void;
+}
+
+// @public
+export enum LockState {
+    Exclusive = 2,
+    None = 0,
+    Shared = 1
 }
 
 export { LogFunction }
@@ -6758,20 +6776,16 @@ export interface PolylineFlags {
     is2d?: boolean;
     isDisjoint?: boolean;
     isPlanar?: boolean;
-    // @alpha
     type?: PolylineTypeFlags;
 }
 
 // @public
 export type PolylineIndices = number[];
 
-// @alpha
+// @public
 export enum PolylineTypeFlags {
-    // (undocumented)
-    Edge = 1,// Just an ordinary polyline
-    // (undocumented)
-    Normal = 0,// A polyline used to define the edges of a planar region.
-    // (undocumented)
+    Edge = 1,
+    Normal = 0,
     Outline = 2
 }
 
@@ -8802,7 +8816,7 @@ export interface RunLayoutResult {
 // @beta
 export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
 
-// @beta
+// @public
 export enum SchemaState {
     TooNew = 4,
     TooOld = 3,

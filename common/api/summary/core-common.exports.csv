@@ -109,7 +109,6 @@ public;ChangesetIndexOrId = ChangesetIndexAndId |
 public;ChangesetProps
 public;ChangesetRange
 public;ChangesetType
-alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
 public;ClipIntersectionStyle
@@ -138,6 +137,8 @@ internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreen
 alpha;ConcreteEntityTypes
 alpha;ConcreteEntityTypes
 internal;toBisCoreRootClassFullName(type: ConcreteEntityTypes): string
+public;ConflictingLock
+public;ConflictingLocksError 
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -219,8 +220,8 @@ public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
 beta;ElementGeometry
-beta;ElementGeometryBuilderParams
-beta;ElementGeometryBuilderParamsForPart
+public;ElementGeometryBuilderParams
+public;ElementGeometryBuilderParamsForPart
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
 public;ElementGeometryDataEntry
@@ -460,6 +461,7 @@ public;LocalBriefcaseProps
 public;LocalDirName = string
 public;LocalFileName = string
 public;Localization
+public;LockState
 public;MapImageryProps
 public;MapImagerySettings
 public;MapLayerKey
@@ -584,7 +586,7 @@ internal;POLICY: unique symbol
 internal;PolylineEdgeArgs
 public;PolylineFlags
 public;PolylineIndices = number[]
-alpha;PolylineTypeFlags
+public;PolylineTypeFlags
 public;PositionalVectorTransform 
 public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
@@ -740,7 +742,7 @@ beta;Run = TextRun | FractionRun | LineBreakRun
 beta;Run
 beta;RunLayoutResult
 beta;RunProps = TextRunProps | FractionRunProps | LineBreakRunProps
-beta;SchemaState
+public;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
 public;SectionDrawingViewProps
