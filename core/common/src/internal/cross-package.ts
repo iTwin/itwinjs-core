@@ -3,5 +3,5 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export { DecorationGeometryProps, SnapRequestProps, SnapResponseProps } from "./Snapping";
+export type { DecorationGeometryProps, SnapRequestProps, SnapResponseProps } from "./Snapping";
 
