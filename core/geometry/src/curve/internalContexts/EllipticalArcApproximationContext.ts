@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, OrderedComparator, OrderedSet } from "@itwin/core-bentley";
+import { OrderedComparator, OrderedSet } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -14,12 +14,11 @@ import { Transform } from "../../geometry3d/Transform";
 import { Arc3d } from "../Arc3d";
 import { CurveChain } from "../CurveCollection";
 import { CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurveOps } from "../CurveOps";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
 import { CurveCurveCloseApproachXY } from "./CurveCurveCloseApproachXY";
+import { Constant } from "../../Constant";
+import { LineSegment3d } from "../LineSegment3d";
 
 /** @packageDocumentation
  * @module Curve
@@ -49,15 +48,10 @@ export enum EllipticalArcSampleMethod {
    */
   NonUniformCurvature = 2,
   /**
-   * Generate samples by subdividing parameter space until the interpolating linestring has less than a given max
+   * Generate samples by subdividing parameter space until the approximation has less than a given max
    * distance to the elliptical arc.
    */
-  SubdivideForChords = 3,
-  /**
-   * Generate samples by subdividing parameter space until the interpolating arc chain has less than a given max
-   * distance to the elliptical arc.
-   */
-  SubdivideForArcs = 4,
+  AdaptiveSubdivision = 3,
 };
 
 /**
@@ -67,7 +61,8 @@ export enum EllipticalArcSampleMethod {
 export type FractionMapper = (f: number) => number;
 
 /**
- * Options for approximating an elliptical arc.
+ * Options for generating samples for the construction of an approximation to an elliptical arc.
+ * * Used by [[EllipticalArcApproximationContext.sampleFractions]].
  * @internal
  */
 export class EllipticalArcApproximationOptions {
@@ -75,45 +70,50 @@ export class EllipticalArcApproximationOptions {
   private _numSamplesInQuadrant: number;
   private _maxError: number;
   private _remapFunction: FractionMapper;
-  // TODO: option to force Path in case they never want the chain to draw filled even if physically closed
+  private _forcePath: boolean;
 
-  public static defaultMaxError = 0.01;
+  public static defaultMaxError = Constant.oneCentimeter;
 
   private constructor(
     method: EllipticalArcSampleMethod,
     numSamplesInQuadrant: number,
     maxError: number,
     remapFunction: FractionMapper,
+    forcePath: boolean,
   ) {
     this._sampleMethod = method;
     this._numSamplesInQuadrant = numSamplesInQuadrant;
     this._maxError = maxError;
     this._remapFunction = remapFunction;
+    this._forcePath = forcePath;
   }
   /**
    * Construct options with optional defaults.
    * @param method sample method, default [[EllipticalArcSampleMethod.NonUniformCurvature]].
    * @param numSamplesInQuadrant samples in each full quadrant for interpolation methods, default 4.
-   * @param maxError positive maximum distance to ellipse for subdivision methods, default 1cm.
+   * @param maxError positive maximum distance to ellipse for the subdivision method, default 1cm.
    * @param remapFunction optional callback to remap fraction space for [[EllipticalArcSampleMethod.NonUniformCurvature]],
    * default quadratic.
+   * @param forcePath whether to return a [[Path]] instead of a [[Loop]] when approximating a full (closed) ellipse,
+   * default false.
    */
   public static create(
     method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.NonUniformCurvature,
     numSamplesInQuadrant: number = 4,
     maxError: number = this.defaultMaxError,
     remapFunction: FractionMapper = (x: number) => x * x,
+    forcePath: boolean = false,
   ) {
     if (numSamplesInQuadrant < 2)
       numSamplesInQuadrant = 2;
     if (maxError <= 0)
       maxError = this.defaultMaxError;
-    return new EllipticalArcApproximationOptions(method, numSamplesInQuadrant, maxError, remapFunction);
+    return new EllipticalArcApproximationOptions(method, numSamplesInQuadrant, maxError, remapFunction, forcePath);
   }
   /** Clone the options. */
   public clone(): EllipticalArcApproximationOptions {
     return new EllipticalArcApproximationOptions(
-      this.sampleMethod, this.numSamplesInQuadrant, this.maxError, this.remapFunction,
+      this.sampleMethod, this.numSamplesInQuadrant, this.maxError, this.remapFunction, this.forcePath,
     );
   }
   /** Method used to sample the elliptical arc. */
@@ -126,7 +126,7 @@ export class EllipticalArcApproximationOptions {
   /**
    * Number of samples to return in each full quadrant, including endpoint(s).
    * * Used by interpolation sample methods.
-   * * For n samples of an elliptical arc, one can construct an approximating chain consisting of n-1 chords or arcs.
+   * * In general, for n samples, the approximating chain consists of n-1 primitives.
    * * Minimum value is 2.
    */
   public get numSamplesInQuadrant(): number {
@@ -137,7 +137,7 @@ export class EllipticalArcApproximationOptions {
   }
   /**
    * Maximum distance (in meters) of an approximation based on the sample points to the elliptical arc.
-   * * Used by subdivision sample methods.
+   * * Used by the subdivision sample method.
    */
   public get maxError(): number {
     return this._maxError;
@@ -154,6 +154,13 @@ export class EllipticalArcApproximationOptions {
   }
   public set remapFunction(f: FractionMapper) {
     this._remapFunction = f;
+  }
+  /** Whether to return a [[Path]] instead of a [[Loop]] when approximating a full (closed) ellipse. */
+  public get forcePath(): boolean {
+    return this._forcePath;
+  }
+  public set forcePath(value: boolean) {
+    this._forcePath = value;
   }
 };
 
@@ -270,14 +277,6 @@ abstract class QuadrantFractionsProcessor {
   */
   public announceQuadrantBegin(_q: QuadrantFractions): boolean { return true; }
   /**
-   * Optionally announce a chord of the elliptical arc between the given fractions.
-   * @param pt0 start point of the chord segment
-   * @param pt1 end point of the chord segment
-   * @param f0 elliptical arc parameter in [0,1] of pt0
-   * @param f1 elliptical arc parameter in [0,1] of pt1
-   */
-  public announceChord?(pt0: Point3d, pt1: Point3d, f0: number, f1: number): void;
-  /**
    * Optionally announce a circular arc approximating the elliptical arc between the given fractions.
    * @param arc circular arc interpolating the ellipse at the given fractions.
    * * The processor is allowed to capture `arc`, e.g., to add it to a growing chain approximation.
@@ -293,135 +292,109 @@ abstract class QuadrantFractionsProcessor {
 };
 
 /**
- * Intermediate class for computing the error of a sample-based approximation.
+ * Processor for computing the error of a sample-based arc chain approximation.
  * @internal
  */
-class ErrorProcessor extends QuadrantFractionsProcessor {
+class ArcChainErrorProcessor extends QuadrantFractionsProcessor {
   private _ellipticalArc: Arc3d;
+  private _maxPerpendicular: CurveLocationDetailPair | undefined;
   protected constructor(ellipticalArc: Arc3d) {
     super();
     this._ellipticalArc = ellipticalArc;
+    this._maxPerpendicular = undefined;
   }
-  protected get ellipticalArc(): Arc3d {
+  public static create(ellipticalArc: Arc3d, _maxError: number = 0): ArcChainErrorProcessor {
+    return new ArcChainErrorProcessor(ellipticalArc);
+  }
+  public get ellipticalArc(): Arc3d {
     return this._ellipticalArc;
   }
   /**
    * Compute the maximum xy-distance between an elliptical arc and its approximation.
    * * Inputs should be in horizontal plane(s), as z-coordinates are ignored.
-   * @param arc elliptical arc being approximated. Sweep outside the extents of the approximation is ignored.
-   * @param approximation circular arc, or chord approximant. Assumed to start and end on the elliptical arc.
+   * @param circularArc circular arc approximant. Assumed to start and end on the elliptical arc.
+   * @param ellipticalArc elliptical arc being approximated.
+   * For best results, `f0` and `f1` should correspond to the start/end of `circularArc`
+   * @param f0 optional `ellipticalArc` start fraction to restrict its sweep
+   * @param f1 optional `ellipticalArc` end fraction to restrict its sweep
    * @return details of the perpendicular measuring the max approximation error, or undefined if no such perpendicular.
-   * For each of `detailA` (corresponding to `arc`) and `detailB` (corresponding to `approximation`):
+   * For each of `detailA` (refers to `circularArc`) and `detailB` (refers to unrestricted `ellipticalArc`):
    * * `point` is the end of the perpendicular on each curve
    * * `fraction` is the curve parameter of the point
-   * * `a` is the distance between the points.
+   * * `a` is the distance between the points
    */
-  protected static computePrimitiveErrorXY(
-    arc: Arc3d, approximation: Arc3d | LineSegment3d,
-  ): CurveLocationDetailPair | undefined {
+  public static computePrimitiveErrorXY(circularArc: Arc3d, ellipticalArc: Arc3d, f0?: number, f1?: number): CurveLocationDetailPair | undefined {
     const handler = new CurveCurveCloseApproachXY();
-    handler.maxDistanceToAccept = approximation.quickLength() / 2;
-    // we expect only one perpendicular, not near an endpoint
-    // TODO: if performance is a problem, refactor to send fewer seeds into Newton (they should be near 0.5)
-    if (approximation instanceof Arc3d)
-      handler.allPerpendicularsArcArcBounded(arc, approximation);
-    else
-      handler.allPerpendicularsSegmentArcBounded(
-        approximation, approximation.point0Ref, 0, approximation.point1Ref, 1, arc, true,
-      );
+    handler.maxDistanceToAccept = circularArc.quickLength() / 2;
+    const trimEllipse = undefined !== f0 && undefined !== f1;
+    const trimmedEllipticalArc = trimEllipse ? ellipticalArc.clonePartialCurve(f0, f1) : ellipticalArc;
+    // We expect only one perpendicular, not near an endpoint.
+    handler.allPerpendicularsArcArcBounded(circularArc, trimmedEllipticalArc);
     let maxPerp: CurveLocationDetailPair | undefined;
     for (const perp of handler.grabPairedResults()) {
       if (Geometry.isAlmostEqualEitherNumber(perp.detailA.fraction, 0, 1, Geometry.smallFraction))
-        continue; // rule out perpendiculars on arc ends
+        continue; // rule out perpendiculars on circular arc ends
       if (Geometry.isAlmostEqualEitherNumber(perp.detailB.fraction, 0, 1, Geometry.smallFraction))
-        continue; // rule out perpendiculars on approx ends
-      const error = perp.detailA.a = perp.detailB.a = perp.detailA.point.distanceXY(perp.detailB.point);
-      if (!maxPerp || maxPerp.detailA.a < error)
+        continue; // rule out perpendiculars on elliptical arc ends
+      const error = perp.detailA.point.distanceXY(perp.detailB.point);
+      if (!maxPerp || maxPerp.detailA.a < error) {
+        if (trimEllipse) { // reset ellipticalArc fraction to unrestricted range
+          perp.detailB.fraction = Geometry.interpolate(f0, perp.detailB.fraction, f1);
+          perp.detailB.setCurve(ellipticalArc);
+        }
+        perp.detailA.a = perp.detailB.a = error;
         maxPerp = perp;
+      }
     }
     return maxPerp;
   }
-};
 
-/**
- * Intermediate class for computing the chain error of a sample-based approximation.
- * @internal
- */
-class ChainErrorProcessor extends ErrorProcessor {
-  private _maxPerpendicular: CurveLocationDetailPair | undefined;
-  protected constructor(ellipticalArc: Arc3d) {
-    super(ellipticalArc);
-    this._maxPerpendicular = undefined;
-  }
   public get maxPerpendicular(): CurveLocationDetailPair | undefined {
     return this._maxPerpendicular;
   }
-  protected set maxPerpendicular(newMaxPerp: CurveLocationDetailPair) {
+  public set maxPerpendicular(newMaxPerp: CurveLocationDetailPair) {
     this._maxPerpendicular = newMaxPerp;
   }
   /**
-   * Update the chain approximation error for a given chain child that approximates the instance arc between the given
-   * fractions.
-   * * Fractional sweep of the arc is the smaller of the cyclic sweeps.
+   * Update the chain approximation error for a given chain child that approximates the elliptical arc between the
+   * given fractions.
+   * * Fractional sweep [f0, f1] of the elliptical arc is the smaller of the cyclic sweeps.
    */
-  protected updateMaxPerpendicular(childApproximation: Arc3d | LineSegment3d, f0: number, f1: number): void {
-    const childPerp = ErrorProcessor.computePrimitiveErrorXY(
-      this.ellipticalArc.clonePartialCurve(f0, f1), childApproximation,
-    );
+  public updateMaxPerpendicular(childApproximation: Arc3d, f0: number, f1: number): void {
+    const childPerp = ArcChainErrorProcessor.computePrimitiveErrorXY(childApproximation, this.ellipticalArc, f0, f1);
     if (childPerp && (!this.maxPerpendicular || this.maxPerpendicular.detailA.a < childPerp.detailA.a))
       this.maxPerpendicular = childPerp;
   };
-
-};
-
-/**
- * Processor for computing the error of a sample-based arc chain approximation.
- * @internal
- */
-class ArcChainErrorProcessor extends ChainErrorProcessor {
-  public constructor(ellipticalArc: Arc3d) {
-    super(ellipticalArc);
-  }
   public override announceArc(arc: Arc3d, f0: number, f1: number): void {
     this.updateMaxPerpendicular(arc, f0, f1);
   }
-}
+};
 
 /**
- * Processor for computing the error of a sample-based linestring approximation.
- * @internal
- */
-class LineStringErrorProcessor extends ChainErrorProcessor {
-  public constructor(ellipticalArc: Arc3d) {
-    super(ellipticalArc);
-  }
-  public override announceChord(pt0: Point3d, pt1: Point3d, f0: number, f1: number): void {
-    this.updateMaxPerpendicular(LineSegment3d.create(pt0, pt1), f0, f1);
-  }
-}
-
-/**
- * Intermediate processor class for an approximation based on samples obtained by adaptive subdivision.
+ * Processor for computing samples for a subdivision-based arc chain approximation.
  * * The basic idea is to build a refinement of `q.fractions` during the processing of QuadrantFractions `q`.
  *   * Start off the refinement with a copy of `q.fractions`.
- *   * When an announced arc/chord exceeds a given maximum approximation error, the midpoint of its associated
+ *   * When an announced arc exceeds a given maximum approximation error, the midpoint of its associated
  * fraction span is added to the refinement.
- *   * If the announced arc/chord does not exceed the maxError, its associated fraction span remains as-is---no
+ *   * If the announced arc does not exceed the maxError, its associated fraction span remains as-is---no
  * additional samples are needed to decrease approximation error.
  *   * After `q` processing completes, `q.fractions` is updated in place with the computed refinement.
  *   * The caller typically re-processes `q` until `isRefined` returns false, at which point construction of an
  * approximation that is guaranteed not to exceed the desired error can commence.
  * @internal
  */
-class SubdivisionErrorProcessor extends ErrorProcessor {
+class AdaptiveSubdivisionErrorProcessor extends ArcChainErrorProcessor {
   private _refinement: OrderedSet<number>;
   private _maxError: number;
   private _originalRefinementCount: number;
-  protected constructor(ellipticalArc: Arc3d, maxError: number) {
+  private constructor(ellipticalArc: Arc3d, maxError: number) {
     super(ellipticalArc);
     this._refinement = new OrderedSet<number>(compareFractions);
     this._maxError = maxError > 0 ? maxError : EllipticalArcApproximationOptions.defaultMaxError;
     this._originalRefinementCount = 0;
+  }
+  public static override create(ellipticalArc: Arc3d, maxError: number): AdaptiveSubdivisionErrorProcessor {
+    return new AdaptiveSubdivisionErrorProcessor(ellipticalArc, maxError);
   }
   public override announceQuadrantBegin(q: QuadrantFractions): boolean {
     this._refinement.clear();
@@ -430,12 +403,13 @@ class SubdivisionErrorProcessor extends ErrorProcessor {
     this._originalRefinementCount = this._refinement.size;
     return true;
   }
-  public updateFractionSet(childApproximation: Arc3d | LineSegment3d, f0: number, f1: number): void {
-    const childPerp = ErrorProcessor.computePrimitiveErrorXY(
-      this.ellipticalArc.clonePartialCurve(f0, f1), childApproximation,
-    );
+  public updateFractionSet(childApproximation: Arc3d, f0: number, f1: number): void {
+    const childPerp = ArcChainErrorProcessor.computePrimitiveErrorXY(childApproximation, this.ellipticalArc, f0, f1);
     if (childPerp && (childPerp.detailA.a > this._maxError))
       this._refinement.add(Geometry.interpolate(f0, 0.5, f1));
+  }
+  public override announceArc(arc: Arc3d, f0: number, f1: number): void {
+    this.updateFractionSet(arc, f0, f1);
   }
   public override announceQuadrantEnd(q: QuadrantFractions, _wasReversed: boolean): void {
     q.fractions = [...this._refinement];
@@ -462,34 +436,9 @@ class SubdivisionErrorProcessor extends ErrorProcessor {
 }
 
 /**
- * Processor for computing samples for a subdivision-based arc chain approximation.
- * @internal
- */
-class ArcChainSubdivisionErrorProcessor extends SubdivisionErrorProcessor {
-  public constructor(ellipticalArc: Arc3d, maxError: number) {
-    super(ellipticalArc, maxError);
-  }
-  public override announceArc(arc: Arc3d, f0: number, f1: number): void {
-    this.updateFractionSet(arc, f0, f1);
-  }
-}
-
-/**
- * Processor for computing samples for a subdivision-based linestring approximation.
- * @internal
- */
-class LineStringSubdivisionErrorProcessor extends SubdivisionErrorProcessor {
-  public constructor(ellipticalArc: Arc3d, maxError: number) {
-    super(ellipticalArc, maxError);
-  }
-  public override announceChord(pt0: Point3d, pt1: Point3d, f0: number, f1: number): void {
-    this.updateFractionSet(LineSegment3d.create(pt0, pt1), f0, f1);
-  }
-}
-
-/**
  * Interface implemented by sampler classes.
- * * Implementation constructors are assumed to supply the sampler with the ellipse and relevant parameters.
+ * * Implementation constructors are assumed to supply the sampler with the elliptical arc to be approximated,
+ * as well as relevant options for computing the samples.
  * @internal
  */
 interface EllipticalArcSampler {
@@ -621,33 +570,76 @@ class UniformCurvatureSampler extends NonUniformCurvatureSampler implements Elli
 };
 
 /**
- * Intermediate class for subdivision sampler implementations.
+ * Implementation for method `EllipticalArcSampleMethod.AdaptiveSubdivision`
  * @internal
  */
-abstract class SubdivisionSampler implements EllipticalArcSampler {
-  protected _context: EllipticalArcApproximationContext;
-  protected _options: EllipticalArcApproximationOptions;
-  protected _fullArcXY: Arc3d;
+class AdaptiveSubdivisionSampler implements EllipticalArcSampler {
+  private _context: EllipticalArcApproximationContext;
+  private _options: EllipticalArcApproximationOptions;
+  private _fullArcXY: Arc3d;
   private static maxIters = 10;
-  protected constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
+  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
     this._context = c;
     this._options = o;
     this._fullArcXY = c.isValidArc ? c.cloneLocalArc(true) : Arc3d.createUnitCircle();
   }
-  protected get fullArcXY(): Arc3d {
+  public get fullArcXY(): Arc3d {
     return this._fullArcXY;
   }
-  protected abstract createErrorProcessor(): SubdivisionErrorProcessor;
+  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): AdaptiveSubdivisionSampler {
+    return new AdaptiveSubdivisionSampler(context, options);
+  }
+  private computeFirstInteriorFraction(f0: number, f1: number): number {
+    if (f0 === f1)
+      return f0;
+    if (f0 > f1)
+      return this.computeFirstInteriorFraction(f1, f0);
+    const flatterAtF0 = this.fullArcXY.fractionToCurvature(f0)! < this.fullArcXY.fractionToCurvature(f1)!;
+    let ellipse = this.fullArcXY;
+    if (!flatterAtF0) {
+      ellipse = this.fullArcXY.clone();
+      const xScale = ellipse.matrixRef.columnXMagnitude();
+      const yScale = ellipse.matrixRef.columnYMagnitude();
+      ellipse.matrixRef.scaleColumnsInPlace(yScale / xScale, xScale / yScale, 1);
+    }
+    const ray0 = ellipse.fractionToPointAndDerivative(f0);
+    const pt = Point3d.createZero();
+    const arc0 = Arc3d.createXY(pt, 0);
+    let f = Geometry.interpolate(f0, 0.5, f1);
+    let bracket0 = f0;
+    let bracket1 = f1;
+    // ellipse is flatter at f0, so decreasing f -> f0 decreases the approximation error of arc0
+    let iters = 0;
+    let arc0Error: number;
+    do {
+      if (Arc3d.createCircularStartTangentEnd(ray0.origin, ray0.direction, ellipse.fractionToPoint(f, pt), arc0) instanceof LineSegment3d)
+        break;
+      const perp = ArcChainErrorProcessor.computePrimitiveErrorXY(arc0, ellipse, bracket0, bracket1);
+      if (!perp)
+        break;
+      arc0Error = perp.detailA.a;
+      if (arc0Error < this._options.maxError) {
+        if (Geometry.isAlmostEqualNumber(arc0Error, this._options.maxError, Geometry.smallFraction))
+          break;
+        f = Geometry.interpolate(bracket0 = f, 0.5, bracket1);
+      } else
+        f = Geometry.interpolate(bracket0, 0.5, bracket1 = f);
+    } while (++iters <= AdaptiveSubdivisionSampler.maxIters);
+    return flatterAtF0 ? f : f1 - (f - f0);
+  }
   public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
     if (!result)
       result = [];
     if (this._context.isValidArc) {
-      const q = [QuadrantFractions.create(1, [0, 0.125, 0.25], true, true)];
-      const processor = this.createErrorProcessor();
+      const f0 = 0;
+      const f1 = 0.25;
+      const f = this.computeFirstInteriorFraction(f0, f1);
+      const q = [QuadrantFractions.create(1, [f0, f, f1], true, true)];
+      const processor = AdaptiveSubdivisionErrorProcessor.create(this.fullArcXY, this._options.maxError);
       let iters = 0;
       do {
         EllipticalArcApproximationContext.processQuadrantFractions(this.fullArcXY, q, processor);
-      } while (processor.isRefined && ++iters <= SubdivisionSampler.maxIters);
+      } while (processor.isRefined && ++iters <= AdaptiveSubdivisionSampler.maxIters);
       processor.getRefinedInteriorAngles(result);
     }
     return result;
@@ -655,47 +647,18 @@ abstract class SubdivisionSampler implements EllipticalArcSampler {
 };
 
 /**
- * Implementation for method `EllipticalArcSampleMethod.SubdivideForChords`
+ * Processor for constructing a sample-based circular arc chain approximation.
  * @internal
  */
-class SubdivideForChordsSampler extends SubdivisionSampler {
-  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
-    super(c, o);
-  }
-  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForChordsSampler {
-    return new SubdivideForChordsSampler(context, options);
-  }
-  public override createErrorProcessor(): SubdivisionErrorProcessor {
-    return new LineStringSubdivisionErrorProcessor(this.fullArcXY, this._options.maxError);
-  }
-};
-
-/**
- * Implementation for method `EllipticalArcSampleMethod.SubdivideForArcs`
- * @internal
- */
-class SubdivideForArcsSampler extends SubdivisionSampler {
-  private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
-    super(c, o);
-  }
-  public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): SubdivideForArcsSampler {
-    return new SubdivideForArcsSampler(context, options);
-  }
-  public override createErrorProcessor(): SubdivisionErrorProcessor {
-    return new ArcChainSubdivisionErrorProcessor(this.fullArcXY, this._options.maxError);
-  }
-};
-
-/**
- * Intermediate class for constructing a sample-based approximation.
- * @internal
- */
-class ConstructionProcessor extends QuadrantFractionsProcessor {
-  protected _chain: CurveChain;
-  protected _quadrantChain?: CurveChain;
-  public constructor(ellipticalArc: Arc3d) {
+class ArcChainConstructionProcessor extends QuadrantFractionsProcessor {
+  private _chain: CurveChain;
+  private _quadrantChain?: CurveChain;
+  private constructor(ellipticalArc: Arc3d, forcePath: boolean) {
     super();
-    this._chain = ellipticalArc.sweep.isFullCircle ? Loop.create() : Path.create();
+    this._chain = (ellipticalArc.sweep.isFullCircle && !forcePath) ? Loop.create() : Path.create();
+  }
+  public static create(ellipticalArc: Arc3d, forcePath: boolean = false): ArcChainConstructionProcessor {
+    return new ArcChainConstructionProcessor(ellipticalArc, forcePath);
   }
   public get chain(): CurveChain | undefined {
     return this._chain.children.length > 0 ? this._chain : undefined;
@@ -703,6 +666,11 @@ class ConstructionProcessor extends QuadrantFractionsProcessor {
   public override announceQuadrantBegin(_q: QuadrantFractions): boolean {
     this._quadrantChain = undefined;
     return true;
+  }
+  public override announceArc(arc: Arc3d, _f0: number, _f1: number): void {
+    if (!this._quadrantChain)
+      this._quadrantChain = Path.create(); // the arc chain in a quadrant is always open
+    this._quadrantChain.tryAddChild(arc); // captured!
   }
   public override announceQuadrantEnd(_q: QuadrantFractions, wasReversed: boolean): void {
     if (this._quadrantChain) {
@@ -715,48 +683,11 @@ class ConstructionProcessor extends QuadrantFractionsProcessor {
 };
 
 /**
- * Processor for constructing a sample-based arc chain approximation.
- * @internal
- */
-class ArcChainConstructionProcessor extends ConstructionProcessor {
-  public constructor(ellipticalArc: Arc3d) {
-    super(ellipticalArc);
-  }
-  public override announceArc(arc: Arc3d, _f0: number, _f1: number): void {
-    if (!this._quadrantChain)
-      this._quadrantChain = Path.create();
-    this._quadrantChain.tryAddChild(arc); // captured!
-  }
-};
-
-/**
- * Processor for constructing a sample-based linestring approximation.
- * @internal
- */
-class LineStringConstructionProcessor extends ConstructionProcessor {
-  public constructor(ellipticalArc: Arc3d) {
-    super(ellipticalArc);
-    this._chain = ellipticalArc.sweep.isFullCircle ? Loop.create() : Path.create();
-  }
-  public override get chain(): CurveChain | undefined {
-    const myLineString: LineString3d[] = [];
-    CurveOps.collectChainsAsLineString3d(this._chain.children, (ls: LineString3d) => { myLineString.push(ls); });
-    if (myLineString.length < 1)
-      return undefined;
-    assert(myLineString.length === 1);
-    this._chain.children.length = 0;
-    this._chain.children.push(myLineString[0]);
-    return this._chain;
-  }
-  public override announceChord(pt0: Point3d, pt1: Point3d, _f0: number, _f1: number): void {
-    if (!this._quadrantChain)
-      this._quadrantChain = Path.create();
-    this._quadrantChain.tryAddChild(LineSegment3d.create(pt0, pt1));
-  }
-};
-
-/**
- * Context for sampling a non-circular Arc3d, e.g., to construct an approximation.
+ * Context for sampling a non-circular Arc3d and for constructing an approximation to it based on interpolation
+ * of the samples.
+ * * [[EllipticalArcApproximationContext.constructCircularArcChainApproximation]] constructs a `CurveChain`
+ * approximation consisting of circular arcs.
+ * * Various sample methods are supported, cf. [[EllipticalArcApproximationOptions]].
  * @internal
  */
 export class EllipticalArcApproximationContext {
@@ -768,7 +699,7 @@ export class EllipticalArcApproximationContext {
   private static workPt2 = Point3d.createZero();
   private static workRay = Ray3d.createZero();
 
-  /** captures input */
+  /** Constructor, captures input */
   private constructor(arc: Arc3d) {
     this._isValidArc = false;
     const data = arc.toScaledMatrix3d();
@@ -798,7 +729,10 @@ export class EllipticalArcApproximationContext {
   public get localToWorld(): Transform {
     return this._localToWorld;
   }
-  /** Whether the arc is amenable to sampling. */
+  /**
+   * Whether the arc is amenable to sampling.
+   * * The arc is valid if it is non-circular, has nonzero sweep, and has positive radii (nonsingular matrix).
+   */
   public get isValidArc(): boolean {
     return this._isValidArc;
   }
@@ -813,7 +747,14 @@ export class EllipticalArcApproximationContext {
       arcXY.sweep.setStartEndRadians();
     return arcXY;
   }
-  /** Process structured sample data for the given elliptical arc. */
+  /**
+   * Process structured sample data for the given elliptical arc.
+   * * Circular arcs are announced to the processor for each sample interval in each quadrant.
+   * * Each quadrant is processed separately to allow the elliptical arc's axis points and tangents to be interpolated.
+   * * A 2-point plus tangent construction is used to create the first and last circular arc in each quadrant.
+   * * Symmetry of the announced circular arcs matching that of a multi-quadrant spanning elliptical arc is ensured by
+   * processing the samples consistently, starting along the elliptical arc's major axis in each quadrant.
+  */
   public static processQuadrantFractions(
     ellipticalArc: Arc3d, samples: QuadrantFractions[], processor: QuadrantFractionsProcessor,
   ): void {
@@ -828,35 +769,31 @@ export class EllipticalArcApproximationContext {
         myArc.reverseInPlace();
       return myArc;
     };
-    const createFirstArc = (f0: number, f1: number, reverse: boolean) => {
+    const createFirstArc = (f0: number, f1: number, reverse: boolean): Point3d[] => {
       ellipticalArc.fractionToPointAndDerivative(f0, ray);
       pt0.setFrom(ray.origin);
-      pt2.setFrom(ellipticalArc.fractionToPoint(f1, pt1)); // set pt2 in case no inner arcs
+      pt2.setFrom(ellipticalArc.fractionToPoint(f1, pt1)); // set pt2 in case there are no inner arcs to set it
       if (processor.announceArc) {
         if (reverse)
           ray.direction.scaleInPlace(-1);
         processor.announceArc(arcBetween2Samples(ray, pt1, false), f0, f1);
       }
-      if (processor.announceChord)
-        processor.announceChord(pt0, pt1, f0, f1);
-      return { p0: pt0, p1: pt1, p2: pt2 };
+      return [pt0, pt1, pt2];
     };
-    const arcBetweenLast2Of3Samples = (firstPt: Point3d, arcStart: Point3d, arcEnd: Point3d): Arc3d => {
-      // assume non-colinear inputs
-      const arc = Arc3d.createCircularStartMiddleEnd(firstPt, arcStart, arcEnd) as Arc3d;
+    const arcBetweenLast2Of3Samples = (p0: Point3d, arcStart: Point3d, arcEnd: Point3d): Arc3d => {
+      // assume non-colinear inputs; initial arc starts at p0, ends at arcEnd
+      const arc = Arc3d.createCircularStartMiddleEnd(p0, arcStart, arcEnd) as Arc3d;
       const startAngle = arc.vector0.signedAngleTo(Vector3d.createStartEnd(arc.center, arcStart), arc.matrixRef.columnZ());
       arc.sweep.setStartEndRadians(startAngle.radians, arc.sweep.endRadians);
-      return arc;
+      return arc; // returned arc starts at arcStart, ends at arcEnd
     };
-    const createInnerArc = (p0: Point3d, p1: Point3d, f1: number, f2: number) => {
-      const p2 = ellipticalArc.fractionToPoint(f2, pt2);
+    const createInnerArc = (p0: Point3d, p1: Point3d, f1: number, f2: number): Point3d[] => {
+      ellipticalArc.fractionToPoint(f2, pt2);
       if (processor.announceArc)
-        processor.announceArc(arcBetweenLast2Of3Samples(p0, p1, p2), f1, f2);
-      if (processor.announceChord)
-        processor.announceChord(p1, p2, f1, f2);
+        processor.announceArc(arcBetweenLast2Of3Samples(p0, p1, pt2), f1, f2);
       p0.setFrom(p1);
-      p1.setFrom(p2);
-      return { p0, p1, p2 };
+      p1.setFrom(pt2);
+      return [p0, p1, pt2];
     };
     const createLastArc = (p0: Point3d, f0: number, f1: number, reverse: boolean): void => {
       // p0 is at the penultimate sample, f0, where this arc starts
@@ -867,8 +804,6 @@ export class EllipticalArcApproximationContext {
           ray.direction.scaleInPlace(-1);
         processor.announceArc(arcBetween2Samples(ray, p0, true), f0, f1);
       }
-      if (processor.announceChord)
-        processor.announceChord(p0, ray.origin, f0, f1);
     };
     const reverseFractionsForSymmetry = (q: QuadrantFractions): boolean => {
       // if we touch an axis, start at the major axis so the approximation exhibits axial symmetry
@@ -888,45 +823,46 @@ export class EllipticalArcApproximationContext {
       const reverse = reverseFractionsForSymmetry(q);
       let pts = createFirstArc(q.fractions[0], q.fractions[1], reverse);
       for (let i = 2; i < n - 1; ++i) // need at least 4 samples to make inner arcs
-        pts = createInnerArc(pts.p0, pts.p1, q.fractions[i - 1], q.fractions[i]);
+        pts = createInnerArc(pts[0], pts[1], q.fractions[i - 1], q.fractions[i]);
       if (n > 2)
-        createLastArc(pts.p2, q.fractions[n - 2], q.fractions[n - 1], reverse);
+        createLastArc(pts[2], q.fractions[n - 2], q.fractions[n - 1], reverse);
       if (reverse)
         q.fractions.reverse();  // restore original order just to be safe
       processor.announceQuadrantEnd(q, reverse);
     }
   }
   /**
-   * Compute the maximum error of the given approximation.
+   * Compute the maximum error of the circular arc chain approximation determined by the given samples.
    * * This is measured by the longest perpendicular between the elliptical arc and its approximation.
-   * @param samples structured sample data for the instance's elliptical arc.
-   * @param arcChain whether to compute approximation error of a circular arc chain (true) or linestring (false)
+   * @param samples structured sample data from the instance's elliptical arc.
    * @return details of the perpendicular measuring the max approximation error, or undefined if no such perpendicular.
    * For each of `detailA` and `detailB`:
    * * `point` is the end of the perpendicular on each curve
    * * `fraction` is the curve parameter of the point
    * * `a` is the distance between the points.
    */
-  public computeApproximationError(samples: QuadrantFractions[], arcChain: boolean): CurveLocationDetailPair | undefined {
+  public computeApproximationError(samples: QuadrantFractions[]): CurveLocationDetailPair | undefined {
     if (!this.isValidArc)
       return undefined;
     const arcXY = this.cloneLocalArc();
-    const processor = arcChain ? new ArcChainErrorProcessor(arcXY) : new LineStringErrorProcessor(arcXY);
+    const processor = ArcChainErrorProcessor.create(arcXY);
     EllipticalArcApproximationContext.processQuadrantFractions(arcXY, samples, processor);
     const maxError = processor.maxPerpendicular;
     return (maxError && maxError.tryTransformInPlace(this.localToWorld)) ? maxError : undefined;
   }
   /**
    * Compute samples for the elliptical arc as fraction parameters.
-   * @param options approximation options
-   * @param structuredOutput
+   * * This method houses the sampling framework for all sampling methods, which are customized via implementations
+   * of the [[EllipticalArcSampler]] interface.
+   * @param options options that determine how the elliptical arc is sampled.
+   * @param structuredOutput flag indicating output format as follows:
    * * If false (default), return all fractions in one sorted (increasing), deduplicated array (a full ellipse includes
    * both 0 and 1).
    * * If true, fractions are assembled by quadrants:
    *   * Each [[QuadrantFractions]] object holds at least three sorted (increasing), deduplicated fractions in a
    * specified quadrant of the arc.
-   *   * If only two fractions would be computed in a given `QuadrantFractions`, their midpoint is inserted to enable
-   * tangent interpolation at both ends. Such a quadrant is marked
+   *   * If only two fractions would be computed for a given `QuadrantFractions`, their midpoint is inserted to enable
+   * tangent interpolation at both ends. Such a quadrant `q` is marked with `q.averageAdded = true`.
    *   * The `QuadrantFractions` objects themselves are sorted by increasing order of the fractions they contain.
    *   * If the arc sweep spans adjacent quadrants, the fraction bordering the quadrants appears in both `QuadrantFractions`.
    *   * If the arc starts and ends in the same quadrant, two `QuadrantFractions` objects can be returned.
@@ -1038,20 +974,20 @@ export class EllipticalArcApproximationContext {
       return [...quadrants];
     };
     const computeFlatOutput = (anglesInQ1: number[], arcSweep: AngleSweep): number[] => {
-      // Flat array output: first add quadrant fractions so the set prefers them over nearby interior fractions
+      // first add the quadrant fractions so the set prefers them over nearby interior fractions
       const fractions = new OrderedSet<number>(compareFractions);
       fractions.add(0);
       fractions.add(1);
       for (const angle of [0, Angle.piOver2Radians, Angle.piRadians, Angle.pi3Over2Radians])
         convertAndAddRadiansToFractionInRange(fractions, angle, arcSweep);
-      // Add interior Q1 fractions, reflect to the other quadrants, filter by sweep and extant entry
+      // add interior Q1 fractions, reflect to the other quadrants, filter by sweep and extant entry
       for (const angle0 of anglesInQ1) {
         for (const angle of [angle0, Angle.piRadians - angle0, Angle.piRadians + angle0, Angle.pi2Radians - angle0])
           convertAndAddRadiansToFractionInRange(fractions, angle, arcSweep);
       }
       return [...fractions];
     };
-    // Sample the (full) ellipse as angles in strict interior of Quadrant 1
+    // sample the (full) ellipse as angles in strict interior of Quadrant 1
     const radiansQ1: number[] = []; // unordered
     switch (options.sampleMethod) {
       case EllipticalArcSampleMethod.UniformParameter: {
@@ -1066,12 +1002,8 @@ export class EllipticalArcApproximationContext {
         NonUniformCurvatureSampler.create(this, options).computeRadiansStrictlyInsideQuadrant1(radiansQ1);
         break;
       }
-      case EllipticalArcSampleMethod.SubdivideForChords: {
-        SubdivideForChordsSampler.create(this, options).computeRadiansStrictlyInsideQuadrant1(radiansQ1);
-        break;
-      }
-      case EllipticalArcSampleMethod.SubdivideForArcs: {
-        SubdivideForArcsSampler.create(this, options).computeRadiansStrictlyInsideQuadrant1(radiansQ1);
+      case EllipticalArcSampleMethod.AdaptiveSubdivision: {
+        AdaptiveSubdivisionSampler.create(this, options).computeRadiansStrictlyInsideQuadrant1(radiansQ1);
         break;
       }
       default:
@@ -1081,24 +1013,13 @@ export class EllipticalArcApproximationContext {
       computeStructuredOutput(radiansQ1, this.arc.sweep) :
       computeFlatOutput(radiansQ1, this.arc.sweep);
   }
-  /** Construct a linestring approximation to the elliptical arc. */
-  public constructLineStringApproximation(options?: EllipticalArcApproximationOptions): CurveChain | undefined {
-    if (!this.isValidArc)
-      return undefined;
-    if (!options)
-      options = EllipticalArcApproximationOptions.create();
-    const processor = new LineStringConstructionProcessor(this.arc);
-    const samples = this.sampleFractions(options, true) as QuadrantFractions[];
-    EllipticalArcApproximationContext.processQuadrantFractions(this.arc, samples, processor);
-    return processor.chain;
-  }
   /** Construct a circular arc chain approximation to the elliptical arc. */
   public constructCircularArcChainApproximation(options?: EllipticalArcApproximationOptions): CurveChain | undefined {
     if (!this.isValidArc)
       return undefined;
     if (!options)
       options = EllipticalArcApproximationOptions.create();
-    const processor = new ArcChainConstructionProcessor(this.arc);
+    const processor = ArcChainConstructionProcessor.create(this.arc, options.forcePath);
     const samples = this.sampleFractions(options, true) as QuadrantFractions[];
     EllipticalArcApproximationContext.processQuadrantFractions(this.arc, samples, processor);
     return processor.chain;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Dictionary, OrderedSet } from "@itwin/core-bentley";
+import { OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -700,8 +700,9 @@ describe("Arc3d", () => {
     const fQuartic = (x: number) => x * x * x * x;
     const fSqrt = (x: number) => Math.sqrt(x);
     const remaps: FractionMapper[] = [fIdentity, fPiecewiseLinearUnder, fSqrtCubed, fQuadratic, fCubic, fQuartic, fSqrt];
-    const iMethodToString = (iMethod: number): string => {
+    const iMethodToString = (iMethod: number | undefined): string => {
       switch (iMethod) {
+        case -1: return "Naive";
         case 0: return "Identity";
         case 1: return "PwLinear";
         case 2: return "SqrtCubed";
@@ -709,7 +710,9 @@ describe("Arc3d", () => {
         case 4: return "Cubic";
         case 5: return "Quartic";
         case 6: return "Sqrt";
-        default: return iMethod < 0 ? "Naive" : "Undefined";
+        case 7: return "Subdivision";
+        case undefined:
+        default: return "Undefined";
       }
     };
 
@@ -762,16 +765,21 @@ describe("Arc3d", () => {
       }
       ck.testFractionArray(flat, flat2, "flat output equivalent to structured output");
     };
-    const testArc = (arc: Arc3d, options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number): number | undefined => {
+    const testArc = (arc: Arc3d, options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number) => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x, y, z);
-      const axes = [arc.center.plus(arc.vector0), arc.center, arc.center.plus(arc.vector90)];
+      const squaredArc = arc.toScaledMatrix3d();
+      const axes = [
+        squaredArc.center.plusScaled(squaredArc.axes.columnX(), squaredArc.r0),
+        squaredArc.center,
+        squaredArc.center.plusScaled(squaredArc.axes.columnY(), squaredArc.r90),
+      ];
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, axes, x, y, z);
       const toStart = [arc.center, arc.startPoint()];
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, toStart, x, y, z);
 
       const context = EllipticalArcApproximationContext.create(arc);
       if (!ck.testTrue(context.isValidArc, "context accepted arc"))
-        return Geometry.largeCoordinateResult;
+        return { err: undefined, nSeg: 0 };
 
       // test sampler
       const flatSamples = context.sampleFractions(options, false) as number[];
@@ -779,26 +787,18 @@ describe("Arc3d", () => {
       displaySamples(arc, flatSamples, x, y, z);
       testAndCompareSamples(flatSamples, samples);
 
-      // test construction methods
+      // test construction
       const chain = context.constructCircularArcChainApproximation(options);
       if (ck.testDefined(chain, "constructed arc chain approximation"))
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x, y, z);
-      const ls = context.constructLineStringApproximation(options);
-      if (ck.testDefined(ls, "constructed linestring approximation"))
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x, y, z);
 
       // test error computation
-      const strokeError = context.computeApproximationError(samples, false);
-      if (ck.testDefined(strokeError, "cover linestring approximation error computation") &&
-        ck.testTrue(strokeError.detailA.a > Geometry.smallFraction, "computed a nonzero linestring approximation error")) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [strokeError.detailA.point, strokeError.detailB.point], x, y, z);
-      }
-      const chainError = context.computeApproximationError(samples, true);
+      const chainError = context.computeApproximationError(samples);
       if (ck.testDefined(chainError, "cover arc chain approximation error computation") &&
         ck.testTrue(chainError.detailA.a > Geometry.smallFraction, "computed a nonzero arc chain approximation error")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [chainError.detailA.point, chainError.detailB.point], x, y, z);
       }
-      return chainError ? chainError.detailA.a : undefined;
+      return { err: chainError ? chainError.detailA.a : undefined, nSeg: chain ? chain.children.length : 0 };
     };
 
     const numSamples = [3, 4, 5, 6, 10, 20];
@@ -809,32 +809,56 @@ describe("Arc3d", () => {
       const perpData = arc.toScaledMatrix3d();
       const xWidth = perpData.r0;
       const yWidth = perpData.r90;
-      let eMin: number | undefined;
-      let iMin = -1;
+      let iMin: number | undefined; // id of the minimum error approximation
+      let eMin: number | undefined; // error of the minimum error approximation
+      let nMin: number | undefined; // segment count of the minimum error approximation
       for (const n of numSamples) {
+        // the naive method
         let method = EllipticalArcSampleMethod.UniformParameter;
         let options = EllipticalArcApproximationOptions.create(method, n);
-        eMin = testArc(arc, options, x0, y0);
+        let results = testArc(arc, options, x0, y0);
+        if (undefined !== results.err) {
+          iMin = -1;
+          eMin = results.err;
+          nMin = results.nSeg;
+        }
         y0 += yDelta(yWidth);
 
+        // the curvature interpolation methods (including uniform)
         method = EllipticalArcSampleMethod.NonUniformCurvature;
         for (let iRemap = 0; iRemap < remaps.length; ++iRemap) {
           options = EllipticalArcApproximationOptions.create(method, n, undefined, remaps[iRemap]);
-          const error = testArc(arc, options, x0, y0);
-          const firstError = undefined === eMin && error !== undefined;
-          const updateError = undefined !== eMin && undefined !== error && eMin > error;
+          results = testArc(arc, options, x0, y0);
+          const firstError = undefined === eMin && undefined !== results.err;
+          const updateError = undefined !== eMin && undefined !== results.err && eMin > results.err;
           if (firstError || updateError) {
-            eMin = error;
             iMin = iRemap;
+            eMin = results.err;
+            nMin = results.nSeg;
           }
           y0 += yDelta(yWidth);
         }
 
-        // TODO: subdivision methods. For valid comparisons, maybe pass in the current eMin error and see
-        // if we can get an approximation with fewer points.
+        // the subdivision method (wins if decreases the point count for eMin)
+        const iSub = remaps.length;
+        if (ck.testDefined(eMin, "Have a min error to beat") && ck.testDefined(nMin, "Have #segments to beat")) {
+          method = EllipticalArcSampleMethod.AdaptiveSubdivision;
+          options = EllipticalArcApproximationOptions.create(method, undefined, eMin);
+          results = testArc(arc, options, x0, y0);
+          if (ck.testDefined(results.err, `Method ${iMethodToString(iSub)} approximation error computed`)) {
+            if (ck.testLE(results.err, eMin, `Method ${iMethodToString(iSub)} achieved desired max error`)) {
+              if (results.nSeg <= nMin) {
+                iMin = iSub;
+                eMin = results.err;
+                nMin = results.nSeg;
+              }
+            }
+          }
+          y0 += yDelta(yWidth);
+        }
 
-        if (ck.testDefined(eMin, "Found a minimum-error method")) {
-          GeometryCoreTestIO.consoleLog(`Arc ${iArc} min error is ${eMin} using ${iMethodToString(iMin)} on ${n} Q1 samples.`);
+        if (ck.testDefined(eMin, "Have best approx error") && ck.testDefined(iMin, "Have best approx method id") && ck.testDefined(nMin, "Have best approx segment count")) {
+          GeometryCoreTestIO.consoleLog(`Arc ${iArc} min error is ${eMin} using ${iMethodToString(iMin)} on ${n} Q1 samples with chain count ${nMin}.`);
           const numWins = methodWins.get(iMin) ?? 0;
           methodWins.set(iMin, numWins + 1);
         }
@@ -844,12 +868,13 @@ describe("Arc3d", () => {
       x0 += 2 * xDelta(xWidth);
     }
     const nTrials = numSamples.length * arcs.length;
-    const histogram = new Dictionary<number, number>((c0: number, c1: number) => c0 < c1 ? -1 : (c0 > c1 ? 1 : 0)); // <winCount, iMethod>
-    methodWins.forEach((winCount: number, iMethod: number) => histogram.set(winCount, iMethod));  // key,value -> value,key
-    histogram.forEach((winCount: number, iMethod: number) => GeometryCoreTestIO.consoleLog(`Method ${iMethodToString(iMethod)} won ${winCount} times (${winCount/nTrials}%).`));
+    methodWins.forEach((winCount: number, iMethod: number) => GeometryCoreTestIO.consoleLog(`Method ${iMethodToString(iMethod)} won ${winCount} times (${Math.round(100 * winCount / nTrials)}%).`));
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "EllipseSampler");
     expect(ck.getNumErrors()).equals(0);
   });
+
+// TODO: cover forcePath, more subdivision tests (see if other methods can reduce error on same # points), change default to subdivision
+
   it("createCircularStartTangentEnd", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
