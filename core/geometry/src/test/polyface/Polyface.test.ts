@@ -1098,7 +1098,7 @@ it("AddTriangleFan", () => {
   const options = StrokeOptions.createForFacets();
   options.shouldTriangulate = true;
   const builder = PolyfaceBuilder.create(options);
-  const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0))!;
+  const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0));
   const strokes = LineString3d.create();
   arc.emitStrokes(strokes, options);
   ck.testUndefined(builder.findOrAddPointInLineString(strokes, strokes.numPoints() + 10), " confirm bad index in linestring");
@@ -1138,7 +1138,7 @@ it("AddTriangles", () => {
   options.needParams = true;
   const builder = PolyfaceBuilder.create(options);
   builder.addTriangleFacet([Point3d.create(0, 1, 2)]);
-  const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0))!;
+  const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0));
   const strokes = LineString3d.create();
   arc.emitStrokes(strokes, options);
 
