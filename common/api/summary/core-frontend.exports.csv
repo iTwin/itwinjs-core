@@ -473,6 +473,7 @@ public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => it
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 internal;isValidSurfaceType(value: number): boolean
 public;ItemField
+beta;ITwinIdArg
 public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
@@ -661,6 +662,8 @@ public;PolylineArgs
 public;PolylineArgs
 internal;fromMesh(mesh: Mesh): PolylineArgs | undefined
 internal;PolylineParams
+beta;PreferenceArg 
+beta;PreferenceKeyArg
 internal;PreserveOrder
 internal;PrimitiveBuilder 
 internal;PrimitiveGeometryType = Loop | Path | IndexedPolyface | SolidPrimitive
@@ -768,7 +771,6 @@ public;RotateViewTool
 public;RotationMode
 internal;RoundOff
 internal;SavedState
-public;SaveUserPreferenceArgs 
 public;Scene
 public;SceneContext 
 internal;SceneVolumeClassifier
@@ -912,6 +914,7 @@ public;TileUser
 internal;TileUserIdSet 
 internal;TileUserIdSets 
 public;TileVisibility
+beta;TokenArg
 internal;ToleranceRatio
 internal;toMaterialParams(mat: ImdlModel.SurfaceMaterialParams): MaterialParams
 public;Tool
@@ -962,8 +965,7 @@ internal;UniqueTileUserSets
 public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
 internal;UpsampledMapTile 
-public;UserPreferenceKeyArgs
-public;UserPreferencesAccess
+beta;UserPreferencesAccess
 beta;ValidateSourceArgs
 public;VaryingType
 internal;VertexIndices 

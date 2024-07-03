@@ -6938,6 +6938,7 @@ export class IModelApp {
     // @beta
     static translateStatus(status: number): string;
     static get uiAdmin(): UiAdmin;
+    // @beta
     static get userPreferences(): UserPreferencesAccess | undefined;
     static get viewManager(): ViewManager;
 }
@@ -6973,6 +6974,7 @@ export interface IModelAppOptions {
     tileAdmin?: TileAdmin.Props;
     toolAdmin?: ToolAdmin;
     uiAdmin?: UiAdmin;
+    // @beta
     userPreferences?: UserPreferencesAccess;
     viewManager?: ViewManager;
 }
@@ -7542,6 +7544,14 @@ export enum ItemField {
     X_Item = 2,
     Y_Item = 3,
     Z_Item = 4
+}
+
+// @beta
+export interface ITwinIdArg {
+    // (undocumented)
+    readonly iModelId?: GuidString;
+    // (undocumented)
+    readonly iTwinId?: GuidString;
 }
 
 // @public (undocumented)
@@ -10706,6 +10716,20 @@ export interface PolylineParams {
     weight: number;
 }
 
+// @beta
+export interface PreferenceArg extends PreferenceKeyArg {
+    // (undocumented)
+    readonly content?: any;
+}
+
+// @beta
+export interface PreferenceKeyArg {
+    // (undocumented)
+    readonly key: string;
+    // (undocumented)
+    readonly namespace?: string;
+}
+
 // @internal (undocumented)
 export enum PreserveOrder {
     // (undocumented)
@@ -12379,11 +12403,6 @@ export class SavedState {
     rotationMode: RotationMode;
     // (undocumented)
     state: CurrentState;
-}
-
-// @public
-export interface SaveUserPreferenceArgs extends UserPreferenceKeyArgs {
-    content?: any;
 }
 
 // @public
@@ -14969,6 +14988,12 @@ export enum TileVisibility {
     Visible = 2
 }
 
+// @beta
+export interface TokenArg {
+    // (undocumented)
+    accessToken?: AccessToken;
+}
+
 // @internal (undocumented)
 export namespace ToleranceRatio {
     const // (undocumented)
@@ -15633,21 +15658,11 @@ export class UpsampledMapTile extends MapTile {
     get renderGeometry(): RenderTerrainGeometry | undefined;
 }
 
-// @public
-export interface UserPreferenceKeyArgs {
-    // (undocumented)
-    accessToken?: AccessToken;
-    iModelId?: GuidString;
-    iTwinId?: GuidString;
-    key: string;
-    namespace?: string;
-}
-
-// @public
+// @beta
 export interface UserPreferencesAccess {
-    delete: (args: UserPreferenceKeyArgs) => Promise<void>;
-    get: (args: UserPreferenceKeyArgs) => Promise<any>;
-    save: (args: SaveUserPreferenceArgs) => Promise<void>;
+    delete: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<void>;
+    get: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<any>;
+    save: (arg: PreferenceArg & ITwinIdArg & TokenArg) => Promise<void>;
 }
 
 // @beta
