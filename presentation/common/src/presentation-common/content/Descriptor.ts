@@ -217,9 +217,7 @@ export interface DescriptorJSON {
   /** @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]]. */
   filterExpression?: string;
   fieldsFilterExpression?: string;
-  /** @beta */
   instanceFilter?: InstanceFilterDefinition;
-  /** @beta */
   ruleset?: Ruleset;
 }
 
@@ -278,8 +276,6 @@ export interface DescriptorOverrides {
    * specific select class rather than a union of multiple select classes. This means the filter has
    * access to properties of that class and they can be referenced using symbols like `this.Property`.
    * This is useful for filtering instances of specific class.
-   *
-   * @beta
    */
   instanceFilter?: InstanceFilterDefinition;
 }
@@ -312,7 +308,6 @@ export interface DescriptorSource {
   /**
    * A ruleset used to create this descriptor.
    * Only set if descriptor is created using a ruleset different from the input ruleset, e.g. when creating a hierarchy level descriptor.
-   * @beta
    */
   readonly ruleset?: Ruleset;
   /**
@@ -340,8 +335,6 @@ export interface DescriptorSource {
    * specific select class rather than a union of multiple select classes. This means the filter has
    * access to properties of that class and they can be referenced using symbols like `this.Property`.
    * This is useful for filtering instances of specific class.
-   *
-   * @beta
    */
   instanceFilter?: InstanceFilterDefinition;
 }
@@ -377,7 +370,6 @@ export class Descriptor implements DescriptorSource {
   /**
    * A ruleset used to create this descriptor.
    * Only set if descriptor is created using a ruleset different from the input ruleset, e.g. when creating a hierarchy level descriptor.
-   * @beta
    */
   public readonly ruleset?: Ruleset;
   /** Field used to sort the content */
@@ -409,8 +401,6 @@ export class Descriptor implements DescriptorSource {
    * specific select class rather than a union of multiple select classes. This means the filter has
    * access to properties of that class and they can be referenced using symbols like `this.Property`.
    * This is useful for filtering instances of specific class.
-   *
-   * @beta
    */
   public instanceFilter?: InstanceFilterDefinition;
 
@@ -502,7 +492,6 @@ export class Descriptor implements DescriptorSource {
 
   /**
    * Get field by its descriptor.
-   * @beta
    */
   public getFieldByDescriptor(fieldDescriptor: FieldDescriptor, recurse?: boolean): Field | undefined {
     return getFieldByDescriptor(this.fields, fieldDescriptor, recurse);

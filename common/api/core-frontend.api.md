@@ -3241,7 +3241,7 @@ export namespace EditManipulator {
 // @internal (undocumented)
 export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
-// @alpha
+// @public
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -3327,7 +3327,7 @@ export class ElementPicker {
     viewport?: Viewport;
 }
 
-// @alpha
+// @public
 export abstract class ElementSetTool extends PrimitiveTool {
     protected get agenda(): ElementAgenda;
     protected get allowDragSelect(): boolean;
@@ -5550,6 +5550,7 @@ export abstract class GraphicBuilder {
     abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
     addCurvePrimitive(curve: AnyCurvePrimitive): void;
     addFrustum(frustum: Frustum): void;
+    addFrustumSides(frustum: Frustum): void;
     abstract addLineString(points: Point3d[]): void;
     abstract addLineString2d(points: Point2d[], zDepth: number): void;
     abstract addLoop(loop: Loop): void;
@@ -5560,6 +5561,7 @@ export abstract class GraphicBuilder {
     addPrimitive(primitive: GraphicPrimitive): void;
     addRangeBox(range: Range3d, solid?: boolean): void;
     addRangeBoxFromCorners(p: Point3d[]): void;
+    addRangeBoxSidesFromCorners(p: Point3d[]): void;
     abstract addShape(points: Point3d[]): void;
     abstract addShape2d(points: Point2d[], zDepth: number): void;
     abstract addSolidPrimitive(solidPrimitive: SolidPrimitive): void;
@@ -5735,7 +5737,7 @@ export interface GroundPlaneDecorations {
     readonly belowParams: GraphicParams;
 }
 
-// @alpha (undocumented)
+// @public
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
@@ -9791,7 +9793,7 @@ export class ModelState extends EntityState implements ModelProps {
 // @public
 export type ModelSubCategoryHiliteMode = "union" | "intersection";
 
-// @alpha (undocumented)
+// @public
 export enum ModifyElementSource {
     DragSelect = 3,
     Selected = 1,
@@ -10586,7 +10588,7 @@ export class PlanarClipMaskState {
     // (undocumented)
     getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined;
     // (undocumented)
-    getTileTrees(view: SpatialViewState, classifiedModelId: Id64String): TileTreeReference[] | undefined;
+    getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
     // (undocumented)
@@ -12287,6 +12289,8 @@ export interface RenderTargetDebugControl {
     // (undocumented)
     displayDrapeFrustum: boolean;
     // (undocumented)
+    displayMaskFrustum: boolean;
+    // (undocumented)
     displayNormalMaps: boolean;
     // (undocumented)
     displayRealityTilePreload: boolean;
@@ -13162,7 +13166,7 @@ export class SpatialModelState extends GeometricModel3dState {
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
     [Symbol.iterator](): Iterator<TileTreeReference>;
     attachToViewport(args: AttachToViewportArgs): void;
-    collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
+    collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void;
     detachFromViewport(): void;
     getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
     setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
@@ -13185,7 +13189,7 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     clearViewedModels(): void;
     // @internal
-    collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void;
+    collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void;
     computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
@@ -13662,6 +13666,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly decorationsState: BranchState;
     // (undocumented)
     displayDrapeFrustum: boolean;
+    // (undocumented)
+    displayMaskFrustum: boolean;
     // (undocumented)
     displayNormalMaps: boolean;
     // (undocumented)

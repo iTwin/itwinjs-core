@@ -48,10 +48,7 @@ import { Omit, PagedResponse } from "./Utils";
 export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
   /** @internal ID of the client requesting data */
   clientId?: string;
-  /**
-   * RPC request diagnostics options.
-   * @beta
-   */
+  /** RPC request diagnostics options. */
   diagnostics?: RpcDiagnosticsOptions;
 };
 
@@ -66,16 +63,13 @@ export interface PresentationRpcResponseData<TResult = undefined> {
   errorMessage?: string;
   /** In case of a success response, the result */
   result?: TResult;
-  /**
-   * Diagnostics response.
-   * @beta
-   */
+  /** Diagnostics response. */
   diagnostics?: ClientDiagnostics;
 }
 
 /**
  * Data structure for RPC diagnostics options.
- * @beta
+ * @public
  */
 export type RpcDiagnosticsOptions = Omit<ClientDiagnosticsOptions, "handler">;
 
@@ -93,7 +87,7 @@ export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<Hierarchy
 
 /**
  * Data structure for hierarchy level descriptor RPC request options.
- * @beta
+ * @public
  */
 export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<
   HierarchyLevelDescriptorRequestOptions<never, NodeKey, RulesetVariableJSON>
@@ -211,7 +205,6 @@ export class PresentationRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  /** @beta */
   public async getNodesDescriptor(
     _token: IModelRpcProps,
     _options: HierarchyLevelDescriptorRpcRequestOptions,

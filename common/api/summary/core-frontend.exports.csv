@@ -201,10 +201,10 @@ internal;EdgeTableInfo
 internal;EditCommandHandler
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
-alpha;ElementAgenda
+public;ElementAgenda
 public;ElementLocateManager
 public;ElementPicker
-alpha;class ElementSetTool 
+public;class ElementSetTool 
 public;ElementState 
 public;EllipsoidTerrainProvider 
 public;EmphasizeElements 
@@ -370,7 +370,7 @@ public;GraphicShape2d
 public;GraphicSolidPrimitive
 public;GraphicType
 internal;GroundPlaneDecorations
-alpha;GroupMark
+public;GroupMark
 internal;headersIncludeAuthMethod(headers: Headers, query: string[]): boolean
 internal;Hilites
 public;HiliteSet
@@ -589,7 +589,7 @@ internal;ModelMapLayerTileTreeReference
 public;ModelSelectorState 
 public;ModelState 
 public;ModelSubCategoryHiliteMode = "union" | "intersection"
-alpha;ModifyElementSource
+public;ModifyElementSource
 public;MutableChangeFlags 
 public;NativeApp
 internal;NativeAppLogger

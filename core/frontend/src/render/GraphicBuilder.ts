@@ -540,6 +540,11 @@ export abstract class GraphicBuilder {
     this.addRangeBoxFromCorners(frustum.points);
   }
 
+  /** Add Frustum sides. Useful for debugging. */
+  public addFrustumSides(frustum: Frustum) {
+    this.addRangeBoxSidesFromCorners(frustum.points);
+  }
+
   /** Add range edges from corner points */
   public addRangeBoxFromCorners(p: Point3d[]) {
     this.addLineString([
@@ -558,6 +563,46 @@ export abstract class GraphicBuilder {
     this.addLineString([p[Npc.LeftTopFront].clone(), p[Npc.LeftTopRear].clone()]);
     this.addLineString([p[Npc.RightTopFront].clone(), p[Npc.RightTopRear].clone()]);
     this.addLineString([p[Npc.LeftBottomRear].clone(), p[Npc.RightBottomRear].clone()]);
+  }
+
+  /** Add range sides from corner points */
+  public addRangeBoxSidesFromCorners(p: Point3d[]) {
+    this.addShape([
+      p[Npc.LeftBottomFront].clone(),
+      p[Npc.LeftTopFront].clone(),
+      p[Npc.RightTopFront].clone(),
+      p[Npc.RightBottomFront].clone(),
+      p[Npc.LeftBottomFront].clone()]);
+    this.addShape([
+      p[Npc.RightTopRear].clone(),
+      p[Npc.LeftTopRear].clone(),
+      p[Npc.LeftBottomRear].clone(),
+      p[Npc.RightBottomRear].clone(),
+      p[Npc.RightTopRear].clone()]);
+    this.addShape([
+      p[Npc.RightTopRear].clone(),
+      p[Npc.LeftTopRear].clone(),
+      p[Npc.LeftTopFront].clone(),
+      p[Npc.RightTopFront].clone(),
+      p[Npc.RightTopRear].clone()]);
+    this.addShape([
+      p[Npc.RightTopRear].clone(),
+      p[Npc.RightBottomRear].clone(),
+      p[Npc.RightBottomFront].clone(),
+      p[Npc.RightTopFront].clone(),
+      p[Npc.RightTopRear].clone()]);
+    this.addShape([
+      p[Npc.LeftBottomRear].clone(),
+      p[Npc.RightBottomRear].clone(),
+      p[Npc.RightBottomFront].clone(),
+      p[Npc.LeftBottomFront].clone(),
+      p[Npc.LeftBottomRear].clone()]);
+    this.addShape([
+      p[Npc.LeftBottomRear].clone(),
+      p[Npc.LeftTopRear].clone(),
+      p[Npc.LeftTopFront].clone(),
+      p[Npc.LeftBottomFront].clone(),
+      p[Npc.LeftBottomRear].clone()]);
   }
 
   /** Sets the current active symbology for this builder. Any new geometry subsequently added will be drawn using the specified symbology.

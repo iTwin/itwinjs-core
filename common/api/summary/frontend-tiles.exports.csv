@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+alpha;BaseGeoscienceArgs
 beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
 alpha;createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise
 alpha;CreateGeoscienceTilesetArgs = BaseGeoscienceArgs
@@ -8,12 +9,28 @@ beta;CreateIModelTilesetArgs
 beta;createIModelTilesetAs3DTiles(args: CreateIModelTilesetAs3DTilesArgs): Promise
 beta;CreateIModelTilesetAs3DTilesArgs = GetIModelTilesetUrlFromConnectionArgs
 alpha;createRealityModelTilesetFromUrl(url: string): Promise
+beta;DataSource
 beta;FrontendTilesOptions = CreateIModelTilesetArgs
 internal;frontendTilesOptions:
+alpha;GetGeoscienceTilesetArgs 
+alpha;getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise
+beta;getGraphicRepresentationUrl(args: GetGraphicRepresentationUrlArgs): Promise
+beta;GetGraphicRepresentationUrlArgs
+beta;getIModelTilesetUrl(args: GetIModelTilesetUrlArgs): Promise
+beta;GetIModelTilesetUrlArgs
+beta;getIModelTilesetUrlFromConnection(args: GetIModelTilesetUrlFromConnectionArgs): Promise
+beta;GetIModelTilesetUrlFromConnectionArgs
+beta;GraphicRepresentation =
+beta;GraphicRepresentationFormat = "IMDL" | "3DTILES" | string
+beta;GraphicRepresentationStatus
+beta;IModelDataSource
+beta;IModelTilesetOptions
 beta;initializeFrontendTiles(options: FrontendTilesOptions): void
 beta;MeshExport
 internal;MeshExports
 beta;obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise
 beta;ObtainMeshExportTilesetUrlArgs = GetIModelTilesetUrlFromConnectionArgs
+beta;queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator
+beta;QueryGraphicRepresentationsArgs
 beta;queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator
 beta;QueryMeshExportsArgs
