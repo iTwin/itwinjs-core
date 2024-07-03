@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FractionRun, GraphemeOffset, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -244,6 +244,16 @@ function split(source: string): Segment[] {
   return segments;
 }
 
+/**
+ * JavaScript's Intl might not have type support and needs to be cast to any.
+ * @internal
+ */
+interface IntlSegmenterStandInType {
+  segment: string;
+  index: number;
+  input: string;
+}
+
 /** @internal */
 export class RunLayout {
   public source: Run;
@@ -349,7 +359,45 @@ export class RunLayout {
     });
   }
 
-  public toResult(paragraph: Paragraph): RunLayoutResult {
+  /**
+   * Computes offsets for each grapheme in a text run. Relies on JavaScript's `Intl.Segmenter` to detect individual graphemes.
+   * @param layoutContext
+   */
+  private computeGraphemeOffsets(layoutContext: LayoutContext): GraphemeOffset[] {
+    const content = this.stringify();
+    const style = layoutContext.createRunSettings(this.source);
+    switch (this.source.type) {
+      case "text": {
+        // OLD TO DO COMMENT: TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
+        // But doing so causes inexplicable issues with initialization of Model.modeledElement.
+        // So until that's resolved, access it via cast to any.
+        // NEW TO DO COMMENT: Is the above still an issue? Mobile add-on also does not include Intl...
+        const segmenter = new (global as any).Intl.Segmenter(undefined, {granularity: "grapheme"});
+        const graphemes: IntlSegmenterStandInType[] = Array.from(segmenter.segment(content));
+        const graphemeOffsets: {charOffset: number, graphemeOffset: number}[] = [];
+        const baselineShift = this.source.baselineShift;
+        let proccessedText = "";
+        graphemes.forEach((grapheme, index) => {
+          // Get all characters between this grapheme and the next one, or if this is the last grapheme, this grapheme and the end of the run
+          const nextGraphemeCharIndex = graphemes[index+1] ? graphemes[index+1].index : content.length;
+          proccessedText += content.substring(grapheme.index, nextGraphemeCharIndex);
+          const rangeForText = layoutContext.computeRangeForText(proccessedText, style, baselineShift);
+          graphemeOffsets.push({
+            charOffset: grapheme.index,
+            graphemeOffset: rangeForText.layout.high.x,
+          });
+        });
+        return graphemeOffsets;
+      }
+      default: {
+        return [];
+      }
+    }
+  }
+
+  public toResult(paragraph: Paragraph, layoutContext: LayoutContext): RunLayoutResult {
+    const graphemeOffsets: GraphemeOffset[] = this.computeGraphemeOffsets(layoutContext);
+
     const result: RunLayoutResult = {
       sourceRunIndex: paragraph.runs.indexOf(this.source),
       fontId: this.fontId,
@@ -358,6 +406,7 @@ export class RunLayout {
       range: this.range.toJSON(),
       offsetFromLine: this.offsetFromLine,
       textStyle: this.style.toJSON(),
+      graphemeOffsets,
     };
 
     if (this.justificationRange) {
@@ -433,10 +482,10 @@ export class LineLayout {
     }
   }
 
-  public toResult(textBlock: TextBlock): LineLayoutResult {
+  public toResult(textBlock: TextBlock, layoutContext: LayoutContext): LineLayoutResult {
     return {
       sourceParagraphIndex: textBlock.paragraphs.indexOf(this.source),
-      runs: this.runs.map((x) => x.toResult(this.source)),
+      runs: this.runs.map((x) => x.toResult(this.source, layoutContext)),
       range: this.range.toJSON(),
       justificationRange: this.justificationRange.toJSON(),
       offsetFromDocument: this.offsetFromDocument,
@@ -452,8 +501,10 @@ export class TextBlockLayout {
   public source: TextBlock;
   public range = new Range2d();
   public lines: LineLayout[] = [];
+  private _context: LayoutContext;
 
   public constructor(source: TextBlock, context: LayoutContext) {
+    this._context = context;
     this.source = source;
 
     if (source.width > 0) {
@@ -467,7 +518,7 @@ export class TextBlockLayout {
 
   public toResult(): TextBlockLayoutResult {
     return {
-      lines: this.lines.map((x) => x.toResult(this.source)),
+      lines: this.lines.map((x) => x.toResult(this.source, this._context)),
       range: this.range.toJSON(),
     };
   }
