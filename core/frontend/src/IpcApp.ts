@@ -106,7 +106,7 @@ export class IpcApp {
    * @deprecated in 4.8. Use [[makeIpcProxy]] for a type-safe interface.
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
-    return this[_callIpcChannel](channelName, methodName, args);
+    return this[_callIpcChannel](channelName, methodName, ...args);
   }
 
   /** Create a type safe Proxy object to make IPC calls to a registered backend interface.
