@@ -17,6 +17,7 @@ import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
 import { BatchedTilesetSpec } from "./BatchedTilesetReader";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedModelGroups } from "./BatchedModelGroups";
+import { Range3d } from "@itwin/core-geometry";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
@@ -140,21 +141,28 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   }
 
   // Collects the TileTreeReferences for the models that need to be drawn to create the planar clip mask.
-  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
+  // For every model used by the mask (modelIds), extend the maskRange by that model's range.
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
     for (const ref of this._refs) {
       // For each ref, check to see whether one of the models that are needed are in its group's list of models.
       const refModelIds = ref.groupModelIds;
       if (refModelIds) {
+        let haveRefModel = false;
         for (const modelId of modelIds) {
           if (refModelIds.has(modelId)) {
-            maskTreeRefs.push(ref);
-            break;
+            if (!haveRefModel) {
+              maskTreeRefs.push(ref);
+              haveRefModel = true;
+            }
+            const modelRange = this._models.getModelExtents(modelId);
+            if (modelRange)
+              maskRange.extendRange(modelRange);
           }
         }
       }
     }
     // Also need to collect refs from other tile trees which are not in the batched tile tree refs.
-    this._excludedRefs.collectMaskRefs(modelIds, maskTreeRefs);
+    this._excludedRefs.collectMaskRefs(modelIds, maskTreeRefs, maskRange);
   }
 
   // Returns a list of the models that are NOT in the planar clip mask.
@@ -272,8 +280,8 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
-  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[]): void {
-    this._impl?.collectMaskRefs(modelIds, maskTreeRefs);
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
+    this._impl?.collectMaskRefs(modelIds, maskTreeRefs, maskRange);
   }
 
   public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
