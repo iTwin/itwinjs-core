@@ -168,6 +168,12 @@ export interface FrontendTilesOptions {
   * @internal
   */
   useIndexedDBCache?: boolean;
+
+  /** If true, the tileset will use an empty tile tree as fallback.
+   * If false, the tileset will use the default tiles as fallback.
+   * @internal
+   */
+  nopFallback?: boolean;
 }
 
 /** Global configuration initialized by [[initializeFrontendTiles]].
@@ -196,5 +202,5 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
     async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })
   );
 
-  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);
+  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl, options.nopFallback ?? false);
 }

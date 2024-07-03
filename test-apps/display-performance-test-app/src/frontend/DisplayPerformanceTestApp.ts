@@ -87,6 +87,8 @@ export class DisplayPerfTestApp {
     const config = await DisplayPerfRpcInterface.getClient().getEnvConfig();
     Object.assign(envConfiguration, config);
 
+    const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback) ? runner.curConfig.frontendTilesNopFallback : false;
+
     initializeFrontendTiles({
       enableEdges: true,
       computeSpatialTilesetBaseUrl: async (iModel) => {
@@ -109,6 +111,7 @@ export class DisplayPerfTestApp {
           return undefined;
         }
       },
+      nopFallback: frontendTilesNopFallback,
     });
 
     await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
