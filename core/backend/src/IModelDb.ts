@@ -1762,11 +1762,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         nativeInstance = this._iModel.nativeDb.getInstance({ id: elementId, classId, serializationMethod: InstanceSerializationMethod.BeJsNapi, useJsNames: true, classIdsToClassNames: true, abbreviateBlobs: false }) as NativeInterfaceMap<T>;
       } catch (err) {
-        err; // TODO: remove
         return undefined;
       }
 
-      const elementProps = mapNativeElementProps(nativeInstance, loadProps) as T;
+      const elementProps = mapNativeElementProps(nativeInstance, loadProps);
 
       if (loadProps.wantGeometry) {
         const geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData);
