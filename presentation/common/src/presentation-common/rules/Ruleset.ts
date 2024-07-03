@@ -43,7 +43,6 @@ export interface Ruleset {
    * Defaults to `0.0.0`.
    *
    * @pattern ^[\d]+\.[\d]+\.[\d]+$
-   * @beta
    */
   version?: string;
 
