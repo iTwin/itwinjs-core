@@ -23,11 +23,13 @@ import { XYAndZ } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { SineCosinePolynomial, SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
+import { CurveChain } from "./CurveCollection";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
+import { EllipticalArcApproximationContext, EllipticalArcApproximationOptions } from "./internalContexts/EllipticalArcApproximationContext";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
@@ -1154,6 +1156,17 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
+  }
+
+  /**
+   * Construct a circular arc chain approximation to the elliptical arc.
+   * @param numSamplesInQuadrant samples in each full quadrant for interpolation methods, default 4.
+   * @returns the constructed curve chain, or undefined if construction fails.
+   */
+  public constructCircularArcChainApproximation(numSamplesInQuadrant: number = 4): CurveChain | undefined {
+    const context = EllipticalArcApproximationContext.create(this);
+    let options = EllipticalArcApproximationOptions.create(undefined, numSamplesInQuadrant);
+    return context.constructCircularArcChainApproximation(options);
   }
 }
 

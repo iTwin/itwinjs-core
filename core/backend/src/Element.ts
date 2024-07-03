@@ -21,6 +21,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
+import { _elementWasCreated, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -116,7 +117,6 @@ export interface OnSubModelIdArg extends OnElementArg {
  * @public
  */
 export class Element extends Entity {
-  /** @internal */
   public static override get className(): string { return "Element"; }
   /** @internal */
   public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
@@ -153,7 +153,7 @@ export class Element extends Entity {
   protected static onInsert(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
     const operation = "insert";
-    iModel.channels.verifyChannel(arg.props.model);
+    iModel.channels[_verifyChannel](arg.props.model);
     iModel.locks.checkSharedLock(props.model, "model", operation); // inserting requires shared lock on model
     if (props.parent)   // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parent.id, "parent", operation);
@@ -168,7 +168,7 @@ export class Element extends Entity {
   protected static onInserted(arg: OnElementIdArg): void {
     const locks = arg.iModel.locks;
     if (locks && !locks.holdsExclusiveLock(arg.model))
-      locks.elementWasCreated(arg.id);
+      locks[_elementWasCreated](arg.id);
   }
 
   /** Called before an Element is updated.
@@ -179,7 +179,7 @@ export class Element extends Entity {
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
-    iModel.channels.verifyChannel(props.model);
+    iModel.channels[_verifyChannel](props.model);
     iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     iModel.codeService?.verifyCode(arg);
   }
@@ -198,7 +198,7 @@ export class Element extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    arg.iModel.channels.verifyChannel(arg.model);
+    arg.iModel.channels[_verifyChannel](arg.model);
     arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
   }
 
@@ -461,7 +461,6 @@ export class Element extends Entity {
  * @public
  */
 export abstract class GeometricElement extends Element {
-  /** @internal */
   public static override get className(): string { return "GeometricElement"; }
   /** The Id of the [[Category]] for this GeometricElement. */
   public category: Id64String;
@@ -516,7 +515,6 @@ export abstract class GeometricElement extends Element {
  * @public
  */
 export abstract class GeometricElement3d extends GeometricElement {
-  /** @internal */
   public static override get className(): string { return "GeometricElement3d"; }
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
@@ -548,7 +546,6 @@ export abstract class GeometricElement3d extends GeometricElement {
  * @public
  */
 export abstract class GraphicalElement3d extends GeometricElement3d {
-  /** @internal */
   public static override get className(): string { return "GraphicalElement3d"; }
   protected constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -557,7 +554,6 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
  * @public
  */
 export abstract class GeometricElement2d extends GeometricElement {
-  /** @internal */
   public static override get className(): string { return "GeometricElement2d"; }
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
@@ -589,7 +585,6 @@ export abstract class GeometricElement2d extends GeometricElement {
  * @public
  */
 export abstract class GraphicalElement2d extends GeometricElement2d {
-  /** @internal */
   public static override get className(): string { return "GraphicalElement2d"; }
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -598,7 +593,6 @@ export abstract class GraphicalElement2d extends GeometricElement2d {
  * @public
  */
 export class AnnotationElement2d extends GraphicalElement2d {
-  /** @internal */
   public static override get className(): string { return "AnnotationElement2d"; }
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -607,7 +601,6 @@ export class AnnotationElement2d extends GraphicalElement2d {
  * @public
  */
 export class DrawingGraphic extends GraphicalElement2d {
-  /** @internal */
   public static override get className(): string { return "DrawingGraphic"; }
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -616,7 +609,6 @@ export class DrawingGraphic extends GraphicalElement2d {
  * @public
  */
 export abstract class SpatialElement extends GeometricElement3d {
-  /** @internal */
   public static override get className(): string { return "SpatialElement"; }
   protected constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -625,7 +617,6 @@ export abstract class SpatialElement extends GeometricElement3d {
  * @public
  */
 export abstract class PhysicalElement extends SpatialElement {
-  /** @internal */
   public static override get className(): string { return "PhysicalElement"; }
   /** If defined, the [[PhysicalMaterial]] that makes up this PhysicalElement. */
   public physicalMaterial?: RelatedElement;
@@ -645,7 +636,6 @@ export abstract class PhysicalElement extends SpatialElement {
  * @public
  */
 export abstract class SpatialLocationElement extends SpatialElement {
-  /** @internal */
   public static override get className(): string { return "SpatialLocationElement"; }
   protected constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -654,7 +644,6 @@ export abstract class SpatialLocationElement extends SpatialElement {
  * @public
  */
 export class VolumeElement extends SpatialLocationElement {
-  /** @internal */
   public static override get className(): string { return "VolumeElement"; }
   protected constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -668,7 +657,6 @@ export class SectionDrawingLocation extends SpatialLocationElement {
   /** The Id of the [[ViewDefinition]] to which this location refers. */
   public sectionView: RelatedElement;
 
-  /** @internal */
   public static override get className(): string { return "SectionDrawingLocation"; }
 
   public constructor(props: SectionDrawingLocationProps, iModel: IModelDb) {
@@ -690,7 +678,6 @@ export class SectionDrawingLocation extends SpatialLocationElement {
  * @public
  */
 export abstract class InformationContentElement extends Element {
-  /** @internal */
   public static override get className(): string { return "InformationContentElement"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -700,7 +687,6 @@ export abstract class InformationContentElement extends Element {
  * @beta
  */
 export abstract class DriverBundleElement extends InformationContentElement {
-  /** @internal */
   public static override get className(): string { return "DriverBundleElement"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -709,7 +695,6 @@ export abstract class DriverBundleElement extends InformationContentElement {
  * @public
  */
 export abstract class InformationReferenceElement extends InformationContentElement {
-  /** @internal */
   public static override get className(): string { return "InformationReferenceElement"; }
 
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -720,7 +705,6 @@ export abstract class InformationReferenceElement extends InformationContentElem
  * @public
  */
 export class Subject extends InformationReferenceElement {
-  /** @internal */
   public static override get className(): string { return "Subject"; }
   public description?: string;
   protected constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
@@ -778,7 +762,6 @@ export class Subject extends InformationReferenceElement {
  * @public
  */
 export abstract class Document extends InformationContentElement {
-  /** @internal */
   public static override get className(): string { return "Document"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -787,13 +770,10 @@ export abstract class Document extends InformationContentElement {
  * @public
  */
 export class Drawing extends Document {
-  /** @internal */
   public static override get className(): string { return "Drawing"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** The name of the DrawingModel class modeled by this element type.
-   * @internal
-   */
+  /** The name of the DrawingModel class modeled by this element type. */
   protected static get drawingModelFullClassName(): string { return DrawingModel.classFullName; }
 
   /** Create a Code for a Drawing given a name that is meant to be unique within the scope of the specified DocumentListModel.
@@ -850,10 +830,8 @@ export class SectionDrawing extends Drawing {
   /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed. */
   public displaySpatialView: boolean;
 
-  /** @internal */
   public static override get className(): string { return "SectionDrawing"; }
 
-  /** @internal */
   protected static override get drawingModelFullClassName(): string { return SectionDrawingModel.classFullName; }
 
   protected constructor(props: SectionDrawingProps, iModel: IModelDb) {
@@ -899,7 +877,6 @@ export class SectionDrawing extends Drawing {
  * @public
  */
 export class SheetBorderTemplate extends Document {
-  /** @internal */
   public static override get className(): string { return "SheetBorderTemplate"; }
   public height?: number;
   public width?: number;
@@ -910,7 +887,6 @@ export class SheetBorderTemplate extends Document {
  * @public
  */
 export class SheetTemplate extends Document {
-  /** @internal */
   public static override get className(): string { return "SheetTemplate"; }
   public height?: number;
   public width?: number;
@@ -929,7 +905,6 @@ export class SheetTemplate extends Document {
  * @public
  */
 export class Sheet extends Document {
-  /** @internal */
   public static override get className(): string { return "Sheet"; }
   public height: number;
   public width: number;
@@ -966,7 +941,6 @@ export class Sheet extends Document {
  * @public
  */
 export abstract class InformationRecordElement extends InformationContentElement {
-  /** @internal */
   public static override get className(): string { return "InformationRecordElement"; }
 
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -976,7 +950,6 @@ export abstract class InformationRecordElement extends InformationContentElement
  * @public
  */
 export abstract class DefinitionElement extends InformationContentElement {
-  /** @internal */
   public static override get className(): string { return "DefinitionElement"; }
   /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
@@ -998,7 +971,6 @@ export abstract class DefinitionElement extends InformationContentElement {
  * @public
  */
 export abstract class DefinitionSet extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "DefinitionSet"; }
 }
 
@@ -1007,7 +979,6 @@ export abstract class DefinitionSet extends DefinitionElement {
  * @public
  */
 export class DefinitionContainer extends DefinitionSet {
-  /** @internal */
   public static override get className(): string { return "DefinitionContainer"; }
   /** Create a DefinitionContainer
    * @param iModelDb The IModelDb
@@ -1054,7 +1025,6 @@ export class DefinitionContainer extends DefinitionSet {
  * @public
  */
 export class DefinitionGroup extends DefinitionSet {
-  /** @internal */
   public static override get className(): string { return "DefinitionGroup"; }
   /** Create a DefinitionGroup
    * @param iModelDb The IModelDb
@@ -1080,7 +1050,6 @@ export class DefinitionGroup extends DefinitionSet {
  * @public
  */
 export abstract class TypeDefinitionElement extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "TypeDefinitionElement"; }
   public recipe?: RelatedElement;
 
@@ -1097,7 +1066,6 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
  * @beta
  */
 export abstract class RecipeDefinitionElement extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "RecipeDefinitionElement"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -1108,7 +1076,6 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
  * @public
  */
 export abstract class PhysicalType extends TypeDefinitionElement {
-  /** @internal */
   public static override get className(): string { return "PhysicalType"; }
   /** If defined, the [[PhysicalMaterial]] that makes up this PhysicalType. */
   public physicalMaterial?: RelatedElement;
@@ -1137,7 +1104,6 @@ export abstract class PhysicalType extends TypeDefinitionElement {
  * @public
  */
 export abstract class SpatialLocationType extends TypeDefinitionElement {
-  /** @internal */
   public static override get className(): string { return "SpatialLocationType"; }
   protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -1156,7 +1122,6 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
  * @beta
  */
 export class TemplateRecipe3d extends RecipeDefinitionElement {
-  /** @internal */
   public static override get className(): string { return "TemplateRecipe3d"; }
 
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -1210,7 +1175,6 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
  * @public
  */
 export abstract class GraphicalType2d extends TypeDefinitionElement {
-  /** @internal */
   public static override get className(): string { return "GraphicalType2d"; }
 
   protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
@@ -1230,7 +1194,6 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
  * @beta
  */
 export class TemplateRecipe2d extends RecipeDefinitionElement {
-  /** @internal */
   public static override get className(): string { return "TemplateRecipe2d"; }
   protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -1285,7 +1248,6 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
  * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement {
-  /** @internal */
   public static override get className(): string { return "InformationPartitionElement"; }
   /** A human-readable string describing the intent of the partition. */
   public description?: string;
@@ -1312,7 +1274,6 @@ export abstract class InformationPartitionElement extends InformationContentElem
  * @public
  */
 export class DefinitionPartition extends InformationPartitionElement {
-  /** @internal */
   public static override get className(): string { return "DefinitionPartition"; }
 }
 
@@ -1322,7 +1283,6 @@ export class DefinitionPartition extends InformationPartitionElement {
  * @public
  */
 export class DocumentPartition extends InformationPartitionElement {
-  /** @internal */
   public static override get className(): string { return "DocumentPartition"; }
 }
 
@@ -1332,7 +1292,6 @@ export class DocumentPartition extends InformationPartitionElement {
  * @public
  */
 export class GroupInformationPartition extends InformationPartitionElement {
-  /** @internal */
   public static override get className(): string { return "GroupInformationPartition"; }
 }
 
@@ -1343,7 +1302,6 @@ export class GroupInformationPartition extends InformationPartitionElement {
  * @public
  */
 export class GraphicalPartition3d extends InformationPartitionElement {
-  /** @internal */
   public static override get className(): string { return "GraphicalPartition3d"; }
 }
 
@@ -1353,7 +1311,6 @@ export class GraphicalPartition3d extends InformationPartitionElement {
  * @public
  */
 export class InformationRecordPartition extends InformationPartitionElement {
-  /** @internal */
   public static override get className(): string { return "InformationRecordPartition"; }
 }
 
@@ -1362,7 +1319,6 @@ export class InformationRecordPartition extends InformationPartitionElement {
  * @public
  */
 export class LinkPartition extends InformationPartitionElement {
-  /** @internal */
   public static override get className(): string { return "LinkPartition"; }
 }
 
@@ -1371,7 +1327,6 @@ export class LinkPartition extends InformationPartitionElement {
  * @public
  */
 export class PhysicalPartition extends InformationPartitionElement {
-  /** @internal */
   public static override get className(): string { return "PhysicalPartition"; }
 }
 
@@ -1381,7 +1336,6 @@ export class PhysicalPartition extends InformationPartitionElement {
  * @public
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
-  /** @internal */
   public static override get className(): string { return "SpatialLocationPartition"; }
 }
 
@@ -1389,7 +1343,6 @@ export class SpatialLocationPartition extends InformationPartitionElement {
  * @public
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {
-  /** @internal */
   public static override get className(): string { return "GroupInformationElement"; }
 }
 
@@ -1397,7 +1350,6 @@ export abstract class GroupInformationElement extends InformationReferenceElemen
  * @public
  */
 export abstract class LinkElement extends InformationReferenceElement {
-  /** @internal */
   public static override get className(): string { return "LinkElement"; }
   /** Create a Code for a LinkElement given a name that is meant to be unique within the scope of the specified Model.
    * @param iModel  The IModelDb
@@ -1414,7 +1366,6 @@ export abstract class LinkElement extends InformationReferenceElement {
  * @public
  */
 export class UrlLink extends LinkElement {
-  /** @internal */
   public static override get className(): string { return "UrlLink"; }
   public description?: string;
   public url?: string;
@@ -1438,7 +1389,6 @@ export class UrlLink extends LinkElement {
  * @alpha
  */
 export class FolderLink extends UrlLink {
-  /** @internal */
   public static override get className(): string { return "FolderLink"; }
 }
 
@@ -1446,7 +1396,6 @@ export class FolderLink extends UrlLink {
  * @public
  */
 export class RepositoryLink extends UrlLink {
-  /** @internal */
   public static override get className(): string { return "RepositoryLink"; }
   public repositoryGuid?: GuidString;
   /** @note This property was added to the BisCore schema in version 1.0.13 */
@@ -1470,7 +1419,6 @@ export class RepositoryLink extends UrlLink {
  * @public
  */
 export class EmbeddedFileLink extends LinkElement {
-  /** @internal */
   public static override get className(): string { return "EmbeddedFileLink"; }
 }
 
@@ -1480,7 +1428,6 @@ export class EmbeddedFileLink extends LinkElement {
  * @public
  */
 export abstract class RoleElement extends Element {
-  /** @internal */
   public static override get className(): string { return "RoleElement"; }
 }
 
@@ -1489,7 +1436,6 @@ export abstract class RoleElement extends Element {
  * @public
  */
 export class GeometryPart extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "GeometryPart"; }
   public geom?: GeometryStreamProps;
   /** How to build the part's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
@@ -1527,7 +1473,6 @@ export class GeometryPart extends DefinitionElement {
  * @public
  */
 export class LineStyle extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "LineStyle"; }
   public description?: string;
   public data!: string;
@@ -1550,7 +1495,6 @@ export class LineStyle extends DefinitionElement {
  * @public
  */
 export class RenderTimeline extends InformationRecordElement {
-  /** @internal */
   public static override get className(): string { return "RenderTimeline"; }
   /** A human-readable description of the timeline, which may be an empty string. */
   public description: string;
@@ -1600,7 +1544,7 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** Remap Ids when cloning a RenderSchedule.Script between iModels on a DisplayStyle or RenderTimeline.
-   * @internal
+   * @beta
    */
   public static remapScript(context: IModelElementCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
     const scriptProps: RenderSchedule.ScriptProps = [];

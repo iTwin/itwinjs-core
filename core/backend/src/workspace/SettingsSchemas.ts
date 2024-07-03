@@ -8,7 +8,7 @@
 
 import { BeEvent, JSONSchema, JSONSchemaTypeName } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { implementationProhibited } from "../internal/ImplementationProhibited";
+import { _implementationProhibited } from "../internal/Symbols";
 import { SettingName } from "./Settings";
 
 /** Metadata describing a single [[Setting]] as part of a [[SettingGroupSchema]].
@@ -103,7 +103,7 @@ export interface SettingGroupSchema {
   */
 export interface SettingsSchemas {
   /** @internal */
-  readonly [implementationProhibited]: unknown;
+  readonly [_implementationProhibited]: unknown;
 
   /** The map of each individual registered [[SettingSchema]] defining a [[Setting]], accessed by its fully-qualified name (including its [[SettingGroupSchema.schemaPrefix]]). */
   readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;

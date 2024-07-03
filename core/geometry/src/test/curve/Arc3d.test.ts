@@ -650,6 +650,30 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  const displaySamples = (
+    allGeometry: GeometryQuery[],
+    arc: Arc3d,
+    samples: QuadrantFractions[] | number[],
+    x?: number, y?: number, z?: number,
+  ): void => {
+    if (samples[0] instanceof QuadrantFractions) {
+      for (let i = 0; i < samples.length; ++i) {
+        const quadrant = samples[i] as QuadrantFractions;
+        for (let j = 0; j < quadrant.fractions.length - 1; ++j) // skip last fraction...
+          GeometryCoreTestIO.createAndCaptureXYCircle(
+            allGeometry, arc.fractionToPoint(quadrant.fractions[j]), 0.1, x, y, z,
+          );
+        if (i === samples.length - 1 && !arc.sweep.isFullCircle) // ...unless last fraction of last quadrant of open arc
+          GeometryCoreTestIO.createAndCaptureXYCircle(
+            allGeometry, arc.fractionToPoint(quadrant.fractions[quadrant.fractions.length - 1]), 0.1, x, y, z,
+          );
+      }
+    } else {
+      for (const fraction of samples as number[])
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(fraction), 0.1, x, y, z);
+    }
+  };
+
   it.only("EllipseSampler", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
@@ -659,7 +683,6 @@ describe("Arc3d", () => {
     const xDelta = (arcWidth: number) => 2 * arcWidth + 1;
     let y0 = 0;
     const yDelta = (arcHeight: number) => 2 * arcHeight + 1;
-
     const arcs: Arc3d[] = [];
 
     // xy-plane, perp-axis arcs
@@ -682,10 +705,11 @@ describe("Arc3d", () => {
     const arc3 = arc0.clone();
     arc3.sweep = AngleSweep.createStartEndDegrees(100, 120);  // tiny sweep
     arcs.push(arc3);
-    const arc4 = Arc3d.createStartMiddleEnd(Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2));
+    const arc4 = Arc3d.createStartMiddleEnd(
+      Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2),
+    );
     if (ck.testDefined(arc4, "use 3pt elliptical arc ctor"))
       arcs.push(arc4);
-
     // Remap functions for curvature interpolation
     const fIdentity = (x: number) => x;
     const fPiecewiseLinearUnder = (x: number): number => {
@@ -710,32 +734,7 @@ describe("Arc3d", () => {
         case 4: return "Cubic";
         case 5: return "Quartic";
         case 6: return "Sqrt";
-        case 7: return "Subdivision";
-        case undefined:
-        default: return "Undefined";
-      }
-    };
-
-    const displaySamples = (
-      arc: Arc3d,
-      samples: QuadrantFractions[] | number[],
-      x?: number, y?: number, z?: number,
-    ): void => {
-      if (samples[0] instanceof QuadrantFractions) {
-        for (let i = 0; i < samples.length; ++i) {
-          const quadrant = samples[i] as QuadrantFractions;
-          for (let j = 0; j < quadrant.fractions.length - 1; ++j) // skip last fraction...
-            GeometryCoreTestIO.createAndCaptureXYCircle(
-              allGeometry, arc.fractionToPoint(quadrant.fractions[j]), 0.1, x, y, z,
-            );
-          if (i === samples.length - 1 && !arc.sweep.isFullCircle) // ...unless last fraction of last quadrant of open arc
-            GeometryCoreTestIO.createAndCaptureXYCircle(
-              allGeometry, arc.fractionToPoint(quadrant.fractions[quadrant.fractions.length - 1]), 0.1, x, y, z,
-            );
-        }
-      } else {
-        for (const fraction of samples as number[])
-          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(fraction), 0.1, x, y, z);
+        default: return iMethod < 0 ? "Naive" : "Undefined";
       }
     };
     const convertToFlatArray = (array: QuadrantFractions[] | number[]): number[] => {
@@ -765,7 +764,9 @@ describe("Arc3d", () => {
       }
       ck.testFractionArray(flat, flat2, "flat output equivalent to structured output");
     };
-    const testArc = (arc: Arc3d, options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number) => {
+    const testArc = (
+      arc: Arc3d, options: EllipticalArcApproximationOptions, x?: number, y?: number, z?: number,
+    ) => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x, y, z);
       const squaredArc = arc.toScaledMatrix3d();
       const axes = [
@@ -784,7 +785,7 @@ describe("Arc3d", () => {
       // test sampler
       const flatSamples = context.sampleFractions(options, false) as number[];
       const samples = context.sampleFractions(options, true) as QuadrantFractions[];
-      displaySamples(arc, flatSamples, x, y, z);
+      displaySamples(allGeometry, arc, flatSamples, x, y, z);
       testAndCompareSamples(flatSamples, samples);
 
       // test construction
@@ -941,6 +942,42 @@ describe("Arc3d", () => {
     ck.testPoint3d(circularArc4.center, Point3d.create(0.75, 0, 0.75));
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartTangentEnd");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("constructCircularArcChainApproximation", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    for (let sweep = 360; sweep > 0; sweep -= 30) {
+      const arc = Arc3d.create(
+        Point3d.create(0, 0), Vector3d.create(5, 0), Vector3d.create(0, 8), AngleSweep.createStartEndDegrees(0, sweep),
+      );
+      let dy = 0;
+      for (let angle = 0; angle < 360; angle += 30) {
+        const rotationAxis: Vector3d = Vector3d.create(0, 0, 1);
+        const rotationMatrix = Matrix3d.createRotationAroundVector(rotationAxis, Angle.createDegrees(angle))!;
+        const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), rotationMatrix);
+        arc.tryTransformInPlace(rotationTransform);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx, dy);
+
+        const chain = arc.constructCircularArcChainApproximation();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, dx, dy);
+
+        const context = EllipticalArcApproximationContext.create(arc);
+        const options = EllipticalArcApproximationOptions.create();
+        const samples = context.sampleFractions(options, true) as QuadrantFractions[];
+        displaySamples(allGeometry, arc, samples, 0, dy, 0);
+        const chainError = context.computeApproximationError(samples);
+        ck.testDefined(chainError, "cover arc chain approximation error computation");
+        const error = chainError!.detailA.a;
+        ck.testTrue(error > Geometry.smallFraction, "computed a nonzero arc chain approximation error");
+        ck.testTrue(error < 0.1, "computed a small arc chain approximation error");
+        dy += 20;
+      }
+      dx += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "constructCircularArcChainApproximation");
     expect(ck.getNumErrors()).equals(0);
   });
 });
