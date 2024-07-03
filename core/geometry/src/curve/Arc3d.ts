@@ -8,6 +8,7 @@
  */
 
 import { Clipper } from "../clipping/ClipUtils";
+import { Constant } from "../Constant";
 import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -29,7 +30,7 @@ import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./Cur
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
-import { EllipticalArcApproximationContext, EllipticalArcApproximationOptions } from "./internalContexts/EllipticalArcApproximationContext";
+import { EllipticalArcApproximationContext } from "./internalContexts/EllipticalArcApproximationContext";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
@@ -54,6 +55,156 @@ export interface ArcVectors {
   /** Angular range swept by the arc, of length less than 2*pi if not a full ellipse. */
   sweep: AngleSweep;
 }
+
+/**
+ * Carrier structure for an arc with fractional data on incoming, outgoing curves.
+ * @public
+ */
+export interface ArcBlendData {
+  /** Constructed arc */
+  arc?: Arc3d;
+  /** Fraction "moving backward" on the inbound curve */
+  fraction10: number;
+  /** Fraction "moving forward" on the outbound curve */
+  fraction12: number;
+  /** Optional reference point */
+  point?: Point3d;
+}
+
+/**
+ * Enumeration of methods used to sample an elliptical arc.
+ * * Because ellipses have two axes of symmetry, samples are computed for one quadrant and reflected across each
+ * axis to the other quadrants. Any samples that fall outside the arc sweep are filtered out.
+ * @public
+ */
+export enum EllipticalArcSampleMethod {
+  /** Generate n samples uniformly interpolated between the min and max parameters of a full ellipse quadrant. */
+  UniformParameter = 0,
+  /** Generate n samples uniformly interpolated between the min and max curvatures of a full ellipse quadrant. */
+  UniformCurvature = 1,
+  /**
+   * Generate n samples interpolated between the min and max curvatures of a full ellipse quadrant, using a monotone
+   * callback function from [0,1]->[0,1] to generate the interpolation weights.
+   */
+  NonUniformCurvature = 2,
+  /**
+   * Generate samples by subdividing parameter space until the approximation has less than a given max
+   * distance to the elliptical arc.
+   */
+  AdaptiveSubdivision = 3,
+}
+
+/**
+ * A monotone function that maps [0,1] onto [0,1].
+ * @public
+ */
+export type FractionMapper = (f: number) => number;
+
+/**
+ * Options for generating samples for the construction of an approximation to an elliptical arc.
+ * Used by [[Arc3d.]]
+ * @public
+ */
+export class EllipticalArcApproximationOptions {
+  private _sampleMethod: EllipticalArcSampleMethod;
+  private _numSamplesInQuadrant: number;
+  private _maxError: number;
+  private _remapFunction: FractionMapper;
+  private _forcePath: boolean;
+
+  /** Default error tolerance for [[EllipticalArcSampleMethod.AdaptiveSubdivision]]. */
+  public static defaultMaxError = Constant.oneCentimeter;
+
+  private constructor(
+    method: EllipticalArcSampleMethod,
+    numSamplesInQuadrant: number,
+    maxError: number,
+    remapFunction: FractionMapper,
+    forcePath: boolean,
+  ) {
+    this._sampleMethod = method;
+    this._numSamplesInQuadrant = numSamplesInQuadrant;
+    this._maxError = maxError;
+    this._remapFunction = remapFunction;
+    this._forcePath = forcePath;
+  }
+  /**
+   * Construct options with optional defaults.
+   * @param method sample method, default [[EllipticalArcSampleMethod.NonUniformCurvature]].
+   * @param numSamplesInQuadrant samples in each full quadrant for interpolation methods, default 4.
+   * @param maxError positive maximum distance to ellipse for the subdivision method, default 1cm.
+   * @param remapFunction optional callback to remap fraction space for [[EllipticalArcSampleMethod.NonUniformCurvature]],
+   * default quadratic.
+   * @param forcePath whether to return a [[Path]] instead of a [[Loop]] when approximating a full elliptical arc,
+   * default false.
+   */
+  public static create(
+    method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.NonUniformCurvature,
+    numSamplesInQuadrant: number = 4,
+    maxError: number = this.defaultMaxError,
+    remapFunction: FractionMapper = (x: number) => x * x,
+    forcePath: boolean = false,
+  ) {
+    if (numSamplesInQuadrant < 2)
+      numSamplesInQuadrant = 2;
+    if (maxError <= 0)
+      maxError = this.defaultMaxError;
+    return new EllipticalArcApproximationOptions(method, numSamplesInQuadrant, maxError, remapFunction, forcePath);
+  }
+  /** Clone the options. */
+  public clone(): EllipticalArcApproximationOptions {
+    return new EllipticalArcApproximationOptions(
+      this.sampleMethod, this.numSamplesInQuadrant, this.maxError, this.remapFunction, this.forcePath,
+    );
+  }
+  /** Method used to sample the elliptical arc. */
+  public get sampleMethod(): EllipticalArcSampleMethod {
+    return this._sampleMethod;
+  }
+  public set sampleMethod(method: EllipticalArcSampleMethod) {
+    this._sampleMethod = method;
+  }
+  /**
+   * Number of samples to return in each full quadrant, including endpoint(s).
+   * * Used by interpolation sample methods.
+   * * In general, for n samples, the approximating chain consists of n-1 primitives.
+   * * Minimum value is 2.
+   */
+  public get numSamplesInQuadrant(): number {
+    return this._numSamplesInQuadrant;
+  }
+  public set numSamplesInQuadrant(numSamples: number) {
+    this._numSamplesInQuadrant = numSamples;
+  }
+  /**
+   * Maximum distance (in meters) of an approximation based on the sample points to the elliptical arc.
+   * * Used by [[EllipticalArcSampleMethod.AdaptiveSubdivision]].
+   */
+  public get maxError(): number {
+    return this._maxError;
+  }
+  public set maxError(error: number) {
+    this._maxError = error;
+  }
+  /**
+   * Callback function to remap fraction space to fraction space.
+   * * Used by [[EllipticalArcSampleMethod.NonUniformCurvature]].
+   */
+  public get remapFunction(): FractionMapper {
+    return this._remapFunction;
+  }
+  public set remapFunction(f: FractionMapper) {
+    this._remapFunction = f;
+  }
+  /** Whether to return a [[Path]] instead of a [[Loop]] when approximating a full (closed) ellipse. */
+  public get forcePath(): boolean {
+    return this._forcePath;
+  }
+  public set forcePath(value: boolean) {
+    this._forcePath = value;
+  }
+}
+
 /**
  * Circular or elliptic arc.
  * * The angle to point equation is:
@@ -1159,28 +1310,15 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   /**
-   * Construct a circular arc chain approximation to the elliptical arc.
-   * @param numSamplesInQuadrant samples in each full quadrant for interpolation methods, default 4.
-   * @returns the constructed curve chain, or undefined if construction fails.
+   * Construct a circular arc chain approximation to the instance elliptical arc.
+   * @param options bundle of options for sampling an elliptical arc (use default options if undefined)
+   * @returns the approximating curve chain, the instance arc if circular, or undefined if construction fails.
    */
-  public constructCircularArcChainApproximation(numSamplesInQuadrant: number = 4): CurveChain | undefined {
-    const context = EllipticalArcApproximationContext.create(this);
-    let options = EllipticalArcApproximationOptions.create(undefined, numSamplesInQuadrant);
-    return context.constructCircularArcChainApproximation(options);
+  public constructCircularArcChainApproximation(options?: EllipticalArcApproximationOptions): CurveChain | Arc3d | undefined {
+    if (!options)
+      options = EllipticalArcApproximationOptions.create();
+    if (this.isCircular)
+      return this;
+    return EllipticalArcApproximationContext.create(this).constructCircularArcChainApproximation(options);
   }
-}
-
-/**
- * Carrier structure for an arc with fractional data on incoming, outgoing curves.
- * @public
- */
-export interface ArcBlendData {
-  /** Constructed arc */
-  arc?: Arc3d;
-  /** Fraction "moving backward" on the inbound curve */
-  fraction10: number;
-  /** Fraction "moving forward" on the outbound curve */
-  fraction12: number;
-  /** Optional reference point */
-  point?: Point3d;
 }

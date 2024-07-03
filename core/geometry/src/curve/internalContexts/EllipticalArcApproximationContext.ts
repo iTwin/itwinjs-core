@@ -11,14 +11,12 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
-import { Arc3d } from "../Arc3d";
+import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod } from "../Arc3d";
 import { CurveChain } from "../CurveCollection";
 import { CurveLocationDetailPair } from "../CurveLocationDetail";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
 import { CurveCurveCloseApproachXY } from "./CurveCurveCloseApproachXY";
-import { Constant } from "../../Constant";
-import { LineSegment3d } from "../LineSegment3d";
 
 /** @packageDocumentation
  * @module Curve
@@ -28,140 +26,6 @@ function compareFractions(f0: number, f1: number): number {
   if (Geometry.isAlmostEqualNumber(f0, f1, Geometry.smallFraction))
     return 0;
   return f0 < f1 ? -1 : 1;
-};
-
-/**
- * Enumeration of methods used by [[EllipticalArcApproximationContext.sampleFractions]] to return locations along each
- * quadrant of the elliptical arc.
- * * Because ellipses have two axes of symmetry, samples are computed for one quadrant and reflected across each
- * axis to the other quadrants. Any samples that fall outside the arc sweep are filtered out.
- * @internal
- */
-export enum EllipticalArcSampleMethod {
-  /** Generate n samples uniformly interpolated between the min and max parameters of a full ellipse quadrant. */
-  UniformParameter = 0,
-  /** Generate n samples uniformly interpolated between the min and max curvatures of a full ellipse quadrant. */
-  UniformCurvature = 1,
-  /**
-   * Generate n samples interpolated between the min and max curvatures of a full ellipse quadrant, using a monotone
-   * callback function from [0,1]->[0,1] to generate the interpolation weights.
-   */
-  NonUniformCurvature = 2,
-  /**
-   * Generate samples by subdividing parameter space until the approximation has less than a given max
-   * distance to the elliptical arc.
-   */
-  AdaptiveSubdivision = 3,
-};
-
-/**
- * A monotone function that maps [0,1] onto [0,1].
- * @internal
- */
-export type FractionMapper = (f: number) => number;
-
-/**
- * Options for generating samples for the construction of an approximation to an elliptical arc.
- * * Used by [[EllipticalArcApproximationContext.sampleFractions]].
- * @internal
- */
-export class EllipticalArcApproximationOptions {
-  private _sampleMethod: EllipticalArcSampleMethod;
-  private _numSamplesInQuadrant: number;
-  private _maxError: number;
-  private _remapFunction: FractionMapper;
-  private _forcePath: boolean;
-
-  public static defaultMaxError = Constant.oneCentimeter;
-
-  private constructor(
-    method: EllipticalArcSampleMethod,
-    numSamplesInQuadrant: number,
-    maxError: number,
-    remapFunction: FractionMapper,
-    forcePath: boolean,
-  ) {
-    this._sampleMethod = method;
-    this._numSamplesInQuadrant = numSamplesInQuadrant;
-    this._maxError = maxError;
-    this._remapFunction = remapFunction;
-    this._forcePath = forcePath;
-  }
-  /**
-   * Construct options with optional defaults.
-   * @param method sample method, default [[EllipticalArcSampleMethod.NonUniformCurvature]].
-   * @param numSamplesInQuadrant samples in each full quadrant for interpolation methods, default 4.
-   * @param maxError positive maximum distance to ellipse for the subdivision method, default 1cm.
-   * @param remapFunction optional callback to remap fraction space for [[EllipticalArcSampleMethod.NonUniformCurvature]],
-   * default quadratic.
-   * @param forcePath whether to return a [[Path]] instead of a [[Loop]] when approximating a full (closed) ellipse,
-   * default false.
-   */
-  public static create(
-    method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.NonUniformCurvature,
-    numSamplesInQuadrant: number = 4,
-    maxError: number = this.defaultMaxError,
-    remapFunction: FractionMapper = (x: number) => x * x,
-    forcePath: boolean = false,
-  ) {
-    if (numSamplesInQuadrant < 2)
-      numSamplesInQuadrant = 2;
-    if (maxError <= 0)
-      maxError = this.defaultMaxError;
-    return new EllipticalArcApproximationOptions(method, numSamplesInQuadrant, maxError, remapFunction, forcePath);
-  }
-  /** Clone the options. */
-  public clone(): EllipticalArcApproximationOptions {
-    return new EllipticalArcApproximationOptions(
-      this.sampleMethod, this.numSamplesInQuadrant, this.maxError, this.remapFunction, this.forcePath,
-    );
-  }
-  /** Method used to sample the elliptical arc. */
-  public get sampleMethod(): EllipticalArcSampleMethod {
-    return this._sampleMethod;
-  }
-  public set sampleMethod(method: EllipticalArcSampleMethod) {
-    this._sampleMethod = method;
-  }
-  /**
-   * Number of samples to return in each full quadrant, including endpoint(s).
-   * * Used by interpolation sample methods.
-   * * In general, for n samples, the approximating chain consists of n-1 primitives.
-   * * Minimum value is 2.
-   */
-  public get numSamplesInQuadrant(): number {
-    return this._numSamplesInQuadrant;
-  }
-  public set numSamplesInQuadrant(numSamples: number) {
-    this._numSamplesInQuadrant = numSamples;
-  }
-  /**
-   * Maximum distance (in meters) of an approximation based on the sample points to the elliptical arc.
-   * * Used by the subdivision sample method.
-   */
-  public get maxError(): number {
-    return this._maxError;
-  }
-  public set maxError(error: number) {
-    this._maxError = error;
-  }
-  /**
-   * Callback function to remap fraction space to fraction space.
-   * * Used by [[EllipticalArcSampleMethod.NonUniformCurvature]].
-   */
-  public get remapFunction(): FractionMapper {
-    return this._remapFunction;
-  }
-  public set remapFunction(f: FractionMapper) {
-    this._remapFunction = f;
-  }
-  /** Whether to return a [[Path]] instead of a [[Loop]] when approximating a full (closed) ellipse. */
-  public get forcePath(): boolean {
-    return this._forcePath;
-  }
-  public set forcePath(value: boolean) {
-    this._forcePath = value;
-  }
 };
 
 /**
@@ -612,7 +476,7 @@ class AdaptiveSubdivisionSampler implements EllipticalArcSampler {
     let iters = 0;
     let arc0Error: number;
     do {
-      if (Arc3d.createCircularStartTangentEnd(ray0.origin, ray0.direction, ellipse.fractionToPoint(f, pt), arc0) instanceof LineSegment3d)
+      if (!(Arc3d.createCircularStartTangentEnd(ray0.origin, ray0.direction, ellipse.fractionToPoint(f, pt), arc0) instanceof Arc3d))
         break;
       const perp = ArcChainErrorProcessor.computePrimitiveErrorXY(arc0, ellipse, bracket0, bracket1);
       if (!perp)

@@ -245,6 +245,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     cloneTransformed(transform: Transform): Arc3d;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
+    constructCircularArcChainApproximation(options?: EllipticalArcApproximationOptions): CurveChain | Arc3d | undefined;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static create(center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;
     static createCenterNormalRadius(center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d): Arc3d;
@@ -2009,6 +2010,31 @@ export class EllipsoidPatch implements UVSurface {
 }
 
 // @public
+export class EllipticalArcApproximationOptions {
+    clone(): EllipticalArcApproximationOptions;
+    static create(method?: EllipticalArcSampleMethod, numSamplesInQuadrant?: number, maxError?: number, remapFunction?: FractionMapper, forcePath?: boolean): EllipticalArcApproximationOptions;
+    static defaultMaxError: number;
+    get forcePath(): boolean;
+    set forcePath(value: boolean);
+    get maxError(): number;
+    set maxError(error: number);
+    get numSamplesInQuadrant(): number;
+    set numSamplesInQuadrant(numSamples: number);
+    get remapFunction(): FractionMapper;
+    set remapFunction(f: FractionMapper);
+    get sampleMethod(): EllipticalArcSampleMethod;
+    set sampleMethod(method: EllipticalArcSampleMethod);
+}
+
+// @public
+export enum EllipticalArcSampleMethod {
+    AdaptiveSubdivision = 3,
+    NonUniformCurvature = 2,
+    UniformCurvature = 1,
+    UniformParameter = 0
+}
+
+// @public
 export class FacetFaceData {
     clone(result?: FacetFaceData): FacetFaceData;
     convertParamToDistance(param: Point2d, result?: Point2d): Point2d;
@@ -2073,6 +2099,9 @@ export interface FacetProjectedVolumeSums {
     positiveProjectedFacetAreaMoments?: MomentData;
     volume: number;
 }
+
+// @public
+export type FractionMapper = (f: number) => number;
 
 // @public
 export class FrameBuilder {

@@ -5,13 +5,11 @@
 
 import { assert, expect } from "chai";
 import { OrderedSet } from "@itwin/core-bentley";
-import { Arc3d } from "../../curve/Arc3d";
+import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import {
-  EllipticalArcApproximationContext, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper, QuadrantFractions,
-} from "../../curve/internalContexts/EllipticalArcApproximationContext";
+import { EllipticalArcApproximationContext, QuadrantFractions } from "../../curve/internalContexts/EllipticalArcApproximationContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
@@ -650,12 +648,12 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  const displaySamples = (
+  function displaySamples(
     allGeometry: GeometryQuery[],
     arc: Arc3d,
     samples: QuadrantFractions[] | number[],
     x?: number, y?: number, z?: number,
-  ): void => {
+  ): void {
     if (samples[0] instanceof QuadrantFractions) {
       for (let i = 0; i < samples.length; ++i) {
         const quadrant = samples[i] as QuadrantFractions;
@@ -672,7 +670,7 @@ describe("Arc3d", () => {
       for (const fraction of samples as number[])
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(fraction), 0.1, x, y, z);
     }
-  };
+  }
 
   it.only("EllipseSampler", () => {
     const ck = new Checker(true, true);
@@ -734,7 +732,9 @@ describe("Arc3d", () => {
         case 4: return "Cubic";
         case 5: return "Quartic";
         case 6: return "Sqrt";
-        default: return iMethod < 0 ? "Naive" : "Undefined";
+        case 7: return "Subdivision";
+        case undefined:
+        default: return "Undefined";
       }
     };
     const convertToFlatArray = (array: QuadrantFractions[] | number[]): number[] => {

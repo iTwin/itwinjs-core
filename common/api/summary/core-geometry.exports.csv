@@ -117,12 +117,15 @@ public;DirectSpiralTypeName = "JapaneseCubic" | "Arema" | "ChineseCubic" | "Half
 public;DuplicateFacetClusterSelector
 public;Ellipsoid 
 public;EllipsoidPatch 
+public;EllipticalArcApproximationOptions
+public;EllipticalArcSampleMethod
 public;FacetFaceData
 public;FacetIntersectCallback = (detail: FacetLocationDetail, visitor: PolyfaceVisitor) => boolean
 public;FacetIntersectOptions
 public;FacetLocationDetail
 public;FacetLocationDetailPair
 public;FacetProjectedVolumeSums
+public;FractionMapper = (f: number) => number
 public;FrameBuilder
 internal;GaussMapper
 public;GeodesicPathPoint
