@@ -374,7 +374,7 @@ export class ChangeSummaryManager {
 
     const iModelId = iModel.iModelId;
     const changesetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
-    const changeset = await IModelHost.hubAccess.downloadChangeset({ accessToken, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
+    const changeset = await IModelHost.hubAccess.downloadChangeset({ accessToken: IModelHost.authorizationClient ? undefined : accessToken, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
 
     if (!IModelJsFs.existsSync(changeset.pathname))
       throw new IModelError(IModelStatus.FileNotFound, `Failed to download change set: ${changeset.pathname}`);
@@ -413,7 +413,8 @@ export class ChangeSummaryManager {
    * @param args Arguments including the range of versions for which Change Summaries are to be created, and other necessary input for creation
    */
   public static async createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]> {
-    const accessToken = args.accessToken ?? await IModelHost.getAccessToken() ?? "";
+    // if we pass undefined to hubAccess methods they will use our authorizationClient to refresh the token as needed.
+    const accessToken = IModelHost.authorizationClient ? undefined : args.accessToken ?? "";
     const { iModelId, iTwinId, range } = args;
     range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
@@ -442,7 +443,7 @@ export class ChangeSummaryManager {
           await iModel.pullChanges({ accessToken, toIndex: changesets[index].index });
 
         // Create a change summary for the last change set that was applied
-        const summaryId = await this.createChangeSummary(accessToken, iModel);
+        const summaryId = await this.createChangeSummary(accessToken ?? await IModelHost.authorizationClient?.getAccessToken() ?? "", iModel);
         summaryIds.push(summaryId);
       }
       return summaryIds;

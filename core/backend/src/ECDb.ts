@@ -11,7 +11,7 @@ import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, Q
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
@@ -43,7 +43,7 @@ export class ECDb implements IDisposable {
   }
 
   constructor() {
-    this._nativeDb = new IModelHost.platform.ECDb();
+    this._nativeDb = new IModelNative.platform.ECDb();
   }
   /** Call this function when finished with this ECDb object. This releases the native resources held by the
    *  ECDb object.

@@ -3241,7 +3241,7 @@ export namespace EditManipulator {
 // @internal (undocumented)
 export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
-// @alpha
+// @public
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -3327,7 +3327,7 @@ export class ElementPicker {
     viewport?: Viewport;
 }
 
-// @alpha
+// @public
 export abstract class ElementSetTool extends PrimitiveTool {
     protected get agenda(): ElementAgenda;
     protected get allowDragSelect(): boolean;
@@ -5735,7 +5735,7 @@ export interface GroundPlaneDecorations {
     readonly belowParams: GraphicParams;
 }
 
-// @alpha (undocumented)
+// @public
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
@@ -7043,6 +7043,8 @@ export abstract class IModelConnection extends IModel {
     get projectCenterAltitude(): number | undefined;
     // @deprecated
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    // @internal
+    queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     // @deprecated
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
@@ -9789,7 +9791,7 @@ export class ModelState extends EntityState implements ModelProps {
 // @public
 export type ModelSubCategoryHiliteMode = "union" | "intersection";
 
-// @alpha (undocumented)
+// @public
 export enum ModifyElementSource {
     DragSelect = 3,
     Selected = 1,
@@ -10587,6 +10589,8 @@ export class PlanarClipMaskState {
     getTileTrees(view: SpatialViewState, classifiedModelId: Id64String): TileTreeReference[] | undefined;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
+    // (undocumented)
+    get usingViewportOverrides(): boolean;
 }
 
 // @alpha
@@ -13404,7 +13408,7 @@ export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList>
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
-    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance): void;
+    add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
     // (undocumented)
     clear(): void;
     // (undocumented)
@@ -13414,6 +13418,7 @@ export class SubCategoriesCache {
     // (undocumented)
     getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>>;
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
+    loadAllUsedSpatialSubCategories(): Promise<void>;
     // (undocumented)
     onIModelConnectionClose(): void;
 }
@@ -16419,6 +16424,7 @@ export class ViewingSpace {
     getTerrainHeightRange(): Range1d | undefined;
     // (undocumented)
     getViewCorners(): Range3d;
+    readonly getViewedExtents: () => AxisAlignedBox3d;
     // @internal
     static nearScaleLog24: number;
     // @internal
