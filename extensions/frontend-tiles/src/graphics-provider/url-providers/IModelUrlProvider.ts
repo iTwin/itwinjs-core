@@ -10,7 +10,7 @@ import { getGraphicRepresentationUrl, GetGraphicRepresentationUrlArgs } from "./
 /** Represents a data source for an iModel.
  * @beta
  */
-export interface DataSource {
+export interface IModelDataSource {
   /** The iTwinId associated with the iModel. */
   iTwinId: string;
 
@@ -45,7 +45,7 @@ export interface IModelTilesetOptions {
  */
 export interface GetIModelTilesetUrlArgs {
   /** The data source that the representation originates from. For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset. */
-  dataSource: DataSource;
+  dataSource: IModelDataSource;
 
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
