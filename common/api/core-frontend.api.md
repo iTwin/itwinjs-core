@@ -3241,7 +3241,7 @@ export namespace EditManipulator {
 // @internal (undocumented)
 export const ELEMENT_MARKED_FOR_REMOVAL: unique symbol;
 
-// @alpha
+// @public
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
     add(arg: Id64Arg): boolean;
@@ -3327,7 +3327,7 @@ export class ElementPicker {
     viewport?: Viewport;
 }
 
-// @alpha
+// @public
 export abstract class ElementSetTool extends PrimitiveTool {
     protected get agenda(): ElementAgenda;
     protected get allowDragSelect(): boolean;
@@ -5735,7 +5735,7 @@ export interface GroundPlaneDecorations {
     readonly belowParams: GraphicParams;
 }
 
-// @alpha (undocumented)
+// @public
 export interface GroupMark {
     // (undocumented)
     source: ModifyElementSource;
@@ -9791,7 +9791,7 @@ export class ModelState extends EntityState implements ModelProps {
 // @public
 export type ModelSubCategoryHiliteMode = "union" | "intersection";
 
-// @alpha (undocumented)
+// @public
 export enum ModifyElementSource {
     DragSelect = 3,
     Selected = 1,
