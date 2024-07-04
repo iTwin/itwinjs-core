@@ -9,6 +9,7 @@ import {
   AnimationNodeId,
   AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
+  Viewport,
 } from "@itwin/core-frontend";
 import {  BatchedTileTreeReference, BatchedTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
@@ -229,16 +230,22 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   // Retained if attachToViewport is called while we are still loading; and reset if detachFromViewport is called while loading.
   private _attachArgs?: AttachToViewportArgs;
 
-  public constructor(view: SpatialViewState, getSpec: Promise<BatchedTilesetSpec | null>) {
+  public constructor(view: SpatialViewState, getSpec: Promise<BatchedTilesetSpec | null>, nopFallback: boolean = false) {
     this._proxyRef = new ProxyTileTreeReference(view.iModel);
     getSpec.then((spec: BatchedTilesetSpec | null) => {
       if (spec) {
         this.setTreeRefs(new BatchedSpatialTileTreeReferences(spec, view));
-      } else {
+      } else if(nopFallback) {
+        this.setTreeRefs(new EmptySpatialTileTreeReferences());
+      }else {
         this.setTreeRefs(createSpatialTileTreeReferences(view));
       }
     }).catch(() => {
-      this.setTreeRefs(createSpatialTileTreeReferences(view));
+      if(nopFallback) {
+        this.setTreeRefs(new EmptySpatialTileTreeReferences());
+      }else {
+        this.setTreeRefs(createSpatialTileTreeReferences(view));
+      }
     });
   }
 
@@ -311,8 +318,26 @@ async function fetchTilesetSpec(iModel: IModelConnection, computeBaseUrl: Comput
   }
 }
 
+class EmptySpatialTileTreeReferences implements SpatialTileTreeReferences {
+  public update(): void {}
+
+  public setDeactivated(_modelIds: string | string[] | undefined, _deactivated: boolean | undefined, _refs: "all" | "animated" | "primary" | "section" | number[]): void {}
+
+  public attachToViewport(_args: Viewport): void {}
+
+  public detachFromViewport(): void {}
+
+  public collectMaskRefs(_modelIds: OrderedId64Iterable, _maskTreeRefs: TileTreeReference[]): void {};
+
+  public getModelsNotInMask(_maskModels: OrderedId64Iterable | undefined, _useVisible: boolean): string[] | undefined {
+    return undefined;
+  }
+
+  public *[Symbol.iterator](): Iterator<TileTreeReference> {}
+}
+
 /** @internal */
-export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: ComputeSpatialTilesetBaseUrl): SpatialTileTreeReferences {
+export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: ComputeSpatialTilesetBaseUrl, nopFallback: boolean = false): SpatialTileTreeReferences {
   const iModel = view.iModel;
   let entry = iModelToTilesetSpec.get(iModel);
   if (undefined === entry) {
@@ -330,12 +355,17 @@ export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, c
   }
 
   if (null === entry) {
+    // No tileset could be obtained for this iModel - use empty tile tree if requested.
+    if (nopFallback) {
+      return new EmptySpatialTileTreeReferences();
+    }
+
     // No tileset could be obtained for this iModel - use default tile generation instead.
     return createSpatialTileTreeReferences(view);
   }
 
   if (entry instanceof Promise)
-    return new ProxySpatialTileTreeReferences(view, entry);
+    return new ProxySpatialTileTreeReferences(view, entry, nopFallback);
 
   return new BatchedSpatialTileTreeReferences(entry, view);
 }
