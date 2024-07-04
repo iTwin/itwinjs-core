@@ -15157,6 +15157,7 @@ export class ToolAdmin {
     setPrimitiveTool(newTool?: PrimitiveTool): Promise<void>;
     // @internal (undocumented)
     setViewTool(newTool?: ViewTool): Promise<void>;
+    showToolTip(_hit: HitDetail): boolean;
     simulateMotionEvent(): void;
     startDefaultTool(): Promise<void>;
     // @internal (undocumented)
