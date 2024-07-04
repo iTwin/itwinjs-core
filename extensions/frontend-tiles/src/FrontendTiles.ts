@@ -169,8 +169,8 @@ export interface FrontendTilesOptions {
   */
   useIndexedDBCache?: boolean;
 
-  /** If true, the tileset will use an empty tile tree as fallback.
-   * If false, the tileset will use the default tiles as fallback.
+    /** If true, an empty tile tree will be used as fallback if the tileset is not found or invalid.
+   * If false or not defined, the default tiles will be used as a fallback.
    * @internal
    */
   nopFallback?: boolean;
