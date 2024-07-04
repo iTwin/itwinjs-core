@@ -389,7 +389,7 @@ export class AccuSnap implements Decorator {
     if (!IModelApp.viewManager.doesHostHaveFocus || undefined !== this._toolTipPromise)
       return;
 
-    if (!IModelApp.toolAdmin.showToolTip(hit))
+    if (!IModelApp.toolAdmin.wantToolTip(hit))
       return;
 
     const promise = this._toolTipPromise = delay.executeAfter(async () => {

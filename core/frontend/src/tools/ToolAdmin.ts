@@ -855,7 +855,7 @@ export class ToolAdmin {
   public get currentTool(): InteractiveTool { return this.activeTool ? this.activeTool : this.idleTool; }
 
   /** Allow applications to inhibit specific tooltips, such as for maps. */
-  public showToolTip(_hit: HitDetail): boolean { return true; }
+  public wantToolTip(_hit: HitDetail): boolean { return true; }
 
   /** Ask the current tool to provide tooltip contents for the supplied HitDetail. */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> { return this.currentTool.getToolTip(hit); }
