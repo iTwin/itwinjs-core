@@ -89,6 +89,10 @@ export class DisplayPerfTestApp {
 
     const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback) ? runner.curConfig.frontendTilesNopFallback : false;
 
+    if(frontendTilesNopFallback){
+      await DisplayPerfRpcInterface.getClient().consoleLog("Nop fallback enabled for frontend tiles.")
+    }
+
     initializeFrontendTiles({
       enableEdges: true,
       computeSpatialTilesetBaseUrl: async (iModel) => {
