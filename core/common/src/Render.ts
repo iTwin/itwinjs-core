@@ -11,12 +11,17 @@ import { OctEncodedNormalPair } from "./OctEncodedNormal";
 // cSpell:ignore vals
 
 /** Describes the semantics of a [PolylineArgs]($frontend).
- * @alpha
+ * @public
  */
 export enum PolylineTypeFlags {
-  Normal = 0,      // Just an ordinary polyline
-  Edge = 1 << 0, // A polyline used to define the edges of a planar region.
-  Outline = 1 << 1, // Like Edge, but the edges are only displayed in wireframe mode when surface fill is undisplayed.
+  /** Just an ordinary polyline with no special semantics. */
+  Normal = 0,
+  /** A polyline used to define the edges of a planar region. */
+  Edge = 1 << 0,
+  /** Like [[Edge]], but the edges are only displayed in [[RenderMode.Wireframe]] when the surface's fill is not displayed.
+   * [[FillFlags]] controls whether the fill is displayed.
+   */
+  Outline = 1 << 1,
 }
 
 /** Flags describing a [PolylineArgs]($frontend).
@@ -29,9 +34,7 @@ export interface PolylineFlags {
   isPlanar?: boolean;
   /** If `true`, the polylines' positions all have the same z coordinate. */
   is2d?: boolean;
-  /** Default: Normal.
-   * @alpha
-   */
+  /** Default: Normal. */
   type?: PolylineTypeFlags;
 }
 

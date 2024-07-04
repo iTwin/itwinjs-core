@@ -19,6 +19,7 @@ import { ToolSettings } from "./tools/ToolSettings";
 import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
+import { _requestSnap } from "./internal/Symbols";
 
 // cspell:ignore dont primitivetools
 
@@ -751,7 +752,7 @@ export class AccuSnap implements Decorator {
     }
 
     try {
-      const result = await thisHit.iModel.requestSnap(requestProps);
+      const result = await thisHit.iModel[_requestSnap](requestProps);
 
       if (out)
         out.snapStatus = result.status;

@@ -13,6 +13,7 @@ import { ScreenViewport } from "../Viewport";
 import { AccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { testBlankViewportAsync } from "./openBlankViewport";
+import { _requestSnap } from "../internal/Symbols";
 
 interface HitDetailProps {
   hitPoint?: XYZProps; // defaults to [0, 0, 0]
@@ -50,7 +51,7 @@ describe("AccuSnap", () => {
 
   describe("requestSnap", () => {
     function overrideRequestSnap(iModel: IModelConnection, impl?: (props: SnapRequestProps) => SnapResponseProps): void {
-      iModel.requestSnap = async (props) => Promise.resolve(impl ? impl(props) : {
+      iModel[_requestSnap] = async (props) => Promise.resolve(impl ? impl(props) : {
         status: SnapStatus.Success,
         hitPoint: props.testPoint,
         snapPoint: props.testPoint,
