@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-tiles",
+      "comment": "Add optional Nop fallback to frontend tiles. When a tileset.json is not found or cannot be deserialized we will return an empty Tile Tree instead of using default tiles.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-tiles"
+}
