@@ -1593,12 +1593,12 @@ function createPolyfaceFromSynchro(geom: any): Polyface {
       polyface.data.normal!.pushXYZ(xyz.x, xyz.y, xyz.z);
   }
 
-  // build up the index sets one facet at a time, let terminateFacet () get the facetStart table right . . .
-  // Note that polyface has separate index arrays for params and normals.
-  // (When there are sharp edges in the mesh, this allows smaller param, point, and normal arrays.
-  //    The single-index style of Synchro and other
-  //   browser software saves memory by sharing the index array but wastes it with redundant data arrays.
-  //   The polyface compress function can get this effect)
+  // build up the index sets one facet at a time: let terminateFacet() get the facetStart table right.
+  // note that polyface has separate index arrays for params and normals (when there are sharp
+  // edges in the mesh, this allows smaller param, point, and normal arrays.
+  // the single-index style of Synchro and other browser software saves memory by sharing the
+  // index array but wastes it with redundant data arrays.
+  // the polyface compress function can remove this effect.
   const indexArray = geom.index_array;
   let i0, i1, i2;
   for (let k = 0; k + 2 < indexArray.length; k += 3) {

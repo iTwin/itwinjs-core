@@ -90,8 +90,8 @@ class FacetSector {
     }
   }
   /**
-   * Copy contents (not pointers) from source.
-   * * ASSUME all fields defined in this are defined int the source (undefined check only needed on this).
+   * Copy contents (not pointers) from `other`.
+   * * ASSUME all fields defined in the instance are defined in `other`.
    */
   public copyContentsFrom(other: FacetSector) {
     this.xyz.setFromPoint3d(other.xyz);
@@ -144,8 +144,8 @@ class FacetSector {
    * @param sectorB "upper" sector.
    */
   public static computeNormalsAlongRuleLine(sectorA: FacetSector, sectorB: FacetSector) {
-    // we expect that if sectionDerivative is defined so is normal (if not, the cross product calls will generate
-    // normals that are never used not good, garbage collector will clean up)
+    // we expect that if a sector's sectionDerivative is defined, then so is its normal. If a normal is undefined, the
+    // crossProduct returns an object that goes unused---not good, but the garbage collector will clean it up.
     if (sectorA.sectionDerivative && sectorB.sectionDerivative) {
       const vectorAB = FacetSector._edgeVector;
       Vector3d.createStartEnd(sectorA.xyz, sectorB.xyz, vectorAB);
@@ -304,10 +304,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
   /**
-   * Add triangles from point0 (first point of the linestring) to other linestring points.
-   * * Assume the polygon is convex.
-   * * i.e. simple triangulation from point0.
-   * * i.e. simple cross products give a good normal.
+   * Add triangles from the first point of the linestring to the subsequent edges of the linestring.
+   * * No checks are made for polygon convexity or edge collinearity, conditions which would ensure positive area triangles.
    * @param ls linestring with point coordinates.
    * @param reverse if `true`, wrap the triangle creation in toggleReversedFacetFlag.
    */
@@ -365,12 +363,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public findOrAddPoint(xyz: Point3d): number {
     return this.addPoint(xyz);
   }
-  /** Add uv parameter to the polyface. */
+  /** Add a uv parameter to the polyface. */
   public addParamXY(x: number, y: number): number {
     return this._polyface.addParamUV(x, y);
   }
   /**
-   * Add uv parameter to the polyface.
+   * Add a uv parameter to the polyface.
    * @deprecated in 3.x. Use addParamXY instead.
    */
   public findOrAddParamXY(x: number, y: number): number {
@@ -380,12 +378,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   private static _workVectorFindOrAdd = Vector3d.create();
   private static _workUVFindOrAdd = Point2d.create();
   /**
-   * Add a point to the polyface. The implementation is free to either create a new point or (if known) return index
-   * of a prior point with the same coordinates.
+   * Add a point to the polyface. The implementation is free to either create a new point or return the index of a
+   * prior point with the same coordinates.
    * @param ls the linestring.
    * @param index index of the point in the linestring.
    * @param transform (optional) transform to be applied.
-   * @param priorIndex (optional) prior index to reuse.
+   * @param priorIndex (optional) index of a prior point to check for possible duplicate value.
    * @returns the point index in the polyface.
    */
   public findOrAddPointInLineString(
@@ -400,12 +398,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Add a point to the polyface. The implementation is free to either create a new point or (if known) return index
-   * of a prior point with the same coordinates.
+   * Add a point to the polyface. The implementation is free to either create a new point or return the index of a
+   * prior point with the same coordinates.
    * @param xyz the array of points.
    * @param index index of the point in the array.
    * @param transform (optional) transform to be applied.
-   * @param priorIndex (optional) prior index to reuse.
+   * @param priorIndex (optional) index of a prior point to check for possible duplicate value.
    * @returns the point index in the polyface.
    */
   public findOrAddPointInGrowableXYZArray(
@@ -420,12 +418,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Add a normal to the polyface. The implementation is free to either create a new normal or (if known) return index
-   * of a prior normal with the same coordinates.
+   * Add a normal to the polyface. The implementation is free to either create a new normal or return the index of a
+   * prior normal with the same coordinates.
    * @param xyz the array of normals.
    * @param index index of the normal in the array.
    * @param transform (optional) transform to be applied.
-   * @param priorIndex (optional) prior index to reuse.
+   * @param priorIndex (optional) index of a prior point to check for possible duplicate value.
    * @returns the normal index in the polyface.
    */
   public findOrAddNormalInGrowableXYZArray(
@@ -461,13 +459,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return this.addParamInGrowableXYArray(data, index);
   }
   /**
-   * Add a uv parameter to the polyface, taking `u` from `ls.fractions` and `v` from arguments. The implementation is
-   * free to either create a new param or (if known) return index of a prior point with the same coordinates.
+   * Add a uv parameter to the polyface, taking `u` from `ls.fractions` and `v` from input. The implementation is
+   * free to either create a new param or return the index of a prior param with the same coordinates.
    * @param ls the linestring.
    * @param index index of the point in the linestring.
    * @param v the v parameter.
-   * @param priorIndexA (optional) prior index A to reuse.
-   * @param priorIndexB (optional) prior index B to reuse.
+   * @param priorIndexA (optional) an index of a prior param to check for possible duplicate value.
+   * @param priorIndexB (optional) another index of a prior param to check for possible duplicate value.
    * @returns the uv parameter index in the polyface.
    */
   public findOrAddParamInLineString(
@@ -478,12 +476,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return this._polyface.addParamUV(u, v, priorIndexA, priorIndexB);
   }
   /**
-   * Add a normal to the polyface. The normal found at index in the surfaceNormal array stored on the linestring.
+   * Add a normal to the polyface.
    * @param ls the linestring.
-   * @param index Index of the point in the linestring.
+   * @param index Index of the normal in the linestring's surface normal array.
    * @param transform (optional) transform to be applied.
-   * @param priorIndex (optional) prior index to reuse.
-   * @returns the point index in the polyface.
+   * @param priorIndexA (optional) an index of a prior normal to check for possible duplicate value.
+   * @param priorIndexB (optional) another index of a prior normal to check for possible duplicate value.
+   * @returns the normal index in the polyface.
    */
   public findOrAddNormalInLineString(
     ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number,
@@ -656,7 +655,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     this.addIndexedQuadPointIndexes(idx0, idx1, idx3, idx2);
   }
   /**
-   * Add a quad to the polyface given its points indexes.
+   * Add a single quad facet from existing points to the polyface.
    * * The actual quad may be reversed or triangulated based on builder setup.
    * * `indexA0` and `indexA1` are in the forward order at the "A" end of the quad
    * * `indexB0` and `indexB1` are in the forward order at the "B" end of the quad.
@@ -892,8 +891,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Add facets between lineStrings with matched point counts.
    * * Surface normals are computed from (a) curve tangents in the linestrings and (b) rule line between linestrings.
-   * * Facets are announced to addIndexedQuad.
-   * * addIndexedQuad is free to apply reversal or triangulation options.
    */
   public addBetweenLineStringsWithRuleEdgeNormals(
     lineStringA: LineString3d, vA: number, lineStringB: LineString3d, vB: number, addClosure: boolean = false,
@@ -939,9 +936,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Add facets between lineStrings with matched point counts.
-   * * Point indices pre-stored.
-   * * Normal indices pre-stored.
-   * * uv indices pre-stored.
+   * * Indices of points, normals, and uv parameters are pre-stored in the linestrings.
    */
   public addBetweenLineStringsWithStoredIndices(lineStringA: LineString3d, lineStringB: LineString3d): void {
     const pointA = lineStringA.pointIndices!;
@@ -1038,7 +1033,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         this.addIndexedQuadPointIndexes(indexA0, indexA00, indexB0, indexB00);
     } else {
       const children = curves.children;
-      // just send the children individually; final s will fix things??
+      // just send the children individually; final compress will fix things??
       if (children)
         for (const c of children) {
           this.addBetweenTransformedLineStrings(c as AnyCurve, transformA, transformB);
@@ -1151,7 +1146,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Add point data (no params, normals) for linestrings.
    * * This recurses through curve chains (loops and paths).
-   * * linestrings are swept.
+   * * LineStrings are swept.
    * * All other curve types are ignored.
    * @param contour contour which contains only linestrings.
    * @param vector sweep vector.
@@ -1217,6 +1212,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Apply stroke counts to curve primitives.
    * * Recursively visit all children of data.
    * * At each primitive, invoke `computeStrokeCountForOptions` method with options from the builder.
+   * @deprecated in 4.x.
    */
   public applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery): void {
     const options = this._options;
@@ -1400,7 +1396,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const numX = this._options.applyMaxEdgeLength(1, xLength);
     const numY = this._options.applyMaxEdgeLength(1, yLength);
     const numZ = this._options.applyMaxEdgeLength(1, zLength);
-    // wrap the 4 out-of-plane faces as a single parameters space with "distance"
+    // wrap the 4 out-of-plane faces as a single parameter space with "distance"
     // advancing in x, then y, then negative x, then negative y
     const uParamRange = Segment1d.create(0, xLength);
     const vParamRange = Segment1d.create(0, zLength);
@@ -1729,7 +1725,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       });
   }
   /**
-   * Add a graph faces to the builder.
+   * Add a graph's faces to the builder.
    * * For each node in `faces`:
    *  * Add all of its vertices to the polyface.
    *  * Add point indices to form a new facet.
@@ -1801,13 +1797,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Add coordinate facets to the builder given arrays of coordinates for multiple facets.
+   * Add facets to the builder given arrays of coordinates for multiple facets.
    * * pointArray[i] is an array of 3 or 4 points.
    * * paramArray[i] is an array of matching number of params.
    * * normalArray[i] is an array of matching number of normals.
    * @param pointArray array of arrays of point coordinates.
-   * @param paramArray array of arrays of uv parameters.
-   * @param normalArray array of arrays of normals.
+   * @param paramArray (optional) array of arrays of uv parameters.
+   * @param normalArray (optional) array of arrays of normals.
    * @param endFace if true, call this.endFace after adding all the facets.
    */
   public addCoordinateFacets(
@@ -1825,7 +1821,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.endFace();
   }
   /**
-   * Add UV grid body to the builder given the surface and numbers of intervals in the u and v directions.
+   * Add facets from the parametric surface.
    * * Evaluate `(numU + 1) * (numV + 1)` grid points (in 0..1 in both u and v) on a surface.
    * * Add the facets for `numU * numV` quads.
    * * uv params are the 0..1 fractions.
@@ -1954,10 +1950,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     xyzIndex1.clear();
   }
   /**
-   * Convert an array of points into a triangulated polyface.
+   * Create a polyface from a triangulation of the points.
+   * * The triangulation is computed as seen in the top view: z-coordinates are ignored.
    * @param points an array of points.
-   * @param options (optional) stroke options.
-   * @returns the generated triangulated polyface or `undefined` if triangulation was not possible.
+   * @param options (optional) stroke options. Currently only two options are supported. If `options.needNormals` is
+   * true, all facets are assigned the single normal 001. If `options.needParams` is true, all facet vertices are
+   * assigned uv-parameters equal to their xy-coordinates. These options are rarely useful.
+   * @returns triangulated polyface or `undefined` if triangulation was not possible.
    */
   public static pointsToTriangulatedPolyface(points: Point3d[], options?: StrokeOptions): IndexedPolyface | undefined {
     const graph = Triangulator.createTriangulatedGraphFromPoints(points);
@@ -1966,10 +1965,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Create (and add to the builder) triangles that bridge the gap between two linestrings.
+   * Add triangular facets between two linestrings.
    * * Each triangle will have 1 vertex on one of the linestrings and 2 on the other.
    * * Choice of triangles is heuristic, hence does not have a unique solution.
-   * * Logic to choice among the various possible triangle orders prefers:
+   * * Logic for choosing among the various possible triangles prefers:
    *    * Make near-coplanar facets.
    *    * Make facets with good aspect ratio.
    *    * This is exercised with a limited number of lookahead points, i.e. greedy to make first-available decision.
@@ -2011,11 +2010,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
   /**
-   * Create (and add to the builder) quad facets for a mitered pipe that follows a centerline curve.
+   * Add quad facets along a mitered pipe that follows a centerline curve.
    * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis
-   * lengths, or a full Arc3d.
-   * * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
-   * * The center of Arc3d input is translated to the centerline start point to act as initial cross section.
+   * lengths, or a full Arc3d:
+   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
+   *    * For Arc3d input, the center is translated to the centerline start point to act as initial cross section.
    * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions.
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d.
    * @param numFacetAround how many equal parameter-space chords around each section.
