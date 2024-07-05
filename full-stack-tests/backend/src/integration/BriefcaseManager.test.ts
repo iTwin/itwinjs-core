@@ -63,7 +63,7 @@ describe("BriefcaseManager", () => {
     });
 
     expect(iModel.changeset.id).to.equal(changesetId);
-    expect(iModel.changeset.index).to.equal(4); // Pulled from hub.
+    expect(iModel.changeset.index).to.equal(4);
     let index = 3;
     await iModel.pullChanges({ accessToken, toIndex: index });
     expect(iModel.changeset.index).to.equal(index);
