@@ -186,10 +186,7 @@ export abstract class IModelDb extends IModel {
   /** @alpha */
   public get codeService() { return this._codeService; }
 
-  /**
-   * Get the [[LockControl]] for this iModel.
-   * @beta
-   */
+  /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /**
@@ -204,7 +201,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Acquire the exclusive schema lock on this iModel.
-   * > Note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
+   * @note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
    * will be able to acquire *any* locks while the schema lock is held.
    */
   public async acquireSchemaLock(): Promise<void> {
@@ -785,7 +782,9 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** @internal */
+  /** @internal
+   * @deprecated in 4.8. Use `txns.reverseTxns`.
+   */
   public reverseTxns(numOperations: number): IModelStatus {
     return this.nativeDb.reverseTxns(numOperations);
   }
@@ -3255,7 +3254,7 @@ export class SnapshotDb extends IModelDb {
 
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
-   * > Note: A *snapshot* cannot be modified after [[close]] is called.
+   * @note: A *snapshot* cannot be modified after [[close]] is called.
    * @param filePath The file that will contain the new iModel *snapshot*
    * @param options The parameters that define the new iModel *snapshot*
    * @returns A writeable SnapshotDb
@@ -3275,7 +3274,7 @@ export class SnapshotDb extends IModelDb {
 
   /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
-   * > Note: A *snapshot* cannot be modified after [[close]] is called.
+   * @note: A *snapshot* cannot be modified after [[close]] is called.
    * @param iModelDb The snapshot will be initialized from the current contents of this iModelDb
    * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @param options Optional properties that determine how the snapshot iModel is created.

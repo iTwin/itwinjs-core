@@ -64,7 +64,7 @@ import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
- * @alpha
+ * @public
  */
 export interface IModelHierarchyChangeEventArgs {
   /** Id of ruleset that was used to create hierarchy. */
@@ -77,7 +77,7 @@ export interface IModelHierarchyChangeEventArgs {
 
 /**
  * Data structure that describes iModel content change event arguments.
- * @alpha
+ * @public
  */
 export interface IModelContentChangeEventArgs {
   /** Id of ruleset that was used to create content. */
@@ -168,7 +168,6 @@ export interface PresentationManagerProps {
   /**
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
-   * @alpha
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 
@@ -177,7 +176,6 @@ export interface PresentationManagerProps {
    * in requested unit system.
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
-   * @alpha
    */
   defaultFormats?: FormatsMap;
 
@@ -207,13 +205,11 @@ export class PresentationManager implements IDisposable {
 
   /**
    * An event raised when hierarchies created using specific ruleset change
-   * @alpha
    */
   public onIModelHierarchyChanged = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
 
   /**
    * An event raised when content created using specific ruleset changes
-   * @alpha
    */
   public onIModelContentChanged = new BeEvent<(args: IModelContentChangeEventArgs) => void>();
 
@@ -453,7 +449,7 @@ export class PresentationManager implements IDisposable {
 
   /**
    * Retrieves hierarchy level descriptor.
-   * @beta
+   * @public
    */
   public async getNodesDescriptor(
     requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,

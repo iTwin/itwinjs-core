@@ -263,19 +263,16 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Create a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]].
    * Return `undefined` if geometry collection is not supported.
    * @see [[createGeometryTreeReference]].
-   * @beta
    */
   protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     return undefined;
   }
 
   /** If defined, supplies the implementation of [[GeometryTileTreeReference.collectTileGeometry]].
-   * @beta
    */
   public collectTileGeometry?: (collector: TileGeometryCollector) => void;
 
   /** A function that can be assigned to [[collectTileGeometry]] to enable geometry collection for references to tile trees that support geometry collection.
-   * @beta
    */
   protected _collectTileGeometry(collector: TileGeometryCollector): void {
     const tree = this.treeOwner.load();
@@ -294,7 +291,6 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * undefined if geometry collection is not supported.
    * Currently, only terrain and reality model tiles support geometry collection.
    * @note Do not override this method - override [[_createGeometryTreeReference]] instead.
-   * @beta
    */
   public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     if (this.collectTileGeometry) {

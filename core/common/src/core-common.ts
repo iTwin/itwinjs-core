@@ -106,7 +106,6 @@ export * from "./RgbColor";
 export * from "./RpcManager";
 export * from "./SessionProps";
 export * from "./SkyBox";
-export * from "./Snapping";
 export * from "./SolarCalculate";
 export * from "./SolarShadows";
 export * from "./SpatialClassification";
@@ -162,6 +161,8 @@ export * from "./tile/TileIO";
 export * from "./tile/TileMetadata";
 export * from "./tile/Tileset3dSchema";
 export * from "./WhiteOnWhiteReversalSettings";
+
+export * from "./internal/cross-package";
 
 /** @docs-package-description
  * The core-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).

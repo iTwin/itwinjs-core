@@ -9,6 +9,7 @@
 
 /**
  * Commonly used constant values.
+ * @public
  */
 export class Constant {
   /** symbolic name for 1 millimeter:  0.001 meter */

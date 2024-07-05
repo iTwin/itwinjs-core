@@ -161,6 +161,11 @@
     }
   },
   "MapLayers": {
+    "ImageryLayer": "Imagery Layer",
+    "Latitude": "Latitude",
+    "Longitude": "Longitude",
+    "Height": "Height (Meters) Geodetic",
+    "SeaLevel": "Sea Level",
     "Messages": {
       "LoadTileTokenError": "An authentication error occurred while loading tiles for layer '{{layerName}}'",
       "FetchTooltipTokenError": "An authentication error occurred for layer: '{{layerName}}. Please login again.'"

@@ -136,7 +136,6 @@ export interface IModelAppOptions {
   realityDataAccess?: RealityDataAccess;
   /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
    * The path should always end with a trailing `/`.
-   * @beta
    */
   publicPath?: string;
 }
@@ -290,10 +289,12 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
-  /** The root URL for the assets 'public' folder.
-   * @beta
+
+  /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
+   * The path should always end with a trailing `/`.
    */
   public static get publicPath() { return this._publicPath; }
+
   /** The [[TelemetryManager]] for this session
    * @internal
    */

@@ -1104,8 +1104,9 @@ export class MapTileTreeReference extends TileTreeReference {
       const isBaseLayer = (this._baseImageryLayerIncluded && tree.layerIndex === 0);
       return {
         isBaseLayer,
-        index: isBaseLayer ? undefined : {isOverlay: this.isOverlay, index: this._baseImageryLayerIncluded ? tree.layerIndex -1 : tree.layerIndex},
-        settings: tree.layerSettings, provider: tree.imageryProvider};
+        index: isBaseLayer ? undefined : { isOverlay: this.isOverlay, index: this._baseImageryLayerIncluded ? tree.layerIndex - 1 : tree.layerIndex },
+        settings: tree.layerSettings, provider: tree.imageryProvider,
+      };
     });
   }
 
@@ -1176,7 +1177,7 @@ export class MapTileTreeReference extends TileTreeReference {
     const strings: string[] = [];
 
     const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
-      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${imageryTreeRef.layerSettings.name}`);
       carto = cartoGraphic;
       await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);
     };
@@ -1187,11 +1188,11 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     if (carto) {
-      strings.push(`Latitude: ${carto.latitudeDegrees.toFixed(4)}`);
-      strings.push(`Longitude: ${carto.longitudeDegrees.toFixed(4)}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Latitude")}: ${carto.latitudeDegrees.toFixed(4)}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Longitude")}: ${carto.longitudeDegrees.toFixed(4)}`);
       if (this.settings.applyTerrain && tree.terrainExaggeration !== 0.0) {
         const geodeticHeight = (carto.height - tree.bimElevationBias) / tree.terrainExaggeration;
-        strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
+        strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Height")}: ${geodeticHeight.toFixed(1)} ${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.SeaLevel")}: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
       }
     }
 

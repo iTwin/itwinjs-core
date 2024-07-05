@@ -9,6 +9,7 @@
 import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport, rpcOverIpcStrings } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
+import { _callIpcChannel } from "./internal/Symbols";
 
 /** @internal */
 export interface LocalHostIpcAppOpts {
@@ -70,7 +71,7 @@ class LocalTransport extends IpcWebSocketTransport {
 
 class LocalSession extends IpcSession {
   public override async handleRpc(info: InterceptedRpcRequest) {
-    return IpcApp.callIpcChannel(rpcOverIpcStrings.channelName, "request", info);
+    return IpcApp[_callIpcChannel](rpcOverIpcStrings.channelName, "request", info);
   }
 }
 

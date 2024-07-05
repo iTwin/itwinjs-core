@@ -7,7 +7,7 @@ import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
@@ -87,6 +87,12 @@ export class DisplayPerfTestApp {
     const config = await DisplayPerfRpcInterface.getClient().getEnvConfig();
     Object.assign(envConfiguration, config);
 
+    const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback) ? runner.curConfig.frontendTilesNopFallback : false;
+
+    if(frontendTilesNopFallback){
+      await DisplayPerfRpcInterface.getClient().consoleLog("Nop fallback enabled for frontend tiles.");
+    }
+
     initializeFrontendTiles({
       enableEdges: true,
       computeSpatialTilesetBaseUrl: async (iModel) => {
@@ -109,6 +115,7 @@ export class DisplayPerfTestApp {
           return undefined;
         }
       },
+      nopFallback: frontendTilesNopFallback,
     });
 
     await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
