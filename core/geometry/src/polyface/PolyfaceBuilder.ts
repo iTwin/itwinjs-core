@@ -59,8 +59,6 @@ import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
 
-/* eslint-disable deprecation/deprecation */
-
 /**
  * A FacetSector.
  * * Initially holds coordinate data for a place where xyz and sectionDerivative are known.
@@ -1224,6 +1222,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const children = data.children;
       if (children)
         for (const child of children)
+          // eslint-disable-next-line deprecation/deprecation
           this.applyStrokeCountsToCurvePrimitives(child);
     }
   }
