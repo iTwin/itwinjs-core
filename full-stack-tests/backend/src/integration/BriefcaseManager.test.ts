@@ -46,6 +46,37 @@ describe("BriefcaseManager", () => {
     V2CheckpointManager.cleanup();
   });
 
+  it("should be able to reverse apply changesets and maintain changeset indices", async () => {
+    const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
+    const changesetId = "1b186c485d182c46c02b99aff4fb12637263438f";
+    const args: RequestNewBriefcaseArg = {
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      briefcaseId: BriefcaseIdValue.Unassigned,
+      asOf: {afterChangeSetId: changesetId},
+    };
+    const props = await BriefcaseManager.downloadBriefcase(args);
+    const iModel = await BriefcaseDb.open({
+      fileName: props.fileName,
+      readonly: true,
+    });
+
+    expect(iModel.changeset.id).to.equal(changesetId);
+    expect(iModel.changeset.index).to.equal(4); // Pulled from hub.
+    let index = 3;
+    await iModel.pullChanges({ accessToken, toIndex: index });
+    expect(iModel.changeset.index).to.equal(index);
+    index = 2;
+    await iModel.pullChanges({ accessToken, toIndex: index });
+    expect(iModel.changeset.index).to.equal(index);
+    index = 4;
+    await iModel.pullChanges({ accessToken, toIndex: index });
+    expect(iModel.changeset.index).to.equal(index);
+    expect(iModel.changeset.id).to.equal(changesetId);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
+  });
+
   it("should open and close an iModel from the Hub", async () => {
     const iModel = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
