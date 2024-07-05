@@ -59,6 +59,8 @@ import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * A FacetSector.
  * * Initially holds coordinate data for a place where xyz and sectionDerivative are known.
@@ -144,7 +146,7 @@ class FacetSector {
    * @param sectorB "upper" sector.
    */
   public static computeNormalsAlongRuleLine(sectorA: FacetSector, sectorB: FacetSector) {
-    // we expect that if a sector's sectionDerivative is defined, then so is its normal. If a normal is undefined, the
+    // We expect that if a sector's sectionDerivative is defined, then so is its normal. If a normal is undefined, the
     // crossProduct returns an object that goes unused---not good, but the garbage collector will clean it up.
     if (sectorA.sectionDerivative && sectorB.sectionDerivative) {
       const vectorAB = FacetSector._edgeVector;
@@ -1212,7 +1214,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Apply stroke counts to curve primitives.
    * * Recursively visit all children of data.
    * * At each primitive, invoke `computeStrokeCountForOptions` method with options from the builder.
-   * @deprecated in 4.x.
+   * @deprecated in 4.x. This method does nothing and is unneeded.
    */
   public applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery): void {
     const options = this._options;
