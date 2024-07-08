@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { getGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../graphics-provider/url-providers/GraphicUrlProvider";
+import { getGraphicRepresentationUrl } from "../../graphics-provider/url-providers/GraphicUrlProvider";
 
 use(chaiAsPromised);
 
@@ -57,15 +57,6 @@ function makeResponse(jsonMethod: () => Promise<TestJsonResponses>): Response {
   } as Response;
 }
 
-async function expectSources(expectedIds: string[], args: QueryGraphicRepresentationsArgs): Promise<void> {
-  let idIndex = 0;
-  for await (const src of queryGraphicRepresentations(args)) {
-    expect(src.representationId).to.equal(expectedIds[idIndex++]);
-  }
-
-  expect(idIndex).to.equal(expectedIds.length);
-}
-
 interface SourceProps {
   id: string;
   status?: string; // defaults to "Complete"
@@ -113,69 +104,9 @@ async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeSources(props)));
 }
 
-const testArgs = {
-  accessToken: "this-is-a-fake-access-token",
-  sessionId: "testSession",
-  dataSource: {
-    iTwinId: "iTwinId",
-    id: "srcId",
-    changeId: undefined,
-    type: "srcType",
-  },
-  format: "srcType",
-};
-
-describe("queryGraphicRepresentations", async () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
-
-  it("returns no results upon error", async () => {
-    await mockFetch(
-      () => { throw new Error("fetch threw"); },
-      async () => expectSources([], testArgs),
-    );
-    await mockFetch(
-      async () => Promise.resolve(makeResponse(
-        () => { throw new Error("json threw"); }),
-      ),
-      async () => expectSources([], testArgs),
-    );
-  });
-
-  it("produces one set of results", async () => {
-    await mockFetch(
-      async () => makeSourcesResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
-      async () => expectSources(["a", "b", "c"], testArgs),
-    );
-  });
-
-  it("iterates over multiple sets of results", async () => {
-    let fetchedFirst = false;
-    await mockFetch(
-      async () => {
-        if (!fetchedFirst) {
-          fetchedFirst = true;
-          return makeSourcesResponse({ exports: [{ id: "a" }, { id: "b" }], next: "next.org" });
-        } else {
-          return makeSourcesResponse({ exports: [{ id: "c" }, { id: "d" }] });
-        }
-      },
-      async () => expectSources(["a", "b", "c", "d"], testArgs));
-  });
-
-  it("includes only completed Data Sources unless otherwise specified", async () => {
-    await mockFetch(
-      async () => makeSourcesResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
-      async () => {
-        await expectSources(["a"], testArgs);
-        await expectSources(["a", "b"], { ...testArgs, includeIncomplete: true }),
-        await expectSources(["a"], { ...testArgs, includeIncomplete: false });
-      },
-    );
-  });
-});
-
-describe("obtainGraphicRepresentationUrl", () => {
+// This test is similar to the one for obtainGraphicRepresentationUrl in GraphicsProvider/GraphicRepresentationProvider.test.ts
+// but exists to test the new @alpha APIs in the graphics-provider directory.
+describe("getGraphicRepresentationUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 

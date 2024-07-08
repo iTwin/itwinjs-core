@@ -98,7 +98,9 @@ async function makeExportsResponse(props: ExportsProps): Promise<Response> {
 
 const accessToken = "this-is-a-fake-access-token";
 
-describe("obtainIModelTilesetUrl", () => {
+// This test is similar to the one for obtainIModelTilesetUrl in GraphicsProvider/GraphicsProvider.test.ts
+// but exists to test the new @alpha APIs in the graphics-provider directory.
+describe("getIModelTilesetUrlFromConnection", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
