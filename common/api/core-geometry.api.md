@@ -4526,6 +4526,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addTrianglesInUncheckedConvexPolygon(ls: LineString3d, toggle: boolean): void;
     addTriangulatedRegion(region: AnyRegion): void;
     addUVGridBody(surface: UVSurface, numU: number, numV: number, uMap?: Segment1d, vMap?: Segment1d): void;
+    // @deprecated
     applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery): void;
     claimPolyface(compress?: boolean, tolerance?: number): IndexedPolyface;
     static create(options?: StrokeOptions): PolyfaceBuilder;
