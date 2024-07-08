@@ -257,6 +257,11 @@ export abstract class IModelDb extends IModel {
     return super.iModelId;
   } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
+  /** @internal
+   * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelDb's public API instead.
+   */
+  public get nativeDb(): IModelJsNative.DgnDb { return this[_nativeDb]; }
+
   /** @internal*/
   public readonly [_nativeDb]: IModelJsNative.DgnDb;
 

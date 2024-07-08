@@ -27,6 +27,11 @@ import { _nativeDb } from "./internal/Symbols";
  * @public
  */
 export class SQLiteDb {
+  /** @internal
+   * @deprecated in 4.8. This internal API will be removed in 5.0. Use SQLiteDb's public API instead.
+   */
+  public get nativeDb(): IModelJsNative.SQLiteDb { return this[_nativeDb]; }
+
   /** @internal */
   public readonly [_nativeDb] = new IModelNative.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
