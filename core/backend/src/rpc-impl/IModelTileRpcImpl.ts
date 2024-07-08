@@ -16,6 +16,7 @@ import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { IModelNative } from "../internal/NativePlatform";
+import { _nativeDb } from "../internal/Symbols";
 
 interface TileRequestProps {
   accessToken?: AccessToken;
@@ -206,7 +207,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
       return;
     }
 
-    return db.nativeDb.purgeTileTrees(modelIds);
+    return db[_nativeDb].purgeTileTrees(modelIds);
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
@@ -248,6 +249,6 @@ export async function cancelTileContentRequests(tokenProps: IModelRpcProps, cont
       RequestTileContentMemoizer.instance.deleteMemoized(props);
     }
 
-    iModel.nativeDb.cancelTileContentRequests(entry.treeId, entry.contentIds);
+    iModel[_nativeDb].cancelTileContentRequests(entry.treeId, entry.contentIds);
   }
 }

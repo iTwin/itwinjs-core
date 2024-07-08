@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
@@ -216,8 +216,8 @@ describe("ECSql Query", () => {
     let successful = 0;
     let rowCount = 0;
     try {
-      ConcurrentQuery.shutdown(imodel1.nativeDb);
-      ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
 
       const scheduleQuery = async (delay: number) => {
         return new Promise<void>(async (resolve, reject) => {
@@ -253,8 +253,8 @@ describe("ECSql Query", () => {
       assert.isAtLeast(successful, 1, "successful should be at least 1");
       assert.isAtLeast(rowCount, 1, "rowCount should be at least 1");
     } finally {
-      ConcurrentQuery.shutdown(imodel1.nativeDb);
-      ConcurrentQuery.resetConfig(imodel1.nativeDb);
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb]);
     }
   });
   it("concurrent query should retry on timeout", async () => {
@@ -268,10 +268,10 @@ describe("ECSql Query", () => {
     }
 
     // Set time to 1 sec to simulate a timeout scenario
-    ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+    ConcurrentQuery.resetConfig(imodel1[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
     const executor = {
       execute: async (req: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, req);
+        return ConcurrentQuery.executeQueryRequest(imodel1[_nativeDb], req);
       },
     };
     const request: DbQueryRequest = {
