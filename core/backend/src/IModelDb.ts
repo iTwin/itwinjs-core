@@ -1746,7 +1746,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getId()] : [undefined, undefined];
         });
       } else if (code !== undefined) {
-        [elementId, classId] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE CodeSpecId=? AND CodeScopeId=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
+        [elementId, classId] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
           stmt.bindId(1, code.spec);
           stmt.bindId(2, code.scope);
           code.value !== undefined ? stmt.bindString(3, code.value) : stmt.bindNull(3);
@@ -1763,6 +1763,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } catch (err) {
         return undefined;
       }
+
+      const oldElement = this._iModel.nativeDb.getElement(loadProps);
+      oldElement;
 
       const elementProps = mapNativeElementProps(nativeInstance, loadProps);
 
