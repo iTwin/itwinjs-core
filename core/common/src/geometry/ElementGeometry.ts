@@ -65,7 +65,7 @@ export enum ElementGeometryOpcode {
   TextString = 22,
   /** Specifies line style overrides as a [[LineStyle.Modifier]] */
   LineStyleModifiers = 23,
-  /** Boundary represention solid, sheet, or wire body as a [[BRepEntity.DataProps]] */
+  /** Boundary representation solid, sheet, or wire body as a [[BRepEntity.DataProps]] */
   BRep = 25,
   /** Small single-tile raster image as an [[ImageGraphic]] */
   Image = 28,
