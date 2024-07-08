@@ -35,6 +35,7 @@ import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRange
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { OffsetOptions } from "./OffsetOptions";
+import { Path } from "./Path";
 import { StrokeOptions } from "./StrokeOptions";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
@@ -1312,13 +1313,15 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Construct a circular arc chain approximation to the instance elliptical arc.
    * @param options bundle of options for sampling an elliptical arc (use default options if undefined)
-   * @returns the approximating curve chain, the instance arc if circular, or undefined if construction fails.
+   * @returns the approximating curve chain, the circular instance, or undefined if construction fails.
    */
   public constructCircularArcChainApproximation(options?: EllipticalArcApproximationOptions): CurveChain | Arc3d | undefined {
     if (!options)
       options = EllipticalArcApproximationOptions.create();
-    if (this.isCircular)
-      return this;
-    return EllipticalArcApproximationContext.create(this).constructCircularArcChainApproximation(options);
+    const context = EllipticalArcApproximationContext.create(this);
+    const result = context.constructCircularArcChainApproximation(options);
+    if (!result && this.isCircular)
+      return (this.sweep.isFullCircle && options.forcePath) ? Path.create(this) : this;
+    return result;
   }
 }
