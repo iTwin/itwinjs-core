@@ -192,6 +192,8 @@ export interface NestedContentValue {
   displayValues: ValuesDictionary<DisplayValue>;
   /** Names of fields whose values are merged */
   mergedFieldNames: string[];
+  /** Text label that should be displayed next to the index. */
+  label?: string;
 }
 
 /**
