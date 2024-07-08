@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improve resolution of planar clip masks",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
