@@ -585,7 +585,11 @@ export class EllipticalArcApproximationContext {
   public static create(arc: Arc3d) {
     return new EllipticalArcApproximationContext(arc);
   }
-  /** The arc to be sampled. Its axes are forced to be perpendicular. */
+  /**
+   * The arc to be sampled.
+   * * Its axes are forced to be perpendicular.
+   * * It is stored in world coordinates.
+   */
   public get arc(): Arc3d {
     return this._arc;
   }
@@ -601,7 +605,8 @@ export class EllipticalArcApproximationContext {
     return this._isValidArc;
   }
   /**
-   * Create a clone of the valid arc in local coordinates.
+   * Create a clone of the context's arc in local coordinates.
+   * * The arc is assumed to be valid.
    * @param fullSweep Optionally set full sweep on the returned local arc.
    */
   public cloneLocalArc(fullSweep?: boolean): Arc3d {
@@ -618,6 +623,7 @@ export class EllipticalArcApproximationContext {
    * * A 2-point plus tangent construction is used to create the first and last circular arc in each quadrant.
    * * Symmetry of the announced circular arcs matching that of a multi-quadrant spanning elliptical arc is ensured by
    * processing the samples consistently, starting along the elliptical arc's major axis in each quadrant.
+   * @internal
   */
   public static processQuadrantFractions(
     ellipticalArc: Arc3d, samples: QuadrantFractions[], processor: QuadrantFractionsProcessor,
@@ -704,6 +710,7 @@ export class EllipticalArcApproximationContext {
    * * `point` is the end of the perpendicular on each curve
    * * `fraction` is the curve parameter of the point
    * * `a` is the distance between the points.
+   * @internal
    */
   public computeApproximationError(samples: QuadrantFractions[]): CurveLocationDetailPair | undefined {
     if (!this.isValidArc)
@@ -718,6 +725,8 @@ export class EllipticalArcApproximationContext {
    * Compute samples for the elliptical arc as fraction parameters.
    * * This method houses the sampling framework for all sampling methods, which are customized via implementations
    * of the [[EllipticalArcSampler]] interface.
+   * * Note that the returned samples are fractions in the parameterization of the context's arc (whose axes have been
+   * forced to be perpendicular), not the input arc passed into the context's constructor.
    * @param options options that determine how the elliptical arc is sampled.
    * @param structuredOutput flag indicating output format as follows:
    * * If false (default), return all fractions in one sorted (increasing), deduplicated array (a full ellipse includes
@@ -731,6 +740,7 @@ export class EllipticalArcApproximationContext {
    *   * If the arc sweep spans adjacent quadrants, the fraction bordering the quadrants appears in both `QuadrantFractions`.
    *   * If the arc starts and ends in the same quadrant, two `QuadrantFractions` objects can be returned.
    *   * This means there are between 1 and 5 objects in the `QuadrantFractions` array.
+   * @internal
    */
   public sampleFractions(
     options: EllipticalArcApproximationOptions, structuredOutput: boolean = false,
