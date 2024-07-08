@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@itwin/core-bentley";
 import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
+import { _nativeDb, ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
@@ -206,7 +206,7 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
-      ConcurrentQuery.resetConfig(ecdb.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+      ConcurrentQuery.resetConfig(ecdb[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
 
       let cancelled = 0;
       let successful = 0;

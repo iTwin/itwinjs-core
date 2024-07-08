@@ -16,6 +16,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { IModelNative } from "./internal/NativePlatform";
 import { IModelJsFs } from "./IModelJsFs";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
+import { _nativeDb } from "./internal/Symbols";
 
 // cspell:ignore savepoint julianday rowid
 
@@ -27,7 +28,7 @@ import { SqliteStatement, StatementCache } from "./SqliteStatement";
  */
 export class SQLiteDb {
   /** @internal */
-  public readonly nativeDb = new IModelNative.platform.SQLiteDb();
+  public readonly [_nativeDb] = new IModelNative.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 
   /** @internal */
@@ -49,7 +50,7 @@ export class SQLiteDb {
   /** @beta */
   public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
   public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void {
-    this.nativeDb.createDb(dbName, container, params);
+    this[_nativeDb].createDb(dbName, container, params);
   }
 
   /** Open a SQLiteDb.
@@ -62,7 +63,7 @@ export class SQLiteDb {
    */
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void {
-    this.nativeDb.openDb(dbName, openMode, container);
+    this[_nativeDb].openDb(dbName, openMode, container);
   }
 
   /** Close SQLiteDb.
@@ -72,14 +73,14 @@ export class SQLiteDb {
     if (saveChanges && this.isOpen)
       this.saveChanges();
     this._sqliteStatementCache.clear();
-    this.nativeDb.closeDb();
+    this[_nativeDb].closeDb();
   }
 
   /** Returns true if this SQLiteDb is open */
-  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
+  public get isOpen(): boolean { return this[_nativeDb].isOpen(); }
 
   /** Returns true if this SQLiteDb is open readonly */
-  public get isReadonly(): boolean { return this.nativeDb.isReadonly(); }
+  public get isReadonly(): boolean { return this[_nativeDb].isReadonly(); }
 
   /** Create a new table in this database. */
   protected createTable(args: {
@@ -159,17 +160,17 @@ export class SQLiteDb {
    * @see https://www.sqlite.org/lang_vacuum.html
    */
   public vacuum(args?: SQLiteDb.VacuumDbArgs) {
-    this.nativeDb.vacuum(args);
+    this[_nativeDb].vacuum(args);
   }
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the default transaction. */
   public saveChanges(): void {
-    this.nativeDb.saveChanges();
+    this[_nativeDb].saveChanges();
   }
 
   /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the default transaction. */
   public abandonChanges(): void {
-    this.nativeDb.abandonChanges();
+    this[_nativeDb].abandonChanges();
   }
 
   /**
@@ -242,7 +243,7 @@ export class SQLiteDb {
      */
   public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb, logErrors);
+    stmt.prepare(this[_nativeDb], logErrors);
     return stmt;
   }
 
@@ -290,17 +291,17 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
    */
   public setRequiredVersions(versions: SQLiteDb.RequiredVersionRanges) {
     // NOTE: It might look tempting to just stringify the supplied `versions` object, but we only include required members - there may be others.
-    this.nativeDb.saveFileProperty(VersionedSqliteDb._versionProps, JSON.stringify({ readVersion: versions.readVersion, writeVersion: versions.writeVersion }));
+    this[_nativeDb].saveFileProperty(VersionedSqliteDb._versionProps, JSON.stringify({ readVersion: versions.readVersion, writeVersion: versions.writeVersion }));
   }
 
   /** Get the required version ranges necessary to open this VersionedSqliteDb. */
   public getRequiredVersions() {
     const checkIsString = (value: any) => {
       if (typeof value !== "string")
-        throw new Error(`CloudDb ${this.nativeDb.getFilePath()} has invalid "versions" property`);
+        throw new Error(`CloudDb ${this[_nativeDb].getFilePath()} has invalid "versions" property`);
       return value;
     };
-    const versionJson = checkIsString(this.nativeDb.queryFileProperty(VersionedSqliteDb._versionProps, true));
+    const versionJson = checkIsString(this[_nativeDb].queryFileProperty(VersionedSqliteDb._versionProps, true));
     const versionRanges = JSON.parse(versionJson) as SQLiteDb.RequiredVersionRanges;
     checkIsString(versionRanges.readVersion);
     checkIsString(versionRanges.writeVersion);
@@ -342,7 +343,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
 
     this.closeDb();
     const tooNew = semver.gtr(this.myVersion, range);
-    throw new Error(`${this.nativeDb.getFilePath()} requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`);
+    throw new Error(`${this[_nativeDb].getFilePath()} requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`);
 
   }
 
