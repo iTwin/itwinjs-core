@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Add `label` property to `NestedContentValue` which is passed to `StartStructProps.description`. This value can be displayed next to the array index when rendering arrays of structs.",
+      "comment": "Add `NestedContentValue.label` property which is passed to `IContentVisitor.startStruct`.",
       "type": "none"
     }
   ],
