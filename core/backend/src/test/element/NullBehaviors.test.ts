@@ -89,9 +89,9 @@ describe("Various ECProperties null behavior handling cases test fixture", () =>
     // Verify the properties of the inserted element
     const actualValue = imodel.elements.getElementProps<TestElement>(id);
     expect(actualValue.addresses.length).to.equal(2);
-    expect(actualValue.addresses).to.equal([undefined, { city: "Pune", zip: 28 }]);
+    expect(actualValue.addresses).to.deep.equal([undefined, { city: "Pune", zip: 28 }]);
     expect(actualValue.favoriteNumbers.length).to.equal(6);
-    expect(actualValue.favoriteNumbers).to.equal([1, 44, 31, undefined, 81, 19]);
+    expect(actualValue.favoriteNumbers).to.deep.equal([1, 44, 31, undefined, 81, 19]);
 
     imodel.close();
   });
