@@ -29,13 +29,11 @@ beta;ChangeFormatArgs
 beta;ChangeInstanceKey
 beta;ChangeMetaData
 public;ChangesetArg 
-internal;ChangesetConflictArgs
 beta;ChangesetECAdaptor 
 internal;ChangesetIndexArg 
 public;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryManager
-internal;ChannelAdmin 
 beta;ChannelControl
 beta;ChannelControl
 beta;ChannelKey = string
@@ -237,6 +235,7 @@ public;IModelIdArg
 public;IModelJsFs
 public;IModelJsFsStats
 public;IModelNameArg 
+internal;IModelNative
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -262,7 +261,6 @@ internal;LocalhostIpcHost
 internal;LocalhostIpcHostOpts
 internal;LocalHub
 beta;LockConflict 
-beta;LockControl
 internal;LockMap = Map
 beta;LockProps
 public;LockState
@@ -274,6 +272,7 @@ public;Model
 public;ModelSelector 
 internal;ModelSelectorRefersToModels 
 public;NativeAppStorage
+internal;_nativeDb: unique symbol
 public;NativeHost
 public;NativeHostOpts 
 beta;OnAspectArg

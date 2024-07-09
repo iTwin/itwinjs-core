@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Add `NestedContentValue.label` property which is passed to `IContentVisitor.startStruct`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

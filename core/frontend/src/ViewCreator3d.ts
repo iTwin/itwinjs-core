@@ -90,6 +90,7 @@ export class ViewCreator3d {
 
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
+      await viewState.iModel.subcategories.loadAllUsedSpatialSubCategories();
       await viewState.load();
     } catch {
     }

@@ -100,7 +100,7 @@ const shadowMapWidth = 4096;  // size of original depth buffer map
 const shadowMapHeight = shadowMapWidth; // TBD - Adjust for aspect ratio.
 const evsmWidth = shadowMapWidth / 2;  // EVSM buffer is 1/2 size each direction
 const evsmHeight = shadowMapHeight / 2;
-const postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
+const postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 2 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
 // Bundles up the disposable, create-once-and-reuse members of a SolarShadowMap.
 class Bundle implements WebGLDisposable {
@@ -346,7 +346,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     // Expand shadow range to include both the shadowers and shadowed portion of background map.
     scratchFrustum.initFromRange(shadowRange);
-    mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points);       // This frustum represents the shadwowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
+    mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points);       // This frustum represents the shadowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
     const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
       const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum, iModel.projectExtents);

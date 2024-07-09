@@ -9,18 +9,19 @@
 
 import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { IModel, IModelError, LockState } from "@itwin/core-common";
-import { LockMap } from "./BackendHubAccess";
-import { BriefcaseDb, LockControl } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
-import { SQLiteDb } from "./SQLiteDb";
+import { LockMap } from "../BackendHubAccess";
+import { BriefcaseDb } from "../IModelDb";
+import { LockControl } from "../LockControl";
+import { IModelHost } from "../IModelHost";
+import { SQLiteDb } from "../SQLiteDb";
+import { _close, _elementWasCreated, _implementationProhibited, _nativeDb, _releaseAllLocks } from "./Symbols";
 
 /**
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:
  * 1) they must hold at least a shared lock before an exclusive lock can be acquired for their members
  * 2) if they hold an exclusive lock, then all of their members are exclusively locked implicitly.
- * @internal
  */
-export interface ElementOwners {
+interface ElementOwners {
   readonly modelId: Id64String;
   readonly parentId: Id64String | undefined;
 }
@@ -32,15 +33,16 @@ const enum LockOrigin {
   Discovered = 2,
 }
 
-/** @internal */
 export class ServerBasedLocks implements LockControl {
+  public readonly [_implementationProhibited] = undefined;
+
   public get isServerBased() { return true; }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
 
   public constructor(iModel: BriefcaseDb) {
     this.briefcase = iModel;
-    const dbName = `${iModel.nativeDb.getTempFileBaseName()}-locks`;
+    const dbName = `${iModel[_nativeDb].getTempFileBaseName()}-locks`;
     try {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {
@@ -50,7 +52,7 @@ export class ServerBasedLocks implements LockControl {
     }
   }
 
-  public close() {
+  public [_close]() {
     if (this.lockDb.isOpen)
       this.lockDb.closeDb();
   }
@@ -90,7 +92,7 @@ export class ServerBasedLocks implements LockControl {
     });
   }
 
-  public async releaseAllLocks(): Promise<void> {
+  public async [_releaseAllLocks](): Promise<void> {
     await IModelHost.hubAccess.releaseAllLocks(this.briefcase); // throws if unsuccessful
     this.clearAllLocks();
   }
@@ -191,7 +193,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
-  public elementWasCreated(id: Id64String) {
+  public [_elementWasCreated](id: Id64String) {
     this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement);
     this.lockDb.saveChanges();
   }
@@ -213,3 +215,6 @@ export class ServerBasedLocks implements LockControl {
 
 }
 
+export function createServerBasedLocks(iModel: BriefcaseDb): LockControl {
+  return new ServerBasedLocks(iModel);
+}

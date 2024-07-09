@@ -8,12 +8,12 @@
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { Matrix4dProps, XYZProps } from "@itwin/core-geometry";
-import { GeometryStreamProps } from "./geometry/GeometryStream";
-import { GeometryClass } from "./GeometryParams";
-import { ViewFlagProps } from "./ViewFlags";
+import { GeometryStreamProps } from "../geometry/GeometryStream";
+import { GeometryClass } from "../GeometryParams";
+import { ViewFlagProps } from "../ViewFlags";
 
 /** Information required to request a *snap* to a pickable decoration from the front end to the back end.
- * @internal
+ * @internal RPC glue.
  */
 export interface DecorationGeometryProps {
   readonly id: Id64String;
@@ -22,7 +22,7 @@ export interface DecorationGeometryProps {
 
 /** Information required to request a *snap* to an element from the front end to the back end.
  * Includes the viewing parameters so that snap can be relative to the view direction, viewing mode, etc.
- * @internal
+ * @internal RPC glue.
  */
 export interface SnapRequestProps {
   id: Id64String;
@@ -40,7 +40,7 @@ export interface SnapRequestProps {
 }
 
 /** Information returned from the back end to the front end holding the result of a *snap* operation.
- * @internal
+ * @internal RPC glue.
  */
 export interface SnapResponseProps {
   status: number;

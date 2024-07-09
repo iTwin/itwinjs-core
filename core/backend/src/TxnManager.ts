@@ -12,10 +12,12 @@ import {
 } from "@itwin/core-bentley";
 import { EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, ChangesetConflictArgs, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
+import { _nativeDb } from "./internal/Symbols";
+import { RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
 
 /** A string that identifies a Txn.
  * @public
@@ -72,18 +74,6 @@ export interface ChangeInstanceKey {
 }
 
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
-
-/** @internal */
-export interface TxnArgs {
-  id: Id64String;
-  type: "Data" | "Schema";
-  descr: string;
-}
-
-/** @internal */
-export interface RebaseChangesetConflictArgs extends ChangesetConflictArgs {
-  txn: TxnArgs;
-}
 
 /** Strictly for tests. @internal */
 export function setMaxEntitiesPerEvent(max: number): number {
@@ -315,7 +305,7 @@ export class TxnManager {
   /** Array of errors from dependency propagation */
   public readonly validationErrors: ValidationError[] = [];
 
-  private get _nativeDb() { return this._iModel.nativeDb; }
+  private get _nativeDb() { return this._iModel[_nativeDb]; }
   private _getElementClass(elClassName: string): typeof Element {
     return this._iModel.getJsClass(elClassName) as unknown as typeof Element;
   }
@@ -325,8 +315,9 @@ export class TxnManager {
 
   /** If a -watch file exists for this iModel, update its timestamp so watching processes can be
    * notified that we've modified the briefcase.
+   * @internal Used by IModelDb on push/pull.
    */
-  private touchWatchFile(): void {
+  public touchWatchFile(): void {
     // This is an async call. We don't have any reason to await it.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     touch(this._iModel.watchFilePathName, { nocreate: true });
@@ -603,7 +594,7 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
-    return this._iModel.reverseTxns(numOperations);
+    return this._nativeDb.reverseTxns(numOperations);
   }
 
   /** Reverse the most recent operation. */

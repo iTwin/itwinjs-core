@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
 } from "@itwin/core-bentley";
 import {
@@ -30,7 +30,8 @@ import {
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
-import { ChannelAdmin, ChannelControl } from "./ChannelControl";
+import { ChannelControl } from "./ChannelControl";
+import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
@@ -51,7 +52,7 @@ import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
-import { ServerBasedLocks } from "./ServerBasedLocks";
+import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
 import { TxnManager } from "./TxnManager";
@@ -61,33 +62,14 @@ import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from
 import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
-
+import { ChangesetConflictArgs, MergeChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { LockControl } from "./LockControl";
+import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
+import { createNoOpLockControl } from "./internal/NoLocks";
+import { _close, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 
-/** @internal */
-export interface ChangesetConflictArgs {
-  cause: DbConflictCause;
-  opcode: DbOpcode;
-  indirect: boolean;
-  tableName: string;
-  columnCount: number;
-  getForeignKeyConflicts: () => number;
-  dump: () => void;
-  setLastError: (message: string) => void;
-  getPrimaryKeyColumns: () => number[];
-  getValueType: (columnIndex: number, stage: DbChangeStage) => DbValueType | null | undefined;
-  getValueBinary: (columnIndex: number, stage: DbChangeStage) => Uint8Array | null | undefined;
-  getValueId: (columnIndex: number, stage: DbChangeStage) => Id64String | null | undefined;
-  getValueText: (columnIndex: number, stage: DbChangeStage) => string | null | undefined;
-  getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
-  isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
-}
 
-/** @internal */
-export interface MergeChangesetConflictArgs extends ChangesetConflictArgs {
-  changesetFile?: string;
-}
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -126,67 +108,6 @@ export interface ComputedProjectExtents {
 }
 
 /**
- * Interface for acquiring element locks to coordinate simultaneous edits from multiple briefcases.
- * @beta
- */
-export interface LockControl {
-  /**
-   * true if this LockControl uses a server-based concurrency approach.
-   */
-  readonly isServerBased: boolean;
-  /**
-   * Close the local lock control database
-   * @internal
-   */
-  close(): void;
-  /**
-   * Notification that a new element was just created. Called by [[Element.onInserted]]
-   * @internal
-   */
-  elementWasCreated(id: Id64String): void;
-  /**
-   * Throw if locks are required and the exclusive lock is not held on the supplied element.
-   * Note: there is no need to check the shared locks on parents/models since an element cannot hold the exclusive lock without first obtaining them.
-   * Called by [[Element.onUpdate]], [[Element.onDelete]], etc.
-   * @internal
-   */
-  checkExclusiveLock(id: Id64String, type: string, operation: string): void;
-  /**
-   * Throw if locks are required and a shared lock is not held on the supplied element.
-   * Called by [[Element.onInsert]] to ensure shared lock is held on model and parent.
-   * @internal
-   */
-  checkSharedLock(id: Id64String, type: string, operation: string): void;
-  /**
-   * Determine whether the supplied element currently holds the exclusive lock
-   */
-  holdsExclusiveLock(id: Id64String): boolean;
-  /**
-   * Determine whether the supplied element currently holds a shared lock
-   */
-  holdsSharedLock(id: Id64String): boolean;
-  /**
-   * Acquire locks on one or more elements from the lock server, if required and not already held.
-   * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
-   * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
-   * attempt to acquire all necessary locks for both sets of input ids.
-   * @throws ConflictingLocksError if one or more requested locks are held by other briefcases.
-   */
-  acquireLocks(arg: {
-    /** if present, one or more elements to obtain shared lock */
-    shared?: Id64Arg;
-    /** if present, one or more elements to obtain exclusive lock */
-    exclusive?: Id64Arg;
-  }): Promise<void>;
-  /**
-   * Release all locks currently held by this Briefcase from the lock server.
-   * Not possible to release locks unless push or abandon all changes. Should only be called internally.
-   * @internal
-   */
-  releaseAllLocks(): Promise<void>;
-}
-
-/**
  * Options for the importing of schemas
  * @public
  */
@@ -197,20 +118,6 @@ export interface SchemaImportOptions {
    * @internal
    */
   ecSchemaXmlContext?: ECSchemaXmlContext;
-}
-
-/** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
-class NoLocks implements LockControl {
-  public get isServerBased() { return false; }
-  public close(): void { }
-  public clearAllLocks(): void { }
-  public holdsExclusiveLock(): boolean { return false; }
-  public holdsSharedLock(): boolean { return false; }
-  public checkExclusiveLock(): void { }
-  public checkSharedLock(): void { }
-  public elementWasCreated(): void { }
-  public async acquireLocks() { }
-  public async releaseAllLocks(): Promise<void> { }
 }
 
 /** @internal */
@@ -261,7 +168,7 @@ export abstract class IModelDb extends IModel {
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
   /** @beta */
-  public readonly channels: ChannelControl = new ChannelAdmin(this);
+  public readonly channels: ChannelControl = createChannelControl(this);
   private _relationships?: Relationships;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -272,7 +179,7 @@ export abstract class IModelDb extends IModel {
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
   /** @internal */
-  protected _locks?: LockControl = new NoLocks();
+  protected _locks?: LockControl = createNoOpLockControl();
 
   /** @internal */
   protected _codeService?: CodeService;
@@ -280,10 +187,7 @@ export abstract class IModelDb extends IModel {
   /** @alpha */
   public get codeService() { return this._codeService; }
 
-  /**
-   * Get the [[LockControl]] for this iModel.
-   * @beta
-   */
+  /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /**
@@ -298,7 +202,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Acquire the exclusive schema lock on this iModel.
-   * > Note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
+   * @note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
    * will be able to acquire *any* locks while the schema lock is held.
    */
   public async acquireSchemaLock(): Promise<void> {
@@ -313,17 +217,17 @@ export abstract class IModelDb extends IModel {
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */
   public notifyChangesetApplied() {
-    this.changeset = this.nativeDb.getCurrentChangeset();
+    this.changeset = this[_nativeDb].getCurrentChangeset();
     this.onChangesetApplied.raiseEvent();
   }
 
   /** @internal */
   public restartDefaultTxn() {
-    this.nativeDb.restartDefaultTxn();
+    this[_nativeDb].restartDefaultTxn();
   }
 
   public get fontMap(): FontMap {
-    return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap()));
+    return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap()));
   }
 
   /** @internal */
@@ -342,7 +246,7 @@ export abstract class IModelDb extends IModel {
   public addNewFont(name: string, type?: FontType): FontId {
     this.locks.checkExclusiveLock(IModel.repositoryModelId, "schema", "addNewFont");
     this.clearFontMap();
-    return this.nativeDb.addNewFont({ name, type: type ?? FontType.TrueType });
+    return this[_nativeDb].addNewFont({ name, type: type ?? FontType.TrueType });
   }
 
   /** Check if this iModel has been opened read-only or not. */
@@ -354,13 +258,18 @@ export abstract class IModelDb extends IModel {
     return super.iModelId;
   } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
+  /** @internal
+   * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelDb's public API instead.
+   */
+  public get nativeDb(): IModelJsNative.DgnDb { return this[_nativeDb]; }
+
   /** @internal*/
-  public readonly nativeDb: IModelJsNative.DgnDb;
+  public readonly [_nativeDb]: IModelJsNative.DgnDb;
 
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
    */
-  public get pathName(): LocalFileName { return this.nativeDb.getFilePath(); }
+  public get pathName(): LocalFileName { return this[_nativeDb].getFilePath(); }
 
   /** Get the full path to this iModel's "watch file".
    * A read-only briefcase opened with `watchForChanges: true` creates this file next to the briefcase file on open, if it doesn't already exist.
@@ -374,7 +283,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
-    this.nativeDb = args.nativeDb;
+    this[_nativeDb] = args.nativeDb;
 
     // it is illegal to create an IModelDb unless the nativeDb has been opened. Throw otherwise.
     if (!this.isOpen)
@@ -383,14 +292,14 @@ export abstract class IModelDb extends IModel {
     // PR https://github.com/iTwin/imodel-native/pull/558 renamed closeIModel to closeFile because it changed its behavior.
     // Ideally, nobody outside of core-backend would be calling it, but somebody important is.
     // Make closeIModel available so their code doesn't break.
-    (this.nativeDb as any).closeIModel = () => {
+    (this[_nativeDb] as any).closeIModel = () => {
       if (!this.isReadonly)
         this.saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
-      this.nativeDb.closeFile();
+      this[_nativeDb].closeFile();
     };
 
-    this.nativeDb.setIModelDb(this);
+    this[_nativeDb].setIModelDb(this);
 
     this.loadIModelSettings();
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
@@ -418,13 +327,13 @@ export abstract class IModelDb extends IModel {
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
-    this.locks.close();
+    this.locks[_close]();
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
     if (!this.isReadonly)
       this.saveChanges();
-    this.nativeDb.closeFile();
+    this[_nativeDb].closeFile();
   }
 
   /** @internal */
@@ -444,7 +353,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected initializeIModelDb() {
-    const props = this.nativeDb.getIModelProps();
+    const props = this[_nativeDb].getIModelProps();
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
       return;
@@ -488,10 +397,10 @@ export abstract class IModelDb extends IModel {
   /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
    */
-  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
+  public get isOpen(): boolean { return this[_nativeDb].isOpen(); }
 
   /** Get the briefcase Id of this iModel */
-  public getBriefcaseId(): BriefcaseId { return this.isOpen ? this.nativeDb.getBriefcaseId() : BriefcaseIdValue.Illegal; }
+  public getBriefcaseId(): BriefcaseId { return this.isOpen ? this[_nativeDb].getBriefcaseId() : BriefcaseIdValue.Illegal; }
 
   /**
    * Use a prepared ECSQL statement, potentially from the statement cache. If the requested statement doesn't exist
@@ -563,12 +472,12 @@ export abstract class IModelDb extends IModel {
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
-    if (!this.nativeDb.isOpen())
+    if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
 
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
+        return ConcurrentQuery.executeQueryRequest(this[_nativeDb], request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
@@ -705,12 +614,37 @@ export abstract class IModelDb extends IModel {
    */
   public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb, logErrors);
+    stmt.prepare(this[_nativeDb], logErrors);
     return stmt;
   }
 
   /**
-   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
+   * queries the BisCore.SubCategory table for entries that are children of used spatial categories and 3D elements.
+   * @returns array of SubCategoryResultRow
+   * @internal
+   */
+  public async queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]> {
+    const result: SubCategoryResultRow[] = [];
+    const parentCategoriesQuery = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
+    const parentCategories: Id64Array = [];
+    for await (const row of this.createQueryReader(parentCategoriesQuery)) {
+      parentCategories.push(row.id);
+    };
+    const where = [...parentCategories].join(",");
+    const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
+
+    try {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        result.push(row.toRow() as SubCategoryResultRow);
+      }
+    } catch {
+      // We can ignore the error here, and just return whatever we were able to query.
+    }
+    return result;
+  }
+
+  /**
+   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds.
    * @param categoryIds categoryIds to query
    * @returns array of SubCategoryResultRow
    * @internal
@@ -802,7 +736,7 @@ export abstract class IModelDb extends IModel {
   public computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents {
     const wantFullExtents = true === options?.reportExtentsWithOutliers;
     const wantOutliers = true === options?.reportOutliers;
-    const result = this.nativeDb.computeProjectExtents(wantFullExtents, wantOutliers);
+    const result = this[_nativeDb].computeProjectExtents(wantFullExtents, wantOutliers);
     return {
       extents: Range3d.fromJSON(result.extents),
       extentsWithOutliers: result.fullExtents ? Range3d.fromJSON(result.fullExtents) : undefined,
@@ -818,7 +752,7 @@ export abstract class IModelDb extends IModel {
 
   /** Update the IModelProps of this iModel in the database. */
   public updateIModelProps(): void {
-    this.nativeDb.updateIModelProps(this.toJSON());
+    this[_nativeDb].updateIModelProps(this.toJSON());
   }
 
   /** Commit pending changes to this iModel.
@@ -829,14 +763,14 @@ export abstract class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
-    const stat = this.nativeDb.saveChanges(description);
+    const stat = this[_nativeDb].saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
   /** Abandon pending changes in this iModel. */
   public abandonChanges(): void {
-    this.nativeDb.abandonChanges();
+    this[_nativeDb].abandonChanges();
   }
 
   /**
@@ -850,23 +784,25 @@ export abstract class IModelDb extends IModel {
   public performCheckpoint() {
     if (!this.isReadonly) {
       this.saveChanges();
-      this.nativeDb.performCheckpoint();
+      this[_nativeDb].performCheckpoint();
     }
   }
 
-  /** @internal */
+  /** @internal
+   * @deprecated in 4.8. Use `txns.reverseTxns`.
+   */
   public reverseTxns(numOperations: number): IModelStatus {
-    return this.nativeDb.reverseTxns(numOperations);
+    return this[_nativeDb].reverseTxns(numOperations);
   }
 
   /** @internal */
   public reinstateTxn(): IModelStatus {
-    return this.nativeDb.reinstateTxn();
+    return this[_nativeDb].reinstateTxn();
   }
 
   /** @internal */
   public restartTxnSession(): void {
-    return this.nativeDb.restartTxnSession();
+    return this[_nativeDb].restartTxnSession();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
@@ -884,21 +820,21 @@ export abstract class IModelDb extends IModel {
       return;
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    if (this.nativeDb.schemaSyncEnabled()) {
+    if (this[_nativeDb].schemaSyncEnabled()) {
 
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
 
         try {
-          this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+          this[_nativeDb].importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
           if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
             this.abandonChanges();
-            if (this.nativeDb.getITwinId() !== Guid.empty)
+            if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
             try {
-              this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+              this[_nativeDb].importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
             } catch (innerErr: any) {
               throw new IModelError(innerErr.errorNumber, innerErr.message);
             }
@@ -913,11 +849,11 @@ export abstract class IModelDb extends IModel {
         ecSchemaXmlContext: maybeCustomNativeContext,
       };
 
-      if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+      if (this[_nativeDb].getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
         await this.acquireSchemaLock();
 
       try {
-        this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
+        this[_nativeDb].importSchemas(schemaFileNames, nativeImportOptions);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);
       }
@@ -938,19 +874,19 @@ export abstract class IModelDb extends IModel {
     if (serializedXmlSchemas.length === 0)
       return;
 
-    if (this.nativeDb.schemaSyncEnabled()) {
+    if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveChanges();
         try {
-          this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
+          this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
         } catch (outerErr: any) {
           if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
             this.abandonChanges();
-            if (this.nativeDb.getITwinId() !== Guid.empty)
+            if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
             try {
-              this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
+              this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
             } catch (innerErr: any) {
               throw new IModelError(innerErr.errorNumber, innerErr.message);
             }
@@ -964,7 +900,7 @@ export abstract class IModelDb extends IModel {
         await this.acquireSchemaLock();
 
       try {
-        this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+        this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);
       }
@@ -1015,7 +951,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db");
 
     try {
-      const nativeDb = new IModelHost.platform.DgnDb();
+      const nativeDb = new IModelNative.platform.DgnDb();
       const container = props?.container;
       if (container) {
         // temp files for cloud-based Dbs should be in the profileDir in a subdirectory named for their container
@@ -1109,7 +1045,7 @@ export abstract class IModelDb extends IModel {
    */
   public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.nativeDb, sql, logErrors);
+    stmt.prepare(this[_nativeDb], sql, logErrors);
     return stmt;
   }
 
@@ -1119,7 +1055,7 @@ export abstract class IModelDb extends IModel {
    */
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
     const statement = new ECSqlStatement();
-    const result = statement.tryPrepare(this.nativeDb, sql);
+    const result = statement.tryPrepare(this[_nativeDb], sql);
     return DbResult.BE_SQLITE_OK === result.status ? statement : undefined;
   }
 
@@ -1208,7 +1144,7 @@ export abstract class IModelDb extends IModel {
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg, `Invalid classFullName: ${classFullName}`);
 
-    const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
+    const val = this[_nativeDb].getECClassMetaData(className[0], className[1]);
     if (val.error)
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
@@ -1227,7 +1163,7 @@ export abstract class IModelDb extends IModel {
    * @throws if the schema can not be found or loaded.
    */
   public getSchemaProps(name: string): ECSchemaProps {
-    return this.nativeDb.getSchemaProps(name);
+    return this[_nativeDb].getSchemaProps(name);
   }
 
   /** Query if this iModel contains the definition of the specified class.
@@ -1238,7 +1174,7 @@ export abstract class IModelDb extends IModel {
    */
   public containsClass(classFullName: string): boolean {
     const classNameParts = classFullName.replace(".", ":").split(":");
-    return classNameParts.length === 2 && this.nativeDb.getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined;
+    return classNameParts.length === 2 && this[_nativeDb].getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined;
   }
 
   /** Query for a schema of the specified name in this iModel.
@@ -1264,21 +1200,21 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined> {
-    return this.nativeDb.queryTextureData(props);
+    return this[_nativeDb].queryTextureData(props);
   }
 
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
   public queryFilePropertyString(prop: FilePropertyProps): string | undefined {
-    return this.nativeDb.queryFileProperty(prop, true) as string | undefined;
+    return this[_nativeDb].queryFileProperty(prop, true) as string | undefined;
   }
 
   /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
   public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined {
-    return this.nativeDb.queryFileProperty(prop, false) as Uint8Array | undefined;
+    return this[_nativeDb].queryFileProperty(prop, false) as Uint8Array | undefined;
   }
 
   /** Save a "file property" to this iModel
@@ -1286,33 +1222,33 @@ export abstract class IModelDb extends IModel {
    * @param value either a string or a blob to save as the file property
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    this.nativeDb.saveFileProperty(prop, strValue, blobVal);
+    this[_nativeDb].saveFileProperty(prop, strValue, blobVal);
   }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
-    this.nativeDb.saveFileProperty(prop, undefined, undefined);
+    this[_nativeDb].saveFileProperty(prop, undefined, undefined);
   }
 
   /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
    * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
    */
-  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(prop); }
+  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this[_nativeDb].queryNextAvailableFileProperty(prop); }
 
   /** @internal */
   public async requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
-      request = new IModelHost.platform.SnapRequest();
+      request = new IModelNative.platform.SnapRequest();
       this._snaps.set(sessionId, request);
     } else
       request.cancelSnap();
 
     try {
-      return await request.doSnap(this.nativeDb, JsonUtils.toObject(props));
+      return await request.doSnap(this[_nativeDb], JsonUtils.toObject(props));
     } finally {
       this._snaps.delete(sessionId);
     }
@@ -1331,22 +1267,22 @@ export abstract class IModelDb extends IModel {
 
   /** Get the clip containment status for the supplied elements. */
   public async getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
-    return this.nativeDb.getGeometryContainment(JsonUtils.toObject(props));
+    return this[_nativeDb].getGeometryContainment(JsonUtils.toObject(props));
   }
 
   /** Get the mass properties for the supplied elements. */
   public async getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
+    return this[_nativeDb].getMassProperties(JsonUtils.toObject(props));
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
-    return this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
+    return this[_nativeDb].getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
-    return this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
+    return this[_nativeDb].getGeoCoordinatesFromIModelCoordinates(props);
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
@@ -1382,7 +1318,7 @@ export abstract class IModelDb extends IModel {
    * @public
    */
   public exportGraphics(exportProps: ExportGraphicsOptions): DbResult {
-    return this.nativeDb.exportGraphics(exportProps);
+    return this[_nativeDb].exportGraphics(exportProps);
   }
 
   /**
@@ -1398,7 +1334,7 @@ export abstract class IModelDb extends IModel {
    * @public
    */
   public exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult {
-    return this.nativeDb.exportPartGraphics(exportProps);
+    return this[_nativeDb].exportPartGraphics(exportProps);
   }
 
   /** Request geometry stream information from an element in binary format instead of json.
@@ -1406,7 +1342,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
-    return this.nativeDb.processGeometryStream(requestProps);
+    return this[_nativeDb].processGeometryStream(requestProps);
   }
 
   /** Create brep geometry for inclusion in an element's geometry stream.
@@ -1415,7 +1351,7 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus {
-    return this.nativeDb.createBRepGeometry(createProps);
+    return this[_nativeDb].createBRepGeometry(createProps);
   }
 
   /** Generate graphics for an element or geometry stream.
@@ -1458,7 +1394,7 @@ export abstract class IModelDb extends IModel {
 
   /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
   private loadIModelSettings() {
-    if (!this.nativeDb.isOpen())
+    if (!this[_nativeDb].isOpen())
       return;
 
     this.withSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace=?", (stmt) => {
@@ -1509,16 +1445,16 @@ export abstract class IModelDb extends IModel {
    * @public
    */
   public get codeValueBehavior(): "exact" | "trim-unicode-whitespace" {
-    return this.nativeDb.getCodeValueBehavior();
+    return this[_nativeDb].getCodeValueBehavior();
   }
 
   public set codeValueBehavior(newBehavior: "exact" | "trim-unicode-whitespace") {
-    this.nativeDb.setCodeValueBehavior(newBehavior);
+    this[_nativeDb].setCodeValueBehavior(newBehavior);
   }
 
   /** @internal */
   public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-    const props = this.nativeDb.computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.lineHeight);
+    const props = this[_nativeDb].computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.lineHeight);
     return {
       layout: Range2d.fromJSON(props.layout),
       justification: Range2d.fromJSON(props.justification),
@@ -1627,7 +1563,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
       try {
-        return this._iModel.nativeDb.getModel(modelIdArg) as T;
+        return this._iModel[_nativeDb].getModel(modelIdArg) as T;
       } catch (err: any) {
         return undefined;
       }
@@ -1676,7 +1612,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public insertModel(props: ModelProps): Id64String {
       try {
-        return props.id = this._iModel.nativeDb.insertModel(props);
+        return props.id = this._iModel[_nativeDb].insertModel(props);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       }
@@ -1688,7 +1624,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public updateModel(props: UpdateModelOptions): void {
       try {
-        this._iModel.nativeDb.updateModel(props);
+        this._iModel[_nativeDb].updateModel(props);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
@@ -1703,7 +1639,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
-      const error = this._iModel.nativeDb.updateModelGeometryGuid(modelId);
+      const error = this._iModel[_nativeDb].updateModelGeometryGuid(modelId);
       if (error !== IModelStatus.Success)
         throw new IModelError(error, `updating geometry guid for model ${modelId}`);
     }
@@ -1715,7 +1651,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
         try {
-          this._iModel.nativeDb.deleteModel(id);
+          this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
           throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
         }
@@ -1734,7 +1670,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (ids.length === 0)
         return [];
 
-      return this._iModel.nativeDb.queryModelExtentsAsync(ids);
+      return this._iModel[_nativeDb].queryModelExtentsAsync(ids);
     }
 
     /** Computes the union of the volumes of all geometric elements within one or more [[GeometricModel]]s, specified by model Id.
@@ -1798,7 +1734,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
-        return this._iModel.nativeDb.getElement(loadProps) as T;
+        return this._iModel[_nativeDb].getElement(loadProps) as T;
       } catch (err: any) {
         return undefined;
       }
@@ -1815,7 +1751,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         props = { code: props };
       }
       try {
-        return this._iModel.nativeDb.getElement(props) as T;
+        return this._iModel[_nativeDb].getElement(props) as T;
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);
       }
@@ -1940,7 +1876,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public insertElement(elProps: ElementProps): Id64String {
       try {
-        return elProps.id = this._iModel.nativeDb.insertElement(elProps);
+        return elProps.id = this._iModel[_nativeDb].insertElement(elProps);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
         err.metadata = { elProps };
@@ -1961,7 +1897,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
-        this._iModel.nativeDb.updateElement(elProps);
+        this._iModel[_nativeDb].updateElement(elProps);
       } catch (err: any) {
         err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
         err.metadata = { elProps };
@@ -1978,7 +1914,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         try {
-          iModel.nativeDb.deleteElement(id);
+          iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;
           err.metadata = { elementId: id };
@@ -1998,7 +1934,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @beta
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
-      const usageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(definitionElementIds);
+      const usageInfo = this._iModel[_nativeDb].queryDefinitionElementUsage(definitionElementIds);
       if (!usageInfo) {
         throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
       }
@@ -2014,7 +1950,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       };
 
       try {
-        this._iModel.nativeDb.beginPurgeOperation();
+        this._iModel[_nativeDb].beginPurgeOperation();
         deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
         deleteIfUnused(usageInfo.drawingCategoryIds, usedIdSet);
         deleteIfUnused(usageInfo.viewDefinitionIds, usedIdSet);
@@ -2030,7 +1966,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           this._iModel.elements.deleteElement(usageInfo.otherDefinitionElementIds);
         }
       } finally {
-        this._iModel.nativeDb.endPurgeOperation();
+        this._iModel[_nativeDb].endPurgeOperation();
       }
 
       if (usageInfo.viewDefinitionIds) {
@@ -2046,16 +1982,16 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
 
         if (viewRelatedIds.length > 0) {
-          const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
+          const viewRelatedUsageInfo = this._iModel[_nativeDb].queryDefinitionElementUsage(viewRelatedIds);
           if (viewRelatedUsageInfo) {
             const usedViewRelatedIdSet: Id64Set = viewRelatedUsageInfo.usedIds ? Id64.toIdSet(viewRelatedUsageInfo.usedIds) : new Set<Id64String>();
             try {
-              this._iModel.nativeDb.beginPurgeOperation();
+              this._iModel[_nativeDb].beginPurgeOperation();
               deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
               deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
               deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
             } finally {
-              this._iModel.nativeDb.endPurgeOperation();
+              this._iModel[_nativeDb].endPurgeOperation();
             }
 
             viewRelatedIds.forEach((id) => {
@@ -2218,7 +2154,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
       // Check if class is abstract
       const fullClassName = aspectClassFullName.replace(".", ":").split(":");
-      const val = this._iModel.nativeDb.getECClassMetaData(fullClassName[0], fullClassName[1]);
+      const val = this._iModel[_nativeDb].getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
         const metaData = new EntityMetaData(JSON.parse(val.result));
         if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
@@ -2262,7 +2198,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
       try {
-        return this._iModel.nativeDb.insertElementAspect(aspectProps);
+        return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }
@@ -2274,7 +2210,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
       try {
-        this._iModel.nativeDb.updateElementAspect(aspectProps);
+        this._iModel[_nativeDb].updateElementAspect(aspectProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
       }
@@ -2288,7 +2224,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const iModel = this._iModel;
       Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
         try {
-          iModel.nativeDb.deleteElementAspect(aspectInstanceId);
+          iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
         } catch (err: any) {
           throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
         }
@@ -2444,7 +2380,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       const viewStateData = this.loadViewData(viewDefinitionId, options);
       const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
       if (baseModelId) {
-        const drawingExtents = Range3d.fromJSON(this._iModel.nativeDb.queryModelExtents({ id: baseModelId }).modelExtents);
+        const drawingExtents = Range3d.fromJSON(this._iModel[_nativeDb].queryModelExtents({ id: baseModelId }).modelExtents);
         if (!drawingExtents.isNull)
           viewStateData.modelExtents = drawingExtents.toJSON();
       }
@@ -2476,12 +2412,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
-      const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
+      const sizeProps = this._iModel[_nativeDb].queryFileProperty(viewArg, true) as string;
       if (undefined === sizeProps)
         return undefined;
 
       const out = JSON.parse(sizeProps) as ThumbnailProps;
-      out.image = this._iModel.nativeDb.queryFileProperty(viewArg, false) as Uint8Array;
+      out.image = this._iModel[_nativeDb].queryFileProperty(viewArg, false) as Uint8Array;
       return out;
     }
 
@@ -2493,7 +2429,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
-      this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
+      this._iModel[_nativeDb].saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
       return 0;
     }
 
@@ -2531,7 +2467,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public async requestTileTreeProps(id: string): Promise<IModelTileTreeProps> {
 
       return new Promise<IModelTileTreeProps>((resolve, reject) => {
-        this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
+        this._iModel[_nativeDb].getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, `TreeId=${id}`));
           else
@@ -2544,7 +2480,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
       let ret;
       try {
-        ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
+        ret = this._iModel[_nativeDb].pollTileContent(treeId, tileId);
       } catch (err) {
         // Typically "imodel not open".
         reject(err);
@@ -2586,7 +2522,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** @internal */
     public async getTileContent(treeId: string, tileId: string): Promise<Uint8Array> {
       const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
-        this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);
+        this._iModel[_nativeDb].getTileContent(treeId, tileId, resolve);
       });
 
       if (undefined !== ret.error) {
@@ -2695,13 +2631,13 @@ export class BriefcaseDb extends IModelDb {
    * - the "no locking" flag is not present. This is a property of an iModel, established when the iModel is created in IModelHub.
    */
   protected get useLockServer(): boolean {
-    return !this.nativeDb.isReadonly() && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+    return !this[_nativeDb].isReadonly() && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this[_nativeDb].queryLocalValue(BriefcaseLocalValue.NoLocking));
   }
 
   // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
   protected makeLockControl() {
     if (this.useLockServer)
-      this._locks = new ServerBasedLocks(this);
+      this._locks = createServerBasedLocks(this);
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
@@ -2722,7 +2658,7 @@ export class BriefcaseDb extends IModelDb {
 
     const isSchemaSyncEnabled = await withBriefcaseDb(briefcase, async (db) => {
       await SchemaSync.pull(db);
-      return db.nativeDb.schemaSyncEnabled();
+      return db[_nativeDb].schemaSyncEnabled();
     }) as boolean;
 
     if (isSchemaSyncEnabled) {
@@ -2730,7 +2666,7 @@ export class BriefcaseDb extends IModelDb {
         const schemaSyncDbUri = syncAccess.getUri();
         executeUpgrade();
         await withBriefcaseDb(briefcase, async (db) => {
-          db.nativeDb.schemaSyncPush(schemaSyncDbUri);
+          db[_nativeDb].schemaSyncPush(schemaSyncDbUri);
           db.saveChanges();
         });
         syncAccess.synchronizeWithCloud();
@@ -2771,7 +2707,7 @@ export class BriefcaseDb extends IModelDb {
           await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
           await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
         } finally {
-          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+          await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
         return;
       }
@@ -2786,7 +2722,7 @@ export class BriefcaseDb extends IModelDb {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
           await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
         } finally {
-          await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+          await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
       }
       throw error;
@@ -2814,6 +2750,7 @@ export class BriefcaseDb extends IModelDb {
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
         nativeDb.restartDefaultTxn();
+        briefcaseDb.changeset = briefcaseDb[_nativeDb].getCurrentChangeset();
       });
 
       // Stop the watcher when we close this connection.
@@ -2839,12 +2776,12 @@ export class BriefcaseDb extends IModelDb {
                 throw e;
               }
             },
-            appParams:{
+            appParams: {
               author: { name: "unknown" },
               origin: { name: "unknown" },
             },
-            close: () => {},
-            initialize: async () => {},
+            close: () => { },
+            initialize: async () => { },
           };
         }
       }
@@ -2939,7 +2876,7 @@ export class BriefcaseDb extends IModelDb {
 
       // Note: There is no performance implication of follow code as it happen toward end of
       // apply_changeset only once so we be querying value for 'DebugAllowFkViolations' only once.
-      if (this.nativeDb.queryLocalValue("DebugAllowFkViolations")) {
+      if (this[_nativeDb].queryLocalValue("DebugAllowFkViolations")) {
         Logger.logError(category, `Detected ${nConflicts} foreign key conflicts in changeset. Continuing merge as 'DebugAllowFkViolations' flag is set. Run 'PRAGMA foreign_key_check' to get list of violations.`);
         return DbConflictResolution.Skip;
       } else {
@@ -3017,7 +2954,7 @@ export class BriefcaseDb extends IModelDb {
     } finally {
       if (isReadonly) {
         if (locks !== this._locks) { // did we have to create a ServerBasedLocks?
-          this.locks.close(); // yes, close it and reset back to previous
+          this.locks[_close](); // yes, close it and reset back to previous
           this._locks = locks;
         }
         this.closeAndReopen(OpenMode.Readonly, fileName);
@@ -3030,17 +2967,17 @@ export class BriefcaseDb extends IModelDb {
     this.clearCaches();
 
     // The following resets the native db's pointer to this JavaScript object.
-    this.nativeDb.closeFile();
-    this.nativeDb.openIModel(fileName, openMode);
+    this[_nativeDb].closeFile();
+    this[_nativeDb].openIModel(fileName, openMode);
 
     // Restore the native db's pointer to this JavaScript object.
-    this.nativeDb.setIModelDb(this);
+    this[_nativeDb].setIModelDb(this);
 
     // refresh cached properties that could have been changed by another process writing to the same briefcase
-    this.changeset = this.nativeDb.getCurrentChangeset();
+    this.changeset = this[_nativeDb].getCurrentChangeset();
 
     // assert what should never change
-    if (this.iModelId !== this.nativeDb.getIModelId() || this.iTwinId !== this.nativeDb.getITwinId())
+    if (this.iModelId !== this[_nativeDb].getIModelId() || this.iTwinId !== this[_nativeDb].getITwinId())
       throw new Error("closeAndReopen detected change in iModelId and/or iTwinId");
   }
 
@@ -3053,6 +2990,7 @@ export class BriefcaseDb extends IModelDb {
     });
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
+    this.txns.touchWatchFile();
   }
 
   /** Push changes to iModelHub. */
@@ -3060,9 +2998,9 @@ export class BriefcaseDb extends IModelDb {
     if (this.briefcaseId === BriefcaseIdValue.Unassigned)
       return;
 
-    if (this.nativeDb.hasUnsavedChanges())
+    if (this[_nativeDb].hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push with unsaved changes");
-    if (!this.nativeDb.hasPendingTxns())
+    if (!this[_nativeDb].hasPendingTxns())
       return; // nothing to push
 
     // pushing changes requires a writeable briefcase
@@ -3073,6 +3011,7 @@ export class BriefcaseDb extends IModelDb {
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+    this.txns.touchWatchFile();
   }
 
   public override close() {
@@ -3104,7 +3043,7 @@ class RefreshV2CheckpointSas {
     Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to refresh sasToken for checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
-      const container = iModel.nativeDb.cloudContainer;
+      const container = iModel[_nativeDb].cloudContainer;
       if (!container)
         throw new Error("checkpoint is not from a cloud container");
 
@@ -3174,14 +3113,14 @@ export class SnapshotDb extends IModelDb {
 
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
-   * > Note: A *snapshot* cannot be modified after [[close]] is called.
+   * @note: A *snapshot* cannot be modified after [[close]] is called.
    * @param filePath The file that will contain the new iModel *snapshot*
    * @param options The parameters that define the new iModel *snapshot*
    * @returns A writeable SnapshotDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
   public static createEmpty(filePath: LocalFileName, options: CreateEmptySnapshotIModelProps): SnapshotDb {
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.createIModel(filePath, options);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
@@ -3194,7 +3133,7 @@ export class SnapshotDb extends IModelDb {
 
   /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
-   * > Note: A *snapshot* cannot be modified after [[close]] is called.
+   * @note: A *snapshot* cannot be modified after [[close]] is called.
    * @param iModelDb The snapshot will be initialized from the current contents of this iModelDb
    * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @param options Optional properties that determine how the snapshot iModel is created.
@@ -3205,7 +3144,7 @@ export class SnapshotDb extends IModelDb {
     iModelDb.performCheckpoint();
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
 
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);
     nativeDb.vacuum();
 
@@ -3279,7 +3218,7 @@ export class SnapshotDb extends IModelDb {
       snapshot.restartDefaultTxn();
     }, (10 * 60) * 1000).unref(); // 10 minutes
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    snapshot._refreshSas = new RefreshV2CheckpointSas(snapshot.nativeDb.cloudContainer!.accessToken, checkpoint.reattachSafetySeconds);
+    snapshot._refreshSas = new RefreshV2CheckpointSas(snapshot[_nativeDb].cloudContainer!.accessToken, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
@@ -3308,7 +3247,7 @@ export class SnapshotDb extends IModelDb {
       clearTimeout(this._restartDefaultTxnTimer);
 
     if (this._createClassViewsOnClose) { // check for flag set during create
-      if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
+      if (BentleyStatus.SUCCESS !== this[_nativeDb].createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
       } else {
         this.saveChanges();
@@ -3351,7 +3290,7 @@ export class StandaloneDb extends BriefcaseDb {
    * @param args The parameters that define the new iModel
    */
   public static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
     nativeDb.setITwinId(Guid.empty);
@@ -3385,7 +3324,7 @@ export class StandaloneDb extends BriefcaseDb {
    * @beta
    */
   public createClassViews(): void {
-    const result = this.nativeDb.createClassViewsInDb();
+    const result = this[_nativeDb].createClassViewsInDb();
     if (BentleyStatus.SUCCESS !== result)
       throw new IModelError(result, "Error creating class views");
     else

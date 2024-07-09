@@ -17,15 +17,14 @@ import { HubWrappers, KnownTestLocations } from "../";
 import { HubMock } from "../../HubMock";
 import {
   BriefcaseDb,
-  ChangesetConflictArgs,
   ChannelControl,
   DictionaryModel,
-  MergeChangesetConflictArgs,
   PullMergeMethod,
   SpatialCategory,
   SqliteChangesetReader,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { ChangesetConflictArgs, MergeChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
 

@@ -80,7 +80,7 @@ internal;compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number
 internal;Complex 
 public;Cone 
 public;ConsolidateAdjacentCurvePrimitivesOptions
-alpha;Constant
+public;Constant
 public;ConstructCurveBetweenCurves 
 public;ConvexClipPlaneSet 
 public;ConvexClipPlaneSetProps = ClipPlaneProps[]

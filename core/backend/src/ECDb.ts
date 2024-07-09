@@ -11,8 +11,9 @@ import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, Q
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
+import { _nativeDb } from "./internal/Symbols";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -43,7 +44,7 @@ export class ECDb implements IDisposable {
   }
 
   constructor() {
-    this._nativeDb = new IModelHost.platform.ECDb();
+    this._nativeDb = new IModelNative.platform.ECDb();
   }
   /** Call this function when finished with this ECDb object. This releases the native resources held by the
    *  ECDb object.
@@ -62,7 +63,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) if the operation failed.
    */
   public createDb(pathName: string): void {
-    const status: DbResult = this.nativeDb.createDb(pathName);
+    const status: DbResult = this[_nativeDb].createDb(pathName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to created ECDb");
   }
@@ -75,13 +76,13 @@ export class ECDb implements IDisposable {
   public openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): void {
     const nativeOpenMode: OpenMode = openMode === ECDbOpenMode.Readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const tryUpgrade: boolean = openMode === ECDbOpenMode.FileUpgrade;
-    const status: DbResult = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
+    const status: DbResult = this[_nativeDb].openDb(pathName, nativeOpenMode, tryUpgrade);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }
 
   /** Returns true if the ECDb is open */
-  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
+  public get isOpen(): boolean { return this[_nativeDb].isOpen(); }
 
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.
@@ -89,7 +90,7 @@ export class ECDb implements IDisposable {
   public closeDb(): void {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
-    this.nativeDb.closeDb();
+    this[_nativeDb].closeDb();
   }
 
   /** @internal use to test statement caching */
@@ -107,7 +108,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public saveChanges(changesetName?: string): void {
-    const status: DbResult = this.nativeDb.saveChanges(changesetName);
+    const status: DbResult = this[_nativeDb].saveChanges(changesetName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to save changes");
   }
@@ -116,7 +117,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public abandonChanges(): void {
-    const status: DbResult = this.nativeDb.abandonChanges();
+    const status: DbResult = this[_nativeDb].abandonChanges();
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to abandon changes");
   }
@@ -128,7 +129,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
   public importSchema(pathName: string): void {
-    const status: DbResult = this.nativeDb.importSchema(pathName);
+    const status: DbResult = this[_nativeDb].importSchema(pathName);
     if (status !== DbResult.BE_SQLITE_OK) {
       Logger.logError(loggerCategory, `Failed to import schema from '${pathName}'.`);
       throw new IModelError(status, `Failed to import schema from '${pathName}'.`);
@@ -142,7 +143,7 @@ export class ECDb implements IDisposable {
    * @throws if the schema can not be found or loaded.
    */
   public getSchemaProps(name: string): ECSchemaProps {
-    return this.nativeDb.getSchemaProps(name);
+    return this[_nativeDb].getSchemaProps(name);
   }
 
   /**
@@ -210,7 +211,7 @@ export class ECDb implements IDisposable {
    */
   public prepareStatement(ecsql: string, logErrors = true): ECSqlStatement {
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.nativeDb, ecsql, logErrors);
+    stmt.prepare(this[_nativeDb], ecsql, logErrors);
     return stmt;
   }
 
@@ -279,12 +280,17 @@ export class ECDb implements IDisposable {
    */
   public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb, logErrors);
+    stmt.prepare(this[_nativeDb], logErrors);
     return stmt;
   }
 
+  /** @internal
+   * @deprecated in 4.8. This internal API will be removed in 5.0. Use ECDb's public API instead.
+   */
+  public get nativeDb(): IModelJsNative.ECDb { return this[_nativeDb]; }
+
   /** @internal */
-  public get nativeDb(): IModelJsNative.ECDb {
+  public get [_nativeDb](): IModelJsNative.ECDb {
     assert(undefined !== this._nativeDb);
     return this._nativeDb;
   }
@@ -307,7 +313,7 @@ export class ECDb implements IDisposable {
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
+        return ConcurrentQuery.executeQueryRequest(this[_nativeDb], request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
