@@ -1,8 +1,8 @@
 sep=;
 Release Tag;API Item
 public;BackendDiagnosticsAttribute
-beta;BackendDiagnosticsHandler
-beta;BackendDiagnosticsOptions
+public;BackendDiagnosticsHandler
+public;BackendDiagnosticsOptions
 internal;combineDiagnosticsOptions(...options: Array
 public;ContentCacheConfig
 public;DiskHierarchyCacheConfig 
@@ -14,7 +14,8 @@ public;HierarchyCacheMode
 public;HybridCacheConfig 
 public;MemoryHierarchyCacheConfig 
 public;MultiElementPropertiesResponse
-public;MultiManagerPresentationProps 
+public;MultiManagerPresentationProps = PresentationProps
+deprecated;MultiManagerPresentationProps = PresentationProps
 internal;normalizeVersion(version?: string): string
 public;Presentation
 public;PresentationAssetsRootConfig
@@ -25,8 +26,9 @@ public;PresentationManagerCachingConfig
 public;PresentationManagerMode
 deprecated;PresentationManagerMode
 public;PresentationManagerProps
-public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
-public;PresentationPropsBase 
+public;PresentationProps 
+public;PresentationPropsBase = PresentationProps
+deprecated;PresentationPropsBase = PresentationProps
 internal;reportDiagnostics
 public;RulesetEmbedder
 public;RulesetEmbedderProps
@@ -35,6 +37,7 @@ public;RulesetManager
 internal;RulesetManagerImpl 
 public;RulesetVariablesManager
 internal;RulesetVariablesManagerImpl 
-public;SingleManagerPresentationProps 
+public;SingleManagerPresentationProps = Omit
+deprecated;SingleManagerPresentationProps = Omit
 public;UnitSystemFormat = UnitSystemFormat_2
 deprecated;UnitSystemFormat = UnitSystemFormat_2

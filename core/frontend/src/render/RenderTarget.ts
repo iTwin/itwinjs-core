@@ -53,6 +53,7 @@ export interface RenderTargetDebugControl {
   vcSupportIntersectingVolumes: boolean;
   readonly shadowFrustum: Frustum | undefined;
   displayDrapeFrustum: boolean;
+  displayMaskFrustum: boolean;
   /** Override device pixel ratio for on-screen targets only. This supersedes window.devicePixelRatio.
    * Undefined clears the override. Chiefly useful for tests.
    */

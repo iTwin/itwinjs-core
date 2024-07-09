@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
-import { IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
+import { _nativeDb, IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import * as fs from "fs";
 import { OpenMode } from "@itwin/core-bentley";
@@ -119,7 +119,7 @@ describe("SchemaLoaderPerformance", () => {
     const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
 
     const startTime: number = new Date().getTime();
-    imodel.nativeDb.getSchemaProps(schemaName);
+    imodel[_nativeDb].getSchemaProps(schemaName);
     const endTime: number = new Date().getTime();
 
     const elapsedTime = endTime - startTime;
@@ -131,7 +131,7 @@ describe("SchemaLoaderPerformance", () => {
     const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
 
     const startTime: number = new Date().getTime();
-    const schemaResult =  await imodel.nativeDb.getSchemaPropsAsync(schemaName);
+    const schemaResult =  await imodel[_nativeDb].getSchemaPropsAsync(schemaName);
     const endTime: number = new Date().getTime();
 
     if (schemaResult === undefined) {

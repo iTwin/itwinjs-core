@@ -10,13 +10,13 @@ import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { Descriptor, SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
+import { Item } from "./content/Item";
 import { InstanceKey } from "./EC";
+import { ElementProperties } from "./ElementProperties";
 import { InstanceFilterDefinition } from "./InstanceFilterDefinition";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
 import { SelectionScopeProps } from "./selection/SelectionScope";
-import { Item } from "./content/Item";
-import { ElementProperties } from "./ElementProperties";
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -70,8 +70,6 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
    *
    * **Note:** May only be used on hierarchy levels that support filtering - check [[NavNode.supportsFiltering]] before
    * requesting filtered children.
-   *
-   * @beta
    */
   instanceFilter?: InstanceFilterDefinition;
 
@@ -84,14 +82,13 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
    * be useful to be displayed to end users.
    *
    * @see [Hierarchies' filtering and limiting]($docs/presentation/hierarchies/FilteringLimiting.md)
-   * @beta
    */
   sizeLimit?: number;
 }
 
 /**
  * Params for hierarchy level descriptor requests.
- * @beta
+ * @public
  */
 export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable>
   extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -166,9 +163,8 @@ export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVa
   /** Input keys for getting the content */
   keys: TKeySet;
   /**
-   * Flag that specifies whether value formatting should be emitted or not.
+   * Flag that specifies whether value formatting should be omitted or not.
    * Content is returned without `displayValues` when this is set to `true`.
-   * @alpha
    */
   omitFormattedValues?: boolean;
 }
@@ -220,7 +216,6 @@ export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = 
   /**
    * Content parser that creates a result item based on given content descriptor and content item. Defaults
    * to a parser that creates [[ElementProperties]] objects.
-   * @beta
    */
   contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
 

@@ -8,7 +8,7 @@ import {
   BriefcaseIdValue, Code,  ColorDef,  GeometricElementProps, IModel,
   SubCategoryAppearance,
 } from "@itwin/core-common";
-import {   IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
+import {   _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 interface TestElement extends GeometricElementProps {
@@ -57,7 +57,7 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "InsertNullStructArrayTest" } });
     await imodel.importSchemas([testSchemaPath]);
-    imodel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+    imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);

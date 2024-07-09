@@ -8,7 +8,7 @@ import * as path from "path";
 import * as semver from "semver";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
+  _nativeDb, BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
   Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import {
@@ -70,8 +70,8 @@ describe("AnalyticalSchema", () => {
     assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
     assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
     await iModelDb.importSchemas([analyticalSchemaFileName, testSchemaFileName]);
-    assert.isFalse(iModelDb.nativeDb.hasPendingTxns(), "Expect importSchemas to not have txns for snapshots");
-    assert.isFalse(iModelDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
+    assert.isFalse(iModelDb[_nativeDb].hasPendingTxns(), "Expect importSchemas to not have txns for snapshots");
+    assert.isFalse(iModelDb[_nativeDb].hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
     iModelDb.saveChanges();
     // test querySchemaVersion
     const bisCoreSchemaVersion: string = iModelDb.querySchemaVersion(BisCoreSchema.schemaName)!;
