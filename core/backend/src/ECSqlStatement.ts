@@ -363,23 +363,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return formattedRow;
   }
 
-  private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: ECSqlValue): string {
-    const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
-    let jsName: string = ECJsNames.toJsName(colInfo.getAccessString(), colInfo.isSystemProperty());
-
-    // now check duplicates. If there are, append a numeric suffix to the duplicates
-    let suffix: number | undefined = duplicatePropNames.get(jsName);
-    if (suffix === undefined)
-      duplicatePropNames.set(jsName, 0);
-    else {
-      suffix++;
-      duplicatePropNames.set(jsName, suffix);
-      jsName += `_${suffix}`;
-    }
-
-    return jsName;
-  }
-
   /** Calls step when called as an iterator.
    *
    *  Each iteration returns an [ECSQL row format]($docs/learning/ECSQLRowFormat) as returned
