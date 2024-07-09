@@ -8,7 +8,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
-import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -264,9 +264,9 @@ describe("CloudSqlite", () => {
     const db = new SQLiteDb();
     db.openDb("c0-db1:0", OpenMode.Readonly, contain1);
     expect(db.isOpen);
-    expect(db.nativeDb.cloudContainer).equals(contain1);
+    expect(db[_nativeDb].cloudContainer).equals(contain1);
     db.closeDb();
-    expect(db.nativeDb.cloudContainer).undefined;
+    expect(db[_nativeDb].cloudContainer).undefined;
 
     dbProps = contain1.queryDatabase(dbs[0]);
     assert(dbProps !== undefined);
@@ -294,7 +294,7 @@ describe("CloudSqlite", () => {
       const briefcase = await BriefcaseDb.open({ fileName: "testBim2", container: contain1 });
       expect(briefcase.getBriefcaseId()).equals(0);
       expect(briefcase.iModelId).equals(testBimGuid);
-      expect(briefcase.nativeDb.cloudContainer).equals(contain1);
+      expect(briefcase[_nativeDb].cloudContainer).equals(contain1);
       briefcase.close();
     });
 

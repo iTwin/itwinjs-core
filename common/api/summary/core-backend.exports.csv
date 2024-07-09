@@ -272,6 +272,7 @@ public;Model
 public;ModelSelector 
 internal;ModelSelectorRefersToModels 
 public;NativeAppStorage
+internal;_nativeDb: unique symbol
 public;NativeHost
 public;NativeHostOpts 
 beta;OnAspectArg

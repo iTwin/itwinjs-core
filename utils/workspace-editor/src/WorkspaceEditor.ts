@@ -11,7 +11,7 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
+  _nativeDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import {
   constructWorkspaceDb,
@@ -164,7 +164,7 @@ function friendlyFileSize(size: number) {
 /** open, call a function to process, then close a WorkspaceDb */
 async function processWorkspace<W extends EditableWorkspaceDb | WorkspaceDb, T extends WorkspaceDbOpt>(args: T, ws: W, fn: (ws: W, args: T) => Promise<void>) {
   ws.open();
-  showMessage(`WorkspaceDb [${ws.sqliteDb.nativeDb.getFilePath()}]`);
+  showMessage(`WorkspaceDb [${ws.sqliteDb[_nativeDb].getFilePath()}]`);
   try {
     await fn(ws, args);
   } finally {
