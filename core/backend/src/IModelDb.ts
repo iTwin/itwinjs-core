@@ -1764,9 +1764,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return undefined;
       }
 
-      const oldElement = this._iModel.nativeDb.getElement(loadProps);
-      oldElement;
-
       const elementProps = mapNativeElementProps(nativeInstance, loadProps);
 
       if (loadProps.wantGeometry) {
