@@ -291,7 +291,7 @@ export class IModelHost {
 
   /** Provides access to the entirely internal, low-level, unstable APIs provided by @bentley/imodel-native.
    * Should not be used outside of @itwin/core-backend, and certainly not outside of the itwinjs-core repository
-   * @deprecated in 4.8. Use `IModelNative.platform` instead.
+   * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelHost's public API instead.
    * @internal
    */
   public static get platform(): typeof IModelJsNative { return IModelNative.platform; }

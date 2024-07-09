@@ -23,7 +23,7 @@ import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
-import { _releaseAllLocks } from "./internal/Symbols";
+import { _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
@@ -419,8 +419,8 @@ export class BriefcaseManager {
     if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    db.nativeDb.applyChangeset(changesetFile);
-    db.changeset = db.nativeDb.getCurrentChangeset();
+    db[_nativeDb].applyChangeset(changesetFile);
+    db.changeset = db[_nativeDb].getCurrentChangeset();
 
     // we're done with this changeset, delete it
     IModelJsFs.removeSync(changesetFile.pathname);
@@ -428,7 +428,7 @@ export class BriefcaseManager {
 
   /** @internal */
   public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
-    if (!db.isOpen || db.nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
+    if (!db.isOpen || db[_nativeDb].isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
     let currentIndex = db.changeset.index;
@@ -464,7 +464,7 @@ export class BriefcaseManager {
 
   /** create a changeset from the current changes, and push it to iModelHub */
   private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
-    const changesetProps = db.nativeDb.startCreateChangeset() as ChangesetFileProps;
+    const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
     const fileSize = IModelJsFs.lstatSync(changesetProps.pathname)?.size;
@@ -478,8 +478,8 @@ export class BriefcaseManager {
       try {
         const accessToken = await IModelHost.getAccessToken();
         const index = await IModelHost.hubAccess.pushChangeset({ accessToken, iModelId: db.iModelId, changesetProps });
-        db.nativeDb.completeCreateChangeset({ index });
-        db.changeset = db.nativeDb.getCurrentChangeset();
+        db[_nativeDb].completeCreateChangeset({ index });
+        db.changeset = db[_nativeDb].getCurrentChangeset();
         if (!arg.retainLocks)
           await db.locks[_releaseAllLocks]();
 
@@ -498,7 +498,7 @@ export class BriefcaseManager {
         };
 
         if (!shouldRetry()) {
-          db.nativeDb.abandonCreateChangeset();
+          db[_nativeDb].abandonCreateChangeset();
           throw err;
         }
       } finally {

@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./FrontendTiles";
-export * from "./graphics-provider/tileset-creators/IModelTileset";
-export * from "./graphics-provider/tileset-creators/GeoscienceTileset";
-export * from "./graphics-provider/tileset-creators/RealityModelTileset";
-export * from "./graphics-provider/url-providers/GraphicUrlProvider";
-export * from "./graphics-provider/url-providers/GeoscienceUrlProvider";
-export * from "./graphics-provider/url-providers/IModelUrlProvider";
-
+export * from "./GraphicsProvider/GraphicRepresentationProvider";
+export * from "./GraphicsProvider/GraphicsProvider";
+export * from "./GraphicsProvider/tileset-creators/GeoscienceTileset";
+export * from "./GraphicsProvider/url-providers/GeoscienceUrlProvider";

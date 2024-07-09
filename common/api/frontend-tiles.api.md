@@ -8,6 +8,12 @@ import { AccessToken } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 
 // @alpha
+export function attachGeoscienceTileset(args: AttachGeoscienceTilesetArgs): Promise<void>;
+
+// @alpha
+export type AttachGeoscienceTilesetArgs = BaseGeoscienceArgs;
+
+// @alpha
 export interface BaseGeoscienceArgs {
     accessToken: string;
     geoscienceObjectId: string;
@@ -56,7 +62,17 @@ export interface DataSource {
 }
 
 // @beta
-export type FrontendTilesOptions = CreateIModelTilesetArgs;
+export interface FrontendTilesOptions {
+    computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
+    enableCDN?: boolean;
+    // @internal
+    enableEdges?: boolean;
+    maxLevelsToSkip?: number;
+    // @internal
+    nopFallback?: boolean;
+    // @internal
+    useIndexedDBCache?: boolean;
+}
 
 // @internal
 export const frontendTilesOptions: {
@@ -73,39 +89,6 @@ export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
 
 // @alpha
 export function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise<string | undefined>;
-
-// @beta
-export function getGraphicRepresentationUrl(args: GetGraphicRepresentationUrlArgs): Promise<URL | undefined>;
-
-// @beta
-export interface GetGraphicRepresentationUrlArgs {
-    accessToken: AccessToken;
-    dataSource: DataSource;
-    enableCDN?: boolean;
-    format: GraphicRepresentationFormat;
-    requireExactVersion?: boolean;
-    urlPrefix?: string;
-}
-
-// @beta
-export function getIModelTilesetUrl(args: GetIModelTilesetUrlArgs): Promise<URL | undefined>;
-
-// @beta
-export interface GetIModelTilesetUrlArgs {
-    accessToken: AccessToken;
-    dataSource: IModelDataSource;
-    options: IModelTilesetOptions;
-}
-
-// @beta
-export function getIModelTilesetUrlFromConnection(args: GetIModelTilesetUrlFromConnectionArgs): Promise<URL | undefined>;
-
-// @beta
-export interface GetIModelTilesetUrlFromConnectionArgs {
-    accessToken: AccessToken;
-    iModel: IModelConnection;
-    options: IModelTilesetOptions;
-}
 
 // @beta
 export type GraphicRepresentation = {

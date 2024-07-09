@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+alpha;attachGeoscienceTileset(args: AttachGeoscienceTilesetArgs): Promise
+alpha;AttachGeoscienceTilesetArgs = BaseGeoscienceArgs
 alpha;BaseGeoscienceArgs
 beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
 alpha;createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise
@@ -12,14 +14,8 @@ alpha;createRealityModelTilesetFromUrl(url: string): Promise
 beta;DataSource
 beta;FrontendTilesOptions = CreateIModelTilesetArgs
 internal;frontendTilesOptions:
-alpha;GetGeoscienceTilesetArgs 
+alpha;GetGeoscienceTilesetArgs
 alpha;getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise
-beta;getGraphicRepresentationUrl(args: GetGraphicRepresentationUrlArgs): Promise
-beta;GetGraphicRepresentationUrlArgs
-beta;getIModelTilesetUrl(args: GetIModelTilesetUrlArgs): Promise
-beta;GetIModelTilesetUrlArgs
-beta;getIModelTilesetUrlFromConnection(args: GetIModelTilesetUrlFromConnectionArgs): Promise
-beta;GetIModelTilesetUrlFromConnectionArgs
 beta;GraphicRepresentation =
 beta;GraphicRepresentationFormat = "IMDL" | "3DTILES" | string
 beta;GraphicRepresentationStatus

@@ -27,13 +27,13 @@ export const customAttributeClassMerger: SchemaItemMergerHandler<CustomAttribute
   },
   async modify(context, change, itemKey, item: MutableCAClass) {
     if (change.difference.appliesTo !== undefined) {
-      const currentValue = containerTypeToString(item.containerType);
+      const currentValue = containerTypeToString(item.appliesTo);
       if (currentValue !== "" && change.difference.appliesTo !== currentValue) {
         const containerType = parseCustomAttributeContainerType(`${currentValue}, ${change.difference.appliesTo}`);
         if (containerType === undefined) {
           throw new Error("An invalid custom attribute class containerType has been provided.");
         }
-        item.setContainerType(containerType);
+        item.setAppliesTo(containerType);
       }
     }
     return modifyClass(context, change, itemKey, item);
