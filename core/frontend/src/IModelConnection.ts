@@ -382,7 +382,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8. Use AccuSnap.doSnapRequest.
+   * @deprecated in 4.8. To be removed in 5.0. Use AccuSnap.doSnapRequest.
    */
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
     return this[_requestSnap](props);

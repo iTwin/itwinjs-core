@@ -3198,8 +3198,8 @@ export class AccuDrawHintBuilder {
   }
 
   /** Add hint to fully specify compass orientation from a Matrix3d in row format
-   * @internal because row matrix is confusing and "dumb".
-   * @deprecated in 4.8. To be removed in 5.0. Use setMatrix.
+   * @internal because column matrices are used everywhere else, row matrix is confusing and error-prone.
+   * @deprecated in 4.8. To be removed in 5.0. Use setMatrix with a column matrix.
    */
   public setRotation(rowMatrix: Matrix3d): void {
     this._setRotationRowMatrix(rowMatrix);

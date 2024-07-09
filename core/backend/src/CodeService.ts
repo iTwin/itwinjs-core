@@ -483,7 +483,12 @@ export namespace CodeService {
     /** For [[CodeService.reserveCodes]] and [[CodeService.updateCodes]], a list of the problem details. */
     public readonly problems?: ReserveProblem[] | UpdateProblem[];
 
-    /** @internal */
+    /** Constructor.
+     * @param errorId Identifies the kind of CodeService error that occurred.
+     * @param errNum The general error code exposed through [BentleyError]($bentley).
+     * @param message A non-localized description of the error.
+     * @param problems For [[CodeService.reserveCodes]] and [[CodeService.updateCodes]], a list of problem details.
+     */
     constructor(errorId: ErrorId, errNum: number, message: string, problems?: ReserveProblem[] | UpdateProblem[]) {
       super(errNum, message);
       this.errorId = errorId;
