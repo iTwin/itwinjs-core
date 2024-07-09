@@ -3192,12 +3192,20 @@ export class AccuDrawHintBuilder {
     const invMatrix = matrix.inverse();
     if (undefined === invMatrix)
       return false;
-    this.setRotation(invMatrix);
+
+    this._setRotationRowMatrix(invMatrix);
     return true;
   }
 
-  /** @internal Add hint to fully specify compass orientation from a Matrix3d in row format */
+  /** Add hint to fully specify compass orientation from a Matrix3d in row format
+   * @internal because row matrix is confusing and "dumb".
+   * @deprecated in 4.8. To be removed in 5.0. Use setMatrix.
+   */
   public setRotation(rowMatrix: Matrix3d): void {
+    this._setRotationRowMatrix(rowMatrix);
+  }
+
+  private _setRotationRowMatrix(rowMatrix: Matrix3d): void {
     this._rMatrix = rowMatrix.clone();
     this._flagRotation = true;
     this._flagXAxis = this._flagNormal = false;
