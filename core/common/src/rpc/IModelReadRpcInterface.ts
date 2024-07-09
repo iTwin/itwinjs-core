@@ -26,7 +26,7 @@ import {
 import { ModelProps } from "../ModelProps";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { SnapRequestProps, SnapResponseProps } from "../Snapping";
+import { SnapRequestProps, SnapResponseProps } from "../internal/Snapping";
 import { TextureData, TextureLoadProps } from "../TextureProps";
 import {
   CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SubCategoryResultRow,

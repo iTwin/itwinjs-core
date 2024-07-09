@@ -98,6 +98,7 @@ internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
 internal;calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes: number, maxSize: number): EdgeTableInfo
+internal;_callIpcChannel: unique symbol
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
@@ -111,7 +112,7 @@ public;CheckboxFormatPropEditorSpec
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
-beta;CollectTileStatus = "accept" | "reject" | "continue"
+public;CollectTileStatus = "accept" | "reject" | "continue"
 internal;collectTransferables(document: ImdlModel.Document): Transferable[]
 internal;ColorMap 
 public;CompassMode
@@ -271,7 +272,7 @@ internal;GeometryAccumulator
 internal;GeometryList
 internal;class GeometryListBuilder 
 internal;GeometryOptions
-beta;GeometryTileTreeReference 
+public;GeometryTileTreeReference 
 public;GeoServices
 internal;GeoServicesOptions = Omit
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
@@ -723,7 +724,7 @@ internal;RealityModelTileUtils
 public;RealityTile 
 internal;RealityTileContent 
 internal;RealityTileDrawArgs 
-beta;RealityTileGeometry
+public;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion
@@ -885,8 +886,8 @@ internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): voi
 internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
-beta;TileGeometryCollector
-beta;TileGeometryCollectorOptions
+public;TileGeometryCollector
+public;TileGeometryCollectorOptions
 public;TileGraphicType
 public;TileLoadPriority
 public;TileLoadStatus

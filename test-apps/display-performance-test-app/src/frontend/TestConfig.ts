@@ -124,6 +124,10 @@ export interface TestConfigProps {
    * Note that the contents of iModel.key in DPTA is a GUID.
    */
   frontendTilesUrlTemplate?: string;
+  /** Should the frontendTile fallback to an empty tile tree.
+   * Default: "false"
+   */
+  frontendTilesNopFallback?: boolean;
   /** The location of the iModel file(s) used by the test.
    * Default: ""
    */
@@ -197,6 +201,7 @@ export class TestConfig {
   public readonly outputPath: string;
   public iModelName: string;
   public frontendTilesUrlTemplate?: string;
+  public frontendTilesNopFallback?: boolean;
   public urlStr?: string;
   public readonly iModelId?: string;
   public readonly iTwinId?: string;
@@ -249,6 +254,7 @@ export class TestConfig {
     this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
     this.onException = props.onException ?? prevConfig?.onException;
     this.frontendTilesUrlTemplate = props.frontendTilesUrlTemplate ?? prevConfig?.frontendTilesUrlTemplate;
+    this.frontendTilesNopFallback = props.frontendTilesNopFallback ?? prevConfig?.frontendTilesNopFallback;
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {

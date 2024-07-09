@@ -26,6 +26,8 @@ export interface FrontendTilesOptions {
     enableEdges?: boolean;
     maxLevelsToSkip?: number;
     // @internal
+    nopFallback?: boolean;
+    // @internal
     useIndexedDBCache?: boolean;
 }
 

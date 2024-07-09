@@ -515,7 +515,7 @@ export class TxnManager {
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
   public reverseTxns(numOperations: number): IModelStatus {
-    return this._iModel.reverseTxns(numOperations);
+    return this._nativeDb.reverseTxns(numOperations);
   }
 
   /** Reverse the most recent operation. */
