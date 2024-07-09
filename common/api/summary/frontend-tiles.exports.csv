@@ -1,9 +1,9 @@
 sep=;
 Release Tag;API Item
+alpha;attachGeoscienceTileset(args: AttachGeoscienceTilesetArgs): Promise
+alpha;AttachGeoscienceTilesetArgs = BaseGeoscienceArgs
 alpha;BaseGeoscienceArgs
 beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
-alpha;createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise
-alpha;CreateGeoscienceTilesetArgs = BaseGeoscienceArgs
 beta;DataSource
 beta;FrontendTilesOptions
 internal;frontendTilesOptions:

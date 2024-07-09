@@ -6,5 +6,5 @@
 export * from "./FrontendTiles";
 export * from "./GraphicsProvider/GraphicRepresentationProvider";
 export * from "./GraphicsProvider/GraphicsProvider";
-export * from "./graphics-provider/tileset-creators/GeoscienceTileset";
-export * from "./graphics-provider/url-providers/GeoscienceUrlProvider";
+export * from "./GraphicsProvider/tileset-creators/GeoscienceTileset";
+export * from "./GraphicsProvider/url-providers/GeoscienceUrlProvider";

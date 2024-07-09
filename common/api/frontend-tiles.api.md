@@ -8,6 +8,12 @@ import { AccessToken } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 
 // @alpha
+export function attachGeoscienceTileset(args: AttachGeoscienceTilesetArgs): Promise<void>;
+
+// @alpha
+export type AttachGeoscienceTilesetArgs = BaseGeoscienceArgs;
+
+// @alpha
 export interface BaseGeoscienceArgs {
     accessToken: string;
     geoscienceObjectId: string;
@@ -17,12 +23,6 @@ export interface BaseGeoscienceArgs {
 
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
-
-// @alpha
-export function createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise<void>;
-
-// @alpha
-export type CreateGeoscienceTilesetArgs = BaseGeoscienceArgs;
 
 // @beta
 export interface DataSource {
