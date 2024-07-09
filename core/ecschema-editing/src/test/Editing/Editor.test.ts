@@ -440,6 +440,23 @@ describe("Editor tests", () => {
       expect(testSchema.description).to.equal("This is the new description!");
     });
 
+    it("setAlias, alias updated successfully", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+      };
+
+      context = new SchemaContext();
+      testSchema = await Schema.fromJson(schemaJson, context);
+      testEditor = new SchemaContextEditor(context);
+
+      await testEditor.setAlias(testSchema.schemaKey, "newAlias");
+
+      expect(testSchema.alias).to.equal("newAlias");
+    });
+
     // TODO: Add a test to compare previous SchemaContext with the SchemaContext returned when SchemaEditor.finish() is called.
   });
 });

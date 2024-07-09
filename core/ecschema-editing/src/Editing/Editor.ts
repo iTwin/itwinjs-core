@@ -254,5 +254,18 @@ export class SchemaContextEditor {
       });
     schema.setDisplayLabel(label);
   }
+
+  /**
+   * Sets the Schemas alias.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param alias The new alias to set.
+   */
+  public async setAlias(schemaKey: SchemaKey, alias: string) {
+    const schema = await this.lookupSchema(schemaKey)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaId(schemaKey), e);
+      });
+    schema.setAlias(alias);
+  }
 }
 
