@@ -2016,6 +2016,7 @@ export class SchemaContextEditor {
     // (undocumented)
     readonly relationships: RelationshipClasses;
     get schemaContext(): SchemaContext;
+    setAlias(schemaKey: SchemaKey, alias: string): Promise<void>;
     setDescription(schemaKey: SchemaKey, description: string): Promise<void>;
     setDisplayLabel(schemaKey: SchemaKey, label: string): Promise<void>;
     setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaKey>;

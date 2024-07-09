@@ -1665,6 +1665,8 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected _schemaKey?: SchemaKey;
     // @alpha
+    protected setAlias(alias: string): void;
+    // @alpha
     protected setContext(context: SchemaContext): void;
     // @alpha
     protected setDescription(description: string): void;
