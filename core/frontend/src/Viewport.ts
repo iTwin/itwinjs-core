@@ -2781,12 +2781,13 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.view.collectNonTileTreeStatistics(stats);
   }
 
-  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
-   * Invalidates tile trees for all specified models (or all viewed models, if none specified), causing subsequent requests for tiles to make new requests to back-end for updated tiles.
-   * @internal
+  /** Invalidates the [[TileTree]]s for a set of [GeometricModel]($backend)s (or all viewed models, if no models are explicitly specified).
+   * This can occasionally be useful after making bulk changes to many elements, forcing the viewport to display updated graphics reflecting those changes.
+   * Generally, however, you should use a [[GraphicalEditingScope]] instead.
+   * @param modifiedModelIds The Ids of the geometric models whose graphics should be regenerated. If `undefined`, all models currently viewed by the viewport will be refreshed.
    */
-  public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
-    if (this.view.refreshForModifiedModels(modelIds))
+  public refreshForModifiedModels(modifiedModelIds: Id64Arg | undefined): void {
+    if (this.view.refreshForModifiedModels(modifiedModelIds))
       this.invalidateScene();
   }
 

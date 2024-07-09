@@ -591,14 +591,14 @@ export class ViewManager implements Iterable<ScreenViewport> {
       vp.setCursor(cursor);
   }
 
-  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
-   * Call this after editing one or more models, passing in the Ids of those models, to cause new tiles to be generated reflecting the changes.
-   * Pass undefined if you are unsure which models changed (this is less efficient as it discards all tiles for all viewed models in all viewports).
-   * @internal
+  /** Invalidates the [[TileTree]]s for a set of [GeometricModel]($backend)s (or all viewed models, if no models are explicitly specified).
+   * This can occasionally be useful after making bulk changes to many elements, forcing all viewports to display updated graphics reflecting those changes.
+   * Generally, however, you should use a [[GraphicalEditingScope]] instead.
+   * @param modifiedModelIds The Ids of the geometric models whose graphics should be regenerated. If `undefined`, all models currently viewed by each viewport will be refreshed.
    */
-  public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
+  public refreshForModifiedModels(modifiedModelIds: Id64Arg | undefined): void {
     for (const vp of this._viewports)
-      vp.refreshForModifiedModels(modelIds);
+      vp.refreshForModifiedModels(modifiedModelIds);
   }
 
   /** Sets the number of [MSAA]($docs/learning/display/MSAA.md) samples for all currently- and subsequently-opened [[ScreenViewport]]s.
