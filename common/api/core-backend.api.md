@@ -1696,6 +1696,8 @@ export abstract class DriverBundleElement extends InformationContentElement {
 
 // @public
 export class ECDb implements IDisposable {
+    // @internal (undocumented)
+    get [_nativeDb](): IModelJsNative.ECDb;
     constructor();
     abandonChanges(): void;
     // @internal
@@ -1709,7 +1711,7 @@ export class ECDb implements IDisposable {
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
@@ -3000,6 +3002,8 @@ export type IModelCloneContext = IModelElementCloneContext;
 
 // @public
 export abstract class IModelDb extends IModel {
+    // @internal (undocumented)
+    readonly [_nativeDb]: IModelJsNative.DgnDb;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
@@ -3091,8 +3095,8 @@ export abstract class IModelDb extends IModel {
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
-    // @internal (undocumented)
-    readonly nativeDb: IModelJsNative.DgnDb;
+    // @internal @deprecated (undocumented)
+    get nativeDb(): IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -4119,6 +4123,9 @@ export class NativeAppStorage {
 
 export { NativeCloudSqlite }
 
+// @internal (undocumented)
+export const _nativeDb: unique symbol;
+
 // @public
 export class NativeHost {
     // (undocumented)
@@ -5106,6 +5113,8 @@ export interface SqliteChangesetReaderArgs {
 
 // @public
 export class SQLiteDb {
+    // @internal (undocumented)
+    readonly [_nativeDb]: IModelJsNative.SQLiteDb;
     abandonChanges(): void;
     closeDb(saveChanges?: boolean): void;
     // @internal (undocumented)
@@ -5124,8 +5133,8 @@ export class SQLiteDb {
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @internal (undocumented)
-    readonly nativeDb: IModelJsNative.SQLiteDb;
+    // @internal @deprecated (undocumented)
+    get nativeDb(): IModelJsNative.SQLiteDb;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
     // @beta (undocumented)
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
