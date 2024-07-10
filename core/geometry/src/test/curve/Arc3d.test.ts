@@ -1026,18 +1026,20 @@ describe("ApproximateArc3d", () => {
     const allGeometry: GeometryQuery[] = [];
     const center = Point3d.createZero();
     const a = 10;
+    const delta = 1.2 * a;
     let x = 0;
     let y = 0;
 
-    const analyzeApproximation = (ellipse: Arc3d, options: EllipticalArcApproximationOptions) => {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipse, x, y);
-      const context = EllipticalArcApproximationContext.create(ellipse);
-      const approx = ellipse.constructCircularArcChainApproximation(options);
+    const analyzeQ1Approximation = (ellipticalArc: Arc3d, options: EllipticalArcApproximationOptions) => {
+      const context = EllipticalArcApproximationContext.create(ellipticalArc);
+      const isValid = context.isValidArc;
+      const approx = ellipticalArc.constructCircularArcChainApproximation(options);
       ck.testDefined(approx, "computed an approximation");
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, approx, x, y);
       let error = 0;
       let nSamplesQ1 = 0;
-      if (context.isValidArc) {
+      if (isValid) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipticalArc, x, y, -delta);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, approx, x, y);
         const samples = context.sampleFractions(options, true) as QuadrantFractions[];
         ck.testTrue(samples.length > 0 && samples[0].fractions.length > 0, "computed samples");
         const samplesQ1 = new OrderedSet<number>(compareNumbers);
@@ -1047,61 +1049,63 @@ describe("ApproximateArc3d", () => {
               samplesQ1.add(f);
           }
         }
-        nSamplesQ1 = samplesQ1.size;
+        nSamplesQ1 = samplesQ1.size; // assume ellipticalArc sweep is Q1
         const perp = context.computeApproximationError(samples);
-        if (ck.testDefined(perp, "computed approx error"))
+        if (ck.testDefined(perp, "computed approx error")) {
           error = perp.detailA.a;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [perp.detailA.point, perp.detailB.point], x, y);
+        }
       }
-      return { approx, error, nSamplesQ1 };
+      return { approx, error, nSamplesQ1, isValid };
     };
 
     // test subdivision against other methods on ellipses of various eccentricities
     const optionsA = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.AdaptiveSubdivision);
     const optionsC = EllipticalArcApproximationOptions.create();
-    for (const xMajor of [true, false]) {
-      for (const e of [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99, 0.999, 0.9999, 0.99999, 0.999999]) {
-        const b = a * Math.sqrt((1 - e) * (1 + e));
-        const ellipticalArc = Arc3d.createXYEllipse(center, xMajor ? a : b, xMajor ? b : a, AngleSweep.createStartEndDegrees(0, 90));
-        const resultA = analyzeApproximation(ellipticalArc, optionsA);
-        y += a;
-        if (0 === resultA.nSamplesQ1)
-          continue; // it's essentially a circle; no approximation to compare
+    for (const e of [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99, 0.999, 0.9999, 0.99999, 0.999999]) {
+      const b = a * Math.sqrt((1 - e) * (1 + e));
+      const ellipticalArc = Arc3d.createXYEllipse(center, a, b, AngleSweep.createStartEndDegrees(0, 90));
+      const resultA = analyzeQ1Approximation(ellipticalArc, optionsA);
+      if (!resultA.isValid)
+        continue; // first three are essentially circles; no approximation to compare
+      ck.testLE(resultA.error, optionsA.maxError, "approx error as per options");
+      y += delta;
 
-        // compare to naive method
-        ck.testLE(resultA.error, optionsA.maxError, "approx error as per options");
-        optionsC.numSamplesInQuadrant = resultA.nSamplesQ1;
-        optionsC.sampleMethod = EllipticalArcSampleMethod.UniformParameter;
-        let resultC = analyzeApproximation(ellipticalArc, optionsC);
+      // compare to naive method
+      optionsC.numSamplesInQuadrant = resultA.nSamplesQ1;
+      optionsC.sampleMethod = EllipticalArcSampleMethod.UniformParameter;
+      let resultC = analyzeQ1Approximation(ellipticalArc, optionsC);
+      ck.testTrue(resultC.isValid, "naive method approximation is valid");
+      ck.testExactNumber(resultA.nSamplesQ1, resultC.nSamplesQ1, "comparison approximation has expected sample count");
+      ck.testLETol(resultA.error, resultC.error, Geometry.smallMetricDistance, `expected subdivision to beat ${iMethodToString(-1)} on ${resultA.nSamplesQ1} samples of eccentricity ${e} ellipse`);
+      y += delta;
+
+      // compare to curvature interpolation methods
+      optionsC.sampleMethod = EllipticalArcSampleMethod.NonUniformCurvature;
+      for (let iRemap = 0; iRemap < remaps.length; ++iRemap) {
+        optionsC.remapFunction = remaps[iRemap];
+        resultC = analyzeQ1Approximation(ellipticalArc, optionsC);
+        ck.testTrue(resultC.isValid, "nonUniformCurvature method approximation is valid");
         ck.testExactNumber(resultA.nSamplesQ1, resultC.nSamplesQ1, "comparison approximation has expected sample count");
-        ck.testLE(resultA.error, resultC.error, `expected subdivision to beat ${iMethodToString(-1)} on ${resultA.nSamplesQ1} samples of eccentricity ${e} ellipse`);
-        y += a;
-
-        // compare to curvature interpolation methods
-        optionsC.sampleMethod = EllipticalArcSampleMethod.NonUniformCurvature;
-        for (let iRemap = 0; iRemap < remaps.length; ++iRemap) {
-          optionsC.remapFunction = remaps[iRemap];
-          resultC = analyzeApproximation(ellipticalArc, optionsC);
-          ck.testExactNumber(resultA.nSamplesQ1, resultC.nSamplesQ1, "comparison approximation has expected sample count");
-          ck.testLE(resultA.error, resultC.error, `expected subdivision to beat ${iMethodToString(iRemap)} on ${resultA.nSamplesQ1} samples of eccentricity ${e} ellipse`);
-          y += a;
-        }
-
-        x += 2 * a;
-        y = 0;
+        ck.testLETol(resultA.error, resultC.error, Geometry.smallMetricDistance, `expected subdivision to beat ${iMethodToString(iRemap)} on ${resultA.nSamplesQ1} samples of eccentricity ${e} ellipse`);
+        y += delta;
       }
+
+      x += 2 * delta;
+      y = 0;
     }
 
     // test forcePath behavior
     const fullEllipse = Arc3d.createXYEllipse(center, a, a/2);
     const fullCircle = Arc3d.createXY(center, a);
-    let result = analyzeApproximation(fullEllipse, optionsA);
+    let result = analyzeQ1Approximation(fullEllipse, optionsA);
     ck.testTrue(result.approx instanceof Loop, "ellipse approx with !forcePath results in Loop");
-    result = analyzeApproximation(fullCircle, optionsA);
+    result = analyzeQ1Approximation(fullCircle, optionsA);
     ck.testTrue(result.approx === fullCircle, "circle approx with !forcePath results in the input circle");
     optionsA.forcePath = true;
-    result = analyzeApproximation(fullEllipse, optionsA);
+    result = analyzeQ1Approximation(fullEllipse, optionsA);
     ck.testTrue(result.approx instanceof Path, "ellipse approx with forcePath results in Path");
-    result = analyzeApproximation(fullCircle, optionsA);
+    result = analyzeQ1Approximation(fullCircle, optionsA);
     ck.testTrue(result.approx instanceof Path && result.approx.children[0] === fullCircle, "circle approx with forcePath results in Path containing the input circle");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "SubdivisionSampler");

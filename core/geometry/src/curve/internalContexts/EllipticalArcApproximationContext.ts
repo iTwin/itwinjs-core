@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { OrderedComparator, OrderedSet } from "@itwin/core-bentley";
+import { OrderedComparator, OrderedSet, SortedArray } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -283,17 +283,19 @@ class AdaptiveSubdivisionErrorProcessor extends ArcChainErrorProcessor {
     return this._originalRefinementCount < this._refinement.size;
   }
   /**
-   * Return the refinement of the current `QuadrantFractions` fractions array, as radians, sans start/end angles.
+   * Return radian angles for the fractions strictly inside the given quadrant.
    * * Output is suitable to return from an implementation of [[EllipticalArcSampler.computeRadiansStrictlyInsideQuadrant1]].
    */
-  public getRefinedInteriorAngles(result?: number[]): number[] {
+  public getRefinedInteriorAngles(quadrant: 1 | 2 | 3 | 4, result?: number[]): number[] {
     if (!result)
       result = [];
     else
       result.length = 0;
-    for (const fraction of this._refinement) {
-      if (0.0 < fraction && fraction < 1.0) // skip start/end angle
-        result.push(this.ellipticalArc.sweep.fractionToRadians(fraction));
+    const f0 = 0.25 * (quadrant - 1);
+    const f1 = 0.25 * quadrant;
+    for (const f of this._refinement) {
+      if (f0 < f && f < f1)
+        result.push(this.ellipticalArc.sweep.fractionToRadians(f));
     }
     return result;
   }
@@ -460,7 +462,7 @@ class AdaptiveSubdivisionSampler implements EllipticalArcSampler {
       return this.computeFirstInteriorFraction(f1, f0);
     const flatterAtF0 = this.fullArcXY.fractionToCurvature(f0)! < this.fullArcXY.fractionToCurvature(f1)!;
     let ellipse = this.fullArcXY;
-    if (!flatterAtF0) {
+    if (!flatterAtF0) { // swap axis lengths so that ellipse is flatter at f0
       ellipse = this.fullArcXY.clone();
       const xScale = ellipse.matrixRef.columnXMagnitude();
       const yScale = ellipse.matrixRef.columnYMagnitude();
@@ -469,26 +471,30 @@ class AdaptiveSubdivisionSampler implements EllipticalArcSampler {
     const ray0 = ellipse.fractionToPointAndDerivative(f0);
     const pt = Point3d.createZero();
     const arc0 = Arc3d.createXY(pt, 0);
-    let f = Geometry.interpolate(f0, 0.5, f1);
     let bracket0 = f0;
+    let f = f1; // this should yield maximum error arc
     let bracket1 = f1;
-    // ellipse is flatter at f0, so decreasing f -> f0 decreases the approximation error of arc0
-    let iters = 0;
+    let iter = 0;
     let arc0Error: number;
-    do {
+    let prevArc0Error: number | undefined;
+    do { // binary search
       if (!(Arc3d.createCircularStartTangentEnd(ray0.origin, ray0.direction, ellipse.fractionToPoint(f, pt), arc0) instanceof Arc3d))
         break;
-      const perp = ArcChainErrorProcessor.computePrimitiveErrorXY(arc0, ellipse, bracket0, bracket1);
+      const perp = ArcChainErrorProcessor.computePrimitiveErrorXY(arc0, ellipse, f0, f);
       if (!perp)
         break;
       arc0Error = perp.detailA.a;
       if (arc0Error < this._options.maxError) {
-        if (Geometry.isAlmostEqualNumber(arc0Error, this._options.maxError, Geometry.smallFraction))
+        if (f === f1)
+          break;  // first arc suffices
+        if (Geometry.isAlmostEqualOptional(arc0Error, prevArc0Error, Geometry.smallMetricDistance))
           break;
-        f = Geometry.interpolate(bracket0 = f, 0.5, bracket1);
-      } else
-        f = Geometry.interpolate(bracket0, 0.5, bracket1 = f);
-    } while (++iters <= AdaptiveSubdivisionSampler.maxIters);
+        f = Geometry.interpolate(bracket0 = f, 0.5, bracket1); // increase f to increase error over [f0,f]
+      } else {
+        f = Geometry.interpolate(bracket0, 0.5, bracket1 = f); // decrease f to decrease error over [f0,f]
+      }
+      prevArc0Error = arc0Error;
+    } while (++iter < AdaptiveSubdivisionSampler.maxIters);
     return flatterAtF0 ? f : f1 - (f - f0);
   }
   public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
@@ -498,13 +504,14 @@ class AdaptiveSubdivisionSampler implements EllipticalArcSampler {
       const f0 = 0;
       const f1 = 0.25;
       const f = this.computeFirstInteriorFraction(f0, f1);
-      const q = [QuadrantFractions.create(1, [f0, f, f1], true, true)];
+      const fractions = Geometry.isAlmostEqualEitherNumber(f, f0, f1, Geometry.smallFraction) ? [f0, f1] : [f0, f, f1];
+      const q = [QuadrantFractions.create(1, fractions, true, true)];
       const processor = AdaptiveSubdivisionErrorProcessor.create(this.fullArcXY, this._options.maxError);
-      let iters = 0;
+      let iter = 0;
       do {
         EllipticalArcApproximationContext.processQuadrantFractions(this.fullArcXY, q, processor);
-      } while (processor.isRefined && ++iters <= AdaptiveSubdivisionSampler.maxIters);
-      processor.getRefinedInteriorAngles(result);
+      } while (processor.isRefined && ++iter <= AdaptiveSubdivisionSampler.maxIters);
+      processor.getRefinedInteriorAngles(1, result);
     }
     return result;
   }
@@ -632,12 +639,23 @@ export class EllipticalArcApproximationContext {
     const pt1 = this.workPt1;
     const pt2 = this.workPt2;
     const ray = this.workRay;
-    const arcBetween2Samples = (arcStart: Ray3d, arcEnd: Point3d, reverse: boolean): Arc3d => {
+    const arcBetween2Samples = (arcStart: Ray3d, arcEnd: Point3d, reverse: boolean): Arc3d | undefined => {
       // assume non-colinear inputs
-      const myArc = Arc3d.createCircularStartTangentEnd(arcStart.origin, arcStart.direction, arcEnd) as Arc3d;
+      const myArc = Arc3d.createCircularStartTangentEnd(arcStart.origin, arcStart.direction, arcEnd);
+      if (!(myArc instanceof Arc3d))
+        return undefined;
       if (reverse)
         myArc.reverseInPlace();
       return myArc;
+    };
+    const arcBetweenLast2Of3Samples = (p0: Point3d, arcStart: Point3d, arcEnd: Point3d): Arc3d | undefined => {
+      // assume non-colinear inputs; initial arc starts at p0, ends at arcEnd
+      const arc = Arc3d.createCircularStartMiddleEnd(p0, arcStart, arcEnd);
+      if (!(arc instanceof Arc3d))
+        return undefined; // colinear?
+      const startAngle = arc.vector0.signedAngleTo(Vector3d.createStartEnd(arc.center, arcStart), arc.matrixRef.columnZ());
+      arc.sweep.setStartEndRadians(startAngle.radians, arc.sweep.endRadians);
+      return arc; // returned arc starts at arcStart, ends at arcEnd
     };
     const createFirstArc = (f0: number, f1: number, reverse: boolean): Point3d[] => {
       ellipticalArc.fractionToPointAndDerivative(f0, ray);
@@ -646,33 +664,33 @@ export class EllipticalArcApproximationContext {
       if (processor.announceArc) {
         if (reverse)
           ray.direction.scaleInPlace(-1);
-        processor.announceArc(arcBetween2Samples(ray, pt1, false), f0, f1);
+        const arc = arcBetween2Samples(ray, pt1, false);
+        if (arc)
+          processor.announceArc(arc, f0, f1);
       }
       return [pt0, pt1, pt2];
     };
-    const arcBetweenLast2Of3Samples = (p0: Point3d, arcStart: Point3d, arcEnd: Point3d): Arc3d => {
-      // assume non-colinear inputs; initial arc starts at p0, ends at arcEnd
-      const arc = Arc3d.createCircularStartMiddleEnd(p0, arcStart, arcEnd) as Arc3d;
-      const startAngle = arc.vector0.signedAngleTo(Vector3d.createStartEnd(arc.center, arcStart), arc.matrixRef.columnZ());
-      arc.sweep.setStartEndRadians(startAngle.radians, arc.sweep.endRadians);
-      return arc; // returned arc starts at arcStart, ends at arcEnd
-    };
     const createInnerArc = (p0: Point3d, p1: Point3d, f1: number, f2: number): Point3d[] => {
       ellipticalArc.fractionToPoint(f2, pt2);
-      if (processor.announceArc)
-        processor.announceArc(arcBetweenLast2Of3Samples(p0, p1, pt2), f1, f2);
+      if (processor.announceArc) {
+        const arc = arcBetweenLast2Of3Samples(p0, p1, pt2);
+        if (arc)
+          processor.announceArc(arc, f1, f2);
+      }
       p0.setFrom(p1);
       p1.setFrom(pt2);
       return [p0, p1, pt2];
     };
     const createLastArc = (p0: Point3d, f0: number, f1: number, reverse: boolean): void => {
-      // p0 is at the penultimate sample, f0, where this arc starts
+      // p0 is at the penultimate sample f0, where this arc starts
       // this arc is the only one to use the last sample f1, where this arc ends
       ellipticalArc.fractionToPointAndDerivative(f1, ray);
       if (processor.announceArc) {
         if (!reverse)
           ray.direction.scaleInPlace(-1);
-        processor.announceArc(arcBetween2Samples(ray, p0, true), f0, f1);
+        const arc = arcBetween2Samples(ray, p0, true);
+        if (arc)
+          processor.announceArc(arc, f0, f1);
       }
     };
     const reverseFractionsForSymmetry = (q: QuadrantFractions): boolean => {
