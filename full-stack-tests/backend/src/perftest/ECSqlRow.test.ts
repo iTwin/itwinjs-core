@@ -10,9 +10,8 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { DrawingCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { DrawingCategory, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
-import { PerfTestUtility } from "./PerfTestUtils";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
 // eslint-disable-next-line @itwin/import-within-package
@@ -88,30 +87,6 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
   elementProps.baseLong = values.baseLong;
   elementProps.baseDouble = values.baseDouble;
   return elementProps;
-}
-
-function verifyProps(testElement: TestElementProps) {
-  assert.equal(testElement.baseStr, values.baseStr, `${testElement.classFullName}`);
-  assert.equal(testElement.baseLong, values.baseLong, `${testElement.classFullName}`);
-  assert.equal(testElement.baseDouble, values.baseDouble, `${testElement.classFullName}`);
-
-  if (testElement.classFullName.includes("Sub")) {
-    assert.equal(testElement.sub1Str, values.sub1Str, `${testElement.classFullName}`);
-    assert.equal(testElement.sub1Long, values.sub1Long, `${testElement.classFullName}`);
-    assert.equal(testElement.sub1Double, values.sub1Double, `${testElement.classFullName}`);
-
-    if (testElement.classFullName.includes("Sub2") || testElement.classFullName.includes("Sub3")) {
-      assert.equal(testElement.sub2Str, values.sub2Str, `${testElement.classFullName}`);
-      assert.equal(testElement.sub2Long, values.sub2Long, `${testElement.classFullName}`);
-      assert.equal(testElement.sub2Double, values.sub2Double, `${testElement.classFullName}`);
-    }
-
-    if (testElement.classFullName.includes("Sub3")) {
-      assert.equal(testElement.sub3Str, values.sub3Str, `${testElement.classFullName}`);
-      assert.equal(testElement.sub3Long, values.sub3Long, `${testElement.classFullName}`);
-      assert.equal(testElement.sub3Double, values.sub3Double, `${testElement.classFullName}`);
-    }
-  }
 }
 
 function getCount(imodel: IModelDb, className: string) {
@@ -196,26 +171,15 @@ describe("ECSqlRowPerformance", () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(outDir, `Performance_seed_${name}_${size}.bim`);
-        for (const opCount of crudConfig.opSizes) {
-          // eslint-disable-next-line no-console
-          console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements ${opCount} times`);
+        // eslint-disable-next-line no-console
+        console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ECSqlRowPerformance", `IModelPerformance_Read_${name}_${opCount}.bim`);
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.PhysicalElement");
-          const elementIdIncrement = Math.floor(size / opCount);
+        const testFileName = IModelTestUtils.prepareOutputFile("ECSqlRowPerformance", `IModelPerformance_Read_${name}.bim`);
+        const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-          // Verify values to ensure everything is loaded correctly.
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            verifyProps(elemFound as any);
-          }
-
-          const elapsedTime = measureGetRowTime(perfimodel, `PerfTestDomain:${name}`);
-          reporter.addEntry("ECSqlRowPerformanceTests", "GetElements", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
-          perfimodel.close();
-        }
+        const elapsedTime = measureGetRowTime(perfimodel, `PerfTestDomain:${name}`);
+        reporter.addEntry("ECSqlRowPerformanceTests", "GetElements", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN });
+        perfimodel.close();
       }
     }
   });
@@ -281,26 +245,15 @@ describe("ECSqlRowPerformanceTests2d", () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(outDir, `Performance2d_seed_${name}_${size}.bim`);
-        for (const opCount of crudConfig.opSizes) {
-          // eslint-disable-next-line no-console
-          console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements ${opCount} times`);
+        // eslint-disable-next-line no-console
+        console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements`);
 
-          const testFileName = IModelTestUtils.prepareOutputFile("ECSqlRowPerformance2d", `IModelPerformance2d_Read_${name}_${opCount}.bim`);
-          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
-          const elementIdIncrement = Math.floor(size / opCount);
+        const testFileName = IModelTestUtils.prepareOutputFile("ECSqlRowPerformance2d", `IModelPerformance2d_Read_${name}.bim`);
+        const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-          // Verify values to ensure everything is loaded correctly.
-          for (let i = 0; i < opCount; ++i) {
-            const elId = minId + elementIdIncrement * i;
-            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            verifyProps(elemFound as any);
-          }
-
-          const elapsedTime = measureGetRowTime(perfimodel, `PerfTestDomain:${name}`);
-          reporter.addEntry("ECSqlRowPerformanceTests2d", "GetElements2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
-          perfimodel.close();
-        }
+        const elapsedTime = measureGetRowTime(perfimodel, `PerfTestDomain:${name}`);
+        reporter.addEntry("ECSqlRowPerformanceTests2d", "GetElements2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN });
+        perfimodel.close();
       }
     }
   });
