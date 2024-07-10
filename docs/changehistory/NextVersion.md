@@ -10,8 +10,8 @@ Table of contents:
 - [Electron 31 support](#electron-31-support)
 - [Internal APIs](#internal-apis)
 - [ListenerType helper](#listenertype-helper)
-- [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed
-- [ECSchemaRpcInterface caching](#ecschemarpcinterface-caching)
+- [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
+- [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
 
 ## Workspaces
 
