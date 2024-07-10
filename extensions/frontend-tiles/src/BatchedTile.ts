@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-frontend";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedTileTree } from "./BatchedTileTree";
-import { frontendTilesOptions } from "./graphics-provider/tileset-creators/IModelTileset";
+import { frontendTilesOptions } from "./FrontendTiles";
 import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache";
 
 /** @internal */

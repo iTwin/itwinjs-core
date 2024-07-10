@@ -3,10 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { queryGraphicRepresentations } from "./graphics-provider/url-providers/GraphicUrlProvider";
+import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
+import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
+import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
 import { AccessToken } from "@itwin/core-bentley";
-import { createIModelTileset, CreateIModelTilesetArgs } from "./graphics-provider/tileset-creators/IModelTileset";
-import { getIModelTilesetUrlFromConnection, GetIModelTilesetUrlFromConnectionArgs } from "./graphics-provider/url-providers/IModelUrlProvider";
+import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs} from "./GraphicsProvider/GraphicsProvider";
+
+/** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
+ * The tileset is expected to reside at "baseUrl/tileset.json" and to have been produced by the [mesh export service](https://developer.bentley.com/apis/mesh-export/).
+ * If no such tileset exists for the given iModel, return `undefined`.
+ * @see [[FrontendTilesOptions.computeSpatialTilesetBaseUrl]].
+ * @beta
+ */
+export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
 /** Represents the result of a [mesh export](https://developer.bentley.com/apis/mesh-export/operations/get-export/#export).
  * @see [[queryCompletedMeshExports]].
@@ -74,6 +83,7 @@ export interface QueryMeshExportsArgs {
 export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
   const graphicsArgs = {
     accessToken: args.accessToken,
+    sessionId: IModelApp.sessionId,
     dataSource: {
       iTwinId: args.iTwinId,
       id: args.iModelId,
@@ -85,7 +95,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     enableCDN: args.enableCDN,
   };
 
-  for await (const data of queryGraphicRepresentations(graphicsArgs)) {
+  for await (const data of queryGraphicRepresentations(graphicsArgs)){
     const meshExport = {
       id: data.representationId,
       displayName: data.displayName,
@@ -113,7 +123,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
 /** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
  * @beta
  */
-export type ObtainMeshExportTilesetUrlArgs = GetIModelTilesetUrlFromConnectionArgs;
+export type ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs;
 
 /** Obtains a URL pointing to a tileset appropriate for visualizing a specific iModel.
  * [[queryCompletedMeshExports]] is used to obtain a list of available exports. By default, the list is sorted from most to least recently-exported.
@@ -166,10 +176,14 @@ export interface FrontendTilesOptions {
   nopFallback?: boolean;
 }
 
-/** Arguments supplied to [[InitIModelTilesArgs]].
- * @beta
+/** Global configuration initialized by [[initializeFrontendTiles]].
+ * @internal
  */
-export type FrontendTilesOptions = CreateIModelTilesetArgs;
+export const frontendTilesOptions = {
+  maxLevelsToSkip: 4,
+  enableEdges: false,
+  useIndexedDBCache: false,
+};
 
 /** Initialize the frontend-tiles package to obtain tiles for spatial views.
  * @beta
