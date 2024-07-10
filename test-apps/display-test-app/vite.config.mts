@@ -6,13 +6,15 @@ import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import viteInspect from "vite-plugin-inspect";
-import { externalGlobalPlugin } from "esbuild-plugin-external-global";
 import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
 import rollupVisualizer from "rollup-plugin-visualizer";
+import externalGlobals from "rollup-plugin-external-globals";
 import { webpackStats } from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
 import path from "path";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 const mode =
   process.env.NODE_ENV === "development" ? "development" : "production";
@@ -27,7 +29,6 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
     try {
       // gets dependency path
       const pkgPath = require.resolve(pkgName);
-
       // replaces everything after /lib/ with /lib/public/* to get static assets
       let pkgPublicPath = pkgPath.replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
 
@@ -96,6 +97,10 @@ export default defineConfig(() => {
                 webpackStats(), // needs to be the last plugin
               ]
             : []),
+          externalGlobals({
+            // allow global `window` object to access electron as external global
+            electron: "window['electron']",
+          })
         ],
       },
     },
@@ -135,17 +140,10 @@ export default defineConfig(() => {
         "@itwin/core-mobile/lib/cjs/MobileFrontend":
           "@itwin/core-mobile/src/MobileFrontend.ts",
         "../../package.json": "../package.json", // in core-frontend
+
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        plugins: [
-          externalGlobalPlugin({
-            // allow global `window` object to access electron as external global
-            electron: "window['electron']",
-          }),
-        ],
-      },
       force: true, // forces cache dumps on each rebuild. should be turned off once the issue in vite with monorepos not being correctly optimized is fixed. Issue link: https://github.com/vitejs/vite/issues/14099
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
