@@ -478,6 +478,36 @@ describe("Editor tests", () => {
       expect(testSchema.alias).to.equal("vs");
     });
 
+    it.only("try changing schema alias to one that already exists in the context, throws error", async () => {
+      const schema1Json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema1",
+        version: "1.2.3",
+        alias: "ts1",
+      };
+
+      const schema2Json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema2",
+        version: "1.2.3",
+        alias: "TS2",
+      };
+
+      context = new SchemaContext();
+      const testSchema1 = await Schema.fromJson(schema1Json, context);
+      const testSchema2 = await Schema.fromJson(schema2Json, context);
+      testEditor = new SchemaContextEditor(context);
+
+      // tests case-insensitive search (ts2 === TS2)
+      await expect(testEditor.setAlias(testSchema1.schemaKey, "ts2")).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.SetSchemaAlias);
+        expect(error).to.have.nested.property("innerError.message", `Schema ${testSchema2.name} already uses the alias 'ts2'.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaAliasAlreadyExists);
+      });
+
+      expect(testSchema1.alias).to.equal("ts1");
+    });
+
     // TODO: Add a test to compare previous SchemaContext with the SchemaContext returned when SchemaEditor.finish() is called.
   });
 });

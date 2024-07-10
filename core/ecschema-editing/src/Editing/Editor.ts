@@ -263,10 +263,17 @@ export class SchemaContextEditor {
   public async setAlias(schemaKey: SchemaKey, alias: string) {
     const schema = await this.lookupSchema(schemaKey)
       .catch((e: any) => {
-        throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaId(schemaKey), e);
+        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey), e);
       });
 
     try {
+      for (const currentSchema of this.schemaContext.getKnownSchemas()) {
+        if (currentSchema.schemaKey.matches(schemaKey))
+          continue;
+
+        if (currentSchema.alias.toLowerCase() === alias.toLowerCase())
+          throw new SchemaEditingError(ECEditingStatus.SchemaAliasAlreadyExists, new SchemaId(schemaKey), undefined, undefined, `Schema ${currentSchema.name} already uses the alias '${alias}'.`);
+      }
       schema.setAlias(alias);
     } catch(e: any) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {

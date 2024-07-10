@@ -32,6 +32,7 @@ export enum ECEditingStatus {
   InvalidECName,
   InvalidSchemaAlias,
   InvalidFormatUnitsSpecified,
+  SchemaAliasAlreadyExists,
   // Outer Errors
   CreateSchemaItemFailed,
   CreateSchemaItemFromProps,
