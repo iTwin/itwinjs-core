@@ -693,6 +693,9 @@ export class Schema implements CustomAttributeContainerProps {
    * Used for schema editing.
    */
   protected setAlias(alias: string) {
+    if (!ECName.validate(alias)) {
+      throw new ECObjectsError(ECObjectsStatus.InvalidECName, "The specified schema alias is invalid.");
+    }
     this._alias = alias;
   }
 }

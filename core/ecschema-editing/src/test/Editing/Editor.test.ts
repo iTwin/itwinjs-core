@@ -457,6 +457,27 @@ describe("Editor tests", () => {
       expect(testSchema.alias).to.equal("newAlias");
     });
 
+    it("try changing schema alias to invalid name, throws error", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+      };
+
+      context = new SchemaContext();
+      testSchema = await Schema.fromJson(schemaJson, context);
+      testEditor = new SchemaContextEditor(context);
+
+      await expect(testEditor.setAlias(testSchema.schemaKey, "123")).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.SetSchemaAlias);
+        expect(error).to.have.nested.property("innerError.message", `Could not set the alias for schema ${testSchema.name} because the specified alias is not a valid ECName.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaAlias);
+      });
+
+      expect(testSchema.alias).to.equal("vs");
+    });
+
     // TODO: Add a test to compare previous SchemaContext with the SchemaContext returned when SchemaEditor.finish() is called.
   });
 });
