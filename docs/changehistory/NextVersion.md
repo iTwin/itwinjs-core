@@ -35,6 +35,6 @@ We added a new helper type [ListenerType]($core-bentley) to retrieve the type of
 
 The Xml and JSON representations of a custom attribute (and related TypeScript interfaces) all use a property named `appliesTo` of type [CustomAttributeContainerType]($ecschema-metadata) to indicate the kind(s) of schema entities to which the attribute can be applied. Confusingly, the `@beta` [CustomAttributeClass]($ecschema-metadata) class exposes this same information via a property named `containerType`. To address this discrepancy, `containerType` has been deprecated in favor of the new `appliesTo` property. The protected `_containerType` property was renamed to `_appliesTo`.
 
-## ECSchemaRpcInterface caching
+## Improve the performance of the ECSchemaRpcLocater
 
-All methods of `ECSchemaRpcInterface` now use `GET` and automatically support response caching to speed up repeated queries.
+Improve the performance of the ECSchemaRpcLocater by making all of the underlying ECSchemaRpcInterface methods GET by default so responses are cached by default. Previously each client had to set the methods to be GET or they would default to POST and were not cached.
