@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 28 Jun 2024 17:05:10 GMT and should not be manually modified.
+This log was last generated on Wed, 10 Jul 2024 22:59:49 GMT and should not be manually modified.
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:23 GMT
+
+### Updates
+
+- Update IModel.changeset when changes are made by another process.
 
 ## 4.7.3
 Thu, 27 Jun 2024 21:09:02 GMT
