@@ -478,7 +478,7 @@ describe("Editor tests", () => {
       expect(testSchema.alias).to.equal("vs");
     });
 
-    it.only("try changing schema alias to one that already exists in the context, throws error", async () => {
+    it("try changing schema alias to one that already exists in the context, throws error", async () => {
       const schema1Json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema1",
