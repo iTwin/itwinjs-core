@@ -173,6 +173,8 @@ describe("PerformanceElementsTests", () => {
     for (const name of crudConfig.classNames) {
       for (const size of crudConfig.dbSizes) {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", `Performance_seed_${name}_${size}.bim`);
+        // insert size number of element in 
+
         for (const opCount of crudConfig.opSizes) {
           // eslint-disable-next-line no-console
           console.log(`Executing Element Insert for the class ${name} on an iModel with ${size} elements ${opCount} times`);

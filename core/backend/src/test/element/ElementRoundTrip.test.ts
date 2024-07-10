@@ -740,7 +740,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         high: { x: 1, y: 2, z: 3 },
       },
     } as const;
-
+    const el: PhysicalElementProps = { userLabel: null };
     const insertAndVerifyPlacement = (
       name: string,
       extraProps: Partial<PhysicalElementProps> = {},
