@@ -18,7 +18,7 @@ import { _nativeDb } from "./internal/Symbols";
 
 /** @internal */
 export namespace SchemaSync {
-  const lockParams: CloudSqlite.ObtainLockParams = { retryDelayMs: 1000, nRetries: 20 };
+  const lockParams: CloudSqlite.ObtainLockParams = { retryDelayMs: 1000, nRetries: 30 };
 
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb {
