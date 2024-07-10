@@ -219,10 +219,15 @@ export class BriefcaseManager {
     try {
       await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: arg.onProgress });
     } catch (error: unknown) {
-      if (arg.accessToken && arg.briefcaseId === undefined)
+      if (arg.accessToken && arg.briefcaseId === undefined) {
+        Logger.logInfo(loggerCategory, `Failed to download briefcase to ${fileName}, errorMessage: ${(error as Error).message}, releasing the briefcaseId...`);
         await this.releaseBriefcase(arg.accessToken, { briefcaseId, iModelId: arg.iModelId });
+      }
       if (IModelJsFs.existsSync(fileName)) {
-        Logger.logInfo(loggerCategory, `Failed to download briefcase to ${fileName}, errorMessage: ${(error as Error).message}, deleting the file...`);
+        if (arg.accessToken && arg.briefcaseId === undefined)
+          Logger.logTrace(loggerCategory, `Deleting the file: ${fileName}...`);
+        else
+          Logger.logInfo(loggerCategory, `Failed to download briefcase to ${fileName}, errorMessage: ${(error as Error).message}, deleting the file...`);
         try {
           IModelJsFs.unlinkSync(fileName);
           Logger.logInfo(loggerCategory, `Deleted ${fileName}`);
