@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictCause, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, OrderedId64Array,
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, OrderedId64Array,
 } from "@itwin/core-bentley";
 import { EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -435,6 +435,11 @@ export class TxnManager {
     };
 
     if (args.cause === DbConflictCause.Data && !args.indirect) {
+      if (args.tableName === "be_Prop") {
+        if (args.getValueText(0, DbChangeStage.Old) === "ec_Db" && args.getValueText(1, DbChangeStage.Old) === "localDbInfo") {
+          return DbConflictResolution.Replace;
+        }
+      }
       if (args.tableName.startsWith("ec_")) {
         return DbConflictResolution.Skip;
       }
