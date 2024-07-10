@@ -13,6 +13,8 @@ import externalGlobals from "rollup-plugin-external-globals";
 import { webpackStats } from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
 import path from "path";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 const mode =
   process.env.NODE_ENV === "development" ? "development" : "production";
@@ -27,7 +29,6 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
     try {
       // gets dependency path
       const pkgPath = require.resolve(pkgName);
-
       // replaces everything after /lib/ with /lib/public/* to get static assets
       let pkgPublicPath = pkgPath.replace(/([\/\\]lib[\/\\]).*/, "$1public/*");
 
@@ -138,6 +139,8 @@ export default defineConfig(() => {
           "@itwin/core-electron/src/ElectronFrontend.ts",
         "@itwin/core-mobile/lib/cjs/MobileFrontend":
           "@itwin/core-mobile/src/MobileFrontend.ts",
+        "../../package.json": "../package.json", // in core-frontend
+
       },
     },
     optimizeDeps: {

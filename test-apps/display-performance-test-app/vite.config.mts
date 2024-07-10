@@ -13,6 +13,8 @@ import externalGlobals from "rollup-plugin-external-globals";
 import { webpackStats } from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
 import path from "path";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 const mode =
   process.env.NODE_ENV === "development" ? "development" : "production";
@@ -138,6 +140,7 @@ export default defineConfig(() => {
           "@itwin/core-electron/src/ElectronFrontend.ts",
         "@itwin/core-mobile/lib/cjs/MobileFrontend":
           "@itwin/core-mobile/src/MobileFrontend.ts",
+        "../../package.json": "../package.json", // in core-frontend
       },
     },
     optimizeDeps: {
