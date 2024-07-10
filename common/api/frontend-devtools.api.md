@@ -1727,6 +1727,18 @@ export class SaveViewTool extends Tool {
     static toolId: string;
 }
 
+// @alpha
+export class SeequentDemo extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    parseAndRun(): Promise<boolean>;
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class SelectElementsByIdTool extends Tool {
     // (undocumented)

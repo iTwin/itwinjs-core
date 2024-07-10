@@ -470,7 +470,7 @@ export class ViewportAddRealityModel extends Tool {
 }
 
 /** This tool adds a reality model to the viewport.
- * @beta
+ * @alpha
  */
 export class SeequentDemo extends Tool {
   public static override toolId = "SeequentDemo";
@@ -492,7 +492,7 @@ export class SeequentDemo extends Tool {
       geoscienceObjectId: process.env.SEEQUENT_GEOSCIENCE_OBJECT_ID,
     };
 
-    attachGeoscienceTileset(args);
+    await attachGeoscienceTileset(args);
     return true;
   }
 

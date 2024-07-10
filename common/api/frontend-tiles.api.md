@@ -24,35 +24,6 @@ export interface BaseGeoscienceArgs {
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
-// @alpha
-export function createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise<void>;
-
-// @alpha
-export type CreateGeoscienceTilesetArgs = BaseGeoscienceArgs;
-
-// @beta
-export function createIModelTileset(options: CreateIModelTilesetArgs): void;
-
-// @beta
-export interface CreateIModelTilesetArgs {
-    computeSpatialTilesetBaseUrl?: ComputeSpatialTilesetBaseUrl;
-    enableCDN?: boolean;
-    // @internal
-    enableEdges?: boolean;
-    maxLevelsToSkip?: number;
-    // @internal
-    useIndexedDBCache?: boolean;
-}
-
-// @beta
-export function createIModelTilesetAs3DTiles(args: CreateIModelTilesetAs3DTilesArgs): Promise<void>;
-
-// @beta
-export type CreateIModelTilesetAs3DTilesArgs = GetIModelTilesetUrlFromConnectionArgs;
-
-// @alpha
-export function createRealityModelTilesetFromUrl(url: string): Promise<void>;
-
 // @beta
 export interface DataSource {
     changeId?: string;
@@ -121,21 +92,6 @@ export enum GraphicRepresentationStatus {
 }
 
 // @beta
-export interface IModelDataSource {
-    changesetId?: string;
-    iModelId: string;
-    iTwinId: string;
-}
-
-// @beta
-export interface IModelTilesetOptions {
-    cesium3DTiles?: boolean;
-    enableCDN?: boolean;
-    requireExactChangeset?: boolean;
-    urlPrefix?: string;
-}
-
-// @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
 
 // @beta
@@ -175,10 +131,36 @@ export interface MeshExports {
 }
 
 // @beta
+export function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise<URL | undefined>;
+
+// @beta
+export interface ObtainGraphicRepresentationUrlArgs {
+    accessToken: AccessToken;
+    dataSource: DataSource;
+    enableCDN?: boolean;
+    format: GraphicRepresentationFormat;
+    requireExactVersion?: boolean;
+    sessionId: string;
+    urlPrefix?: string;
+}
+
+// @beta
+export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise<URL | undefined>;
+
+// @beta
+export interface ObtainIModelTilesetUrlArgs {
+    accessToken: AccessToken;
+    enableCDN?: boolean;
+    iModel: IModelConnection;
+    requireExactChangeset?: boolean;
+    urlPrefix?: string;
+}
+
+// @beta
 export function obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise<URL | undefined>;
 
 // @beta
-export type ObtainMeshExportTilesetUrlArgs = GetIModelTilesetUrlFromConnectionArgs;
+export type ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs;
 
 // @beta
 export function queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation>;
@@ -190,6 +172,7 @@ export interface QueryGraphicRepresentationsArgs {
     enableCDN?: boolean;
     format: GraphicRepresentationFormat;
     includeIncomplete?: boolean;
+    sessionId: string;
     urlPrefix?: string;
 }
 

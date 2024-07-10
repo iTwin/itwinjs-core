@@ -154,6 +154,7 @@ beta;SaturationEffect
 beta;SaveRealityModelTool 
 beta;SaveRenderingStyleTool 
 beta;SaveViewTool 
+alpha;SeequentDemo 
 beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
 beta;SetAASamplesTool 

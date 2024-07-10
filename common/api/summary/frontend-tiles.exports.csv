@@ -4,28 +4,23 @@ alpha;attachGeoscienceTileset(args: AttachGeoscienceTilesetArgs): Promise
 alpha;AttachGeoscienceTilesetArgs = BaseGeoscienceArgs
 alpha;BaseGeoscienceArgs
 beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
-alpha;createGeoscienceTileset(args: CreateGeoscienceTilesetArgs): Promise
-alpha;CreateGeoscienceTilesetArgs = BaseGeoscienceArgs
-beta;createIModelTileset(options: CreateIModelTilesetArgs): void
-beta;CreateIModelTilesetArgs
-beta;createIModelTilesetAs3DTiles(args: CreateIModelTilesetAs3DTilesArgs): Promise
-beta;CreateIModelTilesetAs3DTilesArgs = GetIModelTilesetUrlFromConnectionArgs
-alpha;createRealityModelTilesetFromUrl(url: string): Promise
 beta;DataSource
-beta;FrontendTilesOptions = CreateIModelTilesetArgs
+beta;FrontendTilesOptions
 internal;frontendTilesOptions:
-alpha;GetGeoscienceTilesetArgs
+alpha;GetGeoscienceTilesetArgs 
 alpha;getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise
 beta;GraphicRepresentation =
 beta;GraphicRepresentationFormat = "IMDL" | "3DTILES" | string
 beta;GraphicRepresentationStatus
-beta;IModelDataSource
-beta;IModelTilesetOptions
 beta;initializeFrontendTiles(options: FrontendTilesOptions): void
 beta;MeshExport
 internal;MeshExports
+beta;obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise
+beta;ObtainGraphicRepresentationUrlArgs
+beta;obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise
+beta;ObtainIModelTilesetUrlArgs
 beta;obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise
-beta;ObtainMeshExportTilesetUrlArgs = GetIModelTilesetUrlFromConnectionArgs
+beta;ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs
 beta;queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator
 beta;QueryGraphicRepresentationsArgs
 beta;queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator
