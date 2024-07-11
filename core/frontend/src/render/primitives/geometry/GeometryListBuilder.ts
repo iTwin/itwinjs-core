@@ -159,10 +159,12 @@ let addDebugRangeBox = false;
 export class PrimitiveBuilder extends GeometryListBuilder {
   public readonly system: RenderSystem;
   public primitives: RenderGraphic[] = [];
+  private readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
 
   public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
     super(options, accumulatorTransform);
     this.system = system;
+    this._options = options;
   }
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {

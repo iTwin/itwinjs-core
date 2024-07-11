@@ -134,13 +134,9 @@ export abstract class GraphicBuilder extends GraphicAssembler {
   public readonly iModel?: IModelConnection;
 
   protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
-  protected readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
 
   /** @internal */
   protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
-    // Stored for potential use later in creating a new GraphicBuilder from this one (see PrimitiveBuilder.finishGraphic).
-    // ###TODO move it to PrimitiveBuilder if that's who needs it...
-
     const vp = options.viewport;
     const placement = options.placement ?? Transform.createIdentity();
     const wantEdges = options.generateEdges ?? (options.type === GraphicType.Scene && (!vp || vp.viewFlags.edgesRequired()));
@@ -156,8 +152,6 @@ export abstract class GraphicBuilder extends GraphicAssembler {
     })
     
     this.iModel = vp?.iModel ?? options.iModel;
-    this._options = options;
-
     if (!options.viewport) {
       this._computeChordTolerance = options.computeChordTolerance;
       return;
