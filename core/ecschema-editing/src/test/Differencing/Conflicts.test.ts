@@ -98,6 +98,23 @@ describe("Difference Conflict Reporting", () => {
         source: "EntityClass",
         target: "KindOfQuantity",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          customAttributes: [
+            {
+              "className": "ConflictSchema.TestCustomAttributeClass"
+            }
+          ],
+          modifier: "Sealed",
+          properties: [{
+            description: "name of item",
+            label: "Name",
+            name: "Name",
+            priority: 0,
+            type: "PrimitiveProperty",
+            typeName: "string",
+          }],
+          schemaItemType: "EntityClass"
+        }
       });
     });
 
@@ -195,6 +212,44 @@ describe("Difference Conflict Reporting", () => {
         source: "RelationshipClass",
         target: "Mixin",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          customAttributes: [
+            {
+              className: "ConflictSchema.TestCustomAttributeClass"
+            }
+          ],
+          description: "Description of TestRelationship",
+          modifier: "None",
+          schemaItemType: "RelationshipClass",
+          source: {
+            constraintClasses: [
+              "ConflictSchema.TestEntityClass"
+            ],
+            customAttributes: [
+              {
+                "className": "ConflictSchema.TestCustomAttributeClass"
+              }
+            ],
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "refers to",
+          },
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          target: {
+            constraintClasses: [
+              "ConflictSchema.TestEntityClass"
+            ],
+            customAttributes: [
+              {
+                "className": "ConflictSchema.TestCustomAttributeClass"
+              }
+            ],
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "is referenced by",
+          }
+        }
       });
     });
 
@@ -257,6 +312,17 @@ describe("Difference Conflict Reporting", () => {
         source: "Enumeration",
         target: "CustomAttributeClass",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          enumerators: [
+            {
+              name: "EnumeratorOne",
+              value: 1,
+            }
+          ],
+          isStrict: undefined,
+          schemaItemType: "Enumeration",
+          type: "int",
+        }
       });
     });
 
@@ -289,6 +355,10 @@ describe("Difference Conflict Reporting", () => {
         source: "Phenomenon",
         target: "PropertyCategory",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          definition: "TestPhenomenon",
+          schemaItemType: "Phenomenon",
+        }
       });
     });
 
@@ -376,6 +446,28 @@ describe("Difference Conflict Reporting", () => {
         source: "Format",
         target: "StructClass",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          composite: {
+            spacer: "",
+            units: [
+              {
+                label: "'",
+                name: "ConflictSchema.TestUnit",
+              }
+            ]
+          },
+          decimalSeparator: ",",
+          formatTraits: [
+            "KeepSingleZero",
+            "KeepDecimalPoint",
+            "ShowUnitLabel",
+          ],
+          precision: 8,
+          schemaItemType: "Format",
+          thousandSeparator: ".",
+          type: "Fractional",
+          uomSeparator: "",
+        }
       });
     });
   });
@@ -564,6 +656,11 @@ describe("Difference Conflict Reporting", () => {
         source: "boolean",
         target: "string",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          name: "MyProperty",
+          type: "PrimitiveProperty",
+          typeName: "boolean",
+        }
       });
     });
   });

@@ -9,7 +9,7 @@ import "chai-as-promised";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe.only("Rename change tests", () => {
+describe("Rename change tests", () => {
   let targetContext: SchemaContext;
   let sourceContext: SchemaContext;
 
