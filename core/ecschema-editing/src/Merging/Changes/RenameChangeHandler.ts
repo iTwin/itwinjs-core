@@ -7,7 +7,7 @@
  */
 
 import type { RenamePropertyChange, RenameSchemaItemChange } from "./SchemaChanges";
-import { SchemaOtherTypes, SchemaDifferenceResult, RelationshipClassDifference, RelationshipConstraintClassDifference, AnySchemaItemDifference, AnySchemaDifference, ClassItemDifference, ClassPropertyDifference } from "../../Differencing/SchemaDifference";
+import { SchemaOtherTypes, SchemaDifferenceResult, RelationshipClassDifference, RelationshipConstraintClassDifference, AnySchemaItemDifference, AnySchemaDifference, ClassItemDifference, ClassPropertyDifference, SchemaType } from "../../Differencing/SchemaDifference";
 import { NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, RelationshipConstraintProps, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps, StructPropertyProps } from "@itwin/ecschema-metadata";
 import * as Utils from "../../Differencing/Utils";
 
@@ -54,16 +54,16 @@ export function applyRenamePropertyChange(result: SchemaDifferenceResult, change
 /**
  * @internal
  */
-export function applyRenameSchemaItemChange(result: SchemaDifferenceResult, change: RenameSchemaItemChange) {
-  let entryIndex = result.differences.findIndex((entry) => {
+export function applyRenameSchemaItemChange(result: SchemaDifferenceResult, change: RenameSchemaItemChange, postProcessing: (cb: () => void) => void) {
+  let entry = result.differences.find((entry) => {
     return Utils.isSchemaItemDifference(entry) && entry.changeType === "add" && entry.itemName === change.key;
   });
 
-  if (entryIndex === -1 && result.conflicts) {
+  if (entry === undefined && result.conflicts) {
     const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === change.key && entry.path === undefined);
     if (conflictIndex > -1) {
       const conflictEntry = result.conflicts[conflictIndex];
-      entryIndex = result.differences.push({
+      result.differences.push(entry = {
         changeType: "add",
         schemaType: conflictEntry.schemaType,
         itemName: change.value,
@@ -71,19 +71,39 @@ export function applyRenameSchemaItemChange(result: SchemaDifferenceResult, chan
       } as AnySchemaItemDifference) - 1;
 
       result.conflicts.splice(conflictIndex, 1);
+
+      // If item gets added, remove the modify references to this item
+      const relatedModifications: number[] = [];
+      result.differences.forEach((entry, index) => {
+        if (Utils.isSchemaItemDifference(entry) && entry.itemName === change.key) {
+          relatedModifications.push(index);
+        }
+      });
+
+      for (const index of relatedModifications.reverse()) {
+        result.differences.splice(index, 1);
+      }
     }
   }
 
-  const schemaKey = SchemaKey.parseString(result.sourceSchemaName);
-  const oldKey = new SchemaItemKey(change.key, schemaKey);
-  const newKey = new SchemaItemKey(change.value, schemaKey);
-
-  const differenceEntry = result.differences[entryIndex];
+  const differenceEntry = entry as AnySchemaItemDifference;
   if (differenceEntry === undefined) {
     return;
   }
 
-  switch (differenceEntry.schemaType) {
+  renameName(entry as AnySchemaItemDifference, change.key, change.value);
+
+  postProcessing(() => {
+    renameSchemaItem(result, change, differenceEntry.schemaType);
+  });
+}
+
+function renameSchemaItem(result: SchemaDifferenceResult, change: RenameSchemaItemChange, schemaType: SchemaType) {
+  const schemaKey = SchemaKey.parseString(result.sourceSchemaName);
+  const oldKey = new SchemaItemKey(change.key, schemaKey);
+  const newKey = new SchemaItemKey(change.value, schemaKey);
+
+  switch (schemaType) {
     case SchemaItemType.CustomAttributeClass:
       renameCustomAttributeClassName(result, oldKey, newKey);
       break;
@@ -128,10 +148,10 @@ function renameBaseClass(difference: ClassItemDifference["difference"], oldKey: 
   }
 }
 
-function renameName(change: AnySchemaItemDifference, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
-  if (change.itemName === oldKey.name) {
+function renameName(change: AnySchemaItemDifference, oldName: string, newName: string) {
+  if (change.itemName === oldName) {
     const schemaItemDifference = change as Editable<AnySchemaItemDifference>;
-    schemaItemDifference.itemName = newKey.name;
+    schemaItemDifference.itemName = newName;
   }
 }
 
@@ -162,7 +182,7 @@ function renameRelationshipConstraint(change: RelationshipClassDifference | Rela
 function renamePropertyCategoryName({ differences }: SchemaDifferenceResult, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
   for (const entry of differences) {
     if (entry.schemaType === SchemaItemType.PropertyCategory) {
-      renameName(entry, oldKey, newKey);
+      renameName(entry, oldKey.name, newKey.name);
     }
 
     if (Utils.isClassDifference(entry) && entry.difference.properties) {
@@ -334,7 +354,7 @@ function renameRelationshipClassName({ differences }: SchemaDifferenceResult, ol
 function renameEntityClassName({ differences }: SchemaDifferenceResult, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
   for (const entry of differences) {
     if (entry.schemaType === SchemaItemType.EntityClass) {
-      renameName(entry, oldKey, newKey);
+      renameName(entry, oldKey.name, newKey.name);
       renameBaseClass(entry.difference, oldKey, newKey);
     }
 

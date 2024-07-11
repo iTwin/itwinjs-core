@@ -142,9 +142,10 @@ export class SchemaChangeSet {
    * @internal
    */
   public async applyTo(differenceResult: SchemaDifferenceResult): Promise<void> {
+    const postProcessing: Array<() => void> = [];
     for (const change of this._changes) {
       if (change.type === SchemaChangeType.RenameSchemaItem) {
-        await applyRenameSchemaItemChange(differenceResult, change);
+        await applyRenameSchemaItemChange(differenceResult, change, postProcessing.push.bind(postProcessing));
       }
       if (change.type === SchemaChangeType.RenameProperty) {
         await applyRenamePropertyChange(differenceResult, change);
@@ -152,6 +153,10 @@ export class SchemaChangeSet {
       if (change.type === SchemaChangeType.Skip) {
         await applySkipChange(differenceResult, change);
       }
+    }
+
+    for (const callback of postProcessing) {
+      callback();
     }
   }
 
