@@ -14,9 +14,9 @@ import { AnalysisStyle, ColorDef, Feature, Frustum, GraphicParams, LinePixels, N
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
-import { GraphicPrimitive } from "./GraphicPrimitive";
 import { GraphicType } from "../common/render/GraphicType";
 import type { PickableGraphicOptions} from "../common/render/BatchOptions";
+import { GraphicPrimitive } from "../common/render/GraphicPrimitive";
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
