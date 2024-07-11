@@ -10,7 +10,7 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { DrawingCategory, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, DrawingCategory, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
@@ -138,7 +138,7 @@ describe("ECSqlRowPerformance", () => {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlRowPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
-        seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
@@ -210,7 +210,7 @@ describe("ECSqlRowPerformanceTests2d", () => {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlRowPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
-        seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const codeProps = Code.createEmpty();

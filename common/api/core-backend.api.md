@@ -175,6 +175,7 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
+import { QueryRowFormat } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
@@ -1838,11 +1839,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
+    // @internal (undocumented)
+    formatCurrentRow(currentResp: any, rowFormat?: QueryRowFormat): any[] | object;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
     // @internal
     getNativeSql(): string;
-    getRow(): any;
+    getRow(args?: IModelJsNative.ECSqlRowArg): any;
     getValue(columnIx: number): ECSqlValue;
     get isPrepared(): boolean;
     next(): IteratorResult<any>;
