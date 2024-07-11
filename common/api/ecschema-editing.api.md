@@ -85,6 +85,9 @@ export type AnyEditingError = SchemaEditingError | Error;
 export type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier;
 
 // @alpha
+export type AnySchemaChange = SkipChange | RenameSchemaItemChange | RenamePropertyChange;
+
+// @alpha
 export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference;
 
 // @alpha
@@ -739,7 +742,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "Property" | "Schema" | "SchemaItem" | "RelationshipConstraint" | "None" | "CustomAttributeContainer";
 
 // @alpha
 export type DifferenceType = "add" | "modify";
@@ -1292,6 +1295,9 @@ export interface ISchemaTypeIdentifier {
 }
 
 // @alpha
+export function isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference;
+
+// @alpha
 export function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference;
 
 // @alpha
@@ -1338,6 +1344,9 @@ export function isRelationshipConstraintDifference(difference: AnySchemaDifferen
 
 // @alpha
 export function isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference;
+
+// @alpha
+export function isSchemaItemDifference(difference: AnySchemaDifference): difference is AnySchemaItemDifference;
 
 // @alpha
 export function isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference;
@@ -1536,6 +1545,26 @@ export class RelationshipConstraintId implements IRelationshipConstraintIdentifi
 }
 
 // @alpha
+export interface RenamePropertyChange {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaChangeType.RenameProperty;
+    // (undocumented)
+    value: string;
+}
+
+// @alpha
+export interface RenameSchemaItemChange {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaChangeType.RenameSchemaItem;
+    // (undocumented)
+    value: string;
+}
+
+// @alpha
 export class SchemaChanges extends BaseSchemaChanges {
     constructor(schema: Schema);
     addChange(change: ISchemaChange): void;
@@ -1551,6 +1580,29 @@ export class SchemaChanges extends BaseSchemaChanges {
     get relationshipClassChanges(): Map<string, RelationshipClassChanges>;
     get schemaItemChanges(): Map<string, SchemaItemChanges>;
     get schemaReferenceDeltas(): SchemaReferenceDelta[];
+}
+
+// @alpha
+export class SchemaChangeSet {
+    constructor(initialize?: ReadonlyArray<AnySchemaChange>);
+    // @internal (undocumented)
+    applyTo(differenceResult: SchemaDifferenceResult): Promise<void>;
+    // (undocumented)
+    readonly items: ItemChanges;
+    // (undocumented)
+    readonly properties: PropertyChanges_2;
+    // (undocumented)
+    toJSON(): ReadonlyArray<AnySchemaChange>;
+}
+
+// @alpha
+export enum SchemaChangeType {
+    // (undocumented)
+    RenameProperty = "RenameProperty",
+    // (undocumented)
+    RenameSchemaItem = "RenameSchemaItem",
+    // (undocumented)
+    Skip = "Skip"
 }
 
 // @beta
@@ -2053,6 +2105,7 @@ export interface SchemaDifference {
 export interface SchemaDifferenceConflict {
     readonly code: ConflictCode;
     readonly description: string;
+    readonly difference?: unknown;
     readonly itemName?: string;
     readonly path?: string;
     readonly schemaType: SchemaType;
@@ -2142,8 +2195,9 @@ export class SchemaItemMissing extends SchemaItemChange {
 export class SchemaMerger {
     constructor(editingContext: SchemaContext);
     // @alpha
-    merge(differenceResult: SchemaDifferenceResult): Promise<Schema>;
-    mergeSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
+    merge(differenceResult: SchemaDifferenceResult, changes?: SchemaChangeSet): Promise<Schema>;
+    // @alpha
+    mergeSchemas(targetSchema: Schema, sourceSchema: Schema, changes?: SchemaChangeSet): Promise<Schema>;
 }
 
 // @alpha
@@ -2293,6 +2347,14 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 export class SchemaWalker {
     constructor(visitor: ISchemaPartVisitor);
     traverseSchema<T extends Schema>(schema: T): Promise<T>;
+}
+
+// @alpha
+export interface SkipChange {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaChangeType.Skip;
 }
 
 // @alpha

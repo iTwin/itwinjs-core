@@ -1503,6 +1503,10 @@ export interface RelationshipConstraintProps {
     // (undocumented)
     readonly constraintClasses: string[];
     // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
     readonly multiplicity: string;
     // (undocumented)
     readonly polymorphic: boolean;
