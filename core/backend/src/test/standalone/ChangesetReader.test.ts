@@ -15,7 +15,6 @@ import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { _nativeDb, ChannelControl } from "../../core-backend";
-import exp = require("node:constants");
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
@@ -74,14 +73,19 @@ describe("Changeset Reader API", async () => {
       const arcData = IModelJson.Writer.toIModelJson(geom);
       geometryStream.push(arcData);
     }
-    const props = Array(nProps).fill(undefined).map((_, i) => { return { [`p${i}`]: `test_${i}` } }).reduce((acc, curr) => { return { ...acc, ...curr } }, {});
+    const props = Array(nProps).fill(undefined).map((_, i) => {
+      return { [`p${i}`]: `test_${i}` };
+    }).reduce((acc, curr) => {
+      return { ...acc, ...curr };
+    }, {});
+
     const geomElement = {
       classFullName: `TestDomain:Test2dElement`,
       model: drawingModelId,
       category: drawingCategoryId,
       code: Code.createEmpty(),
       geom: geometryStream,
-      ...props
+      ...props,
     };
 
     // 2. Insert a element for the class.
@@ -95,7 +99,11 @@ describe("Changeset Reader API", async () => {
     // 4. Update the element.
     const updatedElementProps = Object.assign(
       rwIModel.elements.getElementProps(id),
-      Array(nProps).fill(undefined).map((_, i) => { return { [`p${i}`]: `updated_${i}` } }).reduce((acc, curr) => { return { ...acc, ...curr } }, {}));
+      Array(nProps).fill(undefined).map((_, i) => {
+        return { [`p${i}`]: `updated_${i}` };
+      }).reduce((acc, curr) => {
+        return { ...acc, ...curr };
+      }, {}));
 
     await rwIModel.locks.acquireLocks({ exclusive: id });
     rwIModel.elements.updateElement(updatedElementProps);
@@ -120,30 +128,35 @@ describe("Changeset Reader API", async () => {
 
     const adaptor = new ECChangesetAdaptor(reader);
     let assertOnOverflowTable = false;
+
     const expectedInserted = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       ECClassId: undefined,
-      ECInstanceId: '',
-      '$meta': {
-        tables: ['bis_GeometricElement2d_Overflow'],
-        op: 'Updated',
-        classFullName: 'BisCore:GeometricElement2d',
-        fallbackClassId: '0x5e',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ECInstanceId: "",
+      $meta: {
+        tables: ["bis_GeometricElement2d_Overflow"],
+        op: "Updated",
+        classFullName: "BisCore:GeometricElement2d",
+        fallbackClassId: "0x5e",
         changeIndexes: [3],
-        stage: 'New'
-      }
+        stage: "New",
+      },
     };
     const expectedDeleted = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       ECClassId: undefined,
-      ECInstanceId: '',
-      '$meta': {
-        tables: ['bis_GeometricElement2d_Overflow'],
-        op: 'Updated',
-        classFullName: 'BisCore:GeometricElement2d',
-        fallbackClassId: '0x5e',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ECInstanceId: "",
+      $meta: {
+        tables: ["bis_GeometricElement2d_Overflow"],
+        op: "Updated",
+        classFullName: "BisCore:GeometricElement2d",
+        fallbackClassId: "0x5e",
         changeIndexes: [3],
-        stage: 'Old'
-      }
-    }
+        stage: "Old",
+      },
+    };
 
     while (adaptor.step()) {
       if (adaptor.op === "Updated" && adaptor.inserted?.$meta?.tables[0] === "bis_GeometricElement2d_Overflow") {
