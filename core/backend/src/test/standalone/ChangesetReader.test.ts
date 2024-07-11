@@ -24,7 +24,7 @@ describe("Changeset Reader API", async () => {
     iTwinId = HubMock.iTwinId;
   });
   after(() => HubMock.shutdown());
-  it.only("Able to recover from when ExclusiveRootClassId is NULL for overflow table", async () => {
+  it("Able to recover from when ExclusiveRootClassId is NULL for overflow table", async () => {
     /**
      * 1. Import schema with class that span overflow table.
      * 2. Insert a element for the class.
