@@ -30,6 +30,7 @@ import { VertexTable } from "../render/primitives/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../render/primitives/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
+import {MeshoptDecoder} from "meshoptimizer/meshopt_decoder.module";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -889,9 +890,24 @@ class Parser {
     if (!surf)
       return undefined;
 
-    const indices = this.findBuffer(surf.indices);
+    let indices = this.findBuffer(surf.indices);
     if (!indices)
       return undefined;
+
+    if(surf.isCompressed){
+      const decompressedIndices = new Uint8Array(surf.indexCount * 4);
+      MeshoptDecoder.decodeIndexBuffer(decompressedIndices, surf.indexCount, 4, indices);
+
+      // reduce from 32 to 24 bits
+      indices = new Uint8Array(surf.indexCount * 3);
+      for (let i = 0; i < surf.indexCount; i++) {
+        const srcIndex = i * 4;
+        const dstIndex = i * 3;
+        indices[dstIndex + 0] = decompressedIndices[srcIndex + 0];
+        indices[dstIndex + 1] = decompressedIndices[srcIndex + 1];
+        indices[dstIndex + 2] = decompressedIndices[srcIndex + 2];
+      }
+    }
 
     const type = surf.type;
     if (!isValidSurfaceType(type))
@@ -959,9 +975,44 @@ class Parser {
     if (!json)
       return undefined;
 
-    const bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
-    if (!bytes)
-      return undefined;
+    let bytes: Uint8Array | undefined;
+    if(json.isCompressed){
+
+      const bufferViewJson = this._document.bufferViews[JsonUtils.asString(json.bufferView)];
+      if (undefined === bufferViewJson)
+        return undefined;
+
+      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+      if (0 === byteLength)
+        return undefined;
+
+      const compressedBytes = this._binaryData.subarray(byteOffset, byteOffset + json.compressedSize);
+      if (!compressedBytes)
+        return undefined;
+
+      bytes = new Uint8Array(json.width * json.height * 4);
+      MeshoptDecoder.decodeVertexBuffer(bytes, json.count, json.numRgbaPerVertex * 4, compressedBytes);
+
+      const remainingBytesSize = byteLength - json.compressedSize;
+
+      // if there are remaining bytes, copy the data that did not go through the compression
+      if(remainingBytesSize > 0){
+        const remainingBytes = this._binaryData.subarray(byteOffset + json.compressedSize, byteOffset + byteLength);
+        if (!remainingBytes)
+          return undefined;
+
+        const decompressedSize = json.count * json.numRgbaPerVertex * 4;
+        for(let i = 0; i < remainingBytesSize; i++){
+          bytes[decompressedSize + i] = remainingBytes[i];
+        }
+      }
+
+    } else{
+      bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
+      if (!bytes)
+        return undefined;
+    }
 
     const uniformFeatureID = undefined !== json.featureID ? JsonUtils.asInt(json.featureID) : undefined;
 
