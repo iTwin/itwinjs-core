@@ -6,4 +6,4 @@
  * @module Utils
  */
 
-export { _callIpcChannel } from "./Symbols";
+export { _callIpcChannel } from "../common/internal/Symbols";
