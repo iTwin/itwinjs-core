@@ -1,6 +1,18 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Fri, 28 Jun 2024 17:05:11 GMT and should not be manually modified.
+This log was last generated on Thu, 11 Jul 2024 15:26:20 GMT and should not be manually modified.
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+### Updates
+
+- Added command for displaying planar mask frustum
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:24 GMT
+
+_Version update only_
 
 ## 4.7.3
 Thu, 27 Jun 2024 21:09:02 GMT

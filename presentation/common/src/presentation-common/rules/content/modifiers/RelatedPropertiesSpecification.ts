@@ -82,7 +82,6 @@ export interface RelatedPropertiesSpecification {
 
   /**
    * Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.
-   * @beta
    */
   skipIfDuplicate?: boolean;
 

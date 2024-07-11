@@ -93,7 +93,7 @@ export namespace NodeKey {
   export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
   // eslint-disable-next-line deprecation/deprecation
   export function isGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);  // eslint-disable-line deprecation/deprecation
+    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key); // eslint-disable-line deprecation/deprecation
   }
 
   /**
@@ -179,9 +179,7 @@ export interface BaseNodeKey {
   /** Node hash path from root to the node whose key this is */
   pathFromRoot: string[];
 
-  /** Query that returns all selected instance keys
-   * @alpha
-   */
+  /** Query that returns all selected instance keys */
   instanceKeysSelectQuery?: PresentationQuery;
 }
 /**
@@ -194,7 +192,6 @@ export interface BaseNodeKeyJSON {
   // TODO: make this required
   version?: number;
   pathFromRoot: string[];
-  /** @alpha */
   instanceKeysSelectQuery?: PresentationQuery;
 }
 
@@ -313,7 +310,7 @@ export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGrou
 
 /**
  * Data structure that describes a presentation query
- * @alpha
+ * @public
  */
 export interface PresentationQuery {
   /** ECSQL query */
@@ -322,33 +319,40 @@ export interface PresentationQuery {
   bindings?: PresentationQueryBinding[];
 }
 
-/** @alpha */
-export interface BasePresentationQueryBinding {
-  type: "Id" | "IdSet" | "ECValue" | "ValueSet";
-}
-
-/** @alpha */
-export interface IdBinding extends BasePresentationQueryBinding {
+/**
+ * Defines an [[Id64String]] value binding.
+ * @public
+ */
+export interface IdBinding {
   type: "Id";
   value: Id64String;
 }
 
-/** @alpha */
-export interface IdSetBinding extends BasePresentationQueryBinding {
+/**
+ * Defines an [[IdSet]] value binding for use with `InVirtualSet` ECSQL function.
+ * @public
+ */
+export interface IdSetBinding {
   type: "IdSet";
   value: Id64String[];
 }
 
-/** @alpha */
-export interface ECValueBinding extends BasePresentationQueryBinding {
+/**
+ * Defines an EC value binding.
+ * @public
+ */
+export interface ECValueBinding {
   type: "ECValue";
   valueType: string;
   valueTypeExtended?: string;
   value: any;
 }
 
-/** @alpha */
-export interface ECValueSetBinding extends BasePresentationQueryBinding {
+/**
+ * Defines a binding for a list of EC values for use with `InVirtualSet` ECSQL function.
+ * @public
+ */
+export interface ECValueSetBinding {
   type: "ValueSet";
   valueType: string;
   valueTypeExtended?: string;
@@ -356,7 +360,7 @@ export interface ECValueSetBinding extends BasePresentationQueryBinding {
 }
 
 /**
- * One of the presentation query binding types
- * @alpha
+ * One of the [[PresentationQuery]] binding types.
+ * @public
  */
 export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;
