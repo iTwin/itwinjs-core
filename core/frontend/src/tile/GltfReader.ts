@@ -20,7 +20,6 @@ import {
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -40,6 +39,7 @@ import {
   DracoMeshCompression, getGltfNodeMeshIds, Gltf2Node, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
+import { PickableGraphicOptions } from "../common/render/BatchOptions";
 
 /* eslint-disable no-restricted-syntax */
 

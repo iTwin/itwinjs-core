@@ -7,7 +7,7 @@ import {
   Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@itwin/core-geometry";
 import { ColorByName, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
-import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
+import { GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { IModelApp, IModelAppOptions } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
@@ -19,6 +19,7 @@ import { MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";
 import { MeshGraphic } from "../../render/webgl/Mesh";
 import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
 import { openBlankViewport } from "../openBlankViewport";
+import { GraphicType } from "../../common/render/GraphicType";
 
 describe("GraphicBuilder", () => {
   let imodel: IModelConnection;

@@ -5,8 +5,9 @@
 
 import { expect } from "chai";
 import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
-import { GraphicBuilder, GraphicType } from "../../render/GraphicBuilder";
+import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { GraphicPrimitive } from "../../render/GraphicPrimitive";
+import { GraphicType } from "../../common/render/GraphicType";
 
 describe("GraphicPrimitive", () => {
   class Builder extends GraphicBuilder {

@@ -5,7 +5,6 @@
 import { assert, expect } from "chai";
 import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
@@ -20,6 +19,7 @@ import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives"
 import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
 import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { GraphicType } from "../../../common/render/GraphicType";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {

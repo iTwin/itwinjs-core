@@ -21,6 +21,7 @@ export * from "./common/imdl/ImdlModel";
 export * from "./common/imdl/ImdlSchema";
 export * from "./common/imdl/ParseImdlDocument";
 export * from "./common/render/AnimationNodeId";
+export * from "./common/render/BatchOptions";
 export * from "./common/render/GraphicAssembler";
 export * from "./common/render/GraphicType";
 export * from "./common/render/MaterialParams";

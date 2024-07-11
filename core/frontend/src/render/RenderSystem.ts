@@ -26,7 +26,7 @@ import { PolylineParams } from "../common/render/primitives/PolylineParams";
 import { TextureCacheKey } from "../common/render/TextureParams";
 import { ViewRect } from "../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
@@ -43,6 +43,8 @@ import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./Scre
 import { createMeshParams } from "./primitives/VertexTableBuilder";
 import { createPointStringParams } from "./primitives/PointStringParams";
 import { createPolylineParams } from "./primitives/PolylineParams";
+import { GraphicType } from "../common/render/GraphicType";
+import { BatchOptions } from "../common/render/BatchOptions";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

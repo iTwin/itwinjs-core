@@ -10,7 +10,6 @@ import { assert, dispose, Id64 } from "@itwin/core-bentley";
 import { PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../../common/render/primitives/DisplayParams";
-import { BatchOptions } from "../GraphicBuilder";
 import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
@@ -20,6 +19,7 @@ import { sync, SyncObserver } from "./Sync";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
+import { BatchOptions } from "../../common/render/BatchOptions";
 
 function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
   const maxSize = System.instance.maxTextureSize;

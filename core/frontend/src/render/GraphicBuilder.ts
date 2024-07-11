@@ -10,22 +10,13 @@ import { assert, Id64String } from "@itwin/core-bentley";
 import {
   AnyCurvePrimitive, Arc3d, Box, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
-import { AnalysisStyle, ColorDef, Feature, Frustum, GeometryClass, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
+import { AnalysisStyle, ColorDef, Feature, Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicPrimitive } from "./GraphicPrimitive";
-import { GraphicType as CommonGraphicType } from "../common/render/GraphicType";
-import type { BatchOptions as CommonBatchOptions, PickableGraphicOptions as CommonPickableGraphicOptions} from "../common/render/BatchOptions";
-
-/** @deprecated */
-export const GraphicType = CommonGraphicType;
-/** @deprecated */
-export type GraphicType = CommonGraphicType;
-/** @deprecated */
-export type PickableGraphicOptions = CommonPickableGraphicOptions;
-/** @deprecated */
-export type BatchOptions = CommonBatchOptions;
+import { GraphicType } from "../common/render/GraphicType";
+import type { PickableGraphicOptions} from "../common/render/BatchOptions";
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].

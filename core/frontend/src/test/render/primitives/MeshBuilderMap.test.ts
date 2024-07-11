@@ -5,7 +5,6 @@
 import { assert, expect } from "chai";
 import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
@@ -21,6 +20,7 @@ import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { MeshBuilderMap } from "../../../render/primitives/mesh/MeshBuilderMap";
+import { GraphicType } from "../../../common/render/GraphicType";
 
 describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;

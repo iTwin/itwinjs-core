@@ -20,7 +20,7 @@ import { PolylineParams } from "../../common/render/primitives/PolylineParams";
 import { TextureCacheKey } from "../../common/render/TextureParams";
 import { ViewRect } from "../../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
-import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
@@ -64,6 +64,7 @@ import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
+import { BatchOptions } from "../../common/render/BatchOptions";
 
 /* eslint-disable no-restricted-syntax */
 
