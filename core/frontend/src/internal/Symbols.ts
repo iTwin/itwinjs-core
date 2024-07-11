@@ -6,6 +6,8 @@
  * @module Utils
  */
 
+export const _implementationProhibited = Symbol.for("Implementations of this interface can only be obtained from the containing package");
+
 function sym(name: string): string {
   return `${name}_core-frontend_INTERNAL_ONLY_DO_NOT_USE`;
 }

@@ -15,109 +15,17 @@ import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicPrimitive } from "./GraphicPrimitive";
+import { GraphicType as CommonGraphicType } from "../common/render/GraphicType";
+import type { BatchOptions as CommonBatchOptions, PickableGraphicOptions as CommonPickableGraphicOptions} from "../common/render/BatchOptions";
 
-/**
- * Describes the type of a [[GraphicBuilder]], which defines the coordinate system in which the builder's geometry is defined and
- * controls the behavior of the [[RenderGraphic]] produced by the builder.
- * @note For those types for which depth-testing is disabled, the order in which the individual geometric primitives are drawn determines which geometry draws on top of other geometry.
- *  - Within a [[GraphicList]], each [[RenderGraphic]] is rendered in the order in which it appears in the list; and
- *  - Within a single [[RenderGraphic]], each geometric primitive is rendered in the ordered in which it was added to the GraphicBuilder.
- * @public
- * @extensions
- */
-export enum GraphicType {
-  /**
-   * Renders behind all other graphics. For example, the border of a [[SheetViewState]] is of this type.
-   * Coordinates: [[CoordSystem.View]].
-   * [[RenderMode]]: [[RenderMode.SmoothShade]].
-   * Lighting: none.
-   * Depth-testing: disabled.
-   * @see [[Decorations.viewBackground]]
-   */
-  ViewBackground,
-  /** Used for the scene itself, dynamics, and 'normal' decorations. */
-  /**
-   * Renders as if it were part of the scene. All of the [[ViewFlags]] applied to the view's normal geometry also applies to these types of decorations.
-   * Coordinates: [[CoordSystem.World]].
-   * Lighting and [[RenderMode]]: from view.
-   * Depth-testing: enabled.
-   * @see [[Decorations.normal]].
-   */
-  Scene,
-  /** Renders within the scene. Coordinates: world. RenderMode: smooth. Lighting: default. Z-testing: enabled */
-  /** Renders within the scene, but ignores the view's [[ViewFlags]].
-   * Coordinates: [[CoordSystem.World]].
-   * Lighting: default.
-   * [[RenderMode]]: [[RenderMode.SmoothShade]].
-   * Depth-testing: enabled.
-   * @see [[Decorations.world]].
-   */
-  WorldDecoration,
-  /**
-   * Renders as an overlay on top of the scene. These decorations differ from [[GraphicType.WorldDecoration]] only in that depth-testing is disabled.
-   * For example, the ACS triad and [[WindowAreaTool]] decorations are of this type.
-   * Coordinates: [[CoordSystem.World]].
-   * [[RenderMode]]: [[RenderMode.SmoothShade]]
-   * Lighting: default.
-   * Depth-testing: disabled.
-   * Renders atop the scene. Coordinates: world. RenderMode: smooth. Lighting: none. Z-testing: disabled
-   * @note Overlay decorations typically employ some degree of transparency to ensure that they do not fully obscure the scene.
-   * @see [[Decorations.worldOverlay]]
-   */
-  WorldOverlay,
-  /**
-   * Renders as an overlay on top of the scene. These decorations differ from [[GraphicType.WorldOverlay]] only in that their geometry is defined in view coordinates rather than world.
-   * Coordinates: [[CoordSystem.View]].
-   * [[RenderMode]]: [[RenderMode.SmoothShade]]
-   * Lighting: default.
-   * Depth-testing: disabled.
-   * @note For more flexibility in defining view overlay decorations, consider using a [[CanvasDecorationList]].
-   * @see [[Decorations.viewOverlay]]
-   */
-  ViewOverlay,
-}
-
-/** Options used when constructing a `Batch` - that is, a [[RenderGraphic]] with an associated [FeatureTable]($common) describing individual [Feature]($common)s within the
- * graphic. Individual features can be resymbolized in a variety of ways including flashing and hiliting.
- * For example, to prevent graphics produced by [[readElementGraphics]] from being hilited when their corresponding element is in the [[SelectionSet]],
- * pass `{ noHilite: true }` to [[readElementGraphics]].
- * @public
- * @extensions
- */
-export interface BatchOptions {
-  /** Identifies the [[Tile]] associated with the batch, chiefly for debugging purposes.
-   * @beta
-   */
-  tileId?: string;
-  /** If true, features within the batch will not be flashed on mouseover. */
-  noFlash?: boolean;
-  /** If true, features within the batch will not be hilited when their corresponding element is in the [[SelectionSet]]. */
-  noHilite?: boolean;
-  /** If true, features within the batch will not be emphasized when the corresponding [[Feature]] is emphasized using [FeatureOverrides]($common). */
-  noEmphasis?: boolean;
-  /** If true, the contents of the batch will only be drawn by [[Viewport.readPixels]], not [[Viewport.renderFrame]], causing them to be locatable but invisible. */
-  locateOnly?: boolean;
-}
-
-/** Options used as part of [[GraphicBuilderOptions]] to describe a [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations) [[RenderGraphic]].
- * @public
- * @extensions
- */
-export interface PickableGraphicOptions extends BatchOptions {
-  /** A unique identifier for the graphic.
-   * @see [[IModelConnection.transientIds]] to obtain a unique Id in the context of an iModel.
-   * @see [[GraphicBuilder.activatePickableId]] or [[GraphicBuilder.activateFeature]] to change the pickable object while adding geometry.
-   */
-  id: Id64String;
-  /** Optional Id of the subcategory with which the graphic should be associated. */
-  subCategoryId?: Id64String;
-  /** Optional geometry class for the graphic - defaults to [GeometryClass.Primary]($common). */
-  geometryClass?: GeometryClass;
-  /** The optional Id of the model with which the graphic should be associated. */
-  modelId?: Id64String;
-  /** True if the graphic is to be used as a [[DynamicSpatialClassifier]] to classify volumes of a reality model. */
-  isVolumeClassifier?: boolean;
-}
+/** @deprecated */
+export const GraphicType = CommonGraphicType;
+/** @deprecated */
+export type GraphicType = CommonGraphicType;
+/** @deprecated */
+export type PickableGraphicOptions = CommonPickableGraphicOptions;
+/** @deprecated */
+export type BatchOptions = CommonBatchOptions;
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
