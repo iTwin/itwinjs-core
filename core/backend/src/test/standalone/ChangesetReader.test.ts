@@ -14,7 +14,7 @@ import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ChannelControl } from "../../core-backend";
+import { ChannelControl, SqliteStatement } from "../../core-backend";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
@@ -124,7 +124,10 @@ describe("Changeset Reader API", async () => {
     const reader = SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, db: rwIModel, disableSchemaCheck: true });
 
     // Set ExclusiveRootClassId to NULL for overflow table to simulate the issue
-    expect(rwIModel.nativeDb.executeSql("UPDATE ec_Table SET ExclusiveRootClassId=NULL WHERE Name='bis_GeometricElement2d_Overflow'")).to.be.eq(DbResult.BE_SQLITE_OK);
+    const sqliteStatement = new SqliteStatement("UPDATE ec_Table SET ExclusiveRootClassId=NULL WHERE Name='bis_GeometricElement2d_Overflow'");
+    sqliteStatement.prepare(rwIModel.nativeDb);
+    expect(sqliteStatement.step()).to.be.eq(DbResult.BE_SQLITE_DONE);
+    sqliteStatement.dispose();
 
     const adaptor = new ECChangesetAdaptor(reader);
     let assertOnOverflowTable = false;
