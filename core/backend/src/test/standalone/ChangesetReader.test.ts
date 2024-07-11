@@ -124,7 +124,7 @@ describe("Changeset Reader API", async () => {
     const reader = SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, db: rwIModel, disableSchemaCheck: true });
 
     // Set ExclusiveRootClassId to NULL for overflow table to simulate the issue
-    expect(rwIModel[_nativeDb].executeSql("UPDATE ec_Table SET ExclusiveRootClassId=NULL WHERE Name='bis_GeometricElement2d_Overflow'")).to.be.eq(DbResult.BE_SQLITE_OK);
+    expect(rwIModel.nativeDb.executeSql("UPDATE ec_Table SET ExclusiveRootClassId=NULL WHERE Name='bis_GeometricElement2d_Overflow'")).to.be.eq(DbResult.BE_SQLITE_OK);
 
     const adaptor = new ECChangesetAdaptor(reader);
     let assertOnOverflowTable = false;
