@@ -9,7 +9,7 @@
 import {
   Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
-import { Feature, FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
+import { Feature, FeatureTable, Gradient, GraphicParams, PackedFeatureTable, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
@@ -18,6 +18,8 @@ import { GeometryOptions } from "../Primitives";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";
 import { MeshList } from "../mesh/MeshPrimitives";
+import { GraphicBranch } from "../../GraphicBranch";
+import { assert } from "@itwin/core-bentley";
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   const pts3d: Point3d[] = [];
@@ -29,6 +31,7 @@ function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
 /** @internal */
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
+  public readonly system: RenderSystem;
   public readonly graphicParams: GraphicParams = new GraphicParams();
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
@@ -36,12 +39,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
     super(options);
     this.accum = new GeometryAccumulator({
-      system,
       transform: accumulatorTransform,
       analysisStyleDisplacement: this.analysisStyle?.displacement,
       viewIndependentOrigin: options.viewIndependentOrigin,
     });
 
+    this.system = system;
     if (this.pickable)
       this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
   }
@@ -146,8 +149,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public getLinearDisplayParams(): DisplayParams { return DisplayParams.createForLinear(this.graphicParams); }
   public get textDisplayParams(): DisplayParams { return DisplayParams.createForText(this.graphicParams); }
 
-  public get system(): RenderSystem { return this.accum.system; }
-
   public add(geom: Geometry): void { this.accum.addGeometry(geom); }
 
   private resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined {
@@ -172,7 +173,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
+      meshes = this.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
       if (undefined !== meshes) {
         if (meshes.features?.anyDefined)
           featureTable = meshes.features;
@@ -181,18 +182,18 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       }
     }
 
-    let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
+    let graphic = (this.primitives.length !== 1) ? this.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
     if (undefined !== featureTable) {
       const batchRange = range ?? new Range3d();
       const batchOptions = this._options.pickable;
-      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange, batchOptions);
+      graphic = this.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange, batchOptions);
     }
 
     if (addDebugRangeBox && range) {
       addDebugRangeBox = false;
-      const builder = this.accum.system.createGraphic({ ...this._options });
+      const builder = this.system.createGraphic({ ...this._options });
       builder.addRangeBox(range);
-      graphic = this.accum.system.createGraphicList([graphic, builder.finish()]);
+      graphic = this.system.createGraphicList([graphic, builder.finish()]);
       addDebugRangeBox = true;
     }
 
@@ -204,5 +205,71 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       graphic: this,
       computeRange: () => accum.geometries.computeRange(),
     });
+  }
+
+
+  /**
+   * Populate a list of Graphic objects from the accumulated Geometry objects.
+   * removed ViewContext
+   */
+  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): MeshList | undefined {
+    const meshes = this.accum.toMeshes(options, tolerance, pickable);
+    if (0 === meshes.length)
+      return undefined;
+
+    // If the meshes contain quantized positions, they are all quantized to the same range. If that range is small relative to the distance
+    // from the origin, quantization errors can produce display artifacts. Remove the translation from the quantization parameters and apply
+    // it in the transform instead.
+    //
+    // If the positions are not quantized, they have already been transformed to be relative to the center of the meshes' range.
+    // Apply the inverse translation to put them back into model space.
+    const branch = new GraphicBranch(true);
+    let transformOrigin: Point3d | undefined;
+    let meshesRangeOffset = false;
+
+    for (const mesh of meshes) {
+      const verts = mesh.points;
+      if (branch.isEmpty) {
+        if (verts instanceof QPoint3dList) {
+          transformOrigin = verts.params.origin.clone();
+          verts.params.origin.setZero();
+        } else {
+          transformOrigin = verts.range.center;
+          // In this case we need to modify the qOrigin of the graphic that will get created later since we have translated the origin.
+          // We can't modify it directly, but if we temporarily modify the range of the mesh used to create it the qOrigin will get created properly.
+          // Range is shared (not cloned) by all meshes and the mesh list itself, so modifying the range of the meshlist will modify it for all meshes.
+          // We will then later add this offset back to the range once all of the graphics have been created because it is needed unmodified for locate.
+          if (!meshesRangeOffset) {
+            meshes.range?.low.subtractInPlace(transformOrigin);
+            meshes.range?.high.subtractInPlace(transformOrigin);
+            meshesRangeOffset = true;
+          }
+        }
+      } else {
+        assert(undefined !== transformOrigin);
+        if (verts instanceof QPoint3dList) {
+          assert(transformOrigin.isAlmostEqual(verts.params.origin));
+          verts.params.origin.setZero();
+        } else {
+          assert(verts.range.center.isAlmostZero);
+        }
+      }
+
+      const graphic = mesh.getGraphics(this.system, this.accum.viewIndependentOrigin);
+      if (undefined !== graphic)
+        branch.add(graphic);
+    }
+
+    if (!branch.isEmpty) {
+      assert(undefined !== transformOrigin);
+      const transform = Transform.createTranslation(transformOrigin);
+      graphics.push(this.system.createBranch(branch, transform));
+      if (meshesRangeOffset) { // restore the meshes range that we modified earlier.
+        meshes.range?.low.addInPlace(transformOrigin);
+        meshes.range?.high.addInPlace(transformOrigin);
+      }
+    }
+
+    return meshes;
   }
 }

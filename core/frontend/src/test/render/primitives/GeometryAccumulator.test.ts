@@ -17,6 +17,7 @@ import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { GenerateEdges, GeometryOptions } from "../../../render/primitives/Primitives";
 import { GeometryAccumulator } from "../../../render/primitives/geometry/GeometryAccumulator";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
+import { GraphicType, PrimitiveBuilder } from "../../../core-frontend";
 
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;
@@ -228,7 +229,11 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("saveToGraphicList works as expected", () => {
-    accum = new GeometryAccumulator();
+    const builder = new PrimitiveBuilder(IModelApp.renderSystem, {
+      type: GraphicType.Scene,
+      computeChordTolerance: () => 0,
+    });
+    const accum = builder.accum;
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -264,7 +269,7 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     const graphics = new Array<RenderGraphic>();
-    accum.saveToGraphicList(graphics, new GeometryOptions(GenerateEdges.No), 0.22, undefined);
+    builder.saveToGraphicList(graphics, new GeometryOptions(GenerateEdges.No), 0.22, undefined);
     expect(graphics.length).to.equal(1);
     const graphic = graphics[0];
     expect(graphic instanceof Branch).to.be.true;
