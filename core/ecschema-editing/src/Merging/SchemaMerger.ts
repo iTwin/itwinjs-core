@@ -132,9 +132,9 @@ async function mergeSchemaDifferences(context: SchemaMergeContext, differences: 
  */
 async function mergeSchemaProperties(context: SchemaMergeContext, { difference }: SchemaDifference) {
   if (difference.label !== undefined) {
-    context.editor.setDisplayLabel(context.targetSchemaKey, difference.label);
+    await context.editor.setDisplayLabel(context.targetSchemaKey, difference.label);
   }
   if (difference.description !== undefined) {
-    context.editor.setDescription(context.targetSchemaKey, difference.description);
+    await context.editor.setDescription(context.targetSchemaKey, difference.description);
   }
 }

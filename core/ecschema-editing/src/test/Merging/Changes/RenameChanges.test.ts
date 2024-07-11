@@ -128,7 +128,7 @@ describe.only("Rename change tests", () => {
                 type: "PrimitiveProperty",
                 typeName: "string",
               },
-            ]
+            ],
           },
           TestItem: {
             schemaItemType: "EntityClass",
@@ -379,7 +379,7 @@ describe.only("Rename change tests", () => {
       expect(differences.conflicts).has.lengthOf(2, "Unexpected conflict count");
 
       const conflicts = differences.conflicts!;
-      conflicts.forEach(conflict => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
+      conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaChanges = new SchemaChangeSet();
       schemaChanges.items.rename(conflicts[0].itemName!, "MergedBaseStruct");
@@ -415,7 +415,7 @@ describe.only("Rename change tests", () => {
             Properties: [
               "ECSChema",
             ],
-          }
+          },
         ],
         items: {
           TestRelationship: {
@@ -430,7 +430,7 @@ describe.only("Rename change tests", () => {
                 Properties: [
                   "ECClass",
                 ],
-              }
+              },
             ],
             properties: [
               {
@@ -454,7 +454,7 @@ describe.only("Rename change tests", () => {
                   Properties: [
                     "ECSourceConstraint",
                   ],
-                }
+                },
               ],
               multiplicity: "(0..*)",
               roleLabel: "refers to",
@@ -479,7 +479,7 @@ describe.only("Rename change tests", () => {
             customAttributes: [
               {
                 className: "SourceSchema.TestBase",
-              }
+              },
             ],
             properties: [
               {
@@ -501,12 +501,12 @@ describe.only("Rename change tests", () => {
                 typeName: "int",
                 customAttributes: [
                   {
-                    className: "SourceSchema.TestItem"
+                    className: "SourceSchema.TestItem",
                   },
                   {
                     className: "SourceSchema.TestBase",
                     Id: -1140362,
-                  }
+                  },
                 ],
               },
             ],
@@ -565,7 +565,7 @@ describe.only("Rename change tests", () => {
       expect(differences.conflicts).has.lengthOf(2, "Unexpected conflict count");
 
       const conflicts = differences.conflicts!;
-      conflicts.forEach(conflict => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
+      conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaChanges = new SchemaChangeSet();
       schemaChanges.items.rename(conflicts[0].itemName!, "MergedBaseCA");
@@ -586,7 +586,7 @@ describe.only("Rename change tests", () => {
       expect(mergedRelationship?.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
       expect((await mergedRelationship?.getProperty("DoubleProperty"))?.customAttributes?.get("TargetSchema.MergedBaseCA")).to.be.not.undefined;
       expect((await mergedRelationship?.getProperty("DoubleProperty"))?.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
-      //expect(mergedRelationship?.source.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
+      // expect(mergedRelationship?.source.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
 
       const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
       expect(mergedEntity?.customAttributes?.get("TargetSchema.MergedBaseCA")).to.be.not.undefined;
@@ -672,7 +672,7 @@ describe.only("Rename change tests", () => {
       expect(differences.conflicts).has.lengthOf(2, "Unexpected conflict count");
 
       const conflicts = differences.conflicts!;
-      conflicts.forEach(conflict => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
+      conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaChanges = new SchemaChangeSet();
       schemaChanges.items.rename(conflicts[0].itemName!, "MergedBaseMixin");
@@ -817,7 +817,7 @@ describe.only("Rename change tests", () => {
       expect(differences.conflicts).has.lengthOf(2, "Unexpected conflict count");
 
       const conflicts = differences.conflicts!;
-      conflicts.forEach(conflict => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
+      conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaChanges = new SchemaChangeSet();
       schemaChanges.items.rename(conflicts[0].itemName!, "MergedBaseEntity");
@@ -960,7 +960,7 @@ describe.only("Rename change tests", () => {
       expect(differences.conflicts).has.lengthOf(2, "Unexpected conflict count");
 
       const conflicts = differences.conflicts!;
-      conflicts.forEach(conflict => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
+      conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaChanges = new SchemaChangeSet();
       schemaChanges.items.rename(conflicts[0].itemName!, "MergedBaseRelationship");
@@ -1046,7 +1046,7 @@ describe.only("Rename change tests", () => {
       expect(await (await mergedCA?.getProperty("IntProperty"))?.category).to.eq(mergedCategory);
       expect(await (await mergedCA?.getProperty("StringProperty"))?.category).to.eq(mergedCategory);
     });
-  })
+  });
 
   describe("Rename property name tests", () => {
     it("should rename property name when typename changed", async () => {

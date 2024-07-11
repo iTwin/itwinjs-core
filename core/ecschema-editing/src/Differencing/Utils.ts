@@ -9,6 +9,8 @@
 import { SchemaItemType } from "@itwin/ecschema-metadata";
 import {
   type AnySchemaDifference,
+  type AnySchemaItemDifference,
+  type ClassItemDifference,
   type ClassPropertyDifference,
   type ConstantDifference,
   type CustomAttributeClassDifference,
@@ -29,8 +31,6 @@ import {
   type SchemaReferenceDifference,
   type StructClassDifference,
   type UnitSystemDifference,
-  AnySchemaItemDifference,
-  ClassItemDifference,
 } from "./SchemaDifference";
 
 /**

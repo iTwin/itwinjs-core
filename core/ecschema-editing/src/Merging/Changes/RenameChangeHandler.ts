@@ -7,13 +7,13 @@
  */
 
 import type { RenamePropertyChange, RenameSchemaItemChange } from "./SchemaChanges";
-import { SchemaOtherTypes, SchemaDifferenceResult, RelationshipClassDifference, RelationshipConstraintClassDifference, AnySchemaItemDifference, AnySchemaDifference, ClassItemDifference, ClassPropertyDifference, SchemaType } from "../../Differencing/SchemaDifference";
+import { AnySchemaItemDifference, ClassItemDifference, ClassPropertyDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, SchemaDifferenceResult, SchemaOtherTypes, SchemaType } from "../../Differencing/SchemaDifference";
 import { NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, RelationshipConstraintProps, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps, StructPropertyProps } from "@itwin/ecschema-metadata";
 import * as Utils from "../../Differencing/Utils";
 
 type Editable<T extends object> = {
-  -readonly [P in keyof T]?: T[P];
-}
+  -readonly [P in keyof T]: T[P];
+};
 
 /**
  * @internal
@@ -50,20 +50,19 @@ export function applyRenamePropertyChange(result: SchemaDifferenceResult, change
   }
 }
 
-
 /**
  * @internal
  */
 export function applyRenameSchemaItemChange(result: SchemaDifferenceResult, change: RenameSchemaItemChange, postProcessing: (cb: () => void) => void) {
-  let entry = result.differences.find((entry) => {
+  let difference = result.differences.find((entry) => {
     return Utils.isSchemaItemDifference(entry) && entry.changeType === "add" && entry.itemName === change.key;
   });
 
-  if (entry === undefined && result.conflicts) {
+  if (difference === undefined && result.conflicts) {
     const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === change.key && entry.path === undefined);
     if (conflictIndex > -1) {
       const conflictEntry = result.conflicts[conflictIndex];
-      result.differences.push(entry = {
+      result.differences.push(difference = {
         changeType: "add",
         schemaType: conflictEntry.schemaType,
         itemName: change.value,
@@ -86,15 +85,15 @@ export function applyRenameSchemaItemChange(result: SchemaDifferenceResult, chan
     }
   }
 
-  const differenceEntry = entry as AnySchemaItemDifference;
-  if (differenceEntry === undefined) {
+  const itemDifference = difference as AnySchemaItemDifference;
+  if (itemDifference === undefined) {
     return;
   }
 
-  renameName(entry as AnySchemaItemDifference, change.key, change.value);
+  renameName(itemDifference, change.key, change.value);
 
   postProcessing(() => {
-    renameSchemaItem(result, change, differenceEntry.schemaType);
+    renameSchemaItem(result, change, itemDifference.schemaType);
   });
 }
 
@@ -292,9 +291,9 @@ function renameCustomAttributeClassName({ differences }: SchemaDifferenceResult,
 
     if (change.schemaType === SchemaOtherTypes.Property || Utils.isClassDifference(change)) {
       if (change.difference.customAttributes) {
-        for (let i = 0; i < change.difference.customAttributes.length; i++) {
-          if (oldKey.matchesFullName(change.difference.customAttributes[i].className))
-            change.difference.customAttributes[i].className = newKey.fullName;
+        for (const customAttribute of change.difference.customAttributes) {
+          if (oldKey.matchesFullName(customAttribute.className))
+            customAttribute.className = newKey.fullName;
         }
       }
     }
@@ -302,9 +301,9 @@ function renameCustomAttributeClassName({ differences }: SchemaDifferenceResult,
     if (Utils.isClassDifference(change) && change.difference.properties) {
       for (const property of change.difference.properties) {
         if (property.customAttributes) {
-          for (let i = 0; i < property.customAttributes.length; i++) {
-            if (oldKey.matchesFullName(property.customAttributes[i].className))
-              property.customAttributes[i].className = newKey.fullName;
+          for (const customAttribute of property.customAttributes) {
+            if (oldKey.matchesFullName(customAttribute.className))
+              customAttribute.className = newKey.fullName;
           }
         }
       }
@@ -313,9 +312,9 @@ function renameCustomAttributeClassName({ differences }: SchemaDifferenceResult,
       const constraintProps = [change.difference.source, change.difference.target] as Editable<RelationshipConstraintProps>[];
       for (const props of constraintProps) {
         if (props.customAttributes !== undefined) {
-          for (let i = 0; i < props.customAttributes.length; i++) {
-            if (oldKey.matchesFullName(props.customAttributes[i].className))
-              props.customAttributes[i].className = newKey.fullName;
+          for (const customAttribute of props.customAttributes) {
+            if (oldKey.matchesFullName(customAttribute.className))
+              customAttribute.className = newKey.fullName;
           }
         }
       }
@@ -376,7 +375,7 @@ function renameMixinName({ differences }: SchemaDifferenceResult, oldKey: Schema
     }
 
     if (entry.schemaType === SchemaOtherTypes.EntityClassMixin) {
-      for (var i = 0; i < entry.difference.length; i++) {
+      for (let i = 0; i < entry.difference.length; i++) {
         if (oldKey.matchesFullName(entry.difference[i])) {
           entry.difference[i] = newKey.fullName;
         }

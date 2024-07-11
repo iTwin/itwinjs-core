@@ -101,8 +101,8 @@ describe("Difference Conflict Reporting", () => {
         difference: {
           customAttributes: [
             {
-              "className": "ConflictSchema.TestCustomAttributeClass"
-            }
+              className: "ConflictSchema.TestCustomAttributeClass",
+            },
           ],
           modifier: "Sealed",
           properties: [{
@@ -113,8 +113,8 @@ describe("Difference Conflict Reporting", () => {
             type: "PrimitiveProperty",
             typeName: "string",
           }],
-          schemaItemType: "EntityClass"
-        }
+          schemaItemType: "EntityClass",
+        },
       });
     });
 
@@ -215,20 +215,20 @@ describe("Difference Conflict Reporting", () => {
         difference: {
           customAttributes: [
             {
-              className: "ConflictSchema.TestCustomAttributeClass"
-            }
+              className: "ConflictSchema.TestCustomAttributeClass",
+            },
           ],
           description: "Description of TestRelationship",
           modifier: "None",
           schemaItemType: "RelationshipClass",
           source: {
             constraintClasses: [
-              "ConflictSchema.TestEntityClass"
+              "ConflictSchema.TestEntityClass",
             ],
             customAttributes: [
               {
-                "className": "ConflictSchema.TestCustomAttributeClass"
-              }
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
             ],
             multiplicity: "(0..*)",
             polymorphic: true,
@@ -238,18 +238,18 @@ describe("Difference Conflict Reporting", () => {
           strengthDirection: "Forward",
           target: {
             constraintClasses: [
-              "ConflictSchema.TestEntityClass"
+              "ConflictSchema.TestEntityClass",
             ],
             customAttributes: [
               {
-                "className": "ConflictSchema.TestCustomAttributeClass"
-              }
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
             ],
             multiplicity: "(0..*)",
             polymorphic: true,
             roleLabel: "is referenced by",
-          }
-        }
+          },
+        },
       });
     });
 
@@ -317,12 +317,12 @@ describe("Difference Conflict Reporting", () => {
             {
               name: "EnumeratorOne",
               value: 1,
-            }
+            },
           ],
           isStrict: undefined,
           schemaItemType: "Enumeration",
           type: "int",
-        }
+        },
       });
     });
 
@@ -358,7 +358,7 @@ describe("Difference Conflict Reporting", () => {
         difference: {
           definition: "TestPhenomenon",
           schemaItemType: "Phenomenon",
-        }
+        },
       });
     });
 
@@ -453,8 +453,8 @@ describe("Difference Conflict Reporting", () => {
               {
                 label: "'",
                 name: "ConflictSchema.TestUnit",
-              }
-            ]
+              },
+            ],
           },
           decimalSeparator: ",",
           formatTraits: [
@@ -467,7 +467,7 @@ describe("Difference Conflict Reporting", () => {
           thousandSeparator: ".",
           type: "Fractional",
           uomSeparator: "",
-        }
+        },
       });
     });
   });
@@ -660,7 +660,7 @@ describe("Difference Conflict Reporting", () => {
           name: "MyProperty",
           type: "PrimitiveProperty",
           typeName: "boolean",
-        }
+        },
       });
     });
   });

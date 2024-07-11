@@ -25,7 +25,7 @@ export enum SchemaChangeType {
  * @alpha
  */
 export interface RenameSchemaItemChange {
-  type: SchemaChangeType.RenameSchemaItem,
+  type: SchemaChangeType.RenameSchemaItem;
   key: string;
   value: string;
 }
@@ -35,7 +35,7 @@ export interface RenameSchemaItemChange {
  * @alpha
  */
 export interface RenamePropertyChange {
-  type: SchemaChangeType.RenameProperty,
+  type: SchemaChangeType.RenameProperty;
   key: string;
   value: string;
 }
@@ -45,7 +45,7 @@ export interface RenamePropertyChange {
  * @alpha
  */
 export interface SkipChange {
-  type: SchemaChangeType.Skip,
+  type: SchemaChangeType.Skip;
   key: string;
 }
 
@@ -109,7 +109,7 @@ class ItemChanges extends ChangesEditor {
     this.add({
       type: SchemaChangeType.Skip,
       key: itemName,
-    })
+    });
   }
 }
 
@@ -145,13 +145,13 @@ export class SchemaChangeSet {
     const postProcessing: Array<() => void> = [];
     for (const change of this._changes) {
       if (change.type === SchemaChangeType.RenameSchemaItem) {
-        await applyRenameSchemaItemChange(differenceResult, change, postProcessing.push.bind(postProcessing));
+        applyRenameSchemaItemChange(differenceResult, change, postProcessing.push.bind(postProcessing));
       }
       if (change.type === SchemaChangeType.RenameProperty) {
-        await applyRenamePropertyChange(differenceResult, change);
+        applyRenamePropertyChange(differenceResult, change);
       }
       if (change.type === SchemaChangeType.Skip) {
-        await applySkipChange(differenceResult, change);
+        applySkipChange(differenceResult, change);
       }
     }
 

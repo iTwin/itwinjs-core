@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { ConflictCode, getSchemaDifferences, SchemaChangeSet, SchemaMerger } from "../../../ecschema-editing";
-import { AnySchemaChange, SchemaChangeType } from "../../../Merging/Changes/SchemaChanges";
+
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Difference Conflict Resolving", () => {
@@ -55,11 +55,11 @@ describe("Difference Conflict Resolving", () => {
         items: {
           SameNameOtherItemType: {
             schemaItemType: "EntityClass",
-            description: "This is an Entity Class"
+            description: "This is an Entity Class",
           },
           SameNameOtherItemType_1: {
             schemaItemType: "StructClass",
-            description: "This is a Struct Class"
+            description: "This is a Struct Class",
           },
         },
       }, new SchemaContext()),
@@ -83,7 +83,7 @@ describe("Difference Conflict Resolving", () => {
                 name: "PropertyToSkip",
                 type: "PrimitiveProperty",
                 typeName: "boolean",
-              }
+              },
             ],
           },
         },
@@ -105,10 +105,10 @@ describe("Difference Conflict Resolving", () => {
       if (differences.conflicts) {
         for (const conflict of differences.conflicts) {
           if (conflict.code === ConflictCode.ConflictingItemName && conflict.itemName === "SameNameOtherItemType") {
-            schemaChanges.items.rename(conflict.itemName!, `${conflict.itemName}_1`);
+            schemaChanges.items.rename(conflict.itemName, `${conflict.itemName}_1`);
           }
           if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.path === "MyProperty") {
-            schemaChanges.properties.rename(conflict.itemName!, conflict.path!, `${conflict.path}_1`);
+            schemaChanges.properties.rename(conflict.itemName!, conflict.path, `${conflict.path}_1`);
           }
         }
       }

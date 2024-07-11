@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import type { AnySchemaDifference, SchemaType } from "./SchemaDifference";
+import type { SchemaType } from "./SchemaDifference";
 
 /**
  * The unique conflicts codes for Schema differencing.
