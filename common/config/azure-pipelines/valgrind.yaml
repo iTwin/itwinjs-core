@@ -12,7 +12,7 @@ schedules:
 
 jobs:
   - job:
-    timeoutInMinutes: 360
+    timeoutInMinutes: 540
     pool:
       name: iModelTechLnxDeb11
       demands:
