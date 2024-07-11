@@ -6,18 +6,14 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
-import { AnalysisStyleDisplacement, Feature, QPoint3dList } from "@itwin/core-common";
-import { GraphicBranch } from "../../GraphicBranch";
-import { RenderGraphic } from "../../RenderGraphic";
+import { AnalysisStyleDisplacement, Feature } from "@itwin/core-common";
 import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
 import { MeshList } from "../mesh/MeshPrimitives";
 import { GeometryOptions } from "../Primitives";
 import { GeometryList } from "./GeometryList";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
-import { IModelApp } from "../../../IModelApp";
 
 /** @internal */
 export class GeometryAccumulator {
