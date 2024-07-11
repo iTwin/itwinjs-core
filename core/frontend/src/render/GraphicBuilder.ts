@@ -17,6 +17,7 @@ import { RenderGraphic } from "./RenderGraphic";
 import { GraphicType } from "../common/render/GraphicType";
 import type { PickableGraphicOptions} from "../common/render/BatchOptions";
 import { GraphicPrimitive } from "../common/render/GraphicPrimitive";
+import { GraphicAssembler } from "../common/render/GraphicAssembler";
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
@@ -132,7 +133,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
  * @public
  * @extensions
  */
-export abstract class GraphicBuilder {
+export abstract class GraphicBuilder implements GraphicAssembler {
   /** The local coordinate system transform applied to this builder's geometry.
    * @see [[GraphicBuilderOptions.placement]].
    */
