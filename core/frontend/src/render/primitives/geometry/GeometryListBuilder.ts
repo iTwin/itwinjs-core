@@ -31,12 +31,11 @@ function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
 /** @internal */
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
-  public readonly system: RenderSystem;
   public readonly graphicParams: GraphicParams = new GraphicParams();
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
 
-  public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
+  public constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
     super(options);
     this.accum = new GeometryAccumulator({
       transform: accumulatorTransform,
@@ -44,7 +43,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       viewIndependentOrigin: options.viewIndependentOrigin,
     });
 
-    this.system = system;
     if (this.pickable)
       this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
   }
@@ -151,9 +149,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public add(geom: Geometry): void { this.accum.addGeometry(geom); }
 
-  private resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined {
-    return this.system.getGradientTexture(gradient, this.iModel);
-  }
+  protected abstract resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined;
 }
 
 // Set to true to add a range box to every graphic produced by PrimitiveBuilder.
@@ -161,7 +157,13 @@ let addDebugRangeBox = false;
 
 /** @internal */
 export class PrimitiveBuilder extends GeometryListBuilder {
+  public readonly system: RenderSystem;
   public primitives: RenderGraphic[] = [];
+
+  public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
+    super(options, accumulatorTransform);
+    this.system = system;
+  }
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
     let meshes: MeshList | undefined;
@@ -207,6 +209,9 @@ export class PrimitiveBuilder extends GeometryListBuilder {
     });
   }
 
+  protected override resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined {
+    return this.system.getGradientTexture(gradient, this.iModel);
+  }
 
   /**
    * Populate a list of Graphic objects from the accumulated Geometry objects.
