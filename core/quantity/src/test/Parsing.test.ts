@@ -68,39 +68,36 @@ describe("Parsing tests:", () => {
   it("Generate Parse Tokens", async () => {
 
     const format = new Format("test");
-    const testStrings = ["", "0/1", "1/0", "1/2", "-1/2", "+1/2", "2 /", "1.616252eggs", "1.616252E-35eggs", "-1.616252E-35eggs", "756345.345", "12,345.345", "3.6252e3 Miles", "-1 1/2 FT", "+1 1/2 FT", "-135°11'30.5\"", "-2FT 6IN", "135°11'30.5\"", "2FT 6IN", "1 1/2 FT"];
-
-    const expectedTokens = [
-      [],
-      [{ value: 0 }],
-      [{ value: 1 }],
-      [{ value: 0.5 }],
-      [{ value: -0.5 }],
-      [{ value: 0.5 }],
-      [{ value: 2 }],
-      [{ value: 1.616252 }, { value: "eggs" }],
-      [{ value: 1.616252e-35 }, { value: "eggs" }],
-      [{ value: -1.616252e-35 }, { value: "eggs" }],
-      [{ value: 756345.345 }],
-      [{ value: 12345.345 }],
-      [{ value: 3625.2 }, { value: "Miles" }],
-      [{ value: -1.5 }, { value: "FT" }],
-      [{ value: 1.5 }, { value: "FT" }],
-      [{ value: -135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }],
-      [{ value: -2 }, { value: "FT" }, { value: 6 }, { value: "IN" }],
-      [{ value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }],
-      [{ value: 2 }, { value: "FT" }, { value: 6 }, { value: "IN" }],
-      [{ value: 1.5 }, { value: "FT" }],
+    const tests = [
+      {input: "", expectedTokens: []},
+      {input: "0/1", expectedTokens: [{ value: 0 }]},
+      {input: "1/0", expectedTokens: [{ value: 1 }]},
+      {input: "1/2", expectedTokens: [{ value: 0.5 }]},
+      {input: "-1/2", expectedTokens: [{value: "-", isOperand: true}, { value: 0.5 }]},
+      {input: "+1/2", expectedTokens: [{value: "+", isOperand: true}, { value: 0.5 }]},
+      {input: "2 /", expectedTokens: [{ value: 2 }]},
+      {input: "1.616252eggs", expectedTokens: [{ value: 1.616252 }, { value: "eggs" }]},
+      {input: "1.616252E-35eggs", expectedTokens: [{ value: 1.616252e-35 }, { value: "eggs" }]},
+      {input: "-1.616252E-35eggs", expectedTokens: [{value: "-", isOperand: true}, { value: 1.616252e-35 }, { value: "eggs" }]},
+      {input: "756345.345", expectedTokens: [{ value: 756345.345 }]},
+      {input: "12,345.345", expectedTokens: [{ value: 12345.345 }]},
+      {input: "3.6252e3 Miles", expectedTokens: [{ value: 3625.2 }, { value: "Miles" }]},
+      {input: "-1 1/2 FT", expectedTokens: [{value: "-", isOperand: true}, { value: 1.5 }, { value: "FT" }]},
+      {input: "+1 1/2 FT", expectedTokens: [{value: "+", isOperand: true}, { value: 1.5 }, { value: "FT" }]},
+      {input: "-135°11'30.5\"", expectedTokens: [{value: "-", isOperand: true}, { value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }]},
+      {input: "-2FT 6IN", expectedTokens: [{value: "-", isOperand: true}, { value: 2 }, { value: "FT" }, { value: 6 }, { value: "IN" }]},
+      {input: "135°11'30.5\"", expectedTokens: [{ value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }]},
+      {input: "2FT 6IN", expectedTokens: [{ value: 2 }, { value: "FT" }, { value: 6 }, { value: "IN" }]},
+      {input: "1 1/2 FT", expectedTokens: [{ value: 1.5 }, { value: "FT" }]},
     ];
 
     let i = 0;
-    for (const strVal of testStrings) {
-      const tokens = Parser.parseQuantitySpecification(strVal, format);
-      assert.isTrue(tokens.length === expectedTokens[i].length);
+    for (const test of tests) {
+      const tokens = Parser.parseQuantitySpecification(test.input, format);
+      assert.isTrue(tokens.length === test.expectedTokens.length);
 
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let j = 0; j < tokens.length; j++) {
-        assert.isTrue(tokens[j].value === expectedTokens[i][j].value);
+        assert.isTrue(tokens[j].value === test.expectedTokens[j].value);
       }
 
       i = i + 1;
@@ -108,17 +105,15 @@ describe("Parsing tests:", () => {
   });
 
   it("Generate Parse Tokens given different decimal and thousand separators", async () => {
-    const testStrings = ["1,616252eggs", "1,616252E-35eggs", "-1,616252E-35eggs", "756345,345", "12.345,345", "3,6252e3 Miles", "-135°11'30,5\"", "135°11'30,5\""];
-
-    const expectedTokens = [
-      [{ value: 1.616252 }, { value: "eggs" }],
-      [{ value: 1.616252e-35 }, { value: "eggs" }],
-      [{ value: -1.616252e-35 }, { value: "eggs" }],
-      [{ value: 756345.345 }],
-      [{ value: 12345.345 }],
-      [{ value: 3625.2 }, { value: "Miles" }],
-      [{ value: -135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }],
-      [{ value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }],
+    const tests = [
+      {input: "1,616252eggs", expectedTokens: [{ value: 1.616252 }, { value: "eggs" }]},
+      {input: "1,616252E-35eggs", expectedTokens: [{ value: 1.616252e-35 }, { value: "eggs" }]},
+      {input: "-1,616252E-35eggs", expectedTokens: [{value: "-", isOperand: true}, { value: 1.616252e-35 }, { value: "eggs" }]},
+      {input: "756345,345", expectedTokens: [{ value: 756345.345 }]},
+      {input: "12.345,345", expectedTokens: [{ value: 12345.345 }]},
+      {input: "3,6252e3 Miles", expectedTokens: [{ value: 3625.2 }, { value: "Miles" }]},
+      {input: "-135°11'30,5\"", expectedTokens: [{value: "-", isOperand: true}, { value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }]},
+      {input: "135°11'30,5\"", expectedTokens: [{ value: 135 }, { value: "°" }, { value: 11 }, { value: "'" }, { value: 30.5 }, { value: "\"" }]},
     ];
 
     const formatData = {
@@ -131,13 +126,13 @@ describe("Parsing tests:", () => {
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
 
     let i = 0;
-    for (const strVal of testStrings) {
-      const tokens = Parser.parseQuantitySpecification(strVal, format);
-      assert.isTrue(tokens.length === expectedTokens[i].length);
+    for (const test of tests) {
+      const tokens = Parser.parseQuantitySpecification(test.input, format);
+      assert.isTrue(tokens.length === test.expectedTokens.length);
 
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let j = 0; j < tokens.length; j++) {
-        assert.isTrue(tokens[j].value === expectedTokens[i][j].value);
+        assert.isTrue(tokens[j].value === test.expectedTokens[j].value);
       }
 
       i = i + 1;
@@ -215,7 +210,7 @@ describe("Parsing tests:", () => {
       { value: "-2FT 6IN", quantity: { magnitude: -2.5, unitName: "Units.FT" } },
       { value: "1 1/2 FT", quantity: { magnitude: 1.5, unitName: "Units.FT" } },
       { value: "2FT 6IN", quantity: { magnitude: 2.5, unitName: "Units.FT" } },
-      { value: `2'-6"`, quantity: { magnitude: 2.5, unitName: "Units.FT" } },
+      { value: `2' 6"`, quantity: { magnitude: 2.5, unitName: "Units.FT" } },
       { value: "-3IN", quantity: { magnitude: -0.25, unitName: "Units.FT" } },
       // Test with invalid unit specifier -- should default to -3 ft
       { value: "-3 ABCDEF", quantity: { magnitude: -3, unitName: "Units.FT" } },
@@ -294,6 +289,7 @@ describe("Parsing tests:", () => {
       { value: "1 1/2*FT", quantity: { magnitude: 1.5, unitName: "Units.FT" } },
       { value: "2*FT 6*IN", quantity: { magnitude: 2.5, unitName: "Units.FT" } },
       { value: "-3*IN", quantity: { magnitude: -0.25, unitName: "Units.FT" } },
+      { value: "2*FT 6*IN - 3*IN", quantity: { magnitude: 2.25, unitName: "Units.FT" } },
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -332,6 +328,9 @@ describe("Parsing tests:", () => {
     const testData = [
       { value: "7563+45.345", quantity: { magnitude: 756345.345, unitName: "Units.FT" } },
       { value: "-7563+45.345", quantity: { magnitude: -756345.345, unitName: "Units.FT" } },
+      { value: "-7563+45.345 - 5.5", quantity: { magnitude: -756350.845, unitName: "Units.FT" } },
+      { value: "-7563+45.345 + 5.5", quantity: { magnitude: -756339.845, unitName: "Units.FT" } },
+      { value: "10m + 7563+45.345 + 5.5", quantity: { magnitude: 32.8084 + 756350.845, unitName: "Units.FT" } },
     ];
 
     const format = new Format("test");
@@ -374,6 +373,8 @@ describe("Parsing tests:", () => {
     const testData = [
       { value: "-135°11'30.5\"", defaultUnit: "Units.ARC_DEG", quantity: { magnitude: -135.19180555555556, unitName: "Units.ARC_DEG" } },
       { value: "135°11'30.5\"", defaultUnit: "Units.ARC_DEG", quantity: { magnitude: 135.19180555555556, unitName: "Units.ARC_DEG" } },
+      { value: "135°11'30.5\" + 5", defaultUnit: "Units.ARC_DEG", quantity: { magnitude: 140.19180555555556, unitName: "Units.ARC_DEG" } },
+      { value: "130°10'20.1\" + 5°01'10.4\"", defaultUnit: "Units.ARC_DEG", quantity: { magnitude: 135.19180555555556, unitName: "Units.ARC_DEG" } },
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -399,7 +400,7 @@ describe("Parsing tests:", () => {
     const testData = [
       { value: "-1-1/2FT", quantity: { magnitude: -1.5, unitName: "Units.FT" } },
       { value: "1-1/2 FT", quantity: { magnitude: 1.5, unitName: "Units.FT" } },
-      { value: "FT", quantity: { magnitude: 0.0, unitName: "Units.FT" } },
+      { value: "FT", quantity: { magnitude: 1.0, unitName: "Units.FT" } },
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -436,6 +437,7 @@ describe("Parsing tests:", () => {
       { value: "1000 ABCDEF", magnitude: 304.8006096012192 },  // invalid label, should default to SURVEY_FT from Format since the unit is provided
       { value: "1000 f", magnitude: 304.8 },  // "f" is only valid for Units.FT so convert based on feet
       { value: "1000'", magnitude: 304.8 },  // "'" is only valid for Units.FT so convert based on feet
+      { value: "1100 usft - 100", magnitude: 304.8006096012192 },  // label should match the label in the Format so it will use SURVEY_FT
     ];
 
     const unitsAndAltLabelsProvider = new TestUnitsProvider();
@@ -476,6 +478,7 @@ describe("Parsing tests:", () => {
       { value: "1000", quantity: { magnitude: 1000, unitName: "Units.US_SURVEY_FT" } },  // no label should default to SURVEY_FT from Format
       { value: "1000 f", quantity: { magnitude: 999.998, unitName: "Units.US_SURVEY_FT" } },  // "f" is only valid for Units.FT so convert based on feet
       { value: "1000'", quantity: { magnitude: 999.998, unitName: "Units.US_SURVEY_FT" } },  // "'" is only valid for Units.FT so convert based on feet
+      { value: "1100 usft - 100", quantity: { magnitude: 1000, unitName: "Units.US_SURVEY_FT" } },  // label should match the label in the Format so it will use SURVEY_FT
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -490,6 +493,53 @@ describe("Parsing tests:", () => {
       expect(quantityProps.unit.name).to.be.eql(testEntry.quantity.unitName);
     }
   });
+
+  it("Parse mathematic equations into quantity async", async () => {
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+      composite: {
+        units: [
+          {
+            label: "m",
+            name: "Units.M",
+          },
+        ],
+      },
+    };
+
+    const testData = [
+      // When unitless, the format unit is used to determine unit. (The unit the user is working on.)
+      { value: "12,345.345 - 1", quantity: { magnitude: 12344.345, unitName: "Units.M" }},
+      { value: "1yd + 2", quantity: { magnitude: 0.9144 + 2, unitName: "Units.M" }},
+      { value: "1yd + 1m + 2", quantity: { magnitude: 0.9144 + 3, unitName: "Units.M" }},
+      { value: "1 FT + 6IN", quantity: { magnitude: 0.45720000000000005, unitName: "Units.M" }},
+      { value: "-1-1", quantity: { magnitude: -2, unitName: "Units.M" }},
+      { value: "1 ' + 1 FT", quantity: { magnitude: 0.6096, unitName: "Units.M" }},
+      { value: "-1 FT + 1", quantity: { magnitude: -0.3048 + 1, unitName: "Units.M" }},
+      { value: "1 F + 1.5", quantity: { magnitude: 0.3048 + 1.5, unitName: "Units.M" }},
+      { value: "-2FT 6IN + 6IN", quantity: { magnitude: -0.6096, unitName: "Units.M" }},
+      { value: "1 1/2FT + 1/2IN", quantity: { magnitude: 0.45720000000000005 + 0.0127, unitName: "Units.M" }},
+      { value: "2' 6\"-0.5", quantity: { magnitude: 0.762 - 0.5, unitName: "Units.M" }},
+      { value: "1 yd + 1FT 6IN", quantity: { magnitude: 1.3716, unitName: "Units.M" }},
+      { value: "1 m -1FT +6IN", quantity: { magnitude: 1 - 0.1524, unitName: "Units.M" }},
+      { value: "-1m 1CM 1mm - 1 FT + 6IN + 1yd", quantity: { magnitude: -0.24899999999999978, unitName: "Units.M" }},
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    for (const testEntry of testData) {
+      const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
+      // console.log (`quantityProps=${JSON.stringify(quantityProps)}`);
+      expect(Math.fround(quantityProps.magnitude)).to.eql(Math.fround(testEntry.quantity.magnitude));
+      expect(quantityProps.unit.name).to.eql(testEntry.quantity.unitName);
+    }
+  });
+
 });
 
 describe("Synchronous Parsing tests:", async () => {
@@ -554,14 +604,58 @@ describe("Synchronous Parsing tests:", async () => {
   const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit, unitsProvider);
   const angleFormatSpec = await FormatterSpec.create("test", angleFormat, unitsProvider, outAngleUnit);
 
+  it("Parse mathematic equations into quantity synchronously", () => {
+    const testData = [
+      // When unitless, the format unit is used to determine unit.
+      { value: "12,345.345 - 1", magnitude: 3762.861156 - 0.3048},
+      { value: "1yd + 2", magnitude: 0.9144 + 0.6096},
+      { value: "1yd + 1m + 2", magnitude: 0.9144 + 1 + 0.6096},
+      { value: "1 FT + 6IN", magnitude: 0.45720000000000005 },
+      { value: "-1-1", magnitude: -0.6096 },
+      { value: "1 ' + 1 FT", magnitude: 0.6096 },
+      { value: "-1 FT + 1", magnitude: 0 },
+      { value: "1 F + 1.5", magnitude: 0.762 },
+      { value: "-2FT 6IN + 6IN", magnitude: -0.6096 },
+      { value: "1 1/2FT + 1/2IN", magnitude: 0.45720000000000005 + 0.0127 },
+      { value: "2' 6\"-0.5", magnitude: 0.6096 },
+      { value: "1 yd + 1FT 6IN", magnitude: 1.3716 },
+      { value: "1 m -1FT +6IN", magnitude: 1 - 0.1524 },
+      { value: "-1m 1CM 1mm - 1 FT + 6IN + 1yd", magnitude: -0.24899999999999978 },
+    ];
+
+    if (logTestOutput) {
+      for (const spec of meterConversionSpecs) {
+        // eslint-disable-next-line no-console
+        console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
+      }
+    }
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseToQuantityValue(testEntry.value, format, meterConversionSpecs);
+      if (logTestOutput) {
+        if (Parser.isParsedQuantity(parseResult))
+          console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console
+        else if (Parser.isParseError(parseResult))
+          console.log(`input=${testEntry.value} error=${parseResult.error}`); // eslint-disable-line no-console
+      }
+      assert.isTrue(Parser.isParsedQuantity(parseResult));
+      if (Parser.isParsedQuantity(parseResult))
+        expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
+    }
+  });
+
   it("Parse into length values using custom parse labels", () => {
     const testData = [
       // if no quantity is provided then the format unit is used to determine unit
       { value: "12,345.345", magnitude: 3762.861156 },
       { value: "1", magnitude: 0.3048 },
       { value: "1 '", magnitude: 0.3048 },
+      { value: "-1", magnitude: -0.3048 },
       { value: "1 FT", magnitude: 0.3048 },
+      { value: "FT", magnitude: 0.3048 },
+      { value: "-1 FT", magnitude: -0.3048 },
       { value: "1 F", magnitude: 0.3048 },
+      { value: "1/2 F", magnitude: 0.3048 / 2 },
       { value: "-2FT 6IN", magnitude: -0.762 },
       { value: "1 1/2FT", magnitude: 0.45720000000000005 },
       { value: "2' 6\"", magnitude: 0.762 },
@@ -658,6 +752,7 @@ describe("Synchronous Parsing tests:", async () => {
       // if no quantity is provided then the format unit is used to determine unit
       { value: "15^30'", magnitude: 15.5 },
       { value: "15.5", magnitude: 15.5 },
+      { value: "10.0 + 5.5", magnitude: 15.5 },
     ];
 
     if (logTestOutput) {
