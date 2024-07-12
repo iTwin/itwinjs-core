@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IModelDb, IModelJsNative, IModelNative } from "@itwin/core-backend";
+import { _nativeDb, IModelDb, IModelJsNative, IModelNative } from "@itwin/core-backend";
 import { assert, BeEvent, IDisposable } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
@@ -197,7 +197,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       if (!imodel.isOpen) {
         throw new PresentationError(PresentationStatus.InvalidArgument, "imodel");
       }
-      return imodel.nativeDb;
+      return imodel[_nativeDb];
     }
     public registerSupplementalRuleset(serializedRulesetJson: string) {
       return this.handleResult<string>(this._nativeAddon.registerSupplementalRuleset(serializedRulesetJson));

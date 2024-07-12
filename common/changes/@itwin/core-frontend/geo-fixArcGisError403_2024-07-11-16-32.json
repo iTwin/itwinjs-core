@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix missing login dialog for some ArcGIS services",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

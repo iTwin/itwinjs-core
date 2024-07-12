@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { BriefcaseDb, BriefcaseManager, CloudSqlite, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, CloudSqlite, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, OpenMode } from "@itwin/core-bentley";
@@ -129,7 +129,7 @@ describe("Schema synchronization", function (this: Suite) {
   const synchronizeSchemas = async (iModel: IModelDb) => {
     await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
       const uri = syncAccess.getUri();
-      iModel.nativeDb.schemaSyncPull(uri);
+      iModel[_nativeDb].schemaSyncPull(uri);
       iModel.clearCaches();
     });
   };
@@ -165,11 +165,11 @@ describe("Schema synchronization", function (this: Suite) {
 
     await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
-    assert.isTrue(b1.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
 
     // b2 briefcase need to pull to enable shared schema channel.
     await b2.pullChanges({ accessToken: user2AccessToken });
-    assert.isTrue(b2.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b2[_nativeDb].schemaSyncEnabled());
 
     // Import schema into b1 but do not push it.
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -263,11 +263,11 @@ describe("Schema synchronization", function (this: Suite) {
 
     await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
-    assert.isTrue(b1.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
 
     // b2 briefcase need to pull to enable shared schema channel.
     await b2.pullChanges({ accessToken: user2AccessToken });
-    assert.isTrue(b2.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b2[_nativeDb].schemaSyncEnabled());
 
     // Import schema into b1 but do not push it.
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -566,7 +566,7 @@ describe("Schema synchronization", function (this: Suite) {
     // initialize also save and push changeset.
     await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
     assert.isFalse(b1.txns.hasLocalChanges);
-    assert.isTrue(b1.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
     assert.equal(querySchemaSyncDataVer(b1), "0x1", "SchemaSync data version should be set");
     await assertChangesetTypeAndDescr(b1, ChangesetType.Regular, "Enable SchemaSync for iModel with container-id: imodel-sync-itwin-1");
 
@@ -603,7 +603,7 @@ describe("Schema synchronization", function (this: Suite) {
     await assertChangesetTypeAndDescr(b1, ChangesetType.SchemaSync, "Upgraded domain schemas");
     // upgradeSchema() also push changes.
     assert.isFalse(b1.txns.hasLocalChanges);
-    assert.isTrue(b1.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
     await importSchema(b1, {
       name: "Test1",
       alias: "ts1",
@@ -644,7 +644,7 @@ describe("Schema synchronization", function (this: Suite) {
     //    * SchemaSync pull will also be executed to bring local briefcase schema in line with schema sync container.
     await b2.pullChanges();
     assert.equal(querySchemaSyncDataVer(b1), "0x4", "Last push from B1 should 0x3 though after pullChanges() we do SchemaSync.Pull()");
-    assert.isTrue(b2.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b2[_nativeDb].schemaSyncEnabled());
     assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1"]);
     await importSchema(b2, {
       name: "Test2",
@@ -878,7 +878,7 @@ describe("Schema synchronization", function (this: Suite) {
 
     await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
-    assert.isTrue(b1.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
     const sequence = (start: number, stop: number, step: number = 1) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + (i * step));
 
     await importSchema(b1, {
@@ -904,7 +904,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b1.pushChanges({ description: "schema with 5 props" });
 
     await b2.pullChanges();
-    assert.isTrue(b2.nativeDb.schemaSyncEnabled());
+    assert.isTrue(b2[_nativeDb].schemaSyncEnabled());
 
     await importSchema(b1, {
       name: "Test1",

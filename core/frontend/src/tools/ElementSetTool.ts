@@ -25,7 +25,9 @@ import { SelectionMethod } from "./SelectTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
-/** @alpha */
+/** Identifies the source of the elements in the agenda.
+ * @public
+ */
 export enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
   Unknown = 0,
@@ -37,7 +39,9 @@ export enum ModifyElementSource {
   DragSelect = 3,
 }
 
-/** @alpha */
+/** Identifies groups of elements added to agenda along with the source.
+ * @public
+ */
 export interface GroupMark {
   start: number;
   source: ModifyElementSource;
@@ -46,7 +50,7 @@ export interface GroupMark {
 /** The ElementAgenda class is used by [[ElementSetTool]] to hold the collection of elements it will operate on
  * and to manage their hilite state.
  * @see [[ElementSetTool]]
- * @alpha
+ * @public
 */
 export class ElementAgenda {
   /** The IDs of the elements in this agenda.
@@ -280,7 +284,7 @@ export class ElementAgenda {
  * - Immediately apply operation.
  * - Restart.
  * Sub-classes are required to opt-in to additional element sources, dynamics, AccuSnap, additional input, etc.
- * @alpha
+ * @public
  */
 export abstract class ElementSetTool extends PrimitiveTool {
   private _agenda?: ElementAgenda;

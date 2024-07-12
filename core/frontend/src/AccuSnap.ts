@@ -19,6 +19,7 @@ import { ToolSettings } from "./tools/ToolSettings";
 import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
+import { _requestSnap } from "./internal/Symbols";
 
 // cspell:ignore dont primitivetools
 
@@ -388,6 +389,9 @@ export class AccuSnap implements Decorator {
     if (!IModelApp.viewManager.doesHostHaveFocus || undefined !== this._toolTipPromise)
       return;
 
+    if (!IModelApp.toolAdmin.wantToolTip(hit))
+      return;
+
     const promise = this._toolTipPromise = delay.executeAfter(async () => {
       if (promise !== this._toolTipPromise)
         return; // we abandoned this request during delay
@@ -751,7 +755,7 @@ export class AccuSnap implements Decorator {
     }
 
     try {
-      const result = await thisHit.iModel.requestSnap(requestProps);
+      const result = await thisHit.iModel[_requestSnap](requestProps);
 
       if (out)
         out.snapStatus = result.status;

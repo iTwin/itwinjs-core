@@ -1319,6 +1319,108 @@ describe("ContentTraverser", () => {
       parentFieldName: parentField.name,
     });
   });
+
+  it("passes `NestedContentValue` labels to `startStruct`", () => {
+    const startStructSpy = sinon.spy(visitor, "startStruct");
+    const category = createTestCategoryDescription();
+    const primitiveField1 = createTestSimpleContentField({ name: "primitive1", category });
+    const primitiveField2 = createTestSimpleContentField({ name: "primitive2", category });
+    const parentField = createTestNestedContentField({ nestedFields: [primitiveField1, primitiveField2], category });
+    const nestedContentLabel1 = "Description 1";
+    const nestedContentLabel2 = "Description 2";
+    const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
+    const item = createTestContentItem({
+      values: {
+        [parentField.name]: [
+          {
+            label: nestedContentLabel1,
+            primaryKeys: [createTestECInstanceKey()],
+            values: {
+              [primitiveField1.name]: "value11",
+              [primitiveField2.name]: "value12",
+            },
+            displayValues: {
+              [primitiveField1.name]: "display value 11",
+              [primitiveField2.name]: "display value 12",
+            },
+            mergedFieldNames: [],
+          },
+          {
+            label: nestedContentLabel2,
+            primaryKeys: [createTestECInstanceKey()],
+            values: {
+              [primitiveField1.name]: "value21",
+              [primitiveField2.name]: "value22",
+            },
+            displayValues: {
+              [primitiveField1.name]: "display value 21",
+              [primitiveField2.name]: "display value 22",
+            },
+            mergedFieldNames: [],
+          },
+        ],
+      },
+      displayValues: {
+        [parentField.name]: undefined,
+      },
+    });
+    traverseContentItem(visitor, descriptor, item);
+
+    expect(startStructSpy).to.be.calledTwice;
+    expect(startStructSpy.firstCall.firstArg).to.containSubset({ description: nestedContentLabel1 });
+    expect(startStructSpy.secondCall.firstArg).to.containSubset({ description: nestedContentLabel2 });
+  });
+
+  it("passes deeply nested `NestedContentValue` labels to `startStruct`", () => {
+    const startStructSpy = sinon.spy(visitor, "startStruct");
+    const category = createTestCategoryDescription();
+    const parentPrimitiveField = createTestSimpleContentField({ name: "primitive1", category });
+    const childPrimitiveField = createTestSimpleContentField({ name: "primitive2", category });
+    const childNestedContentField = createTestNestedContentField({ nestedFields: [childPrimitiveField], category });
+    const parentNestedContentField = createTestNestedContentField({ nestedFields: [parentPrimitiveField, childNestedContentField], category });
+    const parentNestedContentLabel = "Description 1";
+    const childNestedContentLabel = "Description 2";
+    const descriptor = createTestContentDescriptor({ fields: [parentNestedContentField], categories: [category] });
+    const item = createTestContentItem({
+      values: {
+        [parentNestedContentField.name]: [
+          {
+            label: parentNestedContentLabel,
+            primaryKeys: [createTestECInstanceKey()],
+            values: {
+              [parentPrimitiveField.name]: "parentPrimitiveValue",
+              [childNestedContentField.name]: [
+                {
+                  label: childNestedContentLabel,
+                  primaryKeys: [createTestECInstanceKey()],
+                  values: {
+                    [childPrimitiveField.name]: "ChildPrimitiveValue",
+                  },
+                  displayValues: {
+                    [childNestedContentField.name]: "ChildPrimitiveDisplayValue",
+                  },
+                  mergedFieldNames: [],
+                },
+              ],
+            },
+            displayValues: {
+              [parentPrimitiveField.name]: "ChildPrimitiveDisplayValue",
+              [childNestedContentField.name]: "ChildNestedContentDisplayValue",
+            },
+            mergedFieldNames: [],
+          },
+        ],
+      },
+      displayValues: {
+        [parentNestedContentField.name]: undefined,
+      },
+    });
+    traverseContentItem(visitor, descriptor, item);
+
+    expect(startStructSpy).to.be.calledTwice;
+    expect(startStructSpy.firstCall.firstArg).to.containSubset({ description: parentNestedContentLabel });
+    expect(startStructSpy.secondCall.firstArg).to.containSubset({ description: childNestedContentLabel });
+  });
 });
 
 describe("addFieldHierarchy", () => {

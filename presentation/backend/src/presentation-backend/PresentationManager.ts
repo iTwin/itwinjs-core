@@ -369,8 +369,6 @@ export interface PresentationManagerProps {
    * requests with high I/O intensity, e.g. filtering large tables on non-indexed columns. No downsides have been noticed.
    *
    * Set to a falsy value to turn off. `true` for memory-mapping the whole iModel. Number value for memory-mapping the specified amount of bytes.
-   *
-   * @beta
    */
   useMmap?: boolean | number;
 
@@ -392,14 +390,12 @@ export interface PresentationManagerProps {
    * data is localized on the frontend). Defaults to English localization.
    *
    * @see [Localization]($docs/presentation/advanced/Localization)
-   * @beta
    */
   getLocalizedString?: (key: string) => string;
 
   /**
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
-   * @alpha
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 
@@ -408,7 +404,6 @@ export interface PresentationManagerProps {
    * made through the manager.
    *
    * @see [Diagnostics documentation page]($docs/presentation/advanced/Diagnostics.md)
-   * @beta
    */
   diagnostics?: BackendDiagnosticsOptions;
 }
@@ -521,7 +516,7 @@ export class PresentationManager {
 
   /**
    * Retrieves hierarchy level descriptor
-   * @beta
+   * @public
    */
   public async getNodesDescriptor(
     requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -591,7 +586,7 @@ export class PresentationManager {
 
   /**
    * Retrieves the content set based on the supplied content descriptor.
-   * @beta
+   * @public
    */
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,

@@ -12,7 +12,7 @@ import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { ChannelControl, ChannelKey } from "../ChannelControl";
-import { _implementationProhibited, _verifyChannel } from "./Symbols";
+import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
 
 class ChannelAdmin implements ChannelControl {
   public static readonly channelClassName = "bis:ChannelRootAspect";
@@ -68,7 +68,7 @@ class ChannelAdmin implements ChannelControl {
 
   public [_verifyChannel](modelId: Id64String): void {
     // Note: indirect changes are permitted to change any channel
-    if (this._allowedModels.has(modelId) || this._iModel.nativeDb.isIndirectChanges())
+    if (this._allowedModels.has(modelId) || this._iModel[_nativeDb].isIndirectChanges())
       return;
 
     const deniedChannel = this._deniedModels.get(modelId);
