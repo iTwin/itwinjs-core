@@ -314,15 +314,6 @@ export class Mesh {
     return PolylineArgs.fromMesh(this);
   }
 
-  public getGraphics(system: RenderSystem, instancesOrViewIndependentOrigin?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
-    const meshArgs = this.toMeshArgs();
-    if (meshArgs)
-      return system.createTriMesh(meshArgs, instancesOrViewIndependentOrigin);
-
-    const plArgs = this.toPolylineArgs();
-    return plArgs ? system.createIndexedPolylines(plArgs, instancesOrViewIndependentOrigin) : undefined;
-  }
-
   public addPolyline(poly: MeshPolyline): void {
     const { type, polylines } = this;
 

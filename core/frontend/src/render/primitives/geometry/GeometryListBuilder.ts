@@ -262,8 +262,8 @@ export class PrimitiveBuilder extends GeometryListBuilder {
         }
       }
 
-      const graphic = mesh.getGraphics(this.system, this.accum.viewIndependentOrigin);
-      if (undefined !== graphic)
+      const graphic = this.system.createMeshGraphics(mesh, this.accum.viewIndependentOrigin);
+      if (graphic)
         branch.add(graphic);
     }
 

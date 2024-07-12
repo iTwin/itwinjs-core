@@ -28,7 +28,7 @@ import { ViewRect } from "../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
-import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { Mesh, MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
@@ -369,6 +369,17 @@ export abstract class RenderSystem implements IDisposable {
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     const params = createMeshParams(args, this.maxTextureSize);
     return this.createMesh(params, instances);
+  }
+
+  /** @internal */
+  public createMeshGraphics(mesh: Mesh, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+    const meshArgs = mesh.toMeshArgs();
+    if (meshArgs) {
+      return this.createTriMesh(meshArgs, instances);
+    }
+
+    const polylineArgs = mesh.toPolylineArgs();
+    return polylineArgs ? this.createIndexedPolylines(polylineArgs, instances) : undefined;
   }
 
   /** Create a graphic from a low-level representation of a set of line strings.
