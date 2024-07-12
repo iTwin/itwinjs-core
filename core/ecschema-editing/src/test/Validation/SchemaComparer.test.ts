@@ -3622,7 +3622,7 @@ describe("Schema comparison tests", () => {
       expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.SchemaItemMissing && d.ecDefinition === itemA)).to.not.be.undefined;
     });
 
-    it("Different containerType, diagnostic reported", async () => {
+    it("Different appliesTo container type, diagnostic reported", async () => {
       const aItems = {
         TestCustomAttribute: {
           schemaItemType: "CustomAttributeClass",

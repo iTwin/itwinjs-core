@@ -370,9 +370,9 @@ export class SchemaComparer {
     if (this._compareDirection === SchemaCompareDirection.Backward || !customAttributeClassB)
       return;
 
-    if (customAttributeClassA.containerType !== customAttributeClassB.containerType) {
-      const typeA = containerTypeToString(customAttributeClassA.containerType);
-      const typeB = containerTypeToString(customAttributeClassB.containerType);
+    if (customAttributeClassA.appliesTo !== customAttributeClassB.appliesTo) {
+      const typeA = containerTypeToString(customAttributeClassA.appliesTo);
+      const typeB = containerTypeToString(customAttributeClassB.appliesTo);
       await this._reporter.reportCustomAttributeClassDelta(customAttributeClassA, "appliesTo", typeA, typeB, this._compareDirection);
     }
   }
