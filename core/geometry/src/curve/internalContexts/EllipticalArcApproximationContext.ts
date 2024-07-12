@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { OrderedComparator, OrderedSet, SortedArray } from "@itwin/core-bentley";
+import { assert, OrderedComparator, OrderedSet, SortedArray } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -136,23 +136,27 @@ export class QuadrantFractions {
  */
 abstract class QuadrantFractionsProcessor {
   /**
-   * Announce the beginning of processing of the samples in a given quadrant.
-   * @return whether to process this quadrant
+   * Announce the beginning of processing for quadrant `q`.
+   * @param _reversed whether `q.fractions` was reversed so that arcs will be announced in the opposite order
+   * and with the opposite orientation
+   * @return whether to process `q`
   */
-  public announceQuadrantBegin(_q: QuadrantFractions): boolean { return true; }
+  public announceQuadrantBegin(_q: QuadrantFractions, _reversed: boolean): boolean { return true; }
   /**
-   * Optionally announce a circular arc approximating the elliptical arc between the given fractions.
-   * @param arc circular arc interpolating the ellipse at the given fractions.
-   * * The processor is allowed to capture `arc`, e.g., to add it to a growing chain approximation.
-   * @param f0 elliptical arc parameter in [0,1], unordered with respect to f1
-   * @param f1 elliptical arc parameter in [0,1], unordered with respect to f0
+   * Optionally announce a circular arc approximating the elliptical arc E between the given fractions.
+   * * The given fractions are different. If `announceQuadrantBegin` was invoked with `reversed === false` then
+   * `f0 < f1`; otherwise, `f0 > f1`.
+   * @param arc circular arc that interpolates E at f0 and f1. Processor can capture `arc`; it is unused afterwards.
+   * @param f0 fractional parameter of E at which point `arc` starts
+   * @param f1 fractional parameter of E at which point `arc` ends
    */
   public announceArc?(arc: Arc3d, f0: number, f1: number): void;
   /**
-   * Announce the end of processing of the samples in the given quadrant.
-   * @param _wasReversed whether the given quadrant's samples were processed in reverse
+   * Announce the end of processing for quadrant `q`.
+   * @param _reversed whether `q.fractions` was reversed so that arcs were announced in the opposite order
+   * and with the opposite orientation
   */
-  public announceQuadrantEnd(_q: QuadrantFractions, _wasReversed: boolean): void { }
+  public announceQuadrantEnd(_q: QuadrantFractions, _reversed: boolean): void { }
 };
 
 /**
@@ -167,7 +171,7 @@ class ArcChainErrorProcessor extends QuadrantFractionsProcessor {
     this._ellipticalArc = ellipticalArc;
     this._maxPerpendicular = undefined;
   }
-  public static create(ellipticalArc: Arc3d, _maxError: number = 0): ArcChainErrorProcessor {
+  public static create(ellipticalArc: Arc3d): ArcChainErrorProcessor {
     return new ArcChainErrorProcessor(ellipticalArc);
   }
   public get ellipticalArc(): Arc3d {
@@ -232,14 +236,90 @@ class ArcChainErrorProcessor extends QuadrantFractionsProcessor {
   public override announceArc(arc: Arc3d, f0: number, f1: number): void {
     this.updateMaxPerpendicular(arc, f0, f1);
   }
-};
+}
 
 /**
- * Processor for computing samples for a subdivision-based arc chain approximation.
- * * The basic idea is to build a refinement of `q.fractions` during the processing of QuadrantFractions `q`.
+ * Processor for refining a single Q1 interval between fractions f0 and f1 by perturbing an interior fraction f.
+ * * This processor expects to repeatedly process a QuadrantFractions `q` wth `q.quadrant` = 1 and fractions array
+ * [fPrev, f0, f, f1], where fPrev is from the previously processed (possibly refined) adjacent interval. If
+ * `q.axisAtStart`, then no fPrev is necessary and the processor expects [f0, f, f1].
+ * * This is enough info to compute the two circular arcs spanning [f0,f] and [f,f1] and compare their approximation
+ * errors.
+ * * The basic idea is to perturb f so that the difference in the two arcs' errors is minimized.
+ * * This processor keeps track of a bracket containing f so that when the caller repeatedly processes `q` via
+ * [[EllipticalArcApproximationContext.processQuadrantFractions]], a bisection algorithm plays out, informed by the
+ * heuristic that moving f toward one end of its bracket decreases the approx error of the arc on that side of f.
+ * @internal
+ */
+class AdaptiveSubdivisionQ1IntervalErrorProcessor extends QuadrantFractionsProcessor {
+  private _ellipticalArc: Arc3d;
+  private _f: number;
+  private _bracket0: number;
+  private _bracket1: number;
+  private _error0: number;
+  private _error1: number;
+  private constructor(ellipticalArc: Arc3d, f0: number, f: number, f1: number) {
+    super();
+    this._ellipticalArc = ellipticalArc;
+    this._bracket0 = f0;
+    this._f = f;
+    this._bracket1 = f1;
+    this._error0 = this._error1 = Geometry.largeCoordinateResult;
+  }
+  public static create(ellipticalArc: Arc3d, f0: number, f: number, f1: number): AdaptiveSubdivisionQ1IntervalErrorProcessor {
+    return new AdaptiveSubdivisionQ1IntervalErrorProcessor(ellipticalArc, f0, f, f1);
+  }
+  public get f(): number {
+    return this._f;
+  }
+  public get isConverged(): boolean {
+    if (Geometry.isSmallMetricDistance(this._error0 - this._error1))
+      return true;
+    if (Geometry.isSmallRelative(this._bracket0 - this._bracket1))
+      return true;
+    return false;
+  }
+  /** Remember the initial value of the fraction f to be perturbed. */
+  public override announceQuadrantBegin(q: QuadrantFractions, _reversed: boolean): boolean {
+    assert(q.quadrant === 1);
+    // the first fraction might be an extra point for computing the first 3-pt arc.
+    assert(q.fractions.length === 4 || (q.fractions.length === 3 && q.axisAtStart));
+    this._error0 = this._error1 = Geometry.largeCoordinateResult;
+    return true;
+  }
+  /** Compute approximation error over the two intervals adjacent to f. */
+  public override announceArc(arc: Arc3d, f0: number, f1: number): void {
+    if (Geometry.isAlmostEqualEitherNumber(this.f, f0, f1, 0)) {
+      const perp = ArcChainErrorProcessor.computePrimitiveErrorXY(arc, this._ellipticalArc, f0, f1);
+      if (perp) {
+        if (this.f === f1)
+          this._error0 = perp.detailA.a; // first arc error
+        else  // f === f0
+          this._error1 = perp.detailA.a; // second arc error
+      }
+    }
+  }
+  /** Update `q.fractions` with a perturbed value of f that is expected to decrease error delta. */
+  public override announceQuadrantEnd(q: QuadrantFractions, _reversed: boolean): void {
+    if (Geometry.isLargeCoordinateResult(this._error0) || Geometry.isLargeCoordinateResult(this._error1))
+      return;
+    if (this.isConverged)
+      return;
+    // set up for next call to processQuadrantFractions
+    const n = q.fractions.length;
+    if (this._error0 < this._error1)
+      this._bracket0 = this._f; // HEURISTIC: move f toward f1 to increase e0
+    else
+      this._bracket1 = this._f; // HEURISTIC: move f toward f0 to decrease e0
+    this._f = q.fractions[n - 2] = Geometry.interpolate(this._bracket0, 0.5, this._bracket1);
+  }
+}
+/**
+ * Processor for computing samples in Q1 for a subdivision-based arc chain approximation.
+ * * The basic idea is to build a refinement of `q.fractions` for a QuadrantFractions q with q.quadrant = 1.
  *   * Start off the refinement with a copy of `q.fractions`.
- *   * When an announced arc exceeds a given maximum approximation error, the midpoint of its associated
- * fraction span is added to the refinement.
+ *   * When an announced arc exceeds a given maximum approximation error, compute a fraction f in the span
+ * such that the error of arcs on either side of f would be almost equal, then add f to the refinement.
  *   * If the announced arc does not exceed the maxError, its associated fraction span remains as-is---no
  * additional samples are needed to decrease approximation error.
  *   * After `q` processing completes, `q.fractions` is updated in place with the computed refinement.
@@ -247,55 +327,83 @@ class ArcChainErrorProcessor extends QuadrantFractionsProcessor {
  * approximation that is guaranteed not to exceed the desired error can commence.
  * @internal
  */
-class AdaptiveSubdivisionErrorProcessor extends ArcChainErrorProcessor {
-  private _refinement: OrderedSet<number>;
+class AdaptiveSubdivisionQ1ErrorProcessor extends QuadrantFractionsProcessor {
+  private _ellipticalArc: Arc3d;
+  private _refinement: SortedArray<number>;
   private _maxError: number;
   private _originalRefinementCount: number;
+  private static _maxIters = 10;
   private constructor(ellipticalArc: Arc3d, maxError: number) {
-    super(ellipticalArc);
-    this._refinement = new OrderedSet<number>(compareFractions);
+    super();
+    this._ellipticalArc = ellipticalArc;
+    this._refinement = new SortedArray<number>(compareFractions, false);
     this._maxError = maxError > 0 ? maxError : EllipticalArcApproximationOptions.defaultMaxError;
     this._originalRefinementCount = 0;
   }
-  public static override create(ellipticalArc: Arc3d, maxError: number): AdaptiveSubdivisionErrorProcessor {
-    return new AdaptiveSubdivisionErrorProcessor(ellipticalArc, maxError);
-  }
-  public override announceQuadrantBegin(q: QuadrantFractions): boolean {
-    this._refinement.clear();
-    for (const f of q.fractions)
-      this._refinement.add(f);
-    this._originalRefinementCount = this._refinement.size;
-    return true;
-  }
-  public updateFractionSet(childApproximation: Arc3d, f0: number, f1: number): void {
-    const childPerp = ArcChainErrorProcessor.computePrimitiveErrorXY(childApproximation, this.ellipticalArc, f0, f1);
-    if (childPerp && (childPerp.detailA.a > this._maxError))
-      this._refinement.add(Geometry.interpolate(f0, 0.5, f1));
-  }
-  public override announceArc(arc: Arc3d, f0: number, f1: number): void {
-    this.updateFractionSet(arc, f0, f1);
-  }
-  public override announceQuadrantEnd(q: QuadrantFractions, _wasReversed: boolean): void {
-    q.fractions = [...this._refinement];
+  public static create(ellipticalArc: Arc3d, maxError: number): AdaptiveSubdivisionQ1ErrorProcessor {
+    return new AdaptiveSubdivisionQ1ErrorProcessor(ellipticalArc, maxError);
   }
   /** Whether the processor refined the current `QuadrantFractions` fractions array to decrease approximation error. */
   public get isRefined(): boolean {
-    return this._originalRefinementCount < this._refinement.size;
+    return this._refinement.length > 0 && this._originalRefinementCount < this._refinement.length;
+  }
+  /** Initialize the refinement from the quadrant fractions array. */
+  public override announceQuadrantBegin(q: QuadrantFractions, _reversed: boolean): boolean {
+    assert(q.quadrant === 1);
+    this._refinement.clear();
+    for (const f of q.fractions)
+      this._refinement.insert(f);
+    this._originalRefinementCount = this._refinement.length;
+    return true;
+  }
+  /** If this arc needs to be refined, add a refinement point. */
+  public override announceArc(arc: Arc3d, f0: number, f1: number): void {
+    const perp = ArcChainErrorProcessor.computePrimitiveErrorXY(arc, this._ellipticalArc, f0, f1);
+    if (!perp)
+      return;
+    if (this._originalRefinementCount > 2 && perp.detailA.a <= this._maxError) // always need 1 refinement
+      return;
+    const f = Geometry.interpolate(f0, 0.5, f1);
+    let fractions = [f0, f, f1];
+    if (!Geometry.isAlmostEqualEitherNumber(f0, 0, 0.25, 0)) {
+      // We need the previous fraction to craft the inner arc over [f0,f]. We know that _refinement has the same
+      // ordering as [f0,f1] because any reversal of q.fractions occurred *before* announceQuadrantBegin. We also
+      // know that arc intervals are being announced in this order, so the previous interval will have been refined
+      // if need be. Thus the fraction we need is obtained by looking up f0 in _refinement and taking its predecessor.
+      const iPrev = this._refinement.indexOf(f0);
+      if (iPrev >= 1)
+        fractions = [this._refinement.get(iPrev - 1)!, ...fractions];
+    }
+    // always create 2pt+tan arc for first interval
+    const q1 = [QuadrantFractions.create(1, fractions, true, Geometry.isAlmostEqualEitherNumber(f1, 0, 0.25, 0))];
+    const processor = AdaptiveSubdivisionQ1IntervalErrorProcessor.create(this._ellipticalArc, f0, f, f1);
+    let iter = 0;
+    do {
+      EllipticalArcApproximationContext.processQuadrantFractions(this._ellipticalArc, q1, processor);
+    } while (++iter <= AdaptiveSubdivisionQ1ErrorProcessor._maxIters && !processor.isConverged);
+    this._refinement.insert(processor.f);
+  }
+  /** Update the quadrant fractions array with the current refinement. */
+  public override announceQuadrantEnd(q: QuadrantFractions, reversed: boolean): void {
+    q.fractions = [...this._refinement];
+    if (reversed)
+      q.fractions.reverse();
   }
   /**
-   * Return radian angles for the fractions strictly inside the given quadrant.
-   * * Output is suitable to return from an implementation of [[EllipticalArcSampler.computeRadiansStrictlyInsideQuadrant1]].
+   * Compute radian angles for the fractions in the current refinement that are strictly inside Q1.
+   * @param result optional preallocated array to clear and populate
+   * @return angles suitable for output from [[EllipticalArcSampler.computeRadiansStrictlyInsideQuadrant1]].
    */
-  public getRefinedInteriorAngles(quadrant: 1 | 2 | 3 | 4, result?: number[]): number[] {
+  public getRefinedInteriorQ1Angles(result?: number[]): number[] {
     if (!result)
       result = [];
     else
       result.length = 0;
-    const f0 = 0.25 * (quadrant - 1);
-    const f1 = 0.25 * quadrant;
+    const f0 = 0;
+    const f1 = 0.25;
     for (const f of this._refinement) {
       if (f0 < f && f < f1)
-        result.push(this.ellipticalArc.sweep.fractionToRadians(f));
+        result.push(this._ellipticalArc.sweep.fractionToRadians(f));
     }
     return result;
   }
@@ -443,7 +551,6 @@ class AdaptiveSubdivisionSampler implements EllipticalArcSampler {
   private _context: EllipticalArcApproximationContext;
   private _options: EllipticalArcApproximationOptions;
   private _fullArcXY: Arc3d;
-  private static maxIters = 10;
   private constructor(c: EllipticalArcApproximationContext, o: EllipticalArcApproximationOptions) {
     this._context = c;
     this._options = o;
@@ -455,65 +562,17 @@ class AdaptiveSubdivisionSampler implements EllipticalArcSampler {
   public static create(context: EllipticalArcApproximationContext, options: EllipticalArcApproximationOptions): AdaptiveSubdivisionSampler {
     return new AdaptiveSubdivisionSampler(context, options);
   }
-  private computeFirstInteriorFraction(f0: number, f1: number): number {
-    if (f0 === f1)
-      return f0;
-    if (f0 > f1)
-      return this.computeFirstInteriorFraction(f1, f0);
-    const flatterAtF0 = this.fullArcXY.fractionToCurvature(f0)! < this.fullArcXY.fractionToCurvature(f1)!;
-    let ellipse = this.fullArcXY;
-    if (!flatterAtF0) { // swap axis lengths so that ellipse is flatter at f0
-      ellipse = this.fullArcXY.clone();
-      const xScale = ellipse.matrixRef.columnXMagnitude();
-      const yScale = ellipse.matrixRef.columnYMagnitude();
-      ellipse.matrixRef.scaleColumnsInPlace(yScale / xScale, xScale / yScale, 1);
-    }
-    const ray0 = ellipse.fractionToPointAndDerivative(f0);
-    const pt = Point3d.createZero();
-    const arc0 = Arc3d.createXY(pt, 0);
-    let bracket0 = f0;
-    let f = f1; // this should yield maximum error arc
-    let bracket1 = f1;
-    let iter = 0;
-    let arc0Error: number;
-    let prevArc0Error: number | undefined;
-    do { // binary search
-      if (!(Arc3d.createCircularStartTangentEnd(ray0.origin, ray0.direction, ellipse.fractionToPoint(f, pt), arc0) instanceof Arc3d))
-        break;
-      const perp = ArcChainErrorProcessor.computePrimitiveErrorXY(arc0, ellipse, f0, f);
-      if (!perp)
-        break;
-      arc0Error = perp.detailA.a;
-      if (arc0Error < this._options.maxError) {
-        if (f === f1)
-          break;  // first arc suffices
-        if (Geometry.isAlmostEqualOptional(arc0Error, prevArc0Error, Geometry.smallMetricDistance))
-          break;
-        f = Geometry.interpolate(bracket0 = f, 0.5, bracket1); // increase f to increase error over [f0,f]
-      } else {
-        f = Geometry.interpolate(bracket0, 0.5, bracket1 = f); // decrease f to decrease error over [f0,f]
-      }
-      prevArc0Error = arc0Error;
-    } while (++iter < AdaptiveSubdivisionSampler.maxIters);
-    return flatterAtF0 ? f : f1 - (f - f0);
-  }
   public computeRadiansStrictlyInsideQuadrant1(result?: number[]): number[] {
-    if (!result)
-      result = [];
-    if (this._context.isValidArc) {
-      const f0 = 0;
-      const f1 = 0.25;
-      const f = this.computeFirstInteriorFraction(f0, f1);
-      const fractions = Geometry.isAlmostEqualEitherNumber(f, f0, f1, Geometry.smallFraction) ? [f0, f1] : [f0, f, f1];
-      const q = [QuadrantFractions.create(1, fractions, true, true)];
-      const processor = AdaptiveSubdivisionErrorProcessor.create(this.fullArcXY, this._options.maxError);
-      let iter = 0;
-      do {
-        EllipticalArcApproximationContext.processQuadrantFractions(this.fullArcXY, q, processor);
-      } while (processor.isRefined && ++iter <= AdaptiveSubdivisionSampler.maxIters);
-      processor.getRefinedInteriorAngles(1, result);
-    }
-    return result;
+    if (!this._context.isValidArc)
+      return [];
+    const f0 = 0;
+    const f1 = 0.25;
+    const q1 = [QuadrantFractions.create(1, [f0, f1], true, true)];
+    const processor = AdaptiveSubdivisionQ1ErrorProcessor.create(this.fullArcXY, this._options.maxError);
+    do {
+      EllipticalArcApproximationContext.processQuadrantFractions(this.fullArcXY, q1, processor);
+    } while (processor.isRefined);
+    return processor.getRefinedInteriorQ1Angles(result);
   }
 };
 
@@ -534,7 +593,7 @@ class ArcChainConstructionProcessor extends QuadrantFractionsProcessor {
   public get chain(): CurveChain | undefined {
     return this._chain.children.length > 0 ? this._chain : undefined;
   }
-  public override announceQuadrantBegin(_q: QuadrantFractions): boolean {
+  public override announceQuadrantBegin(_q: QuadrantFractions, _reversed: boolean): boolean {
     this._quadrantChain = undefined;
     return true;
   }
@@ -543,9 +602,9 @@ class ArcChainConstructionProcessor extends QuadrantFractionsProcessor {
       this._quadrantChain = Path.create(); // the arc chain in a quadrant is always open
     this._quadrantChain.tryAddChild(arc); // captured!
   }
-  public override announceQuadrantEnd(_q: QuadrantFractions, wasReversed: boolean): void {
+  public override announceQuadrantEnd(_q: QuadrantFractions, reversed: boolean): void {
     if (this._quadrantChain) {
-      if (wasReversed)
+      if (reversed)
         this._quadrantChain.reverseChildrenInPlace();
       for (const child of this._quadrantChain.children)
         this._chain.tryAddChild(child); // captured!
@@ -633,7 +692,7 @@ export class EllipticalArcApproximationContext {
    * @internal
   */
   public static processQuadrantFractions(
-    ellipticalArc: Arc3d, samples: QuadrantFractions[], processor: QuadrantFractionsProcessor,
+    ellipticalArc: Arc3d, quadrants: QuadrantFractions[], processor: QuadrantFractionsProcessor,
   ): void {
     const pt0 = this.workPt0;
     const pt1 = this.workPt1;
@@ -694,29 +753,37 @@ export class EllipticalArcApproximationContext {
       }
     };
     const reverseFractionsForSymmetry = (q: QuadrantFractions): boolean => {
-      // if we touch an axis, start at the major axis so the approximation exhibits axial symmetry
+      // If we touch an axis, we process q.fractions in a consistent direction (forward or reverse) so that the
+      // approximating arc chain exhibits fourfold axial symmetry. We do this by ensuring q.fractions starts along the
+      // major axis (or ends along the minor axis). This choice is arbitrary, but consistently made across all quadrants.
       if (!q.axisAtStart && !q.axisAtEnd)
         return false;
+      const n = q.fractions.length;
+      if (n < 2)
+        return false;
       const xAxisIsMajor = ellipticalArc.vector0.magnitudeSquared() > ellipticalArc.vector90.magnitudeSquared();
+      const isCCW = q.fractions[0] < q.fractions[n - 1]; // we ASSUME monotonicity
       const reverse = xAxisIsMajor ? (q.quadrant === 2 || q.quadrant === 4) : (q.quadrant === 1 || q.quadrant === 3);
-      if (reverse)
+      if (reverse && isCCW)
         q.fractions.reverse();
       return reverse;
     };
 
-    for (const q of samples) {
+    for (const q of quadrants) {
       const n = q.fractions.length;
-      if (n < 2 || !processor.announceQuadrantBegin(q))
+      if (n < 2)
         continue;
-      const reverse = reverseFractionsForSymmetry(q);
-      let pts = createFirstArc(q.fractions[0], q.fractions[1], reverse);
+      const reversed = reverseFractionsForSymmetry(q);
+      if (!processor.announceQuadrantBegin(q, reversed))
+        continue;
+      let pts = createFirstArc(q.fractions[0], q.fractions[1], reversed);
       for (let i = 2; i < n - 1; ++i) // need at least 4 samples to make inner arcs
         pts = createInnerArc(pts[0], pts[1], q.fractions[i - 1], q.fractions[i]);
       if (n > 2)
-        createLastArc(pts[2], q.fractions[n - 2], q.fractions[n - 1], reverse);
-      if (reverse)
+        createLastArc(pts[2], q.fractions[n - 2], q.fractions[n - 1], reversed);
+      if (reversed)
         q.fractions.reverse();  // restore original order just to be safe
-      processor.announceQuadrantEnd(q, reverse);
+      processor.announceQuadrantEnd(q, reversed);
     }
   }
   /**
@@ -760,7 +827,7 @@ export class EllipticalArcApproximationContext {
    *   * This means there are between 1 and 5 objects in the `QuadrantFractions` array.
    * @internal
    */
-  public sampleFractions(
+  public computeSampleFractions(
     options: EllipticalArcApproximationOptions, structuredOutput: boolean = false,
   ): QuadrantFractions[] | number[] {
     if (!this.isValidArc)
@@ -841,7 +908,7 @@ export class EllipticalArcApproximationContext {
       const qFrac1 = sweep.radiansToSignedPeriodicFraction(qData.angle1);
       qf.axisAtStart = Geometry.isAlmostEqualEitherNumber(qf.fractions[0], qFrac0, qFrac1, Geometry.smallFraction);
       qf.axisAtEnd = Geometry.isAlmostEqualEitherNumber(qf.fractions[n - 1], qFrac0, qFrac1, Geometry.smallFraction);
-      if (2 === n) {
+      if (2 === n) { // e.g. elliptical arc is so small it contains no interior samples in this quadrant
         qf.fractions.splice(1, 0, Geometry.interpolate(qf.fractions[0], 0.5, qf.fractions[1]));
         qf.averageAdded = true;
       }
@@ -912,7 +979,7 @@ export class EllipticalArcApproximationContext {
     if (!options)
       options = EllipticalArcApproximationOptions.create();
     const processor = ArcChainConstructionProcessor.create(this.arc, options.forcePath);
-    const samples = this.sampleFractions(options, true) as QuadrantFractions[];
+    const samples = this.computeSampleFractions(options, true) as QuadrantFractions[];
     EllipticalArcApproximationContext.processQuadrantFractions(this.arc, samples, processor);
     return processor.chain;
   }

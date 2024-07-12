@@ -113,7 +113,7 @@ export class EllipticalArcApproximationOptions {
   private _remapFunction: FractionMapper;
   private _forcePath: boolean;
 
-  /** Default error tolerance for [[EllipticalArcSampleMethod.AdaptiveSubdivision]]. */
+  /** Default error tolerance. */
   public static defaultMaxError = Constant.oneCentimeter;
 
   private constructor(
