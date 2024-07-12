@@ -17,7 +17,7 @@ import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
 import { GenerateEdges, GeometryOptions, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../render/primitives/Primitives";
 import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
-import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder"; 
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { MeshBuilderMap } from "../../../render/primitives/mesh/MeshBuilderMap";
 import { GraphicType } from "../../../common/render/GraphicType";

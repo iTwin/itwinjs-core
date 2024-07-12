@@ -17,7 +17,8 @@ import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
 import { GenerateEdges, GeometryOptions } from "../../../render/primitives/Primitives";
 import { GeometryAccumulator } from "../../../render/primitives/geometry/GeometryAccumulator";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import { GraphicType, PrimitiveBuilder } from "../../../core-frontend";
+import { GraphicType } from "../../../common";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;

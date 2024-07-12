@@ -20,7 +20,7 @@ import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
-import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
+import { PrimitiveBuilder } from "../internal/render/PrimitiveBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";

@@ -22,7 +22,7 @@ import { ViewRect } from "../../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
-import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
+import { PrimitiveBuilder } from "../../internal/render/PrimitiveBuilder";
 import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { RenderClipVolume } from "../RenderClipVolume";

@@ -13,7 +13,7 @@ import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimiti
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
-import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
 import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
 import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
