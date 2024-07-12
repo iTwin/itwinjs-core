@@ -7,7 +7,7 @@
  */
 
 import { assert, SortedArray } from "@itwin/core-bentley";
-import { GraphicBuilder } from "../GraphicBuilder";
+import { GraphicAssembler } from "../../common/render/GraphicAssembler";
 
 /** @internal */
 export namespace ToleranceRatio {
@@ -50,7 +50,7 @@ export class GeometryOptions {
   public get wantPreserveOrder(): boolean { return this.preserveOrder === PreserveOrder.Yes; }
   public get wantEdges(): boolean { return this.edges === GenerateEdges.Yes; }
 
-  public static createForGraphicBuilder(params: GraphicBuilder, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
+  public static createForGraphic(params: GraphicAssembler, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
     return new GeometryOptions(params.wantEdges ? GenerateEdges.Yes : GenerateEdges.No, normals, surfaces, params.preserveOrder ? PreserveOrder.Yes : PreserveOrder.No);
   }
 }

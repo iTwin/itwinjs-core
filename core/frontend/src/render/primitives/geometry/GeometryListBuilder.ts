@@ -175,7 +175,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
       // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
       // No point generating edges for graphics that are always rendered in smooth shade mode.
-      const options = GeometryOptions.createForGraphicBuilder(this);
+      const options = GeometryOptions.createForGraphic(this);
       const tolerance = this.computeTolerance(accum);
       meshes = this.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
       if (undefined !== meshes) {
