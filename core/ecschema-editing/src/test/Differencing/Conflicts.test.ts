@@ -472,6 +472,291 @@ describe("Difference Conflict Reporting", () => {
     });
   });
 
+  describe("Different property type conflicts", () => {
+    it("should find a conflict between primitive properties with different primitive types", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "string",
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "double",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingPropertyName,
+        schemaType: "EntityClass",
+        itemName: "TestItem",
+        path: "TestProperty",
+        source: "string",
+        target: "double",
+        description: "Target class already contains a property with a different type.",
+      });
+    });
+
+    it("should find a conflict between primitive and primitive array properties", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveArrayProperty",
+                typeName: "int",
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "string",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(differences.conflicts).has.lengthOf(1);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingPropertyName,
+        schemaType: "EntityClass",
+        itemName: "TestItem",
+        path: "TestProperty",
+        source: "PrimitiveArrayProperty",
+        target: "PrimitiveProperty",
+        description: "Target class already contains a property with a different type.",
+      });
+    });
+
+    it("should find a conflict between primitive and enumeration properties", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestEnum: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                label: "first value",
+                name: "FirstValue",
+                value: 0,
+              },
+            ],
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "ConflictSchema.TestEnum",
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "int",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingPropertyName,
+        schemaType: "EntityClass",
+        itemName: "TestItem",
+        path: "TestProperty",
+        source: "ConflictSchema.TestEnum",
+        target: undefined,
+        description: "Target class already contains a property with a different type.",
+      });
+    });
+
+    it("should find a conflict between struct and enumeration array properties", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestEnum: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                label: "first value",
+                name: "FirstValue",
+                value: 0,
+              },
+            ],
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "ConflictSchema.TestEnum",
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestStruct: {
+            schemaItemType: "StructClass",
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "StructArrayProperty",
+                typeName: "ConflictSchema.TestStruct",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(differences.conflicts).has.lengthOf(1);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingPropertyName,
+        schemaType: "EntityClass",
+        itemName: "TestItem",
+        path: "TestProperty",
+        source: "PrimitiveProperty",
+        target: "StructArrayProperty",
+        description: "Target class already contains a property with a different type.",
+      });
+    });
+
+    it("should find a conflict between struct and navigation properties", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+          },
+          TestRelationship: {
+            schemaItemType: "RelationshipClass",
+            strength: "Embedding",
+            strengthDirection: "Forward",
+            modifier: "Sealed",
+            source: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Source RoleLabel",
+              constraintClasses: [
+                "ConflictSchema.TestEntity",
+              ],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Target RoleLabel",
+              constraintClasses: [
+                "ConflictSchema.TestEntity",
+              ],
+            },
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "NavigationProperty",
+                relationshipName: "ConflictSchema.TestRelationship",
+                direction: "backward",
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestStruct: {
+            schemaItemType: "StructClass",
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "StructProperty",
+                typeName: "ConflictSchema.TestStruct",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingPropertyName,
+        schemaType: "EntityClass",
+        itemName: "TestItem",
+        path: "TestProperty",
+        source: "NavigationProperty",
+        target: "StructProperty",
+        description: "Target class already contains a property with a different type.",
+      });
+    });
+  });
+
   describe("Base Class conflicts", () => {
     const sourceSchema = {
       ...schemaHeader,
@@ -609,58 +894,6 @@ describe("Difference Conflict Reporting", () => {
         source: "ConflictSchema.ConflictingMixin",
         target: undefined,
         description: "Mixin cannot applied to this class.",
-      });
-    });
-  });
-
-  describe("Property conflicts", () => {
-    const sourceSchema = {
-      ...schemaHeader,
-      items: {
-        ConflictingPropertyEntity: {
-          schemaItemType: "EntityClass",
-          properties: [
-            {
-              name: "MyProperty",
-              type: "PrimitiveProperty",
-              typeName: "boolean",
-            },
-          ],
-        },
-      },
-    };
-
-    const targetSchema = {
-      ...schemaHeader,
-      items: {
-        ConflictingPropertyEntity: {
-          schemaItemType: "EntityClass",
-          properties: [
-            {
-              name: "MyProperty",
-              type: "PrimitiveProperty",
-              typeName: "string",
-            },
-          ],
-        },
-      },
-    };
-
-    it("should find a conflict for properties with different type", async () => {
-      const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "ConflictingPropertyEntity")).deep.equals({
-        code: ConflictCode.ConflictingPropertyName,
-        schemaType: "EntityClass",
-        itemName: "ConflictingPropertyEntity",
-        path: "MyProperty",
-        source: "boolean",
-        target: "string",
-        description: "Target class already contains a property with a different type.",
-        difference: {
-          name: "MyProperty",
-          type: "PrimitiveProperty",
-          typeName: "boolean",
-        },
       });
     });
   });

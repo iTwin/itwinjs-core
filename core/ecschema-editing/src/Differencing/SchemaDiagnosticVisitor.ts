@@ -27,6 +27,7 @@ import {
   type SchemaDifference,
   SchemaOtherTypes,
   type SchemaReferenceDifference,
+  type SchemaType,
 } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 
@@ -261,6 +262,15 @@ export class SchemaDiagnosticVisitor {
     });
   }
 
+  private lookupConflictEntry(code: ConflictCode, schemaType: SchemaType, itemName: string, path: string) {
+    return this.conflicts.find((change) => {
+      return change.code === code
+        && change.schemaType === schemaType
+        && change.itemName === itemName
+        && change.path === path;
+    });
+  }
+
   private visitChangedEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
     const [enumerator, propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any, any];
@@ -348,18 +358,23 @@ export class SchemaDiagnosticVisitor {
   }
 
   private validatePropertyChange(ecProperty: Property, propertyName: string, sourceValue: unknown, targetValue: unknown): boolean {
-    if (propertyName === "primitiveType" || propertyName === "type") {
-      this.addConflict({
-        code: ConflictCode.ConflictingPropertyName,
-        schemaType: ecProperty.class.schemaItemType,
-        itemName: ecProperty.class.name,
-        path: ecProperty.name,
-        source: sourceValue,
-        target: targetValue,
-        description: "Target class already contains a property with a different type.",
-        difference: ecProperty.toJSON(),
-      });
-      return false;
+    if (propertyName === "type"
+      || propertyName === "primitiveType"
+      || (propertyName === "enumeration" && (sourceValue === undefined || targetValue === undefined))) {
+      if (!this.lookupConflictEntry(ConflictCode.ConflictingPropertyName, ecProperty.class.schemaItemType,
+        ecProperty.class.name, ecProperty.name)) {
+        this.addConflict({
+          code: ConflictCode.ConflictingPropertyName,
+          schemaType: ecProperty.class.schemaItemType,
+          itemName: ecProperty.class.name,
+          path: ecProperty.name,
+          source: sourceValue,
+          target: targetValue,
+          description: "Target class already contains a property with a different type.",
+          difference: ecProperty.toJSON(),
+        });
+        return false;
+      }
     }
     return true;
   }
