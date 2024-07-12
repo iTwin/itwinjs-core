@@ -254,11 +254,11 @@ export interface PerpParallelOptions {
 export class Geometry {
   /** Tolerance for small distances in metric coordinates. */
   public static readonly smallMetricDistance = 1.0e-6;
-  /** Square of `smallMetricDistance`. */
+  /** Square of [[smallMetricDistance]]. */
   public static readonly smallMetricDistanceSquared = 1.0e-12;
   /** Tolerance for small angle measured in radians. */
   public static readonly smallAngleRadians = 1.0e-12;
-  /** Square of `smallAngleRadians`. */
+  /** Square of [[smallAngleRadians]]. */
   public static readonly smallAngleRadiansSquared = 1.0e-24;
   /** Tolerance for small angle measured in degrees. */
   public static readonly smallAngleDegrees = 5.7e-11;
@@ -268,7 +268,7 @@ export class Geometry {
   public static readonly smallFraction = 1.0e-10;
   /** Tight tolerance near machine precision (unitless). Useful for snapping values, e.g., to 0 or 1. */
   public static readonly smallFloatingPoint = 1.0e-15;
-  /** Radians value for full circle 2PI radians minus `smallAngleRadians`. */
+  /** Radians value for full circle 2PI radians minus [[smallAngleRadians]]. */
   public static readonly fullCircleRadiansMinusSmallAngle = 2.0 * Math.PI - Geometry.smallAngleRadians;
   /**
    * Numeric value that may be considered large for a ratio of numbers.
@@ -277,23 +277,23 @@ export class Geometry {
   public static readonly largeFractionResult = 1.0e10;
   /**
    * Numeric value that may considered large for numbers expected to be coordinates.
-   * * This allows larger results than `largeFractionResult`.
+   * * This allows larger results than [[largeFractionResult]].
    */
   public static readonly largeCoordinateResult = 1.0e13;
   /**
    * Numeric value that may considered infinite for metric coordinates.
-   * @deprecated in 4.x. Use `largeCoordinateResult`.
+   * @deprecated in 4.x. Use [[largeCoordinateResult]].
    * * This coordinate should be used only as a placeholder indicating "at infinity" -- computing actual
    * points at this coordinate invites numerical problems.
    */
   public static readonly hugeCoordinate = 1.0e12;
-  /** Test if absolute value of x is large (larger than `Geometry.largeCoordinateResult`) */
+  /** Test if the absolute value of x is at least [[largeCoordinateResult]]. */
   public static isLargeCoordinateResult(x: number): boolean {
-    return x > this.largeCoordinateResult || x < - this.largeCoordinateResult;
+    return x >= this.largeCoordinateResult || x <= -this.largeCoordinateResult;
   }
   /**
-   * Test if absolute value of x is large (larger than `Geometry.largeCoordinateResult`).
-   * @deprecated in 4.x. Use `isLargeCoordinateResult`.
+   * Test if the absolute value of x is at least [[largeCoordinateResult]].
+   * @deprecated in 4.x. Use [[isLargeCoordinateResult]].
    */
   public static isHugeCoordinate(x: number): boolean {
     return Geometry.isLargeCoordinateResult(x);
@@ -303,47 +303,50 @@ export class Geometry {
     return (x & (0x01)) === 1; // bitwise operation
   }
   /**
-   * Correct distance to zero.
-   * * If `distance` magnitude is `undefined` or smaller than `smallMetricDistance`, then return `replacement`
-   * (or 0 if replacement is not passed). Otherwise return `distance`.
+   * Correct a small distance.
+   * @param distance metric value to test
+   * @param replacement value to return if `distance` is too small. Default is zero.
+   * @returns `distance` if it is defined and has absolute value greater than [[smallMetricDistance]];
+   * otherwise returns `replacement`
    */
   public static correctSmallMetricDistance(distance: number | undefined, replacement: number = 0.0): number {
-    if (distance === undefined || Math.abs(distance) < Geometry.smallMetricDistance) {
+    if (distance === undefined || Math.abs(distance) <= Geometry.smallMetricDistance) {
       return replacement;
     }
     return distance;
   }
   /**
-   * Correct `fraction` to `replacement` if `fraction` is undefined or too small.
-   * @param fraction number to test
+   * Correct a small fraction.
+   * @param fraction fraction to test
    * @param replacement value to return if `fraction` is too small. Default is zero.
-   * @returns `fraction` if its absolute value is at least `Geometry.smallFraction`; otherwise returns `replacement`
+   * @returns `fraction` if it is defined and has absolute value greater than [[Geometry.smallFraction]];
+   * otherwise returns `replacement`
    */
   public static correctSmallFraction(fraction: number | undefined, replacement: number = 0.0): number {
-    if (fraction === undefined || Math.abs(fraction) < Geometry.smallFraction) {
+    if (fraction === undefined || Math.abs(fraction) <= Geometry.smallFraction) {
       return replacement;
     }
     return fraction;
   }
   /**
-   * Return the inverse of `distance`.
-   * * If `distance` magnitude is smaller than `smallMetricDistance` (i.e. distance is large enough for safe division),
-   * then return `1/distance`. Otherwise return `undefined`.
+   * Compute the inverse of `distance`, checking for safe division.
+   * @returns `1/distance` if the absolute value of `distance` exceeds [[smallMetricDistance]];
+   * otherwise returns `undefined`.
    */
   public static inverseMetricDistance(distance: number): number | undefined {
     return (Math.abs(distance) <= Geometry.smallMetricDistance) ? undefined : 1.0 / distance;
   }
   /**
-   * Return the inverse of `distanceSquared`.
-   * * If `distanceSquared ` magnitude is smaller than `smallMetricDistanceSquared` (i.e. distanceSquared  is large
-   * enough for safe division), then return `1/distanceSquared `. Otherwise return `undefined`.
+   * Return the inverse of `distanceSquared`, checking for safe division.
+   * @returns `1/distanceSquared` if the absolute value of `distanceSquared` exceeds [[smallMetricDistanceSquared]];
+   * otherwise returns `undefined`.
    */
   public static inverseMetricDistanceSquared(distanceSquared: number): number | undefined {
     return (Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared) ? undefined : 1.0 / distanceSquared;
   }
   /**
    * Boolean test for metric coordinate near-equality (i.e., if `x` and `y` are almost equal) using `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameCoordinate(x: number, y: number, tolerance: number = Geometry.smallMetricDistance): boolean {
     let d = x - y;
@@ -361,7 +364,7 @@ export class Geometry {
   /**
    * Boolean test for metric coordinate pair near-equality (i.e., if `x0` and `x1` are almost equal
    * and `y0` and `y1` are almost equal) using `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameCoordinateXY(
     x0: number, y0: number, x1: number, y1: number, tolerance: number = Geometry.smallMetricDistance,
@@ -379,7 +382,7 @@ export class Geometry {
   /**
    * Boolean test for squared metric coordinate near-equality (i.e., if `sqrt(x)` and `sqrt(y)` are
    * almost equal) using `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameCoordinateSquared(
     x: number, y: number, tolerance: number = Geometry.smallMetricDistance,
@@ -388,7 +391,7 @@ export class Geometry {
   }
   /**
    * Boolean test for small `dataA.distance(dataB)` within `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSamePoint3d(
     dataA: Point3d, dataB: Point3d, tolerance: number = Geometry.smallMetricDistance,
@@ -397,7 +400,7 @@ export class Geometry {
   }
   /**
    * Boolean test for small xyz-distance within `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    * * Note that Point3d and Vector3d are both derived from XYZ, so this method tolerates mixed types.
    */
   public static isSameXYZ(
@@ -407,7 +410,7 @@ export class Geometry {
   }
   /**
    * Boolean test for small xy-distance (ignoring z) within `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSamePoint3dXY(
     dataA: Point3d, dataB: Point3d, tolerance: number = Geometry.smallMetricDistance,
@@ -416,7 +419,7 @@ export class Geometry {
   }
   /**
    * Boolean test for small xyz-distance within `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameVector3d(
     dataA: Vector3d, dataB: Vector3d, tolerance: number = Geometry.smallMetricDistance,
@@ -425,7 +428,7 @@ export class Geometry {
   }
   /**
    * Boolean test for small xy-distance within `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSamePoint2d(
     dataA: Point2d, dataB: Point2d, tolerance: number = Geometry.smallMetricDistance,
@@ -434,7 +437,7 @@ export class Geometry {
   }
   /**
    * Boolean test for small xy-distance within `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameVector2d(
     dataA: Vector2d, dataB: Vector2d, tolerance: number = Geometry.smallMetricDistance,
@@ -488,19 +491,19 @@ export class Geometry {
     return 0;
   }
   /**
-   * Test if `value` is small compared to `smallFraction`.
-   * * This is appropriate if `value` is know to be a typical 0..1 fraction.
+   * Test if `value` is at most [[smallFraction]] in absolute value.
+   * * This is appropriate if `value` is known to be a fraction.
    */
   public static isSmallRelative(value: number): boolean {
-    return Math.abs(value) < Geometry.smallFraction;
+    return Math.abs(value) <= Geometry.smallFraction;
   }
-  /** Test if `value` is small compared to `smallAngleRadians` */
+  /** Test if `value` is at most [[smallAngleRadians]] in absolute value. */
   public static isSmallAngleRadians(value: number): boolean {
-    return Math.abs(value) < Geometry.smallAngleRadians;
+    return Math.abs(value) <= Geometry.smallAngleRadians;
   }
-  /** Test if `value` is small compared to `smallAngleRadiansSquared` */
+  /** Test if `value` is at most [[smallAngleRadiansSquared]] in absolute value. */
   public static isSmallAngleRadiansSquared(value: number): boolean {
-    return Math.abs(value) < Geometry.smallAngleRadiansSquared;
+    return Math.abs(value) <= Geometry.smallAngleRadiansSquared;
   }
   /**
    * Returns `true` if both values are `undefined` or if both are defined and almost equal within tolerance.
@@ -518,7 +521,7 @@ export class Geometry {
   }
   /**
    * Toleranced equality test.
-   * @param tolerance relative tolerance. Default value is `Geometry.smallAngleRadians`.
+   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -527,7 +530,7 @@ export class Geometry {
   }
   /**
    * Toleranced test for equality to at least one of two numbers.
-   * @param tolerance relative tolerance. Default value is `Geometry.smallAngleRadians`.
+   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal, or `a` and `c` are almost equal.
    */
   public static isAlmostEqualEitherNumber(a: number, b: number, c: number, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -535,7 +538,7 @@ export class Geometry {
   }
   /**
    * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a.x) + abs(a.y) + abs(b.x) + abs(b.y) )`.
-   * * `Geometry.smallAngleRadians` is used if tolerance is `undefined`.
+   * * [[smallAngleRadians]] is used if tolerance is `undefined`.
    */
   public static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance: number = Geometry.smallAngleRadians): boolean {
     const tol = tolerance * (1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y));
@@ -543,16 +546,16 @@ export class Geometry {
   }
   /**
    * Toleranced equality test using caller-supplied `tolerance`.
-   * * `Geometry.smallMetricDistance` is used if tolerance is `undefined`.
+   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isDistanceWithinTol(distance: number, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(distance) <= tolerance;
   }
-  /** Toleranced equality test using `smallMetricDistance` tolerance. */
+  /** Toleranced equality test using [[smallMetricDistance]] tolerance. */
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;
   }
-  /** Toleranced equality test using `smallMetricDistanceSquared` tolerance. */
+  /** Toleranced equality test using [[smallMetricDistanceSquared]] tolerance. */
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
     return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared;
   }
@@ -991,11 +994,13 @@ export class Geometry {
    * Return `numerator` divided by `denominator`.
    * @param numerator the numerator
    * @param denominator the denominator
-   * @returns return `numerator/denominator` but if the ratio exceeds `Geometry.largeFractionResult`,
+   * @returns return `numerator/denominator` but if the ratio exceeds [[largeFractionResult]],
    * return `undefined`.
    */
   public static conditionalDivideFraction(numerator: number, denominator: number): number | undefined {
-    if (Math.abs(denominator) * Geometry.largeFractionResult > Math.abs(numerator))
+    if (0 === denominator)
+      return undefined;
+    if (Math.abs(denominator) * Geometry.largeFractionResult >= Math.abs(numerator))
       return numerator / denominator;
     return undefined;
   }
@@ -1003,7 +1008,7 @@ export class Geometry {
    * Return `numerator` divided by `denominator`.
    * @param numerator the numerator
    * @param denominator the denominator
-   * @returns return `numerator/denominator` but if the ratio exceeds `Geometry.largeFractionResult`,
+   * @returns return `numerator/denominator` but if the ratio exceeds [[largeFractionResult]],
    * return `defaultResult`.
    */
   public static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number {
@@ -1022,7 +1027,9 @@ export class Geometry {
   public static conditionalDivideCoordinate(
     numerator: number, denominator: number, largestResult: number = Geometry.largeCoordinateResult,
   ): number | undefined {
-    if (Math.abs(denominator * largestResult) > Math.abs(numerator))
+    if (0 === denominator)
+      return undefined;
+    if (Math.abs(denominator * largestResult) >= Math.abs(numerator))
       return numerator / denominator;
     return undefined;
   }
@@ -1076,7 +1083,7 @@ export class Geometry {
   }
   /**
    * For a line `f(x)` where `f(x0) = f0` and `f(x1) = f1`, return the `x` value at which `f(x) = fTarget`.
-   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`.
+   * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds [[largeFractionResult]].
    */
   public static inverseInterpolate(
     x0: number, f0: number, x1: number, f1: number, fTarget: number = 0, defaultResult?: number,
@@ -1093,7 +1100,7 @@ export class Geometry {
   }
   /**
    * For a line `f(x)` where `f(0) = f0` and `f(1) = f1`, return the `x` value at which `f(x) = fTarget`
-   * Return `undefined` if `(fTarget - f0) / (f1 - f0)` exceeds `Geometry.largeFractionResult`
+   * Return `undefined` if `(fTarget - f0) / (f1 - f0)` exceeds [[largeFractionResult]].
    */
   public static inverseInterpolate01(f0: number, f1: number, fTarget: number = 0): number | undefined {
     // Line equation is fTarget-f0 = (f1-f0)*x so x = (fTarget-f0)/(f1-f0)
