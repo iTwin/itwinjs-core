@@ -9,7 +9,7 @@ import "chai-as-promised";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe.only("Rename change tests", () => {
+describe("Rename change tests", () => {
   let targetContext: SchemaContext;
   let sourceContext: SchemaContext;
 
@@ -402,7 +402,7 @@ describe.only("Rename change tests", () => {
       expect((await mergedEntity?.getProperty("StringArrayProperty") as StructArrayProperty).structClass).to.eq(mergedStruct);
     });
 
-    it.skip("should rename custom attribute name", async () => {
+    it("should rename custom attribute name", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         customAttributes: [
