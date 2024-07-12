@@ -49,7 +49,10 @@ export class RpcTrace {
   /** Start the processing of an RpcActivity inside an OpenTelemetry span */
   public static async runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
     return Tracing.withSpan(activity.rpcMethod ?? "unknown RPC method", async () => RpcTrace.run(activity, fn), {
-      attributes: { ...RpcInvocation.sanitizeForLog(activity) },
+      attributes: {
+        ...Logger.getMetaData(), // add default metadata
+        ...RpcInvocation.sanitizeForLog(activity), // override with the correct RpcActivity
+      },
       kind: SpanKind.INTERNAL,
     });
   }
