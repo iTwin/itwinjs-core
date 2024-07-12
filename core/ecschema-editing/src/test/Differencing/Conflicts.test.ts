@@ -515,6 +515,11 @@ describe("Difference Conflict Reporting", () => {
         source: "string",
         target: "double",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          name: "TestProperty",
+          type: "PrimitiveProperty",
+          typeName: "string",
+        },
       });
     });
 
@@ -561,6 +566,13 @@ describe("Difference Conflict Reporting", () => {
         source: "PrimitiveArrayProperty",
         target: "PrimitiveProperty",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          maxOccurs: 2147483647,
+          minOccurs: 0,
+          name: "TestProperty",
+          type: "PrimitiveArrayProperty",
+          typeName: "int",
+        },
       });
     });
 
@@ -618,6 +630,11 @@ describe("Difference Conflict Reporting", () => {
         source: "ConflictSchema.TestEnum",
         target: undefined,
         description: "Target class already contains a property with a different type.",
+        difference: {
+          name: "TestProperty",
+          type: "PrimitiveProperty",
+          typeName: "ConflictSchema.TestEnum",
+        },
       });
     });
 
@@ -679,6 +696,11 @@ describe("Difference Conflict Reporting", () => {
         source: "PrimitiveProperty",
         target: "StructArrayProperty",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          name: "TestProperty",
+          type: "PrimitiveProperty",
+          typeName: "ConflictSchema.TestEnum",
+        },
       });
     });
 
@@ -753,6 +775,12 @@ describe("Difference Conflict Reporting", () => {
         source: "NavigationProperty",
         target: "StructProperty",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          direction: "Backward",
+          name: "TestProperty",
+          relationshipName: "ConflictSchema.TestRelationship",
+          type: "NavigationProperty",
+        },
       });
     });
   });
