@@ -18,7 +18,7 @@ import { MeshParams } from "../../common/render/primitives/MeshParams";
 import { Point3dList } from "../../common/render/primitives/MeshPrimitive";
 import { VertexIndices } from "../../common/render/primitives/VertexIndices";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
-import { createEdgeParams } from "./EdgeParams";
+import { createEdgeParams } from "../../common-internal";
 
 /** @internal */
 export function createMeshParams(args: MeshArgs, maxDimension: number, enableIndexedEdges: boolean): MeshParams {

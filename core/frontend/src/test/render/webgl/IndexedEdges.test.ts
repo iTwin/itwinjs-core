@@ -8,7 +8,7 @@ import { Point3d } from "@itwin/core-geometry";
 import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
-import { createEdgeParams } from "../../../render/primitives/EdgeParams";
+import { createEdgeParams } from "../../../common/render/primitives/EdgeParams"; 
 import { EdgeParams, EdgeTable } from "../../../common/render/primitives/EdgeParams";
 import { VertexIndices } from "../../../common/render/primitives/VertexIndices";
 

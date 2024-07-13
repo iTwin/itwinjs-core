@@ -42,7 +42,7 @@ import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureA
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 import { createMeshParams } from "./primitives/VertexTableBuilder";
 import { createPointStringParams } from "./primitives/PointStringParams";
-import { createPolylineParams } from "./primitives/PolylineParams";
+import { createPolylineParams } from "../common/render/primitives/PolylineParams";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 
