@@ -7,7 +7,9 @@
  */
 
 import { Id64String, assert } from "@itwin/core-bentley";
-import { Transform, Point3d, Box, Range3d, SolidPrimitive, Polyface, Path, AnyCurvePrimitive, Loop, Arc3d, Point2d, CurvePrimitive, LineSegment3d, LineString3d, IndexedPolyface } from "@itwin/core-geometry";
+import {
+  Transform, Point3d, Box, Range3d, SolidPrimitive, Polyface, Path, AnyCurvePrimitive, Loop, Arc3d, Point2d, CurvePrimitive, LineSegment3d, LineString3d, IndexedPolyface,
+} from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Feature, Frustum, Gradient, GraphicParams, LinePixels, Npc, RenderTexture } from "@itwin/core-common";
 // ###TODO import { _implementationProhibited } from "../../internal/Symbols";
 import { GraphicType } from "./GraphicType";
@@ -16,18 +18,23 @@ import { GraphicPrimitive } from "./GraphicPrimitive";
 import { GeometryAccumulator } from "../internal/render/GeometryAccumulator";
 import { DisplayParams } from "../internal/render/DisplayParams";
 import { Geometry } from "../internal/render/GeometryPrimitives";
+import { InstancedGraphicParams } from "./InstancedGraphicParams";
 
-export interface GraphicAssemblerOptions {
+export type GraphicAssemblerOptions = {
   type: GraphicType;
   placement: Transform;
   pickable?: PickableGraphicOptions;
   preserveOrder: boolean;
   wantNormals: boolean;
   wantEdges: boolean;
-  viewIndependentOrigin?: Point3d;
   analysisStyle?: AnalysisStyle;
-  // ###TODO computeChordTolerance?
-}
+} & ({
+  viewIndependentOrigin?: Point3d;
+  instances?: never;
+} | {
+  instances?: InstancedGraphicParams;
+  viewIndependentOrigin?: never;
+});
 
 export abstract class GraphicAssembler {
   // ###TODO protected abstract [_implementationProhibited]: unknown;
@@ -50,6 +57,8 @@ export abstract class GraphicAssembler {
 
   public readonly viewIndependentOrigin?: Readonly<Point3d>;
 
+  public readonly instances?: InstancedGraphicParams;
+
   /** @alpha */
   public readonly analysisStyle?: AnalysisStyle;
 
@@ -61,8 +70,10 @@ export abstract class GraphicAssembler {
     this.wantEdges = options.wantEdges;
     this.preserveOrder = options.preserveOrder;
     this.wantNormals = options.wantNormals;
-    this.viewIndependentOrigin = options.viewIndependentOrigin?.clone();
     this.analysisStyle = options.analysisStyle;
+
+    this.viewIndependentOrigin = options.viewIndependentOrigin?.clone();
+    this.instances = options.instances;
 
     this.accum = new GeometryAccumulator({
       analysisStyleDisplacement: this.analysisStyle?.displacement,
