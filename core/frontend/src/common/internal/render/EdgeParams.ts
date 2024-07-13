@@ -9,7 +9,7 @@
 import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
 import { VertexIndices } from "./VertexIndices";
 import { TesselatedPolyline, tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
-import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshArgs, MeshArgsEdges } from "./MeshPrimitives";
 import { assert } from "@itwin/core-bentley";
 
 /**

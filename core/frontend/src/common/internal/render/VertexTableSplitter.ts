@@ -12,7 +12,7 @@ import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } fr
 import { computeDimensions, VertexTable } from "./VertexTable";
 import { VertexIndices } from "./VertexIndices";
 import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
-import { MaterialParams } from "../MaterialParams";
+import { MaterialParams } from "../../render/MaterialParams";
 import { MeshParams } from "./MeshParams";
 import { PointStringParams } from "./PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "./PolylineParams";

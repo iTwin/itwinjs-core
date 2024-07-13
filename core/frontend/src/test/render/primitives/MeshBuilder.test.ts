@@ -8,18 +8,18 @@ import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
-import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
-import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
-import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
-import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
 import { GraphicType } from "../../../common/render/GraphicType";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { MeshBuilder, MeshEdgeCreationOptions } from "../../../common/internal/render/MeshBuilder";
+import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive";
+import { ToleranceRatio, Triangle } from "../../../common/internal/render/Primitives";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
+import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface";
+import { Mesh } from "../../../common/internal/render/MeshPrimitives";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {

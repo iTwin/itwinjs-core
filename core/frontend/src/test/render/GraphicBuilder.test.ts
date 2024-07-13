@@ -13,11 +13,11 @@ import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
-import { MeshParams } from "../../common/render/primitives/MeshParams";
-import { SurfaceType } from "../../common/render/primitives/SurfaceParams";
-import { MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";
+import { MeshParams } from "../../common/internal/render/MeshParams";
+import { SurfaceType } from "../../common/internal/render/SurfaceParams";
+import { MeshArgs } from "../../common/internal/render/MeshPrimitives";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
+import { InstancedGraphicParams } from "../../common";
 import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
 

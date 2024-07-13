@@ -8,9 +8,9 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { MeshParams } from "../../common/render/primitives/MeshParams";
-import { SurfaceType } from "../../common/render/primitives/SurfaceParams";
+import { InstancedGraphicParams } from "../../common";
+import { MeshParams } from "../../common/internal/render/MeshParams";
+import { SurfaceType } from "../../common/internal/render/SurfaceParams";
 import { RenderMemory } from "../RenderMemory";
 import { RenderGeometry } from "../RenderSystem";
 import { CachedGeometry } from "./CachedGeometry";

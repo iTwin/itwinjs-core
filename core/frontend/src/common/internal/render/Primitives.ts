@@ -7,7 +7,7 @@
  */
 
 import { assert, SortedArray } from "@itwin/core-bentley";
-import { GraphicAssembler } from "../../common/render/GraphicAssembler";
+import { GraphicAssembler } from "../../render/GraphicAssembler";
 
 /** @internal */
 export namespace ToleranceRatio {

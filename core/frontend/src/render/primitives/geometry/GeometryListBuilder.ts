@@ -11,9 +11,9 @@ import {
 } from "@itwin/core-geometry";
 import { Feature, Gradient, GraphicParams, RenderTexture } from "@itwin/core-common";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { GeometryAccumulator } from "./GeometryAccumulator";
-import { Geometry } from "./GeometryPrimitives";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   const pts3d: Point3d[] = [];

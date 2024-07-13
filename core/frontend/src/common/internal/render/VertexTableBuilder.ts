@@ -11,14 +11,14 @@ import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
-import { AuxChannelTable } from "../../common/render/primitives/AuxChannelTable";
-import { computeDimensions, VertexTable } from "../../common/render/primitives/VertexTable";
-import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "../../common/render/primitives/SurfaceParams";
-import { MeshParams } from "../../common/render/primitives/MeshParams";
-import { Point3dList } from "../../common/render/primitives/MeshPrimitive";
-import { VertexIndices } from "../../common/render/primitives/VertexIndices";
-import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
-import { createEdgeParams } from "../../common-internal";
+import { AuxChannelTable } from "./AuxChannelTable";
+import { computeDimensions, VertexTable } from "./VertexTable";
+import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
+import { MeshParams } from "./MeshParams";
+import { Point3dList } from "./MeshPrimitive";
+import { VertexIndices } from "./VertexIndices";
+import { MeshArgs, PolylineArgs } from "./MeshPrimitives";
+import { createEdgeParams } from "./EdgeParams";
 
 /** @internal */
 export function createMeshParams(args: MeshArgs, maxDimension: number, enableIndexedEdges: boolean): MeshParams {

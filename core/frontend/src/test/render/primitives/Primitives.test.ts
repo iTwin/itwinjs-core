@@ -5,10 +5,10 @@
 import { assert } from "chai";
 import { LineString3d, Loop, Point3d, Range3d, Sample, Transform, Vector3d } from "@itwin/core-geometry";
 import { GraphicParams } from "@itwin/core-common";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
-import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import { GenerateEdges, GeometryOptions, NormalMode, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../render/primitives/Primitives";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { GeometryList } from "../../../common/internal/render/GeometryList";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
+import { GenerateEdges, GeometryOptions, NormalMode, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../common/internal/render/Primitives";
 
 function verifyGeometryQueries(g: Geometry, doDecimate: boolean = false, doVertexCluster: boolean = true, hasPart: boolean = false) {
   assert.equal(doDecimate, g.doDecimate());

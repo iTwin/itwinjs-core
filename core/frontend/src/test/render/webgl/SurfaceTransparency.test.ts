@@ -18,9 +18,9 @@ import { Primitive } from "../../../render/webgl/Primitive";
 import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags";
 import { MeshGraphic } from "../../../render/webgl/Mesh";
 import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshArgs } from "../../../common/internal/render/MeshPrimitives";
 import { createBlankConnection } from "../../createBlankConnection";
-import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const colors = new ColorIndex();

@@ -11,9 +11,8 @@ export * from "./common/render/BatchOptions";
 export * from "./common/render/GraphicAssembler";
 export * from "./common/render/GraphicPrimitive";
 export * from "./common/render/GraphicType";
+export * from "./common/render/InstancedGraphicParams";
 export * from "./common/render/MaterialParams";
-// ###TODO I think AuxChannelTable is supposed to be @internal
-export * from "./common/render/primitives/AuxChannelTable";
 export * from "./common/render/TextureParams";
 export * from "./common/ViewRect";
 export * from "./common/WorkerProxy";

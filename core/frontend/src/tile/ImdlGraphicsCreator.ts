@@ -11,16 +11,16 @@ import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-ge
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
-import { AuxChannelTable } from "../common/render/primitives/AuxChannelTable";
-import { createSurfaceMaterial } from "../common//render/primitives/SurfaceParams";
+import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
+import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
 import { ImdlModel as Imdl } from "../common/imdl/ImdlModel";
 import { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../common/imdl/ImdlSchema";
 import { edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../common/imdl/ParseImdlDocument";
-import { VertexIndices } from "../common/render/primitives/VertexIndices";
+import { VertexIndices } from "../common/internal/render/VertexIndices";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
-import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
 
 /** Options provided to [[decodeImdlContent]].

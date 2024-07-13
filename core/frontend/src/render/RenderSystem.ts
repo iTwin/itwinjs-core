@@ -20,18 +20,18 @@ import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource } from "../common/ImageUtil";
-import { MeshParams } from "../common/render/primitives/MeshParams";
-import { PointStringParams } from "../common/render/primitives/PointStringParams";
-import { PolylineParams } from "../common/render/primitives/PolylineParams";
+import { MeshParams } from "../common/internal/render/MeshParams";
+import { PointStringParams } from "../common/internal/render/PointStringParams";
+import { PolylineParams } from "../common/internal/render/PolylineParams";
 import { TextureCacheKey } from "../common/render/TextureParams";
 import { ViewRect } from "../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
-import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
-import { Mesh, MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { InstancedGraphicParams, PatternGraphicParams } from "../common/render/InstancedGraphicParams";
+import { Mesh, MeshArgs, PolylineArgs } from "../common/internal/render/MeshPrimitives";
 import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { CreateRenderMaterialArgs } from "./CreateRenderMaterialArgs";
@@ -40,9 +40,9 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { createMeshParams } from "./primitives/VertexTableBuilder";
-import { createPointStringParams } from "./primitives/PointStringParams";
-import { createPolylineParams } from "../common/render/primitives/PolylineParams";
+import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
+import { createPointStringParams } from "../common/internal/render/PointStringParams";
+import { createPolylineParams } from "../common/internal/render/PolylineParams";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 
@@ -392,7 +392,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
-      const pointStringParams = createPointStringParams(args);
+      const pointStringParams = createPointStringParams(args, IModelApp.renderSystem.maxTextureSize);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
       const polylineParams = createPolylineParams(args, this.maxTextureSize);

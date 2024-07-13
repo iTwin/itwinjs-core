@@ -14,10 +14,10 @@ import {
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
-import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
-import { DisplayParams } from "../common/render/primitives/DisplayParams";
-import { MeshParams } from "../common/render/primitives/MeshParams";
-import { createMeshParams } from "./primitives/VertexTableBuilder";
+import { MeshArgs } from "../common/internal/render/MeshPrimitives";
+import { DisplayParams } from "../common/internal/render/DisplayParams";
+import { MeshParams } from "../common/internal/render/MeshParams";
+import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
 import { IModelApp } from "../IModelApp";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
