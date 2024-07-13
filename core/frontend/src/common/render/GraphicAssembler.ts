@@ -7,12 +7,15 @@
  */
 
 import { Id64String, assert } from "@itwin/core-bentley";
-import { Transform, Point3d, Box, Range3d, SolidPrimitive, Polyface, Path, AnyCurvePrimitive, Loop, Arc3d, Point2d } from "@itwin/core-geometry";
-import { AnalysisStyle, ColorDef, Feature, Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
+import { Transform, Point3d, Box, Range3d, SolidPrimitive, Polyface, Path, AnyCurvePrimitive, Loop, Arc3d, Point2d, CurvePrimitive, LineSegment3d, LineString3d, IndexedPolyface } from "@itwin/core-geometry";
+import { AnalysisStyle, ColorDef, Feature, Frustum, Gradient, GraphicParams, LinePixels, Npc, RenderTexture } from "@itwin/core-common";
 // ###TODO import { _implementationProhibited } from "../../internal/Symbols";
 import { GraphicType } from "./GraphicType";
 import { PickableGraphicOptions } from "./BatchOptions";
 import { GraphicPrimitive } from "./GraphicPrimitive";
+import { GeometryAccumulator } from "../internal/render/GeometryAccumulator";
+import { DisplayParams } from "../internal/render/DisplayParams";
+import { Geometry } from "../internal/render/GeometryPrimitives";
 
 export interface GraphicAssemblerOptions {
   type: GraphicType;
@@ -29,6 +32,9 @@ export interface GraphicAssemblerOptions {
 export abstract class GraphicAssembler {
   // ###TODO protected abstract [_implementationProhibited]: unknown;
 
+  public readonly accum: GeometryAccumulator; // ###TODO rename _accum, make private
+  private readonly _graphicParams = new GraphicParams();
+  
   public readonly placement: Transform;
 
   public readonly type: GraphicType;
@@ -56,6 +62,14 @@ export abstract class GraphicAssembler {
     this.wantNormals = options.wantNormals;
     this.viewIndependentOrigin = options.viewIndependentOrigin?.clone();
     this.analysisStyle = options.analysisStyle;
+
+    this.accum = new GeometryAccumulator({
+      analysisStyleDisplacement: this.analysisStyle?.displacement,
+    });
+
+    if (this.pickable) {
+      this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
+    }
   }
 
   /** Whether the builder's geometry is defined in [[CoordSystem.View]] coordinates.
@@ -91,12 +105,9 @@ export abstract class GraphicAssembler {
    * @param graphicParams The symbology to apply to subsequent geometry.
    * @see [[GraphicBuilder.setSymbology]] for a convenient way to set common symbology options.
    */
-  public abstract activateGraphicParams(graphicParams: GraphicParams): void;
-
-  /** Called by [[activateFeature]] after validation to change the [Feature]($common) to be associated with subsequently-added geometry.
-   * This default implementation does nothing.
-   */
-  protected _activateFeature(_feature: Feature): void { }
+  public activateGraphicParams(graphicParams: GraphicParams): void {
+    graphicParams.clone(this._graphicParams);
+  }
 
   /** Change the [Feature]($common) to be associated with subsequently-added geometry. This permits multiple features to be batched together into a single graphic
    * for more efficient rendering.
@@ -104,8 +115,9 @@ export abstract class GraphicAssembler {
    */
   public activateFeature(feature: Feature): void {
     assert(undefined !== this.pickable, "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied");
-    if (this.pickable)
-      this._activateFeature(feature);
+    if (this.pickable) {
+      this.accum.currentFeature = feature;
+    }
   }
 
   /** Change the pickable Id to be associated with subsequently-added geometry. This permits multiple pickable objects to be batched  together into a single graphic
@@ -122,40 +134,59 @@ export abstract class GraphicAssembler {
    * Appends a 3d line string to the builder.
    * @param points Array of vertices in the line string.
    */
-  public abstract addLineString(points: Point3d[]): void;
+  public addLineString(points: Point3d[]): void {
+    if (2 === points.length && points[0].isAlmostEqual(points[1]))
+      this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
+    else
+      this.accum.addLineString(points, this.getLinearDisplayParams(), this.placement);
+  }
 
   /**
    * Appends a 2d line string to the builder.
    * @param points Array of vertices in the line string.
    * @param zDepth Z value in local coordinates to use for each point.
    */
-  public abstract addLineString2d(points: Point2d[], zDepth: number): void;
+  public addLineString2d(points: Point2d[], zDepth: number): void {
+    const pts3d = copy2dTo3d(points, zDepth);
+    this.addLineString(pts3d);
+  }
 
   /**
    * Appends a 3d point string to the builder. The points are drawn disconnected, with a diameter in pixels defined by the builder's active [[GraphicParams.rasterWidth]].
    * @param points Array of vertices in the point string.
    */
-  public abstract addPointString(points: Point3d[]): void;
+  public addPointString(points: Point3d[]): void {
+    this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
+  }
 
   /**
    * Appends a 2d point string to the builder. The points are drawn disconnected, with a diameter in pixels defined by the builder's active [[GraphicParams.rasterWidth]].
    * @param points Array of vertices in the point string.
    * @param zDepth Z value in local coordinates to use for each point.
    */
-  public abstract addPointString2d(points: Point2d[], zDepth: number): void;
+  public addPointString2d(points: Point2d[], zDepth: number): void {
+    const pts3d = copy2dTo3d(points, zDepth);
+    this.addPointString(pts3d);
+  }
 
   /**
    * Appends a closed 3d planar region to the builder.
    * @param points Array of vertices of the shape.
    */
-  public abstract addShape(points: Point3d[]): void;
+  public addShape(points: Point3d[]): void {
+    const loop = Loop.create(LineString3d.create(points));
+    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
+  }
 
   /**
    * Appends a closed 2d region to the builder.
    * @param points Array of vertices of the shape.
    * @param zDepth Z value in local coordinates to use for each point.
    */
-  public abstract addShape2d(points: Point2d[], zDepth: number): void;
+  public addShape2d(points: Point2d[], zDepth: number): void {
+    const pts3d = copy2dTo3d(points, zDepth);
+    this.addShape(pts3d);
+  }
 
   /**
    * Appends a 3d open arc or closed ellipse to the builder.
@@ -163,7 +194,25 @@ export abstract class GraphicAssembler {
    * @param isEllipse If true, and if the arc defines a full sweep, then draw as a closed ellipse instead of an arc.
    * @param filled If true, and isEllipse is also true, then draw ellipse filled.
    */
-  public abstract addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void;
+  public addArc(ellipse: Arc3d, isEllipse: boolean, filled: boolean): void {
+    let curve;
+    if (isEllipse || filled) {
+      curve = Loop.create(ellipse);
+    } else {
+      curve = Path.create(ellipse);
+    }
+
+    if (filled && !isEllipse && !ellipse.sweep.isFullCircle) {
+      const gapSegment: CurvePrimitive = LineSegment3d.create(ellipse.startPoint(), ellipse.endPoint());
+      (gapSegment as any).markerBits = 0x00010000; // Set the CURVE_PRIMITIVE_BIT_GapCurve marker bit
+      curve.children.push(gapSegment);
+    }
+    const displayParams = curve.isAnyRegionType ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
+    if (curve instanceof Loop)
+      this.accum.addLoop(curve, displayParams, this.placement, false);
+    else
+      this.accum.addPath(curve, displayParams, this.placement, false);
+  }
 
   /**
    * Appends a 2d open arc or closed ellipse to the builder.
@@ -172,13 +221,25 @@ export abstract class GraphicAssembler {
    * @param filled If true, and isEllipse is also true, then draw ellipse filled.
    * @param zDepth Z value in local coordinates to use for each point in the arc or ellipse.
    */
-  public abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
+  public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
+    if (0.0 === zDepth) {
+      this.addArc(ellipse, isEllipse, filled);
+    } else {
+      const ell: Arc3d = ellipse;
+      ell.center.z = zDepth;
+      this.addArc(ell, isEllipse, filled);
+    }
+  }
 
   /** Append a 3d open path to the builder. */
-  public abstract addPath(path: Path): void;
+  public addPath(path: Path): void {
+    this.accum.addPath(path, this.getLinearDisplayParams(), this.placement, false);
+  }
 
   /** Append a 3d planar region to the builder. */
-  public abstract addLoop(loop: Loop): void;
+  public addLoop(loop: Loop): void {
+    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
+  }
 
   /** Append a [CurvePrimitive]($core-geometry) to the builder. */
   public addCurvePrimitive(curve: AnyCurvePrimitive): void {
@@ -203,12 +264,16 @@ export abstract class GraphicAssembler {
 
   /** Append a mesh to the builder.
    * @param meshData Describes the mesh
-   * @param filled If the mesh describes a planar region, indicates whether its interior area should be drawn with fill in [[RenderMode.Wireframe]].
+   * @param _filled If the mesh describes a planar region, indicates whether its interior area should be drawn with fill in [[RenderMode.Wireframe]].
    */
-  public abstract addPolyface(meshData: Polyface, filled: boolean): void;
+  public addPolyface(meshData: Polyface, _filled = false): void {
+    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
+  }
 
   /** Append a solid primitive to the builder. */
-  public abstract addSolidPrimitive(solidPrimitive: SolidPrimitive): void;
+  public addSolidPrimitive(primitive: SolidPrimitive): void {
+    this.accum.addSolidPrimitive(primitive, this.getMeshDisplayParams(), this.placement);
+  }
 
   /** Append any primitive to the builder.
    * @param primitive The graphic primitive to append.
@@ -357,4 +422,20 @@ export abstract class GraphicAssembler {
    * @param fillColor The color in which to draw filled regions.
    */
   public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
+
+  // private getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this._graphicParams); }
+  private getMeshDisplayParams(): DisplayParams { return DisplayParams.createForMesh(this._graphicParams, !this.wantNormals, (grad) => this.resolveGradient(grad)); }
+  private getLinearDisplayParams(): DisplayParams { return DisplayParams.createForLinear(this._graphicParams); }
+  // private get textDisplayParams(): DisplayParams { return DisplayParams.createForText(this._graphicParams); }
+
+  protected abstract resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined;
+
+  public add(geom: Geometry): void { this.accum.addGeometry(geom); }
+}
+
+function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
+  const pts3d: Point3d[] = [];
+  for (const point of pts2d)
+    pts3d.push(Point3d.create(point.x, point.y, depth));
+  return pts3d;
 }
