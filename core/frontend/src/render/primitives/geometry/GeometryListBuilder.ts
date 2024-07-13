@@ -27,10 +27,9 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
   public readonly graphicParams: GraphicParams = new GraphicParams();
 
-  public constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
+  public constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
     super(options);
     this.accum = new GeometryAccumulator({
-      transform: accumulatorTransform,
       analysisStyleDisplacement: this.analysisStyle?.displacement,
       viewIndependentOrigin: options.viewIndependentOrigin,
     });

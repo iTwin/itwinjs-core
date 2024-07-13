@@ -27,8 +27,8 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
   private readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
 
-  public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
-    super(options, accumulatorTransform);
+  public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
+    super(options);
     this.system = system;
     this._options = options;
   }
