@@ -32,6 +32,7 @@ export interface GraphicAssemblerOptions {
 export abstract class GraphicAssembler {
   // ###TODO protected abstract [_implementationProhibited]: unknown;
 
+  /** @internal */
   public readonly accum: GeometryAccumulator; // ###TODO rename _accum, make private
   private readonly _graphicParams = new GraphicParams();
   

@@ -8,21 +8,20 @@
 
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { FeatureTable, Gradient, PackedFeatureTable, QPoint3dList, RenderTexture } from "@itwin/core-common";
-import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GeometryOptions } from "../../common/internal/render/Primitives";
 import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumulator";
 import { MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
-import { GeometryListBuilder } from "../../render/primitives/geometry/GeometryListBuilder";
 import { assert } from "@itwin/core-bentley";
 
 // Set to true to add a range box to every graphic produced by PrimitiveBuilder.
 let addDebugRangeBox = false;
 
 /** @internal */
-export class PrimitiveBuilder extends GeometryListBuilder {
+export class PrimitiveBuilder extends GraphicBuilder {
   public readonly system: RenderSystem;
   public primitives: RenderGraphic[] = [];
   private readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
