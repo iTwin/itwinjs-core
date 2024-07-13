@@ -20,7 +20,6 @@ export class GeometryAccumulator {
   private _transform: Transform;
   private _surfacesOnly: boolean;
   private readonly _analysisDisplacement?: AnalysisStyleDisplacement;
-  public readonly viewIndependentOrigin?: Point3d;
 
   public readonly tileRange: Range3d;
   public readonly geometries: GeometryList = new GeometryList();
@@ -36,14 +35,12 @@ export class GeometryAccumulator {
     transform?: Transform;
     tileRange?: Range3d;
     analysisStyleDisplacement?: AnalysisStyleDisplacement;
-    viewIndependentOrigin?: Point3d;
     feature?: Feature;
   }) {
     this.tileRange = options?.tileRange ?? Range3d.createNull();
     this._surfacesOnly = true === options?.surfacesOnly;
     this._transform = options?.transform ?? Transform.createIdentity();
     this._analysisDisplacement = options?.analysisStyleDisplacement;
-    this.viewIndependentOrigin = options?.viewIndependentOrigin;
     this.currentFeature = options?.feature;
   }
 

@@ -31,7 +31,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     super(options);
     this.accum = new GeometryAccumulator({
       analysisStyleDisplacement: this.analysisStyle?.displacement,
-      viewIndependentOrigin: options.viewIndependentOrigin,
     });
 
     if (this.pickable)
