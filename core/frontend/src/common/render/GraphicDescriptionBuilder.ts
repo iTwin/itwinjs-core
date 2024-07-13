@@ -7,41 +7,19 @@
  */
 
 import { GraphicAssembler } from "./GraphicAssembler";
-import { ImdlModel, addPrimitiveTransferables } from "../imdl/ImdlModel";
-import { TransformProps } from "@itwin/core-geometry";
+import { collectGraphicDescriptionTransferables } from "../internal/render/GraphicDescriptionBuilderImpl";
 
 export interface GraphicDescription {
   // ###TODO [_implementationProhibited]
-
-  // ###TODO move implementation details to GraphicDescriptionImpl
-  primitives: ImdlModel.Primitive[];
-  transform?: TransformProps;
 }
 
 export namespace GraphicDescription {
   export function collectTransferables(description: GraphicDescription): Transferable[] {
-    const xfers = new Set<Transferable>();
-    for (const primitive of description.primitives) {
-      addPrimitiveTransferables(xfers, primitive);
-    }
-
-    return Array.from(xfers);
+    return collectGraphicDescriptionTransferables(description);
   }
 }
 
 export interface GraphicDescriptionBuilder extends GraphicAssembler {
   // ###TODO [_implementationProhibited]
   finish(): GraphicDescription;
-}
-
-export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
-  public finish(): GraphicDescription {
-    // ###TODO
-    return { primitives: [] };
-  }
-
-  protected override resolveGradient() {
-    // ###TODO support textures.
-    return undefined;
-  }
 }
