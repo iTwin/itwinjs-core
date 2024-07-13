@@ -277,7 +277,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
     features: makeFeatureIndex(mesh.points),
   };
 
-  return createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  return createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
 }
 
 function expectMesh(params: MeshParams, mesh: TriMesh): void {

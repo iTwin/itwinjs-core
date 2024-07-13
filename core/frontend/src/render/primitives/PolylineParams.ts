@@ -214,9 +214,9 @@ export function tesselatePolyline(polylines: PolylineIndices[], points: QPoint3d
 }
 
 /** @internal */
-export function createPolylineParams(args: PolylineArgs): PolylineParams | undefined {
+export function createPolylineParams(args: PolylineArgs, maxDimension: number): PolylineParams | undefined {
   assert(!args.flags.isDisjoint);
-  const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);
+  const vertices = VertexTableBuilder.buildFromPolylines(args, maxDimension);
   if (undefined === vertices)
     return undefined;
 

@@ -14,7 +14,6 @@ import {
   calculateEdgeTableParams, EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams,
 } from "../../common/render/primitives/EdgeParams";
 import { tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
-import { IModelApp } from "../../IModelApp";
 
 function convertPolylinesAndEdges(polylines?: PolylineIndices[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
   let numIndices = undefined !== edges ? edges.length : 0;
@@ -187,31 +186,36 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
 }
 
 /** @internal */
-export function createEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
-  const args = meshArgs.edges;
-  if (!args)
+export function createEdgeParams(args: {
+  meshArgs: MeshArgs,
+  maxWidth: number,
+  createIndexed: boolean,
+}): EdgeParams | undefined {
+  const { meshArgs, maxWidth, createIndexed } = args;
+  const edgeArgs = meshArgs.edges;
+  if (!edgeArgs)
     return undefined;
 
-  const doJoints = wantJointTriangles(args.width, true === meshArgs.is2d);
+  const doJoints = wantJointTriangles(edgeArgs.width, true === meshArgs.is2d);
   const polylines = doJoints ? tesselatePolylineFromMesh(meshArgs) : undefined;
 
   let segments: SegmentEdgeParams | undefined;
   let silhouettes: SilhouetteParams | undefined;
   let indexed: IndexedEdgeParams | undefined;
 
-  if ("non-indexed" !== IModelApp.tileAdmin.edgeOptions.type) {
-    indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? IModelApp.renderSystem.maxTextureSize);
+  if (createIndexed) {
+    indexed = buildIndexedEdges(edgeArgs, !doJoints, maxWidth);
   } else {
-    segments = convertPolylinesAndEdges(undefined, args.edges.edges);
-    silhouettes = args.silhouettes.edges && args.silhouettes.normals ? convertSilhouettes(args.silhouettes.edges, args.silhouettes.normals) : undefined;
+    segments = convertPolylinesAndEdges(undefined, edgeArgs.edges.edges);
+    silhouettes = edgeArgs.silhouettes.edges && edgeArgs.silhouettes.normals ? convertSilhouettes(edgeArgs.silhouettes.edges, edgeArgs.silhouettes.normals) : undefined;
   }
 
   if (!segments && !silhouettes && !polylines && !indexed)
     return undefined;
 
   return {
-    weight: args.width,
-    linePixels: args.linePixels,
+    weight: edgeArgs.width,
+    linePixels: edgeArgs.linePixels,
     segments,
     silhouettes,
     polylines,

@@ -18,6 +18,7 @@ import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../common/render/primitives/DisplayParams";
 import { MeshParams } from "../common/render/primitives/MeshParams";
 import { createMeshParams } from "./primitives/VertexTableBuilder";
+import { IModelApp } from "../IModelApp";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @public
@@ -374,7 +375,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number, v
     },
   };
 
-  return createMeshParams(quadArgs, viewport.target.renderSystem.maxTextureSize);
+  return createMeshParams(quadArgs, viewport.target.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
 }
 
 function clampTransparency(transparency: number): number {

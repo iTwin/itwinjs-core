@@ -51,7 +51,7 @@ function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture):
   if (texture)
     args.textureMapping = { texture, uvParams: [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ] };
 
-  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
   return IModelApp.renderSystem.createMesh(params)!;
 }
 

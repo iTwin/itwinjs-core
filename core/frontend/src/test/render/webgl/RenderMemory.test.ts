@@ -58,7 +58,7 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
     textureMapping,
   };
 
-  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
   const geom = IModelApp.renderSystem.createMeshGeometry(params);
   expect(geom).not.to.be.undefined;
   return geom!;

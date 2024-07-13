@@ -12,7 +12,7 @@ import { IModelApp } from "../../../IModelApp";
 import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
-  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
 
   // Compare vertex table bytes
   const data = params.vertices.data;

@@ -21,7 +21,7 @@ import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createEdgeParams } from "./EdgeParams";
 
 /** @internal */
-export function createMeshParams(args: MeshArgs, maxDimension: number): MeshParams {
+export function createMeshParams(args: MeshArgs, maxDimension: number, enableIndexedEdges: boolean): MeshParams {
   const builder = createMeshBuilder(args);
   const vertices = builder.build(args.colors, args.features, maxDimension);
 
@@ -37,7 +37,7 @@ export function createMeshParams(args: MeshArgs, maxDimension: number): MeshPara
   };
 
   const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices, maxDimension) : undefined;
-  const edges = createEdgeParams(args);
+  const edges = createEdgeParams({ meshArgs: args, maxWidth: maxDimension, createIndexed: enableIndexedEdges });
   return {
     vertices,
     surface,

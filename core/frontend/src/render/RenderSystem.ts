@@ -367,7 +367,7 @@ export abstract class RenderSystem implements IDisposable {
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined; // eslint-disable-line @typescript-eslint/unified-signatures
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
-    const params = createMeshParams(args, this.maxTextureSize);
+    const params = createMeshParams(args, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
     return this.createMesh(params, instances);
   }
 
@@ -395,7 +395,7 @@ export abstract class RenderSystem implements IDisposable {
       const pointStringParams = createPointStringParams(args);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
-      const polylineParams = createPolylineParams(args);
+      const polylineParams = createPolylineParams(args, this.maxTextureSize);
       return undefined !== polylineParams ? this.createPolyline(polylineParams, instances) : undefined;
     }
   }

@@ -407,7 +407,7 @@ describe("Mesh Builder Tests", () => {
     function expectAuxChannelTable(mesh: Mesh, expectedUint16Data: number[]): void {
       const args = mesh.toMeshArgs()!;
       expect(args).not.to.be.undefined;
-      const meshParams = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+      const meshParams = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
       const aux = meshParams.auxChannels!;
       expect(aux).not.to.be.undefined;
       expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(expectedUint16Data);
