@@ -229,6 +229,56 @@ export namespace ImdlModel {
   }
 }
 
+function addTransferable(xfers: Set<Transferable>, array: UintArray | Float32Array | undefined): void {
+  if (array) {
+    xfers.add(array.buffer);
+  }
+}
+
+/** @internal */
+export function addPrimitiveTransferables(xfers: Set<Transferable>, primitive: ImdlModel.NodePrimitive): void {
+  if (primitive.type === "pattern") {
+    addTransferable(xfers, primitive.params.xyOffsets);
+    return;
+  }
+
+  addTransferable(xfers, primitive.params.vertices.data);
+
+  if (primitive.modifier?.type === "instances") {
+    addTransferable(xfers, primitive.modifier.transforms);
+    addTransferable(xfers, primitive.modifier.featureIds);
+    addTransferable(xfers, primitive.modifier.symbologyOverrides);
+  }
+
+  switch (primitive.type) {
+    case "point":
+      addTransferable(xfers, primitive.params.indices);
+      break;
+    case "polyline":
+      addTransferable(xfers, primitive.params.polyline.indices);
+      addTransferable(xfers, primitive.params.polyline.prevIndices);
+      addTransferable(xfers, primitive.params.polyline.nextIndicesAndParams);
+      break;
+    case "mesh":
+      addTransferable(xfers, primitive.params.surface.indices);
+      const edges = primitive.params.edges;
+      if (edges) {
+        addTransferable(xfers, edges.segments?.indices);
+        addTransferable(xfers, edges.segments?.endPointAndQuadIndices);
+        addTransferable(xfers, edges.silhouettes?.indices);
+        addTransferable(xfers, edges.silhouettes?.endPointAndQuadIndices);
+        addTransferable(xfers, edges.silhouettes?.normalPairs);
+        addTransferable(xfers, edges.polylines?.indices);
+        addTransferable(xfers, edges.polylines?.prevIndices);
+        addTransferable(xfers, edges.polylines?.nextIndicesAndParams);
+        addTransferable(xfers, edges.indexed?.indices);
+        addTransferable(xfers, edges.indexed?.edges.data);
+      }
+
+      break;
+  }
+}
+
 /** Collect an array of all the [transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects)
  * within the specified document.
  * @internal
@@ -244,62 +294,20 @@ export function collectTransferables(document: ImdlModel.Document): Transferable
   add(document.featureTable.data);
   add(document.featureTable.animationNodeIds);
 
-  const addPrimitive = (primitive: ImdlModel.NodePrimitive) => {
-    if (primitive.type === "pattern") {
-      add(primitive.params.xyOffsets);
-      return;
-    }
-
-    add(primitive.params.vertices.data);
-    if (primitive.modifier?.type === "instances") {
-      add(primitive.modifier.transforms);
-      add(primitive.modifier.featureIds);
-      add(primitive.modifier.symbologyOverrides);
-    }
-
-    switch (primitive.type) {
-      case "point":
-        add(primitive.params.indices);
-        break;
-      case "polyline":
-        add(primitive.params.polyline.indices);
-        add(primitive.params.polyline.prevIndices);
-        add(primitive.params.polyline.nextIndicesAndParams);
-        break;
-      case "mesh":
-        add(primitive.params.surface.indices);
-        const edges = primitive.params.edges;
-        if (edges) {
-          add(edges.segments?.indices);
-          add(edges.segments?.endPointAndQuadIndices);
-          add(edges.silhouettes?.indices);
-          add(edges.silhouettes?.endPointAndQuadIndices);
-          add(edges.silhouettes?.normalPairs);
-          add(edges.polylines?.indices);
-          add(edges.polylines?.prevIndices);
-          add(edges.polylines?.nextIndicesAndParams);
-          add(edges.indexed?.indices);
-          add(edges.indexed?.edges.data);
-        }
-
-        break;
-    }
-  };
-
   for (const node of document.nodes) {
     if (undefined !== node.groupId) {
       for (const primNode of node.nodes)
         for (const primitive of primNode.primitives)
-          addPrimitive(primitive);
+          addPrimitiveTransferables(xfers, primitive);
     } else {
       for (const primitive of node.primitives)
-        addPrimitive(primitive);
+        addPrimitiveTransferables(xfers, primitive);
     }
   }
 
   for (const primitives of document.patterns.values())
     for (const primitive of primitives)
-      addPrimitive(primitive);
+      addPrimitiveTransferables(xfers, primitive);
 
   return Array.from(xfers);
 }
