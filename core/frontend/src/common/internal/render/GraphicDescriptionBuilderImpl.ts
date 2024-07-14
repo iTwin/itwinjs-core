@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { TransformProps } from "@itwin/core-geometry";
+import { Transform, TransformProps } from "@itwin/core-geometry";
 import { ImdlModel, addPrimitiveTransferables } from "../../imdl/ImdlModel";
-import { GraphicDescription, GraphicDescriptionBuilder } from "../../render/GraphicDescriptionBuilder";
+import { ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
 
@@ -19,6 +19,20 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
 }
 
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
+  private readonly _computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
+  
+  public constructor(options: GraphicDescriptionBuilderOptions) {
+    const type = options.type;
+    const placement = options.placement ?? Transform.createIdentity();
+    const wantEdges = options.generateEdges ?? type === GraphicType.Scene;
+    const wantNormals = wantEdges || type === GraphicType.Scene;
+    const preserveOrder = type === GraphicType.ViewOverlay || type === GraphicType.WorldOverlay || type === GraphicType.ViewBackground;
+
+    super({ ...options, type, placement, wantEdges, wantNormals, preserveOrder });
+
+    this._computeChordTolerance = options.computeChordTolerance;
+  }
+
   public finish(): GraphicDescription {
     // ###TODO
     return { primitives: [] };
