@@ -18,7 +18,6 @@ import { GraphicPrimitive } from "./GraphicPrimitive";
 import { GeometryAccumulator } from "../internal/render/GeometryAccumulator";
 import { DisplayParams } from "../internal/render/DisplayParams";
 import { Geometry } from "../internal/render/GeometryPrimitives";
-import { InstancedGraphicParams } from "./InstancedGraphicParams";
 
 export type GraphicAssemblerOptions = {
   type: GraphicType;
@@ -28,13 +27,7 @@ export type GraphicAssemblerOptions = {
   wantNormals: boolean;
   wantEdges: boolean;
   analysisStyle?: AnalysisStyle;
-} & ({
-  viewIndependentOrigin?: Point3d;
-  instances?: never;
-} | {
-  instances?: InstancedGraphicParams;
-  viewIndependentOrigin?: never;
-});
+}
 
 export abstract class GraphicAssembler {
   // ###TODO protected abstract [_implementationProhibited]: unknown;
@@ -55,10 +48,6 @@ export abstract class GraphicAssembler {
 
   public readonly wantEdges: boolean;
 
-  public readonly viewIndependentOrigin?: Readonly<Point3d>;
-
-  public readonly instances?: InstancedGraphicParams;
-
   /** @alpha */
   public readonly analysisStyle?: AnalysisStyle;
 
@@ -71,9 +60,6 @@ export abstract class GraphicAssembler {
     this.preserveOrder = options.preserveOrder;
     this.wantNormals = options.wantNormals;
     this.analysisStyle = options.analysisStyle;
-
-    this.viewIndependentOrigin = options.viewIndependentOrigin?.clone();
-    this.instances = options.instances;
 
     this.accum = new GeometryAccumulator({
       analysisStyleDisplacement: this.analysisStyle?.displacement,

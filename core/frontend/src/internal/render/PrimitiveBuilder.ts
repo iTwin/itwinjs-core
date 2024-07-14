@@ -25,11 +25,13 @@ export class PrimitiveBuilder extends GraphicBuilder {
   public readonly system: RenderSystem;
   public primitives: RenderGraphic[] = [];
   private readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
+  private readonly _viewIndependentOrigin?: Point3d;
 
   public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
     super(options);
     this.system = system;
     this._options = options;
+    this._viewIndependentOrigin = options.viewIndependentOrigin?.clone();
   }
 
   public override finish(): RenderGraphic {
@@ -133,7 +135,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
         }
       }
 
-      const graphic = this.system.createMeshGraphics(mesh, this.viewIndependentOrigin);
+      const graphic = this.system.createMeshGraphics(mesh, this._viewIndependentOrigin);
       if (graphic)
         branch.add(graphic);
     }

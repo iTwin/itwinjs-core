@@ -8,6 +8,10 @@
 
 import { GraphicAssembler } from "./GraphicAssembler";
 import { collectGraphicDescriptionTransferables } from "../internal/render/GraphicDescriptionBuilderImpl";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { InstancedGraphicParams } from "./InstancedGraphicParams";
+import { GraphicType } from "./GraphicType";
+import { PickableGraphicOptions } from "./BatchOptions";
 
 export interface GraphicDescription {
   // ###TODO [_implementationProhibited]
@@ -19,7 +23,27 @@ export namespace GraphicDescription {
   }
 }
 
+export type FinishGraphicDescriptionArgs = {
+  viewIndependentOrigin?: Point3d;
+  instances?: never;
+} | {
+  instances?: InstancedGraphicParams;
+  viewIndependentOrigin?: never;
+}
+  
 export interface GraphicDescriptionBuilder extends GraphicAssembler {
   // ###TODO [_implementationProhibited]
-  finish(): GraphicDescription;
+  finish(args?: FinishGraphicDescriptionArgs): GraphicDescription;
+}
+
+export interface ComputeGraphicDescriptionChordToleranceArgs {
+  builder: GraphicDescriptionBuilder;
+  computeRange: () => Range3d;
+}
+
+export interface GraphicDescriptionBuilderOptions {
+  type: GraphicType;
+  placement?: Transform;
+  pickable?: PickableGraphicOptions;
+  computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
 }
