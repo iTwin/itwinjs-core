@@ -18,7 +18,6 @@ import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
-import { GenerateEdges, GeometryOptions } from "../../../common/internal/render/Primitives";
 
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;
@@ -184,7 +183,7 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     expect(accum.geometries.length).to.equal(2);
-    const map = accum.toMeshBuilderMap(new GeometryOptions(GenerateEdges.No), 0.22, undefined);
+    const map = accum.toMeshBuilderMap({ wantEdges: false, preserveOrder: false }, 0.22, undefined);
     expect(map.size).to.equal(2);
   });
 
@@ -225,7 +224,7 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     expect(accum.geometries.length).to.equal(2);
-    const meshes = accum.toMeshes(new GeometryOptions(GenerateEdges.No), 0.22, undefined);
+    const meshes = accum.toMeshes({ wantEdges: false, preserveOrder: false }, 0.22, undefined);
     expect(meshes.length).to.equal(2);
   });
 
@@ -270,7 +269,7 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     const graphics = new Array<RenderGraphic>();
-    builder.saveToGraphicList(graphics, new GeometryOptions(GenerateEdges.No), 0.22, undefined);
+    builder.saveToGraphicList(graphics, { wantEdges: false, preserveOrder: false }, 0.22, undefined);
     expect(graphics.length).to.equal(1);
     const graphic = graphics[0];
     expect(graphic instanceof Branch).to.be.true;

@@ -70,9 +70,6 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
    */
   public loadGeometry(geom: Geometry): void {
     this.loadPolyfacePrimitiveList(geom);
-
-    if (!this.options.wantSurfacesOnly)
-      this.loadStrokePrimitiveList(geom);
   }
 
   /**
@@ -101,7 +98,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
       return;
 
     const builder = this.getBuilder(displayParams, MeshPrimitiveType.Mesh, normalCount > 0, isPlanar);
-    const edgeOptions = new MeshEdgeCreationOptions(polyface.displayEdges && this.options.edges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges);
+    const edgeOptions = new MeshEdgeCreationOptions(polyface.displayEdges && this.options.wantEdges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges);
     builder.addFromPolyface(indexedPolyface, { edgeOptions, includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping }, feature);
   }
 

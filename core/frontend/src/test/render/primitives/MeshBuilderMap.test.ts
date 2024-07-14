@@ -15,7 +15,7 @@ import { createBlankConnection } from "../../createBlankConnection";
 import { FakeDisplayParams } from "./Fake";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder"; 
 import { GraphicType } from "../../../common/render/GraphicType";
-import { GenerateEdges, GeometryOptions, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../common/internal/render/Primitives";
+import { ToleranceRatio } from "../../../common/internal/render/Primitives";
 import { MeshBuilderMap } from "../../../common/internal/render/MeshBuilderMap";
 import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
@@ -60,7 +60,7 @@ describe("MeshBuilderMap Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
     expect(map.range).to.equal(range);
     expect(map.tolerance).to.equal(tolerance);
     expect(map.is2d).to.equal(is2d);
@@ -113,7 +113,7 @@ describe("MeshBuilderMap Tests", () => {
     const geomList = new GeometryList();
     geomList.push(loopGeom);
     geomList.push(arcGeom);
-    const map = MeshBuilderMap.createFromGeometries(geomList, tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = MeshBuilderMap.createFromGeometries(geomList, tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
     expect(map.size).to.equal(3);
   });
 
@@ -163,7 +163,7 @@ describe("MeshBuilderMap Tests", () => {
     const geomList = new GeometryList();
     geomList.push(loopGeom);
     geomList.push(arcGeom);
-    const map = MeshBuilderMap.createFromGeometries(geomList, tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = MeshBuilderMap.createFromGeometries(geomList, tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
     expect(map.size).to.equal(3);
 
     const meshes = map.toMeshes();
@@ -196,7 +196,7 @@ describe("MeshBuilderMap Tests", () => {
     const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.22;
-    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
 
     expect(map.size).to.equal(0);
     map.loadGeometry(arcGeom);
@@ -207,10 +207,6 @@ describe("MeshBuilderMap Tests", () => {
     // EDL Why is this a hard coded count?
     expect(builder.vertexMap.length).to.lte(25);
     expect(builder.mesh.polylines!.length).to.equal(strokesPrimList[0].strokes.length);
-    const map2 = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No, undefined, SurfacesOnly.Yes), undefined);
-    expect(map2.size).to.equal(0);
-    map2.loadGeometry(arcGeom);
-    expect(map2.size).to.equal(0);
   });
 
   it("loadPolyfacePrimitiveList", () => {
@@ -243,7 +239,7 @@ describe("MeshBuilderMap Tests", () => {
     const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.15;
-    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
 
     expect(pfPrim.indexedPolyface.pointCount).to.be.greaterThan(0);
     expect(map.size).to.equal(0);
@@ -296,7 +292,7 @@ describe("MeshBuilderMap Tests", () => {
     const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.15;
-    let map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    let map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
 
     expect(pfPrim.indexedPolyface.pointCount).to.be.greaterThan(0);
     expect(map.size).to.equal(0);
@@ -307,7 +303,7 @@ describe("MeshBuilderMap Tests", () => {
     expect(builder.triangleSet.length).to.equal(2);
 
     // test case: when polyface has no points, no builder is created
-    map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
     expect(emptyPfPrim.indexedPolyface.pointCount).to.equal(0);
     expect(map.size).to.equal(0);
     map.loadIndexedPolyface(emptyPfPrim, undefined);
@@ -339,7 +335,7 @@ describe("MeshBuilderMap Tests", () => {
     const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.22;
-    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
 
     expect(map.size).to.equal(0);
     map.loadStrokePrimitiveList(arcGeom);
@@ -376,7 +372,7 @@ describe("MeshBuilderMap Tests", () => {
     const range = Range3d.createArray([new Point3d(), new Point3d(1000, 1000, 1000)]);
     const is2d = false;
     const tolerance = 0.22;
-    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
 
     expect(map.size).to.equal(0);
     map.loadStrokesPrimitive(strokesPrimList[0], undefined);
@@ -396,7 +392,7 @@ describe("MeshBuilderMap Tests", () => {
     const is2d = false;
     const tolerance = 0.15;
     const hasNormals = false;
-    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
 
     expect(map.size).to.equal(0);
     const builder = map.getBuilder(displayParams, type, hasNormals, isPlanar);
@@ -416,13 +412,13 @@ describe("MeshBuilderMap Tests", () => {
     const displayParams = new FakeDisplayParams();
     const type = MeshPrimitiveType.Mesh;
     const isPlanar = true;
-    let map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    let map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
     let key = map.getKey(displayParams, type, hasNormals, isPlanar);
 
     expect(key.order).to.equal(0);
 
     // test case when preserveOrder is true
-    map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No, undefined, undefined, PreserveOrder.Yes), undefined);
+    map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: true }, undefined);
     key = map.getKey(displayParams, type, hasNormals, isPlanar);
     expect(key.order).to.equal(1);
   });
@@ -436,7 +432,7 @@ describe("MeshBuilderMap Tests", () => {
     const tolerance = 0.15;
     const hasNormals = false;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
-    const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No), undefined);
+    const map = new MeshBuilderMap(tolerance, range, is2d, { wantEdges: false, preserveOrder: false }, undefined);
     const key = map.getKey(displayParams, type, hasNormals, isPlanar);
     const builder = map.getBuilderFromKey(key, { quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
