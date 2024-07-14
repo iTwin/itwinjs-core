@@ -32,7 +32,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
 
 export function isGraphicDescription(description: GraphicDescription): description is GraphicDescriptionImpl {
   const descr = description as any;
-  if (!Array.isArray(descr.primitives)) {
+  if ("object" !== typeof descr || !Array.isArray(descr.primitives)) {
     return false;
   }
 
