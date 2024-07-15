@@ -12,7 +12,7 @@ import {
 } from "./ConcurrentQuery";
 
 /**
- * ECSqlStatement getRow config
+ * Arguments supplied to [ECSqlStatement.getRow]($backend).
  * @public
  * */
 export interface ECSqlRowArg {
