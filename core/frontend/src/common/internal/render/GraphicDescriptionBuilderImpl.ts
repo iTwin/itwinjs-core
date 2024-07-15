@@ -8,13 +8,16 @@
 
 import { Point3d, Range3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
 import { ImdlModel, addPrimitiveTransferables } from "../../imdl/ImdlModel";
-import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions } from "../../render/GraphicDescriptionBuilder";
+import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
 import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
 import { BatchOptions } from "../../render/BatchOptions";
 import { Id64String, assert } from "@itwin/core-bentley";
-import { Mesh } from "./MeshPrimitives";
+import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
+import { createPointStringParams } from "./PointStringParams";
+import { VertexTable } from "./VertexTable";
+import { createPolylineParams } from "./PolylineParams";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
@@ -32,6 +35,7 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
 
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
   private readonly _computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
+  private readonly _constraints: GraphicDescriptionConstraints;
   
   public constructor(options: GraphicDescriptionBuilderOptions) {
     const type = options.type;
@@ -43,9 +47,10 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     super({ ...options, type, placement, wantEdges, wantNormals, preserveOrder });
 
     this._computeChordTolerance = options.computeChordTolerance;
+    this._constraints = options.constraints;
   }
 
-  public finish(_args: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
+  public finish(args: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
     const description: GraphicDescriptionImpl = { type: this.type, primitives: [] };
     if (this.accum.isEmpty) {
       return description;
@@ -113,6 +118,24 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
 
       const primitive = this.createPrimitive(mesh);
       if (primitive) {
+        const origin = args.viewIndependentOrigin;
+        if (origin) {
+          primitive.modifier = {
+            type: "viewIndependentOrigin",
+            origin: { x: origin.x, y: origin.y, z: origin.z },
+          };
+        } else if (args.instances) {
+          primitive.modifier = {
+            ...args.instances,
+            type: "instances",
+            transformCenter: { x: args.instances.transformCenter.x, y: args.instances.transformCenter.y, z: args.instances.transformCenter.z },
+            range: args.instances.range ? {
+              low: { x: args.instances.range.low.x, y: args.instances.range.low.y, z: args.instances.range.low.z },
+              high: { x: args.instances.range.high.x, y: args.instances.range.high.y, z: args.instances.range.high.z },
+            } : undefined,
+          };
+        }
+
         description.primitives.push(primitive);
       }
     }
@@ -132,14 +155,73 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     return description;
   }
 
-  private createPrimitive(_mesh: Mesh): ImdlModel.Primitive | undefined {
-    return undefined; /// ###TODO
+  private createPrimitive(mesh: Mesh): ImdlModel.Primitive | undefined {
+    const meshArgs = mesh.toMeshArgs();
+    if (meshArgs) {
+      return this.createMeshPrimitive(meshArgs)
+    }
+
+    const polylineArgs = mesh.toPolylineArgs();
+    if (!polylineArgs) {
+      return undefined;
+    }
+
+    return polylineArgs.flags.isDisjoint ? this.createPointStringPrimitive(polylineArgs) : this.createPolylinePrimitive(polylineArgs);
   }
 
+  private createMeshPrimitive(_args: MeshArgs): ImdlModel.Primitive | undefined {
+    return undefined; // ###TODO
+  }
+
+  private createPolylinePrimitive(args: PolylineArgs): ImdlModel.Primitive | undefined {
+    const params = createPolylineParams(args, this._constraints.maxTextureSize);
+    if (!params) {
+      return undefined;
+    }
+
+    return {
+      type: "polyline",
+      params: {
+        ...params,
+        vertices: convertVertexTable(params.vertices),
+        polyline: {
+          indices: params.polyline.indices.data,
+          prevIndices: params.polyline.prevIndices.data,
+          nextIndicesAndParams: params.polyline.nextIndicesAndParams,
+        },
+      },
+    };
+  }
+
+  private createPointStringPrimitive(args: PolylineArgs): ImdlModel.Primitive | undefined {
+    const params = createPointStringParams(args, this._constraints.maxTextureSize);
+    if (!params) {
+      return undefined;
+    }
+
+    return {
+      type: "point",
+      params: {
+        indices: params.indices.data,
+        vertices: convertVertexTable(params.vertices),
+        weight: params.weight,
+      },
+    };
+  }
+  
   protected override resolveGradient() {
     // ###TODO support textures and materials.
     return undefined;
   }
+}
+
+function convertVertexTable(src: VertexTable): ImdlModel.VertexTable {
+  return {
+    ...src,
+    qparams: src.qparams.toJSON(),
+    uvParams: src.uvParams?.toJSON(),
+    uniformColor: src.uniformColor?.toJSON(),
+  };
 }
 
 export function isGraphicDescription(description: GraphicDescription): description is GraphicDescriptionImpl {

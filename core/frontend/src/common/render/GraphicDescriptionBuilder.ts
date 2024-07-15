@@ -23,6 +23,11 @@ export namespace GraphicDescription {
   }
 }
 
+export interface GraphicDescriptionConstraints {
+  // ###TODO [_implementationProhibited]
+  readonly maxTextureSize: number;
+}
+
 export type FinishGraphicDescriptionArgs = {
   viewIndependentOrigin?: Point3d;
   instances?: never;
@@ -42,6 +47,7 @@ export interface GraphicDescriptionBuilderOptions {
   pickable?: PickableGraphicOptions;
   generateEdges?: boolean;
   computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
+  constraints: GraphicDescriptionConstraints;
 }
 
 export interface GraphicDescriptionBuilder extends GraphicAssembler {
