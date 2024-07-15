@@ -1075,6 +1075,7 @@ export class ToolAdmin {
 
     this._mouseMoveOverTimeout = setTimeout(async () => {
       await this.onMotionEnd(vp, pt2d, inputSource);
+      await processMotion();
     }, 100);
 
     const processMotion = async (): Promise<void> => {

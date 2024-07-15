@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Trigger additional `onMouseMotion` call for tools to react to the last AccuSnap.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
