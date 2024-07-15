@@ -11,16 +11,23 @@ import { ImdlModel, addPrimitiveTransferables } from "../../imdl/ImdlModel";
 import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
-import { PackedFeatureTable } from "@itwin/core-common";
+import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
+import { BatchOptions } from "../../render/BatchOptions";
+import { Id64String, assert } from "@itwin/core-bentley";
+import { Mesh } from "./MeshPrimitives";
+
+export type BatchDescription = Omit<BatchOptions, "tileId"> & {
+  featureTable: ImdlModel.FeatureTable;
+  range: Range3dProps;
+  isVolumeClassifier?: boolean;
+  modelId: Id64String;
+}
 
 export interface GraphicDescriptionImpl extends GraphicDescription {
   type: GraphicType;
   primitives: ImdlModel.Primitive[];
   transform?: TransformProps;
-  batch?: {
-    featureTable: ImdlModel.FeatureTable;
-    range: Range3dProps;
-  };
+  batch?: BatchDescription;
 }
 
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
@@ -39,13 +46,11 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   }
 
   public finish(_args: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
-    const primitives: ImdlModel.Primitive[] = [];
-    const description: GraphicDescriptionImpl = { type: this.type, primitives };
+    const description: GraphicDescriptionImpl = { type: this.type, primitives: [] };
     if (this.accum.isEmpty) {
       return description;
     }
 
-    let transformOrigin: Point3d | undefined;
 
     const tolerance = this._computeChordTolerance({ builder: this, computeRange: () => this.accum.geometries.computeRange() });
     const meshes = this.accum.toMeshes(this, tolerance, this.pickable);
@@ -58,7 +63,9 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       const features = PackedFeatureTable.pack(featureTable);
       const range = meshes.range ?? new Range3d();
       description.batch = {
+        ...this.pickable,
         range: range.toJSON(),
+        modelId: featureTable.modelId,
         featureTable: {
           multiModel: false,
           data: features.data,
@@ -68,12 +75,65 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       };
     }
 
+    // If the meshes contain quantized positions, they are all quantized to the same range. If that range is small relative to the distance
+    // from the origin, quantization errors can produce display artifacts. Remove the translation from the quantization parameters and apply
+    // it in the transform instead.
+    // If the positions are not quantized, they have already been transformed to be relative to the center of the meshes' range.
+    // Apply the inverse translation to put them back into model space.
+    let transformOrigin: Point3d | undefined;
+    let meshesRangeOffset = false;
+
+    for (const mesh of meshes) {
+      const verts = mesh.points;
+      if (!transformOrigin) {
+        // This is the first mesh we've processed.
+        if (verts instanceof QPoint3dList) {
+          transformOrigin = verts.params.origin.clone();
+          verts.params.origin.setZero();
+        } else {
+          // In this case we need to modify the qOrigin of the graphic that will get created later since we have translated the origin.
+          // We can't modify it directly, but if we temporarily modify the range of the mesh used to create it the qOrigin will get created properly.
+          // Range is shared (not cloned) by all meshes and the mesh list itself, so modifying the range of the meshlist will modify it for all meshes.
+          // We will then later add this offset back to the range once all of the graphics have been created because it is needed unmodified for locate.
+          transformOrigin = verts.range.center;
+          if (!meshesRangeOffset) {
+            meshes.range?.low.subtractInPlace(transformOrigin);
+            meshes.range?.high.subtractInPlace(transformOrigin);
+            meshesRangeOffset = true;
+          }
+        }
+      } else {
+        if (verts instanceof QPoint3dList) {
+          assert(transformOrigin.isAlmostEqual(verts.params.origin));
+          verts.params.origin.setZero();
+        } else {
+          assert(verts.range.center.isAlmostZero);
+        }
+      }
+
+      const primitive = this.createPrimitive(mesh);
+      if (primitive) {
+        description.primitives.push(primitive);
+      }
+    }
+
+    // Restore the meshes range if we modified it above.
+    if (meshesRangeOffset) {
+      assert(undefined !== transformOrigin);
+      meshes.range?.low.addInPlace(transformOrigin);
+      meshes.range?.high.addInPlace(transformOrigin);
+    }
+      
     this.accum.clear();
-    return {
-      type: this.type,
-      primitives,
-      transform: transformOrigin ? Transform.createTranslation(transformOrigin).toJSON() : undefined,
-    };
+    if (transformOrigin) {
+      description.transform = Transform.createTranslation(transformOrigin).toJSON();
+    }
+
+    return description;
+  }
+
+  private createPrimitive(_mesh: Mesh): ImdlModel.Primitive | undefined {
+    return undefined; /// ###TODO
   }
 
   protected override resolveGradient() {
