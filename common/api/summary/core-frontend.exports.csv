@@ -39,6 +39,7 @@ internal;AnimatedTreeReference
 internal;AnimationBranchState
 internal;AnimationBranchStates
 internal;AnimationBranchStates
+internal;AnimationNodeId
 public;Animator
 internal;appendQueryParams(url: string, queryParams?:
 internal;ArcGisErrorCode
@@ -259,9 +260,11 @@ public;GlobalLocationArea
 public;GlobeAnimator 
 internal;GltfBufferData
 internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
+internal;GltfDataType
 public;GltfGraphic
 internal;GltfGraphicsReader 
 internal;GltfMeshData
+internal;GltfMeshPrimitive 
 internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps

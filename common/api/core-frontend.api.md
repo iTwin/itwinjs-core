@@ -1164,6 +1164,12 @@ export namespace AnimationBranchStates {
     export function fromScript(script: RenderSchedule.Script, time: number): AnimationBranchStates | undefined;
 }
 
+// @internal
+export enum AnimationNodeId {
+    // (undocumented)
+    Untransformed = 4294967295
+}
+
 // @public
 export interface Animator {
     animate(): boolean;
@@ -4030,6 +4036,42 @@ export class GltfBufferData {
 // @internal (undocumented)
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
+// @internal
+export enum GltfDataType {
+    // (undocumented)
+    Float = 5126,
+    // (undocumented)
+    FloatMat3 = 35675,
+    // (undocumented)
+    FloatMat4 = 35676,
+    // (undocumented)
+    FloatVec2 = 35664,
+    // (undocumented)
+    FloatVec3 = 35665,
+    // (undocumented)
+    FloatVec4 = 35666,
+    // (undocumented)
+    IntVec2 = 35667,
+    // (undocumented)
+    IntVec3 = 35668,
+    // (undocumented)
+    Rgb = 6407,
+    // (undocumented)
+    Rgba = 6408,
+    // (undocumented)
+    Sampler2d = 35678,
+    // (undocumented)
+    SignedByte = 5120,
+    // (undocumented)
+    SignedShort = 5122,
+    // (undocumented)
+    UInt32 = 5125,
+    // (undocumented)
+    UnsignedByte = 5121,
+    // (undocumented)
+    UnsignedShort = 5123
+}
+
 // @public
 export interface GltfGraphic {
     boundingBox: AxisAlignedBox3d;
@@ -4079,6 +4121,23 @@ export class GltfMeshData {
     uvRange?: Range2d;
     // (undocumented)
     uvs?: Uint16Array;
+}
+
+// @internal
+export interface GltfMeshPrimitive extends GltfProperty {
+    attributes: GltfStringMap<GltfId>;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        CESIUM_primitive_outline?: {
+            indices?: GltfId;
+        };
+        KHR_draco_mesh_compression?: DracoMeshCompression;
+        EXT_mesh_features?: MeshFeatures;
+    };
+    indices?: GltfId;
+    material?: GltfId;
+    mode?: GltfMeshMode;
+    targets?: GltfStringMap<GltfId>;
 }
 
 // @internal
