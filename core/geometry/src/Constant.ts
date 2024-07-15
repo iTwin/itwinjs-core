@@ -7,8 +7,9 @@
  * @module CartesianGeometry
  */
 
-/** Commonly used constant values.
- * @alpha
+/**
+ * Commonly used constant values.
+ * @public
  */
 export class Constant {
   /** symbolic name for 1 millimeter:  0.001 meter */
@@ -19,7 +20,7 @@ export class Constant {
   public static readonly oneMeter: number = 1.0;
   /** symbolic name for 1 kilometer: 1000 meter */
   public static readonly oneKilometer: number = 1000.0;
-  /** Diameter of the earth in kilometers. */
+  /** Diameter of the earth in meters. */
   public static readonly diameterOfEarth: number = 12742.0 * Constant.oneKilometer;
   /** circumference of the earth in meters. */
   public static readonly circumferenceOfEarth: number = 40075.0 * Constant.oneKilometer;

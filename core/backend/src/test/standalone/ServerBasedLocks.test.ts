@@ -13,11 +13,12 @@ import { PhysicalElement } from "../../Element";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { ElementOwnsChildElements } from "../../NavigationRelationship";
-import { ServerBasedLocks } from "../../ServerBasedLocks";
+import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
 import { HubMock } from "../../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
+import { _releaseAllLocks } from "../../internal/Symbols";
 
 describe("Server-based locks", () => {
   const createVersion0 = async () => {
@@ -104,19 +105,19 @@ describe("Server-based locks", () => {
     await expect(bc2.acquireSchemaLock()).rejectedWith(IModelError, exclusiveLockError, "acquire schema exclusive");
     await expect(bc2Locks.acquireLocks({ shared: childEl.model })).rejectedWith(IModelError, exclusiveLockError);
 
-    await bc1Locks.releaseAllLocks();
+    await bc1Locks[_releaseAllLocks]();
     await bc1Locks.acquireLocks({ exclusive: parentId, shared: parentId });
     assertLockCounts(bc1Locks, 3, 1);
     assertSharedLocks(bc1Locks, [modelId, IModel.rootSubjectId]);
     assertExclusiveLocks(bc1Locks, [parentId, child1, child2]); // acquiring exclusive lock on parent implicitly holds exclusive lock on children
 
-    await bc1Locks.releaseAllLocks();
+    await bc1Locks[_releaseAllLocks]();
     await bc1Locks.acquireLocks({ exclusive: modelId });
     assertLockCounts(bc1Locks, 2, 1);
     assertSharedLocks(bc1Locks, [modelId, IModel.rootSubjectId]);
     assertExclusiveLocks(bc1Locks, [modelId, parentId, child1, child2]); // acquiring exclusive lock on model implicitly holds exclusive lock on members
 
-    await bc1Locks.releaseAllLocks();
+    await bc1Locks[_releaseAllLocks]();
     lockSpy.resetHistory();
     await bc1Locks.acquireLocks({ shared: child1 });
     assert.equal(lockSpy.callCount, 1);
@@ -165,7 +166,7 @@ describe("Server-based locks", () => {
     assertExclusiveLocks(bc1Locks, child1);
     assert.isFalse(bc2Locks.holdsExclusiveLock(child1));
 
-    await bc2Locks.releaseAllLocks(); // release all locks from bc2 so we can test expected failures below
+    await bc2Locks[_releaseAllLocks](); // release all locks from bc2 so we can test expected failures below
     assertLockCounts(bc2Locks, 0, 0);
 
     await expect(bc2Locks.acquireLocks({ exclusive: [IModel.dictionaryId, parentId] })).rejectedWith(IModelError, sharedLockError);
@@ -175,8 +176,8 @@ describe("Server-based locks", () => {
     assertSharedLocks(bc2Locks, IModel.rootSubjectId); // it should also acquire the shared lock on the rootSubject
     assertLockCounts(bc2Locks, 1, 1);
 
-    await bc1Locks.releaseAllLocks();
-    await bc2Locks.releaseAllLocks();
+    await bc1Locks[_releaseAllLocks]();
+    await bc2Locks[_releaseAllLocks]();
     lockSpy.resetHistory();
 
     const physicalProps: PhysicalElementProps = {

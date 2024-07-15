@@ -27,7 +27,7 @@ import {
 import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 import { SettingsImpl } from "./SettingsImpl";
-import { implementationProhibited } from "../ImplementationProhibited";
+import { _implementationProhibited, _nativeDb } from "../Symbols";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
@@ -87,7 +87,7 @@ function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cac
 }
 
 class WorkspaceContainerImpl implements WorkspaceContainer {
-  public readonly [implementationProhibited] = undefined;
+  public readonly [_implementationProhibited] = undefined;
   public readonly workspace: WorkspaceImpl;
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainerId;
@@ -184,7 +184,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
 
 /** Implementation of WorkspaceDb */
 class WorkspaceDbImpl implements WorkspaceDb {
-  public readonly [implementationProhibited] = undefined;
+  public readonly [_implementationProhibited] = undefined;
   public readonly sqliteDb = new WorkspaceSqliteDb();
   public readonly dbName: WorkspaceDbName;
   protected readonly _container: WorkspaceContainer;
@@ -196,7 +196,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   public get isOpen() { return this.sqliteDb.isOpen; }
   public get container(): WorkspaceContainer { return this._container; }
   public queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined {
-    const info = this.sqliteDb.nativeDb.queryEmbeddedFile(rscName);
+    const info = this.sqliteDb[_nativeDb].queryEmbeddedFile(rscName);
     if (undefined === info)
       return undefined;
 
@@ -234,7 +234,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
   public get manifest(): WorkspaceDbManifest {
     return this._manifest ??= this.withOpenDb((db) => {
-      const manifestJson = db.nativeDb.queryFileProperty(workspaceManifestProperty, true) as string | undefined;
+      const manifestJson = db[_nativeDb].queryFileProperty(workspaceManifestProperty, true) as string | undefined;
       return manifestJson ? JSON.parse(manifestJson) : { workspaceName: this.dbName };
     });
   }
@@ -261,7 +261,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
       const blobReader = SQLiteDb.createBlobIO();
-      blobReader.open(this.sqliteDb.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0) });
+      blobReader.open(this.sqliteDb[_nativeDb], { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0) });
       return blobReader;
     });
   }
@@ -295,7 +295,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
       else
         IModelJsFs.recursiveMkDirSync(dirname(localFileName));
 
-      db.nativeDb.extractEmbeddedFile({ name: rscName, localFileName });
+      db[_nativeDb].extractEmbeddedFile({ name: rscName, localFileName });
       const date = new Date(info.date);
       fs.utimesSync(localFileName, date, date); // set the last-modified date of the file to match date in container
       fs.chmodSync(localFileName, "0444"); // set file readonly
@@ -333,7 +333,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
 /** Implementation of Workspace */
 class WorkspaceImpl implements Workspace {
-  public readonly [implementationProhibited] = undefined;
+  public readonly [_implementationProhibited] = undefined;
   private _containers = new Map<WorkspaceContainerId, WorkspaceContainerImpl>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
@@ -479,7 +479,7 @@ class EditorWorkspaceImpl extends WorkspaceImpl {
 }
 
 class EditorImpl implements WorkspaceEditor {
-  public readonly [implementationProhibited] = undefined;
+  public readonly [_implementationProhibited] = undefined;
   public workspace = new EditorWorkspaceImpl(new SettingsImpl(), { containerDir: join(IModelHost.cacheDir, workspaceEditorName) });
 
   public async initializeContainer(args: CreateNewWorkspaceContainerArgs) {
@@ -667,7 +667,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   }
 
   public updateManifest(manifest: WorkspaceDbManifest) {
-    this.sqliteDb.nativeDb.saveFileProperty(workspaceManifestProperty, JSON.stringify(manifest));
+    this.sqliteDb[_nativeDb].saveFileProperty(workspaceManifestProperty, JSON.stringify(manifest));
     this._manifest = undefined;
   }
   public updateSettingsResource(settings: SettingsContainer, rscName?: string) {
@@ -698,7 +698,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
       const blobWriter = SQLiteDb.createBlobIO();
-      blobWriter.open(this.sqliteDb.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0), writeable: true });
+      blobWriter.open(this.sqliteDb[_nativeDb], { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0), writeable: true });
       return blobWriter;
     });
   }
@@ -710,11 +710,11 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     fileExt = fileExt ?? extname(localFileName);
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
-    this.sqliteDb.nativeDb.embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
+    this.sqliteDb[_nativeDb].embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
   public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {
     this.queryFileResource(rscName); // throws if not present
-    this.sqliteDb.nativeDb.replaceEmbeddedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName) });
+    this.sqliteDb[_nativeDb].replaceEmbeddedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName) });
   }
   public removeFile(rscName: WorkspaceResourceName): void {
     const file = this.queryFileResource(rscName);
@@ -722,7 +722,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
       throw new Error(`file resource "${rscName}" does not exist`);
     if (file && fs.existsSync(file.localFileName))
       fs.unlinkSync(file.localFileName);
-    this.sqliteDb.nativeDb.removeEmbeddedFile(rscName);
+    this.sqliteDb[_nativeDb].removeEmbeddedFile(rscName);
   }
 }
 

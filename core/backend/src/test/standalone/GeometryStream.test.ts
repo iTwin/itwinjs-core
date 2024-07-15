@@ -20,7 +20,7 @@ import {
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
+import { _nativeDb, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
 import { createBRepDataProps } from "../GeometryTestUtil";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Timer } from "../TestUtils";
@@ -511,7 +511,7 @@ describe("GeometryStream", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId, styleId])!;
+    const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId, styleId])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
     assert.isTrue(usageInfo.usedIds!.includes(partId));
@@ -574,7 +574,7 @@ describe("GeometryStream", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId, styleId, seedElement.category])!;
+    const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId, styleId, seedElement.category])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
     assert.isTrue(usageInfo.spatialCategoryIds!.includes(seedElement.category));
@@ -1082,7 +1082,7 @@ describe("GeometryStream", () => {
     }
     assert.isTrue(6 === iShape);
 
-    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId])!;
+    const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isTrue(usageInfo.usedIds!.includes(partId));
   });
@@ -1195,7 +1195,7 @@ describe("GeometryStream", () => {
       assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
     }
 
-    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId])!;
+    const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isUndefined(usageInfo.usedIds, "GeometryPart should not to be used by any GeometricElement");
   });

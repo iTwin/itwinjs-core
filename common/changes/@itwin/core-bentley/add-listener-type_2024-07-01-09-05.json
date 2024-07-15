@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Add `ListenerType` helper to retrieve listener type of a `BeEvent`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

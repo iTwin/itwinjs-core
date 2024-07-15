@@ -1,6 +1,27 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 27 Jun 2024 21:13:04 GMT and should not be manually modified.
+This log was last generated on Fri, 12 Jul 2024 14:44:31 GMT and should not be manually modified.
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:55 GMT
+
+### Updates
+
+- Add static metadata to OpenTelemetry spans
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+### Updates
+
+- Able to recover from when ExclusiveRootClassId is NULL for overflow table
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:23 GMT
+
+### Updates
+
+- Update IModel.changeset when changes are made by another process.
 
 ## 4.7.3
 Thu, 27 Jun 2024 21:09:02 GMT
