@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Able to recover from when ExclusiveRootClassId is NULL for overflow table",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
