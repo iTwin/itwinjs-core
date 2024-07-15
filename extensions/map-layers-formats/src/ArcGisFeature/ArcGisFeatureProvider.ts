@@ -118,7 +118,10 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }
 
-    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired
+      || json?.error?.code === ArcGisErrorCode.InvalidToken
+      || json?.error?.code === ArcGisErrorCode.MissingPermissions
+    ) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);

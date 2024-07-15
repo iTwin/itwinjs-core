@@ -397,8 +397,6 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     // (undocumented)
     onInstall(): Promise<boolean>;
     // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     onPostInstall(): Promise<void>;
@@ -440,8 +438,6 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onInstall(): Promise<boolean>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)

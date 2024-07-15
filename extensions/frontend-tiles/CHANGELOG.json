@@ -2,6 +2,24 @@
   "name": "@itwin/frontend-tiles",
   "entries": [
     {
+      "version": "4.7.6",
+      "tag": "@itwin/frontend-tiles_v4.7.6",
+      "date": "Fri, 12 Jul 2024 14:42:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.5",
+      "tag": "@itwin/frontend-tiles_v4.7.5",
+      "date": "Thu, 11 Jul 2024 15:24:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve resolution of planar clip masks"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.7.4",
       "tag": "@itwin/frontend-tiles_v4.7.4",
       "date": "Mon, 01 Jul 2024 14:06:24 GMT",
