@@ -3032,6 +3032,18 @@ export class ScreenViewport extends Viewport {
     return vp;
   }
 
+  public static wgCreate(parentDiv: HTMLDivElement, _view: ViewState): ScreenViewport {
+    if (0 === parentDiv.clientWidth || 0 === parentDiv.clientHeight)
+      throw new Error("viewport cannot be created from a div with zero width or height");
+
+    const canvas = document.createElement("canvas");
+    const vp = new this(canvas, parentDiv, IModelApp.wgRenderSystem.createTarget(canvas));
+    vp.initialize();
+
+    // vp.changeView(view);
+    return vp;
+  }
+
   /** @internal */
   public override dispose(): void {
     super.dispose();

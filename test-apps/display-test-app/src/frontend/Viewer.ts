@@ -163,6 +163,7 @@ export interface ViewerProps {
 export class Viewer extends Window {
   public readonly views: ViewList;
   public readonly viewport: ScreenViewport;
+  public readonly wgViewport: ScreenViewport;
   public readonly toolBar: ToolBar;
   public readonly disableEdges: boolean;
   private _imodel: IModelConnection;
@@ -217,6 +218,7 @@ export class Viewer extends Window {
     this.disableEdges = true === props.disableEdges;
     this._imodel = props.iModel;
     this.viewport = ScreenViewport.create(this.contentDiv, view);
+    this.wgViewport = ScreenViewport.wgCreate(this.contentDiv, view);
     this.views = views;
 
     this._maybeDisableEdges();
@@ -472,6 +474,7 @@ export class Viewer extends Window {
   private async openView(view: ViewState): Promise<void> {
     await this.setView(view);
     IModelApp.viewManager.addViewport(this.viewport);
+    // IModelApp.viewManager.addViewport(this.wgViewport);
   }
 
   private async clearViews(): Promise<void> {
