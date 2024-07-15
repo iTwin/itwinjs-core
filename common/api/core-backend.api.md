@@ -4701,6 +4701,10 @@ export namespace SchemaSync {
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    withReadonlyAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
