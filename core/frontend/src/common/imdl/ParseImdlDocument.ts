@@ -257,7 +257,8 @@ export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams {
   };
 }
 
-function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
+/** @internal */
+export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   return {
     ...params,
     segments: params.segments ? {

@@ -18,6 +18,8 @@ import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { createPointStringParams } from "./PointStringParams";
 import { VertexTable } from "./VertexTable";
 import { createPolylineParams } from "./PolylineParams";
+import { createMeshParams } from "./VertexTableBuilder";
+import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
@@ -169,8 +171,25 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     return polylineArgs.flags.isDisjoint ? this.createPointStringPrimitive(polylineArgs) : this.createPolylinePrimitive(polylineArgs);
   }
 
-  private createMeshPrimitive(_args: MeshArgs): ImdlModel.Primitive | undefined {
-    return undefined; // ###TODO
+  private createMeshPrimitive(args: MeshArgs): ImdlModel.Primitive | undefined {
+    const params = createMeshParams(args, this._constraints.maxTextureSize, true);
+    
+    return {
+      type: "mesh",
+      params: {
+        ...params,
+        vertices: convertVertexTable(params.vertices),
+        auxChannels: params.auxChannels?.toJSON(),
+        edges: params.edges ? edgeParamsToImdl(params.edges) : undefined,
+        surface: {
+          ...params.surface,
+          indices: params.surface.indices.data,
+          // ###TODO support materials and textures.
+          material: undefined,
+          textureMapping: undefined,
+        },
+      },
+    };
   }
 
   private createPolylinePrimitive(args: PolylineArgs): ImdlModel.Primitive | undefined {
