@@ -1333,7 +1333,7 @@ describe("ContentTraverser", () => {
       values: {
         [parentField.name]: [
           {
-            label: nestedContentLabel1,
+            displayLabel: nestedContentLabel1,
             primaryKeys: [createTestECInstanceKey()],
             values: {
               [primitiveField1.name]: "value11",
@@ -1346,7 +1346,7 @@ describe("ContentTraverser", () => {
             mergedFieldNames: [],
           },
           {
-            label: nestedContentLabel2,
+            displayLabel: nestedContentLabel2,
             primaryKeys: [createTestECInstanceKey()],
             values: {
               [primitiveField1.name]: "value21",
@@ -1385,13 +1385,13 @@ describe("ContentTraverser", () => {
       values: {
         [parentNestedContentField.name]: [
           {
-            label: parentNestedContentLabel,
+            displayLabel: parentNestedContentLabel,
             primaryKeys: [createTestECInstanceKey()],
             values: {
               [parentPrimitiveField.name]: "parentPrimitiveValue",
               [childNestedContentField.name]: [
                 {
-                  label: childNestedContentLabel,
+                  displayLabel: childNestedContentLabel,
                   primaryKeys: [createTestECInstanceKey()],
                   values: {
                     [childPrimitiveField.name]: "ChildPrimitiveValue",
