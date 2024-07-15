@@ -10,7 +10,7 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -186,6 +186,47 @@ describe("CloudSqlite", () => {
     writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
     expect(writeLockExpiryTimeNoWriteLock).to.equal("");
     container.disconnect({detach: true});
+  });
+
+  it.only("should LogLevel.Trace set LogMask to ALL", async () => {
+    Logger.initializeToConsole();
+    // Set a spy on the actual print function
+    const consoleLogSpy = sinon.spy(console, "log");
+    const testContainer0 = testContainers[0];
+
+    const executeWithWriteLock = async (cacheName: string, fileName: string) => {
+      const testCache = azSqlite.makeCaches([cacheName])[0];
+      testContainer0.connect(testCache);
+      await CloudSqlite.withWriteLock({ user: user1, container: testContainer0 }, async () => {
+        await testContainer0.copyDatabase("testBim", fileName);
+        const db = await BriefcaseDb.open({ fileName, container: testContainer0 });
+        db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
+        db.close();
+      });
+      testContainer0.disconnect();
+    };
+    // LogLevel.Trace should set logMask to ALL, including dirty block
+    Logger.setLevel("CloudSqlite", LogLevel.Trace);
+    await executeWithWriteLock("testCache1", "copyTestBim1");
+    // Check that Trace messages were logged
+    sinon.assert.called(consoleLogSpy);
+    let traceLogs = consoleLogSpy.getCalls().filter((call) => call.args[0].includes("Trace")).length;
+    expect(traceLogs).to.be.greaterThan(0, "Expect Trace logs but not found");
+    // Check for a dirty block log message
+    let dirtyBlockLogMsg = consoleLogSpy.getCalls().some((call) =>call.args[0].includes("is now dirty block"));
+    expect(dirtyBlockLogMsg).to.be.true;
+    consoleLogSpy.resetHistory();
+
+    // LogLevel.Info uses the default log
+    Logger.setLevel("CloudSqlite", LogLevel.Info);
+    await executeWithWriteLock("testCache2", "copyTestBim2");
+    // Check that NO Trace messages were logged
+    traceLogs = consoleLogSpy.getCalls().filter((call) => call.args[0].includes("Trace")).length;
+    expect(traceLogs).to.equal(0, "Expect NO Trace logs but found some");
+    // Check for a dirty block log message(expect nothing)
+    dirtyBlockLogMsg = consoleLogSpy.getCalls().some((call) =>call.args[0].includes("is now dirty block"));
+    expect(dirtyBlockLogMsg).to.be.false;
+    consoleLogSpy.resetHistory();
   });
 
   it("should query bcv stat table", async () => {
