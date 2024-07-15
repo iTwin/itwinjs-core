@@ -35,6 +35,7 @@ import {
   createTestSimpleContentField,
 } from "../_helpers/Content";
 import { createTestECInstanceKey } from "../_helpers/EC";
+import { NestedContentValue } from "../../presentation-common";
 
 describe("ContentTraverser", () => {
   class TestContentVisitor implements IContentVisitor {
@@ -1326,14 +1327,14 @@ describe("ContentTraverser", () => {
     const primitiveField1 = createTestSimpleContentField({ name: "primitive1", category });
     const primitiveField2 = createTestSimpleContentField({ name: "primitive2", category });
     const parentField = createTestNestedContentField({ nestedFields: [primitiveField1, primitiveField2], category });
-    const nestedContentLabel1 = "Description 1";
-    const nestedContentLabel2 = "Description 2";
+    const nestedContentLabel1 = { displayValue: "Description 1", typeName: "string", rawValue: "" };
+    const nestedContentLabel2 = { displayValue: "Description 2", typeName: "string", rawValue: "" };
     const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
     const item = createTestContentItem({
       values: {
         [parentField.name]: [
           {
-            displayLabel: nestedContentLabel1,
+            labelDefinition: nestedContentLabel1,
             primaryKeys: [createTestECInstanceKey()],
             values: {
               [primitiveField1.name]: "value11",
@@ -1344,9 +1345,9 @@ describe("ContentTraverser", () => {
               [primitiveField2.name]: "display value 12",
             },
             mergedFieldNames: [],
-          },
+          } satisfies NestedContentValue,
           {
-            displayLabel: nestedContentLabel2,
+            labelDefinition: nestedContentLabel2,
             primaryKeys: [createTestECInstanceKey()],
             values: {
               [primitiveField1.name]: "value21",
@@ -1357,7 +1358,7 @@ describe("ContentTraverser", () => {
               [primitiveField2.name]: "display value 22",
             },
             mergedFieldNames: [],
-          },
+          } satisfies NestedContentValue,
         ],
       },
       displayValues: {
@@ -1367,8 +1368,8 @@ describe("ContentTraverser", () => {
     traverseContentItem(visitor, descriptor, item);
 
     expect(startStructSpy).to.be.calledTwice;
-    expect(startStructSpy.firstCall.firstArg).to.containSubset({ description: nestedContentLabel1 });
-    expect(startStructSpy.secondCall.firstArg).to.containSubset({ description: nestedContentLabel2 });
+    expect(startStructSpy.firstCall.firstArg).to.containSubset({ label: nestedContentLabel1 });
+    expect(startStructSpy.secondCall.firstArg).to.containSubset({ label: nestedContentLabel2 });
   });
 
   it("passes deeply nested `NestedContentValue` labels to `startStruct`", () => {
@@ -1378,20 +1379,20 @@ describe("ContentTraverser", () => {
     const childPrimitiveField = createTestSimpleContentField({ name: "primitive2", category });
     const childNestedContentField = createTestNestedContentField({ nestedFields: [childPrimitiveField], category });
     const parentNestedContentField = createTestNestedContentField({ nestedFields: [parentPrimitiveField, childNestedContentField], category });
-    const parentNestedContentLabel = "Description 1";
-    const childNestedContentLabel = "Description 2";
+    const parentNestedContentLabel = { displayValue: "Description 1", typeName: "string", rawValue: "" };
+    const childNestedContentLabel = { displayValue: "Description 2", typeName: "string", rawValue: "" };
     const descriptor = createTestContentDescriptor({ fields: [parentNestedContentField], categories: [category] });
     const item = createTestContentItem({
       values: {
         [parentNestedContentField.name]: [
           {
-            displayLabel: parentNestedContentLabel,
+            labelDefinition: parentNestedContentLabel,
             primaryKeys: [createTestECInstanceKey()],
             values: {
               [parentPrimitiveField.name]: "parentPrimitiveValue",
               [childNestedContentField.name]: [
                 {
-                  displayLabel: childNestedContentLabel,
+                  labelDefinition: childNestedContentLabel,
                   primaryKeys: [createTestECInstanceKey()],
                   values: {
                     [childPrimitiveField.name]: "ChildPrimitiveValue",
@@ -1400,7 +1401,7 @@ describe("ContentTraverser", () => {
                     [childNestedContentField.name]: "ChildPrimitiveDisplayValue",
                   },
                   mergedFieldNames: [],
-                },
+                } satisfies NestedContentValue,
               ],
             },
             displayValues: {
@@ -1408,7 +1409,7 @@ describe("ContentTraverser", () => {
               [childNestedContentField.name]: "ChildNestedContentDisplayValue",
             },
             mergedFieldNames: [],
-          },
+          } satisfies NestedContentValue,
         ],
       },
       displayValues: {
@@ -1418,8 +1419,8 @@ describe("ContentTraverser", () => {
     traverseContentItem(visitor, descriptor, item);
 
     expect(startStructSpy).to.be.calledTwice;
-    expect(startStructSpy.firstCall.firstArg).to.containSubset({ description: parentNestedContentLabel });
-    expect(startStructSpy.secondCall.firstArg).to.containSubset({ description: childNestedContentLabel });
+    expect(startStructSpy.firstCall.firstArg).to.containSubset({ label: parentNestedContentLabel });
+    expect(startStructSpy.secondCall.firstArg).to.containSubset({ label: childNestedContentLabel });
   });
 });
 
