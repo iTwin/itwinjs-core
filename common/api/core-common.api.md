@@ -2543,6 +2543,14 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
 }
 
 // @public
+export interface ECSqlRowArg {
+    abbreviateBlobs?: boolean;
+    convertClassIdsToClassNames?: boolean;
+    includeMetaData?: boolean;
+    rowFormat?: QueryRowFormat;
+}
+
+// @public
 export enum ECSqlSystemProperty {
     // (undocumented)
     ECClassId = 1,

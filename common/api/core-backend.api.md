@@ -65,6 +65,7 @@ import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
+import { ECSqlRowArg } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
@@ -1845,7 +1846,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     getColumnCount(): number;
     // @internal
     getNativeSql(): string;
-    getRow(args?: IModelJsNative.ECSqlRowArg): any;
+    getRow(args?: ECSqlRowArg): any;
     getValue(columnIx: number): ECSqlValue;
     get isPrepared(): boolean;
     next(): IteratorResult<any>;

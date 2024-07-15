@@ -8,7 +8,7 @@
 
 import { assert, DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
+import { ECJsNames, ECSqlRowArg, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -322,7 +322,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * - [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
    * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
-  public getRow(args?: IModelJsNative.ECSqlRowArg): any {
+  public getRow(args?: ECSqlRowArg): any {
     if (!args) {
       args = { abbreviateBlobs: false, convertClassIdsToClassNames: true, rowFormat: QueryRowFormat.UseJsPropertyNames, includeMetaData: this._props.length === 0 };
     }
