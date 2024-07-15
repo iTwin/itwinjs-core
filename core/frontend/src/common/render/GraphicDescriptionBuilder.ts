@@ -13,21 +13,33 @@ import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { GraphicType } from "./GraphicType";
 import { PickableGraphicOptions } from "./BatchOptions";
 
+/**
+ * @beta
+ */
 export interface GraphicDescription {
   // ###TODO [_implementationProhibited]
 }
 
+/**
+ * @beta
+ */
 export namespace GraphicDescription {
   export function collectTransferables(description: GraphicDescription): Transferable[] {
     return collectGraphicDescriptionTransferables(description);
   }
 }
 
+/**
+ * @beta
+ */
 export interface GraphicDescriptionConstraints {
   // ###TODO [_implementationProhibited]
   readonly maxTextureSize: number;
 }
 
+/**
+ * @beta
+ */
 export type FinishGraphicDescriptionArgs = {
   viewIndependentOrigin?: Point3d;
   instances?: never;
@@ -36,11 +48,17 @@ export type FinishGraphicDescriptionArgs = {
   viewIndependentOrigin?: never;
 }
   
+/**
+ * @beta
+ */
 export interface ComputeGraphicDescriptionChordToleranceArgs {
   builder: GraphicDescriptionBuilder;
   computeRange: () => Range3d;
 }
 
+/**
+ * @beta
+ */
 export interface GraphicDescriptionBuilderOptions {
   type: GraphicType;
   placement?: Transform;
@@ -50,11 +68,17 @@ export interface GraphicDescriptionBuilderOptions {
   constraints: GraphicDescriptionConstraints;
 }
 
+/**
+ * @beta
+ */
 export interface GraphicDescriptionBuilder extends GraphicAssembler {
   // ###TODO [_implementationProhibited]
   finish(args?: FinishGraphicDescriptionArgs): GraphicDescription;
 }
 
+/**
+ * @beta
+ */
 export namespace GraphicDescriptionBuilder {
   export function create(options: GraphicDescriptionBuilderOptions): GraphicDescriptionBuilder {
     return new GraphicDescriptionBuilderImpl(options);

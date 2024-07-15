@@ -19,6 +19,9 @@ import { GeometryAccumulator } from "../internal/render/GeometryAccumulator";
 import { DisplayParams } from "../internal/render/DisplayParams";
 import { Geometry } from "../internal/render/GeometryPrimitives";
 
+/**
+ * @beta
+ */
 export type GraphicAssemblerOptions = {
   type: GraphicType;
   placement: Transform;
@@ -29,6 +32,9 @@ export type GraphicAssemblerOptions = {
   analysisStyle?: AnalysisStyle;
 }
 
+/**
+ * @public
+ */
 export abstract class GraphicAssembler {
   // ###TODO protected abstract [_implementationProhibited]: unknown;
 
