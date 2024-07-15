@@ -85,20 +85,21 @@ export namespace BlobContainer {
     metadata: Metadata;
   }
 
-  /** The URI and Id of the container. */
-  export interface UriAndId {
-    baseUri: string;
-    containerId: ContainerId;
-  }
-
   /** Information required to access an existing container. */
-  export interface AccessContainerProps extends UriAndId {
+  export interface AccessContainerProps {
+    /** Id of the container. */
+    containerId: ContainerId;
+    /** User's access token */
     userToken: UserToken;
   }
 
   /** Information about a newly created container. */
-  export interface CreatedContainerProps extends UriAndId {
-    /** name of the blob storage provider. */
+  export interface CreatedContainerProps {
+    /** Id of the container. */
+    containerId: ContainerId;
+    /** Base URI for the container */
+    baseUri: string;
+    /** Name of the blob storage provider. */
     provider: Provider;
   }
 
@@ -137,10 +138,35 @@ export namespace BlobContainer {
     containerId?: ContainerId;
   }
 
+  /** Information required to query containers */
+  export interface QueryContainersProps {
+    /** User's access token */
+    userToken: UserToken;
+    /** iTwinId of the owner of the containers */
+    iTwinId: Id64String;
+    /** IModelId associated with containers. If undefined, containers of all iModels will be returned.  */
+    iModelId?: Id64String;
+    /** The exact label of the container(s). If undefined, containers with  */
+    label?: string;
+  }
+
+  /** Properties of a container. */
+  export interface ContainerProps {
+    /** Id of the container. */
+    containerId: ContainerId;
+    /** Scope of the container. */
+    scope: Scope;
+    /** Metadata of the container. */
+    metadata: Metadata;
+  }
+
   /** Methods to create, delete, and access blob containers. */
   export interface ContainerService {
-    /**  Create a new blob container. Throws on failure (e.g. access denied or container already exists.) */
+    /** Create a new blob container. Throws on failure (e.g. access denied or container already exists.) */
     create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
+
+    /** Query containers for an iTwin */
+    query(props: QueryContainersProps): Promise<ContainerProps[]>;
 
     /**
      * Delete an existing blob container.
@@ -148,13 +174,13 @@ export namespace BlobContainer {
      */
     delete(container: AccessContainerProps): Promise<void>;
 
-    /** query the Scope for a container */
+    /** Query the Scope for a container */
     queryScope(container: AccessContainerProps): Promise<Scope>;
 
-    /** query the Metadata for a container */
+    /** Query the Metadata for a container */
     queryMetadata(container: AccessContainerProps): Promise<Metadata>;
 
-    /** update the json properties of this container */
+    /** Update the json properties of this container */
     updateJson(container: AccessContainerProps, json: SettingsContainer): Promise<void>;
 
     /** Request a `ContainerToken` for a container. Throws on failure. */

@@ -34,7 +34,7 @@ export namespace AzuriteTest {
     export type TestContainer = CloudSqlite.CloudContainer;
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {
-      container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, accessLevel });
+      container.accessToken = await CloudSqlite.requestToken({ containerId: container.containerId, accessLevel });
     };
 
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
@@ -57,7 +57,7 @@ export namespace AzuriteTest {
 
       const containerService = BlobContainer.service!;
       try {
-        await containerService.delete({ containerId: createProps.containerId!, baseUri, userToken: createProps.userToken });
+        await containerService.delete({ containerId: createProps.containerId!, userToken: createProps.userToken });
       } catch (e) {
       }
 
@@ -151,6 +151,43 @@ export namespace AzuriteTest {
 
       await azCont.create(opts);
       return address;
+    },
+
+    query: async (arg: BlobContainer.QueryContainersProps): Promise<BlobContainer.ContainerProps[]> => {
+      const blobServiceClient = new azureBlob.BlobServiceClient(baseUri, pipeline);
+
+      const containers: BlobContainer.ContainerProps[] = [];
+      for await (const container of blobServiceClient.listContainers()) {
+        const iTwinId = container.metadata!.itwinid;
+        const iModelId = container.metadata?.imodelid;
+        const label = container.metadata?.label;
+
+        if (iTwinId !== arg.iTwinId)
+          continue;
+
+        if (arg.iModelId && iModelId !== arg.iModelId)
+          continue;
+
+        if (arg.label && label !== arg.label)
+          continue;
+
+        containers.push({
+          containerId: container.name,
+          scope: {
+            iTwinId,
+            iModelId,
+            ownerGuid: container.metadata?.ownerguid,
+          },
+          metadata: {
+            containerType: container.metadata!.containertype,
+            label: container.metadata!.label,
+            description: container.metadata?.description,
+            json: container.metadata?.json ? JSON.parse(container.metadata.json) : undefined,
+          },
+        });
+      }
+
+      return containers;
     },
 
     delete: async (arg: BlobContainer.AccessContainerProps): Promise<void> => {

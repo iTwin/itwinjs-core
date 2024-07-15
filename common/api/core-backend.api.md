@@ -402,21 +402,29 @@ export class BisCoreSchema extends Schema {
 // @beta
 export namespace BlobContainer {
     let service: BlobContainer.ContainerService | undefined;
-    export interface AccessContainerProps extends UriAndId {
-        // (undocumented)
+    export interface AccessContainerProps {
+        containerId: ContainerId;
         userToken: UserToken;
     }
     export type ContainerId = string;
+    export interface ContainerProps {
+        containerId: ContainerId;
+        metadata: Metadata;
+        scope: Scope;
+    }
     export interface ContainerService {
         create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
+        query(props: QueryContainersProps): Promise<ContainerProps[]>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
         updateJson(container: AccessContainerProps, json: SettingsContainer): Promise<void>;
     }
     export type ContainerToken = AccessToken;
-    export interface CreatedContainerProps extends UriAndId {
+    export interface CreatedContainerProps {
+        baseUri: string;
+        containerId: ContainerId;
         provider: Provider;
     }
     export interface CreateNewContainerProps {
@@ -433,6 +441,12 @@ export namespace BlobContainer {
         label: string;
     }
     export type Provider = "azure" | "google";
+    export interface QueryContainersProps {
+        iModelId?: Id64String;
+        iTwinId: Id64String;
+        label?: string;
+        userToken: UserToken;
+    }
     export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
     export interface RequestTokenProps extends AccessContainerProps {
         accessLevel?: RequestAccessLevel;
@@ -449,12 +463,6 @@ export namespace BlobContainer {
         provider: Provider;
         scope: Scope;
         token: ContainerToken;
-    }
-    export interface UriAndId {
-        // (undocumented)
-        baseUri: string;
-        // (undocumented)
-        containerId: ContainerId;
     }
     export type UserToken = AccessToken;
 }
