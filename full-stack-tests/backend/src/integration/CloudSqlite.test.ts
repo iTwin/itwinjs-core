@@ -188,7 +188,7 @@ describe("CloudSqlite", () => {
     container.disconnect({detach: true});
   });
 
-  it.only("should LogLevel.Trace set LogMask to ALL", async () => {
+  it("should LogLevel.Trace set LogMask to ALL", async () => {
     Logger.initializeToConsole();
     // Set a spy on the actual print function
     const consoleLogSpy = sinon.spy(console, "log");
