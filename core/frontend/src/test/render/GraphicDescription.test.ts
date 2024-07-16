@@ -7,11 +7,12 @@ import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, LinePixels, ModelFeature, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../common";
+import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, WorkerGraphicDescriptionContext } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
+import { TransientIdSequence } from "@itwin/core-bentley";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   expect(range.low.x).to.equal(lx);
@@ -26,7 +27,10 @@ describe.only("GraphicDescriptionBuilder", () => {
   let constraints: GraphicDescriptionConstraints;
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
-    constraints = IModelApp.renderSystem.getGraphicDescriptionConstraints();
+    const iModel = { transientIds: new TransientIdSequence() } as any;
+    const contextProps  = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
+    const context = WorkerGraphicDescriptionContext.fromProps(contextProps);
+    constraints = context.constraints;
   });
 
   after(async () => IModelApp.shutdown());

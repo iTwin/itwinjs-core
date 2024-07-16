@@ -8,18 +8,19 @@
 
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
-import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../render/GraphicDescriptionBuilder";
+import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
 import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
 import { BatchOptions } from "../../render/BatchOptions";
-import { assert, Id64String } from "@itwin/core-bentley";
+import { assert, Id64String, TransientIdSequence } from "@itwin/core-bentley";
 import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { createPointStringParams } from "./PointStringParams";
 import { VertexTable } from "./VertexTable";
 import { createPolylineParams } from "./PolylineParams";
 import { createMeshParams } from "./VertexTableBuilder";
 import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
+import { _implementationProhibited } from "../Symbols";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
@@ -33,6 +34,50 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
   primitives: ImdlModel.Primitive[];
   translation?: XYAndZ;
   batch?: BatchDescription;
+}
+
+export interface WorkerGraphicDescriptionContextPropsImpl extends WorkerGraphicDescriptionContextProps {
+  readonly constraints: GraphicDescriptionConstraints;
+  readonly minTransientLocalId: number;
+}
+
+export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionContextProps {
+  readonly minTransientLocalId: number;
+  readonly maxTransientLocalId: number;
+}
+
+export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescriptionContext {
+  public readonly [_implementationProhibited] = undefined;
+  public readonly constraints: GraphicDescriptionConstraints;
+  private readonly _transientIds: TransientIdSequence;
+  private readonly _minTransientLocalId: number;
+  private _maxTransientLocalId: number;
+
+  public constructor(props: WorkerGraphicDescriptionContextProps) {
+    const propsImpl = props as WorkerGraphicDescriptionContextPropsImpl;
+    if (typeof propsImpl.minTransientLocalId !== "number" || typeof propsImpl.constraints !== "object") {
+      throw new Error("Invalid WorkerGraphicDescriptionContextProps");
+    }
+
+    this.constraints = propsImpl.constraints;
+    this._transientIds = new TransientIdSequence(propsImpl.minTransientLocalId);
+    this._minTransientLocalId = this._maxTransientLocalId = propsImpl.minTransientLocalId + 1;
+  }
+
+  public getNextTransientId(): Id64String {
+    const id = this._transientIds.getNext();
+    this._maxTransientLocalId = this._transientIds.currentLocalId;
+    return id;
+  }
+
+  public toProps(_transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
+    // We don't yet have any transferable objects. In the future we expect to support transferring texture image data for textures created on the worker thread.
+    return {
+      [_implementationProhibited]: undefined,
+      minTransientLocalId: this._minTransientLocalId,
+      maxTransientLocalId: this._maxTransientLocalId,
+    };
+  }
 }
 
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {

@@ -43,7 +43,9 @@ import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./Scre
 import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
-import { GraphicDescription, GraphicDescriptionConstraints } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescription, GraphicDescriptionConstraints, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionBuilder";
+import { WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { _implementationProhibited } from "../common/internal/Symbols";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -772,17 +774,23 @@ export abstract class RenderSystem implements IDisposable {
   /**
    * @beta
    */
-  public getGraphicDescriptionConstraints(): GraphicDescriptionConstraints {
-    return {
-      maxTextureSize: this.maxTextureSize,
-    };
+  public async createGraphicFromDescription(args: { description: GraphicDescription }): Promise<RenderGraphic | undefined> {
+    return createGraphicFromDescription(args.description, this);
   }
 
   /**
    * @beta
    */
-  public async createGraphicFromDescription(args: { description: GraphicDescription }): Promise<RenderGraphic | undefined> {
-    return createGraphicFromDescription(args.description, this);
+  public createWorkerGraphicDescriptionContextProps(iModel: IModelConnection): WorkerGraphicDescriptionContextProps {
+    const props: WorkerGraphicDescriptionContextPropsImpl = {
+      [_implementationProhibited]: undefined,
+      minTransientLocalId: iModel.transientIds.currentLocalId,
+      constraints: {
+        maxTextureSize: this.maxTextureSize,
+      },
+    };
+
+    return props;
   }
 }
 

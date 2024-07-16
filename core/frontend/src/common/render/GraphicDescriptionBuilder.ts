@@ -7,7 +7,7 @@
  */
 
 import { GraphicAssembler } from "./GraphicAssembler";
-import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
+import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl, WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { GraphicType } from "./GraphicType";
@@ -41,7 +41,7 @@ export interface GraphicDescriptionConstraints {
 }
 
 /** Describes a [[WorkerGraphicDescriptionContext]] in a form that can be passed from the main thread to a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker).
- * @see [[RenderSystem.createWorkerGraphicDescriptionContext]] to obtain an implementation of this type.
+ * @see [[RenderSystem.createWorkerGraphicDescriptionContextProps]] to obtain an implementation of this type.
  * @beta
  */
 export interface WorkerGraphicDescriptionContextProps {
@@ -65,8 +65,8 @@ export interface WorkerGraphicDescriptionContext {
 
 /** @beta */
 export namespace WorkerGraphicDescriptionContext {
-  export function fromProps(_props: WorkerGraphicDescriptionContextProps): WorkerGraphicDescriptionContext {
-    throw new Error("###TODO");
+  export function fromProps(props: WorkerGraphicDescriptionContextProps): WorkerGraphicDescriptionContext {
+    return new WorkerGraphicDescriptionContextImpl(props);
   }
 }
 
