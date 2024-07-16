@@ -43,7 +43,7 @@ import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./Scre
 import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
-import { GraphicDescription, GraphicDescriptionContext } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescription, GraphicDescriptionConstraints } from "../common/render/GraphicDescriptionBuilder";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -772,7 +772,7 @@ export abstract class RenderSystem implements IDisposable {
   /**
    * @beta
    */
-  public getGraphicDescriptionContext(): GraphicDescriptionContext {
+  public getGraphicDescriptionConstraints(): GraphicDescriptionConstraints {
     return {
       maxTextureSize: this.maxTextureSize,
     };
