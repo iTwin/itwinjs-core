@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 28 Jun 2024 17:05:11 GMT and should not be manually modified.
+This log was last generated on Fri, 12 Jul 2024 14:44:31 GMT and should not be manually modified.
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:55 GMT
+
+### Updates
+
+- Fix missing login dialog for some ArcGIS services
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+### Updates
+
+- Improve resolution of planar clip masks
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:23 GMT
+
+_Version update only_
 
 ## 4.7.3
 Thu, 27 Jun 2024 21:09:02 GMT

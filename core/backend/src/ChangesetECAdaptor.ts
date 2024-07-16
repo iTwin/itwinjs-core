@@ -88,28 +88,33 @@ class ECDbMap {
     const sql = `
       SELECT
         JSON_OBJECT (
-          'id', FORMAT ('0x%x', [t].[id]),
-          'name', [t].[Name],
-          'type', (
-            CASE
-              [t].[type]
-              WHEN 0 THEN 'Primary'
-              WHEN 1 THEN 'Joined'
-              WHEN 2 THEN 'Existing'
-              WHEN 3 THEN 'Overflow'
-              WHEN 4 THEN 'Virtual'
-            END
-          ),
-          'exclusiveRootClassId', FORMAT ('0x%x', [t].[ExclusiveRootClassId]),
-          'isClassIdVirtual', (
-            SELECT
-              [c].[IsVirtual]
-            FROM
-              [ec_Column] [c]
-            WHERE
-              [c].[Name] = 'ECClassId' AND [c].[TableId] = [t].[Id]
-          )
+        'id', FORMAT ('0x%x', [t].[id]),
+        'name', [t].[Name],
+        'type', (
+          CASE
+            [t].[type]
+            WHEN 0 THEN 'Primary'
+            WHEN 1 THEN 'Joined'
+            WHEN 2 THEN 'Existing'
+            WHEN 3 THEN 'Overflow'
+            WHEN 4 THEN 'Virtual'
+          END
+        ),
+        'exclusiveRootClassId', FORMAT ('0x%x',
+          COALESCE (
+            [t].[ExclusiveRootClassId], (
+              SELECT [parent].[ExclusiveRootClassId]
+              FROM [ec_Table] [parent]
+              WHERE [parent].[Id] = [t].[ParentTableId] AND [parent].[Type] = 1))),
+        'isClassIdVirtual', (
+          SELECT
+            [c].[IsVirtual]
+          FROM
+            [ec_Column] [c]
+          WHERE
+            [c].[Name] = 'ECClassId' AND [c].[TableId] = [t].[Id]
         )
+      )
       FROM [ec_Table] [t]
       WHERE
         [t].[Name] = ?;
