@@ -252,6 +252,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batchDescr.noEmphasis).to.be.undefined;
     expect(batchDescr.modelId).to.equal("0x123");
     expect(batchDescr.isVolumeClassifier).to.be.undefined;
+    expectRange(Range3d.fromJSON(batchDescr.range), 0, 0, 2, 10, 5, 2);
 
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
     expect(branch instanceof Branch).to.be.true;
@@ -269,6 +270,8 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batch.featureTable.batchModelId).to.equal("0x123");
     expect(batch.featureTable.numFeatures).to.equal(1);
     expectFeature(0, batch.featureTable, { elementId: "0x123", geometryClass: GeometryClass.Primary, subCategoryId: "0", modelId: "0x123" });
+
+    expectRange(batch.range, 0, 0, 2, 10, 5, 2);
 
     const mesh = batch.graphic as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
@@ -299,6 +302,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batchDescr.featureTable.multiModel).to.be.false;
     expect(batchDescr.featureTable.numSubCategories).to.be.undefined;
     expect(batchDescr.modelId).to.equal("0x456");
+    expectRange(Range3d.fromJSON(batchDescr.range), 0, 0, 2, 10, 5, 2);
 
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
     expect(branch instanceof Branch).to.be.true;
@@ -310,6 +314,8 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batch.featureTable.batchModelId).to.equal("0x456");
     expect(batch.featureTable.numFeatures).to.equal(1);
     expectFeature(0, batch.featureTable, { elementId: "0x123", modelId: "0x456", subCategoryId: "0x789", geometryClass: GeometryClass.Construction });
+
+    expectRange(batch.range, 0, 0, 2, 10, 5, 2);
 
     const mesh = batch.graphic as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
@@ -344,6 +350,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batchDescr.featureTable.multiModel).to.be.false;
     expect(batchDescr.featureTable.numSubCategories).to.be.undefined;
     expect(batchDescr.modelId).to.equal("0xb1");
+    expectRange(Range3d.fromJSON(batchDescr.range), 1, 1, 1, 3, 3, 3);
 
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
     expect(branch instanceof Branch).to.be.true;
@@ -355,6 +362,8 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batch.featureTable.batchModelId).to.equal("0xb1");
     expect(batch.featureTable.numFeatures).to.equal(3);
 
+    expectRange(batch.range, 1, 1, 1, 3, 3, 3);
+    
     expectFeature(0, batch.featureTable, { elementId: "0xa1", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
     expectFeature(1, batch.featureTable, { elementId: "0xa2", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
     expectFeature(2, batch.featureTable, { elementId: "0xa3", subCategoryId: "0xc2", geometryClass: GeometryClass.Primary, modelId: "0xb1" });
