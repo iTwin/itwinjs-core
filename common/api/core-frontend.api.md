@@ -2303,6 +2303,9 @@ export function createDefaultViewFlagOverrides(options: {
 // @internal (undocumented)
 export function createEmptyRenderPlan(): RenderPlan;
 
+// @internal (undocumented)
+export function createGraphicFromDescription(descr: GraphicDescription, system: RenderSystem): Promise<RenderGraphic | undefined>;
+
 // @internal
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
 
@@ -9745,6 +9748,10 @@ export abstract class RenderSystem implements IDisposable {
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
+    // @beta (undocumented)
+    createGraphicFromDescription(args: {
+        description: GraphicDescription;
+    }): Promise<RenderGraphic | undefined>;
     // @internal
     createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic;
     // @internal
@@ -9820,6 +9827,8 @@ export abstract class RenderSystem implements IDisposable {
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined;
+    // @beta (undocumented)
+    getGraphicDescriptionConstraints(): GraphicDescriptionConstraints;
     // @internal (undocumented)
     get hasExternalTextureRequests(): boolean;
     // @internal (undocumented)

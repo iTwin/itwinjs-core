@@ -126,6 +126,7 @@ internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
 internal;createEmptyRenderPlan(): RenderPlan
+internal;createGraphicFromDescription(descr: GraphicDescription, system: RenderSystem): Promise
 internal;createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined
 internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined
