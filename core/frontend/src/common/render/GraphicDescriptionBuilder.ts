@@ -60,7 +60,7 @@ export interface WorkerGraphicDescriptionContext {
 
   readonly constraints: GraphicDescriptionConstraints;
   getNextTransientId(): Id64String;
-  toProps(): GraphicDescriptionContextProps;
+  toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
 }
 
 /** @beta */
