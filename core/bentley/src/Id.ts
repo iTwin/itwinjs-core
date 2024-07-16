@@ -662,7 +662,19 @@ export namespace Id64 {
  * @public
  */
 export class TransientIdSequence {
-  private _localId: number = 0;
+  private _localId: number;
+
+  public constructor(initialLocalId = 0) {
+    if (initialLocalId < 0 || Math.round(initialLocalId) !== initialLocalId) {
+      throw new Error("Local Id must be a non-negative integer");
+    }
+
+    this._localId = initialLocalId;
+  }
+
+  public get currentLocalId(): number {
+    return this._localId;
+  }
 
   /** Generate and return the next transient Id64String in the sequence.
    * @deprecated in 3.x. Use [[getNext]].
