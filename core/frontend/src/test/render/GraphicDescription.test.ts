@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
+  Cone, Point2d, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@itwin/core-geometry";
-import { ColorByName, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { ColorByName, ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
@@ -16,23 +16,26 @@ import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
 import { MeshArgs } from "../../common/internal/render/MeshPrimitives";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, InstancedGraphicParams } from "../../common";
+import { GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, InstancedGraphicParams } from "../../common";
 import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
+import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
+import { Graphic } from "../../webgl";
 
 describe.only("GraphicDescriptionBuilder", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  let constraints: GraphicDescriptionConstraints;
+  before(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+    constraints = IModelApp.renderSystem.getGraphicDescriptionConstraints();
+  });
+    
   after(async () => IModelApp.shutdown());
 
+  const computeChordTolerance = () => 0;
   const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
 
   function expectOption(options: Omit<GraphicDescriptionBuilderOptions, "constraints" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
-    const builder = GraphicDescriptionBuilder.create({
-      ...options,
-      constraints: IModelApp.renderSystem.getGraphicDescriptionConstraints(),
-      computeChordTolerance: () => 0,
-    });
-
+    const builder = GraphicDescriptionBuilder.create({ ...options, constraints, computeChordTolerance });
     expect(builder[option]).to.equal(expected);
   }
 
@@ -56,5 +59,58 @@ describe.only("GraphicDescriptionBuilder", () => {
       expectOption({ type }, "wantNormals", GraphicType.Scene === type);
       expectOption({ type, generateEdges: false }, "wantNormals", GraphicType.Scene === type);
     }
+  });
+
+  function finish(builder: GraphicDescriptionBuilder): GraphicDescriptionImpl {
+    const descr = builder.finish();
+    if (!isGraphicDescription(descr)) {
+      throw new Error("not a graphic description");
+    }
+
+    return descr;
+  }
+
+  it("creates a graphic", async () => {
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, constraints, computeChordTolerance });
+    builder.setSymbology(ColorDef.red, ColorDef.blue, 2);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
+
+    const descr = finish(builder);
+    expect(descr.batch).to.be.undefined;
+    expect(descr.type).to.equal(GraphicType.ViewOverlay);
+    // ###TODO expect(descr.transform)
+    expect(descr.transform).not.to.be.undefined;
+    expect(descr.primitives.length).to.equal(1);
+    expect(descr.primitives[0].type).to.equal("mesh");
+    // ###TODO vertices
+
+    const graphic = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr })!;
+    expect(graphic).not.to.be.undefined;
+    expect(graphic instanceof Graphic).to.be.true;
+    const gfPrim = (graphic as Graphic).toPrimitive()!;
+    expect(gfPrim).not.to.be.undefined;
+    expect(gfPrim.cachedGeometry.asMesh).not.to.be.undefined;
+  });
+
+  it("creates a graphic with edges", async () => {
+    
+  });
+
+  it("applies a placement transform to the graphics", () => {
+    
+  });
+  
+  it("creates a batch containing a single feature", async () => {
+    
+  });
+
+  it("creates a view-independent graphic", async () => {
+    
+  });
+  
+  it("creates a batch containing multiple features", async () => {
+    
   });
 });
