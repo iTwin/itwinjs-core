@@ -66,10 +66,10 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   /**
    * extract polyfaces and strokes from geometry into MeshBuilder stored in builderMap
    * @param geom Geometry instance to extract polyfaces and strokes from
-   * @param wantSurfacesOnly if true prevent strokes from being loaded into builders
    */
   public loadGeometry(geom: Geometry): void {
     this.loadPolyfacePrimitiveList(geom);
+    this.loadStrokePrimitiveList(geom);
   }
 
   /**

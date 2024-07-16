@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, GeometryClass, LinePixels, ModelFeature } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, GeometryClass, LinePixels, ModelFeature, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
 import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../common";
@@ -73,7 +73,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   it("creates a graphic", async () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, constraints, computeChordTolerance });
     expect(builder.wantEdges).to.be.false;
-    builder.setSymbology(ColorDef.red, ColorDef.blue, 2);
+    builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
     builder.addShape2d([
       new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
     ], 2);
@@ -217,6 +217,12 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(geom.viewIndependentOrigin!.isExactEqual(viewIndependentOrigin)).to.be.true;
   });
 
+  function expectFeature(index: number, featureTable: RenderFeatureTable, expected: ModelFeature): void {
+    const actual = ModelFeature.create();
+    featureTable.getFeature(index, actual);
+    expect(actual).to.deep.equal(expected);
+  }
+
   it("creates a batch containing a single feature with only an Id", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
@@ -262,13 +268,7 @@ describe.only("GraphicDescriptionBuilder", () => {
 
     expect(batch.featureTable.batchModelId).to.equal("0x123");
     expect(batch.featureTable.numFeatures).to.equal(1);
-
-    const feature = ModelFeature.create();
-    batch.featureTable.getFeature(0, feature);
-    expect(feature.elementId).to.equal("0x123");
-    expect(feature.geometryClass).to.equal(GeometryClass.Primary);
-    expect(feature.subCategoryId).to.equal("0");
-    expect(feature.modelId).to.equal("0x123");
+    expectFeature(0, batch.featureTable, { elementId: "0x123", geometryClass: GeometryClass.Primary, subCategoryId: "0", modelId: "0x123" });
 
     const mesh = batch.graphic as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
@@ -309,21 +309,54 @@ describe.only("GraphicDescriptionBuilder", () => {
 
     expect(batch.featureTable.batchModelId).to.equal("0x456");
     expect(batch.featureTable.numFeatures).to.equal(1);
-
-    const feature = ModelFeature.create();
-    batch.featureTable.getFeature(0, feature);
-    expect(feature.elementId).to.equal("0x123");
-    expect(feature.modelId).to.equal("0x456");
-    expect(feature.subCategoryId).to.equal("0x789");
-    expect(feature.geometryClass).to.equal(GeometryClass.Construction);
+    expectFeature(0, batch.featureTable, { elementId: "0x123", modelId: "0x456", subCategoryId: "0x789", geometryClass: GeometryClass.Construction });
 
     const mesh = batch.graphic as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
     expect(mesh.primitives.length).to.equal(1);
-    
   });
 
   it("creates a batch containing multiple features", async () => {
+    const builder = GraphicDescriptionBuilder.create({
+      type: GraphicType.WorldOverlay,
+      constraints,
+      computeChordTolerance,
+      pickable: {
+        id: "0xa1",
+        geometryClass: GeometryClass.Construction,
+        modelId: "0xb1",
+        subCategoryId: "0xc1",
+      },
+    });
 
+    builder.addPointString([new Point3d(1, 1, 1)]);
+
+    builder.activatePickableId("0xa2");
+    builder.addPointString([new Point3d(2, 2, 2)]);
+
+    builder.activateFeature(new Feature("0xa3", "0xc2", GeometryClass.Primary));
+    builder.addPointString([new Point3d(3, 3, 3)]);
+
+    const descr = finish(builder);
+    const batchDescr = descr.batch!;
+    expect(batchDescr).not.to.be.undefined;
+    expect(batchDescr.featureTable.numFeatures).to.equal(3);
+    expect(batchDescr.featureTable.multiModel).to.be.false;
+    expect(batchDescr.featureTable.numSubCategories).to.be.undefined;
+    expect(batchDescr.modelId).to.equal("0xb1");
+
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    expect(branch instanceof Branch).to.be.true;
+    expect(branch.branch.entries.length).to.equal(1);
+
+    const batch = branch.branch.entries[0] as Batch;
+    expect(batch instanceof Batch).to.be.true;
+
+    expect(batch.featureTable.batchModelId).to.equal("0xb1");
+    expect(batch.featureTable.numFeatures).to.equal(3);
+
+    expectFeature(0, batch.featureTable, { elementId: "0xa1", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
+    expectFeature(1, batch.featureTable, { elementId: "0xa2", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
+    expectFeature(2, batch.featureTable, { elementId: "0xa3", subCategoryId: "0xc2", geometryClass: GeometryClass.Primary, modelId: "0xb1" });
   });
 });
