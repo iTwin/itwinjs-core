@@ -6,9 +6,10 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64String } from "@itwin/core-bentley";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
+  Feature,
   ModelFeature, PointCloudDisplaySettings, RenderFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
@@ -601,6 +602,7 @@ interface BatchInfo {
   iModel?: IModelConnection;
   tileId?: string;
   viewAttachmentId?: Id64String;
+  extra?: any;
 }
 
 // Represents a view of data read from a region of the frame buffer.
@@ -643,10 +645,22 @@ class PixelBuffer implements Pixel.Buffer {
 
   private getBatchInfo(pixelIndex: number): BatchInfo | undefined {
     const featureId = this.getFeatureId(pixelIndex);
+    let extra: any;
     if (undefined !== featureId) {
       const batch = this._batchState.find(featureId);
-      if (undefined !== batch)
-        return { featureTable: batch.featureTable, iModel: batch.batchIModel, tileId: batch.tileId, viewAttachmentId: batch.viewAttachmentId };
+      if (undefined !== batch){
+        if(batch.structuralMetadata && batch.instanceFeatures &&  batch.instanceFeatures.has(featureId)) {
+          const instanceFeatures = batch.instanceFeatures.get(featureId);
+          if(instanceFeatures) {
+            extra = {};
+            for(const instanceFeature of instanceFeatures) {
+              const table = batch.structuralMetadata[instanceFeature.tableId];
+              extra[table.name] = table.entries[instanceFeature.featureId];
+            }
+          }
+        }
+        return { featureTable: batch.featureTable, iModel: batch.batchIModel, tileId: batch.tileId, viewAttachmentId: batch.viewAttachmentId, extra };
+      }
     }
 
     return undefined;
@@ -732,12 +746,13 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModel, tileId, viewAttachmentId;
+    let featureTable, iModel, tileId, viewAttachmentId, extra;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
       iModel = batchInfo.iModel;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
+      extra = batchInfo.extra;
     }
 
     return new Pixel.Data({
@@ -749,6 +764,7 @@ class PixelBuffer implements Pixel.Buffer {
       iModel,
       tileId,
       viewAttachmentId,
+      extra,
     });
   }
 

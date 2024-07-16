@@ -15,7 +15,7 @@ import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Ve
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { InstanceFeatures, MapTileTreeReference, StructuralMetadata, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
@@ -533,7 +533,7 @@ export abstract class RenderSystem implements IDisposable {
    * @param range A volume fully encompassing the batch's geometry.
    * @param options Options customizing the behavior of the batch.
    */
-  public abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions, structuralMetadata?: StructuralMetadata, instanceFeatures?: InstanceFeatures): RenderGraphic;
 
   /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
   public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }

@@ -27,6 +27,7 @@ import { Target } from "./Target";
 import { TextureDrape } from "./TextureDrape";
 import { ThematicSensors } from "./ThematicSensors";
 import { BranchState } from "./BranchState";
+import { InstanceFeature, InstanceFeatures, StructuralMetadata } from "../../tile/internal";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -210,6 +211,8 @@ export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: RenderFeatureTable;
   public readonly range: ElementAlignedBox3d;
+  public readonly structuralMetadata: StructuralMetadata;
+  public readonly instanceFeatures: InstanceFeatures;
   private readonly _context: BatchContext = { batchId: 0 };
   /** Public strictly for tests. */
   public readonly perTargetData = new PerTargetData(this);
@@ -241,12 +244,14 @@ export class Batch extends Graphic {
     this._context.viewAttachmentId = undefined;
   }
 
-  public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
+  public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions, structuralMetadata?: StructuralMetadata, instanceFeatures?: InstanceFeatures) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
     this.options = options ?? {};
+    this.structuralMetadata = structuralMetadata ?? [];
+    this.instanceFeatures = instanceFeatures ?? new Map<number, InstanceFeature[]>();
   }
 
   private _isDisposed = false;

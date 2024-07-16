@@ -79,6 +79,12 @@ export class BatchState {
     if (undefined === batch)
       return undefined;
 
+    if(batch.instanceFeatures.size > 0){
+      const res = ModelFeature.create();
+      res.elementId = Id64.fromUint32Pair(featureId- batch.batchId, 0);
+      return res;
+    }
+
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 

@@ -39,6 +39,10 @@ export namespace Pixel {
      * @beta
      */
     public readonly viewAttachmentId?: Id64String;
+    /** The extra metadata the correspond to the pixel geometry.
+     * @beta
+     */
+    public readonly extra?: any;
     /** @internal */
     public get isClassifier(): boolean {
       return undefined !== this.batchType && BatchType.Primary !== this.batchType;
@@ -54,6 +58,7 @@ export namespace Pixel {
       iModel?: IModelConnection;
       tileId?: string;
       viewAttachmentId?: string;
+      extra?: any;
     }) {
       if (args?.feature)
         this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
@@ -65,6 +70,7 @@ export namespace Pixel {
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
       this.viewAttachmentId = args?.viewAttachmentId;
+      this.extra = args?.extra;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -120,6 +126,7 @@ export namespace Pixel {
         isClassifier: this.isClassifier,
         sourceIModel: this.iModel,
         viewAttachment,
+        extra: this.extra,
       };
     }
   }
@@ -167,6 +174,11 @@ export namespace Pixel {
      * @beta
      */
     viewAttachment?: ViewAttachmentHitInfo;
+    /** Additional properties specific to the hit source.
+     * @note Only gltf tiles can have extra data.
+     * @beta
+     */
+    extra?: any;
   }
 
   /** Describes the type of geometry that produced the [[Pixel.Data]]. */

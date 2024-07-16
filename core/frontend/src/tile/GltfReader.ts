@@ -7,14 +7,14 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64, JsonUtils, Logger, utf8ToString,
 } from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
+  MeshEdges, MeshPolyline, MeshPolylineList, ModelFeature, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -38,7 +38,7 @@ import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { TextureImageSource } from "../common/render/TextureParams";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, Gltf2Node, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
-  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
+  GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
 
 /* eslint-disable no-restricted-syntax */
@@ -400,6 +400,20 @@ function compareTextureKeys(lhs: TextureKey, rhs: TextureKey): number {
   return compareNumbers(lhs.id, rhs.id);
 }
 
+export interface StructuralMetadataTable{
+  name: string;
+  entries: any[];
+};
+
+export type StructuralMetadata = Array<StructuralMetadataTable>;
+
+export interface InstanceFeature {
+  featureId: number;
+  tableId: number;
+}
+
+export type InstanceFeatures = Map<number, InstanceFeature[]>;
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -421,6 +435,8 @@ export abstract class GltfReader {
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
   private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
   private _containsPointCloud = false;
+  protected _instanceFeatures?: InstanceFeatures;
+  protected _structuralMetadata?: StructuralMetadata;
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -479,6 +495,191 @@ export abstract class GltfReader {
     return transform;
   }
 
+  // private getGltfBufferDataView(id: GltfId){
+  //   const bufferView = this._bufferViews[id];
+  //   if (!bufferView || undefined === bufferView.buffer)
+  //     return undefined;
+
+  //   const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
+  //   if (!bufferData)
+  //     return undefined;
+
+  //   assert(undefined !== bufferView.byteLength); // required by spec; TypeScript interface is wrong.
+  //   const byteOffset = bufferView.byteOffset ?? 0;
+
+  //   return new DataView(bufferData.buffer, byteOffset, bufferView.byteLength);
+  // }
+
+  private getGltfBufferDataView(id: GltfId, type: GltfStructuralMetadata.ClassPropertyComponentType){
+    const bufferView = this._bufferViews[id];
+    if (!bufferView || undefined === bufferView.buffer)
+      return undefined;
+
+    if(!bufferView.byteLength || bufferView.byteLength === 0){
+      return undefined;
+    }
+
+    const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
+    if (!bufferData)
+      return undefined;
+
+    assert(undefined !== bufferView.byteLength); // required by spec; TypeScript interface is wrong.
+    const byteOffset = bufferView.byteOffset ?? 0;
+
+    const subarray = bufferData.slice(byteOffset, byteOffset + bufferView.byteLength);
+    switch(type){
+      case "INT8":
+        return new Int8Array(subarray.buffer, 0, bufferView.byteLength);
+      case "UINT8":
+        return new Uint8Array(subarray.buffer, 0, bufferView.byteLength);
+      case "INT16":
+        return new Int16Array(subarray.buffer, 0, bufferView.byteLength / 2);
+      case "UINT16":
+        return new Uint16Array(subarray.buffer, 0, bufferView.byteLength / 2);
+      case "INT32":
+        return new Int32Array(subarray.buffer, 0, bufferView.byteLength / 4);
+      case "UINT32":
+        return new Uint32Array(subarray.buffer, 0, bufferView.byteLength / 4);
+      case "INT64":
+        return new BigInt64Array(subarray.buffer, 0, bufferView.byteLength / 8);
+      case "UINT64":
+        return new BigUint64Array(subarray.buffer, 0, bufferView.byteLength / 8);
+      case "FLOAT32":
+        return new Float32Array(subarray.buffer, 0, bufferView.byteLength / 4);
+      case "FLOAT64":
+        return new Float64Array(subarray.buffer, 0, bufferView.byteLength / 8);
+    }
+    return undefined;
+  }
+
+  private getStructuralMetadataPropertyGetter(property: GltfStructuralMetadata.PropertyTableProperty, classProperty: GltfStructuralMetadata.ClassProperty){
+
+    if(classProperty.type === "ENUM" || classProperty.type === "BOOLEAN"){
+      return undefined;
+    }
+
+    if(classProperty.type === "STRING" && property.stringOffsets){
+
+      const stringValues = this.getGltfBufferDataView(property.values, "UINT8") as Uint8Array;
+      if(!stringValues){
+        return undefined;
+      }
+
+      const stringOffsets = this.getGltfBufferDataView(property.stringOffsets, "UINT32") as Uint32Array;
+      if(!stringOffsets){
+        return undefined;
+      }
+
+      return function (index: number) {
+        const previousOffset = index === 0 ? 0 : stringOffsets[index];
+        const offset = stringOffsets[index+1];
+        return utf8ToString(stringValues.subarray(previousOffset, offset));
+      };
+    }
+
+    if(!classProperty.componentType){
+      return undefined;
+    }
+
+    let numComponents = -1;
+    switch(classProperty.type){
+      case "SCALAR":
+        numComponents = 1;
+        break;
+      case "VEC2":
+        numComponents = 2;
+        break;
+      case "VEC3":
+        numComponents = 3;
+        break;
+      case "VEC4":
+        numComponents = 4;
+        break;
+      case "MAT2":
+        numComponents = 4;
+        break;
+      case "MAT3":
+        numComponents = 9;
+        break;
+      case "MAT4":
+        numComponents = 16;
+        break;
+    }
+
+    if(numComponents === -1){
+      return undefined;
+    }
+
+    const values = this.getGltfBufferDataView(property.values, classProperty.componentType) as Float64Array;
+    if(!values){
+      return undefined;
+    }
+
+    if(numComponents === 1){
+      return function (index: number) {
+        return values[index];
+      };;
+    }
+
+    return function (index: number) {
+      const result = [];
+      for(let i = 0; i < numComponents; i++){
+        result.push(values[index * numComponents + i]);
+      }
+      return result;
+    };
+  }
+
+  private parseStructuralMetadata(){
+    const propertyTables = this._glTF.extensions?.EXT_structural_metadata?.propertyTables;
+    const schema = this._glTF.extensions?.EXT_structural_metadata?.schema;
+
+    if(propertyTables && schema && schema.classes){
+
+      this._structuralMetadata = [];
+
+      for(const propertyTable of propertyTables){
+        if(!propertyTable.properties || !schema.classes){
+          continue;
+        }
+
+        const propertyTableSchema = schema.classes[propertyTable.class];
+        if(!propertyTableSchema || !propertyTableSchema.properties){
+          continue;
+        }
+
+        const structuralMetadataTable: StructuralMetadataTable = {
+          name: propertyTableSchema.name,
+          entries: [],
+        };
+
+        for (const [propertyName, property] of Object.entries(propertyTable.properties)){
+
+          const propertySchema = propertyTableSchema.properties[propertyName];
+
+          if(!property || !propertySchema){
+            continue;
+          }
+
+          const getProperty = this.getStructuralMetadataPropertyGetter(property, propertySchema);
+
+          if(!getProperty){
+            continue;
+          }
+
+          for(let i = 0; i < propertyTable.count; i++){
+            if(structuralMetadataTable.entries.length <= i){
+              structuralMetadataTable.entries.push({});
+            }
+            structuralMetadataTable.entries[i][propertySchema.name] = getProperty(i);
+          }
+        }
+
+        this._structuralMetadata?.push(structuralMetadataTable);
+      }
+    }
+  }
+
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
@@ -488,6 +689,15 @@ export abstract class GltfReader {
       this._computedContentRange = contentRange = Range3d.createNull();
     else
       this._computedContentRange = undefined;
+
+    if(this._glTF.extensions?.EXT_structural_metadata){
+      this.parseStructuralMetadata();
+    }
+
+    // Flush feature table if instance features are used
+    if(this._glTF.extensionsUsed?.includes("EXT_instance_features")){
+      featureTable = undefined;
+    }
 
     // ###TODO this looks like a hack? Why does it assume the first node's transform is special, or that the transform will be specified as a matrix instead of translation+rot+scale?
     if (this._returnToCenter || this._nodes[0]?.matrix || (pseudoRtcBias && pseudoRtcBias.magnitude() < 1.0E5))
@@ -501,6 +711,14 @@ export abstract class GltfReader {
       const node = this._nodes[nodeKey];
       if (node && TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, node, featureTable, transformStack, instances, pseudoRtcBias)))
         return { readStatus, isLeaf };
+    }
+
+    if(this._instanceFeatures && this._instanceFeatures.size > 0){
+      featureTable = new FeatureTable(this._instanceFeatures.size);
+      for(const [instanceId, _feature] of this._instanceFeatures){
+        const feature = new Feature(Id64.fromUint32Pair(instanceId, 0));
+        featureTable.insertWithIndex(feature, instanceId);
+      }
     }
 
     if (0 === renderGraphicList.length)
@@ -524,7 +742,9 @@ export abstract class GltfReader {
     // If we computed the content range ourselves, it's already in tile space.
     // If the content range was supplied by the caller, it's in tileset space and needs to be transformed to tile space.
     if (featureTable)
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), this._computedContentRange ? contentRange : range);
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), this._computedContentRange ? contentRange : range, undefined, this._structuralMetadata, this._instanceFeatures);
+
+    //
 
     const viewFlagOverrides = this.viewFlagOverrides;
     if (transform || viewFlagOverrides) {
@@ -659,9 +879,63 @@ export abstract class GltfReader {
       transforms[idx + 11] = tf.origin.z;
     }
 
-    // ###TODO? The extension currently provides no way of specifying per-instance feature Ids.
-    // For now, assume that if the feature table contains exactly one feature, all the instances belong to that feature.
-    const featureIds = featureTable && featureTable.isUniform ? new Uint8Array(3 * count) : undefined;
+    const featureIds = ((featureTable && featureTable.isUniform) || node.extensions?.EXT_instance_features) ? new Uint8Array(3 * count) : undefined;
+
+    const instanceFeaturesExt = node.extensions?.EXT_instance_features;
+    if(instanceFeaturesExt && featureIds){
+
+      if(!this._instanceFeatures){
+        this._instanceFeatures = new Map<number, InstanceFeature[]>();
+      }
+
+      // Resolve feature buffers before creating instance table
+      const featureBuffers = new Map<number, GltfDataBuffer>();
+      for(const featureIdDesc of instanceFeaturesExt.featureIds){
+
+        if(featureIdDesc.attribute !== undefined){
+          const bufferView = this.getBufferView(ext.attributes, `_FEATURE_ID_${  featureIdDesc.attribute}`);
+          if(bufferView){
+            const bufferData = bufferView.toBufferData(bufferView.type)?.buffer;
+            if(bufferData){
+              featureBuffers.set(featureIdDesc.attribute, bufferData);
+            }
+          }
+        }
+      }
+
+      for(let localInstanceId = 0; localInstanceId < count; localInstanceId++){
+
+        const instanceFeatures: InstanceFeature[] = [];
+        for(const featureIdDesc of instanceFeaturesExt.featureIds){
+
+          if(featureIdDesc.attribute === undefined){
+            instanceFeatures.push({
+              featureId: localInstanceId,
+              tableId: featureIdDesc.propertyTable,
+            });
+          } else if(featureBuffers.has(featureIdDesc.attribute)) {
+            const featureBuffer = featureBuffers.get(featureIdDesc.attribute);
+            if(!featureBuffer){
+              continue;
+            }
+            const featureId = featureBuffer[localInstanceId];
+            if(featureIdDesc.nullFeatureId !== undefined || featureId !== featureIdDesc.nullFeatureId){
+              instanceFeatures.push({
+                featureId,
+                tableId: featureIdDesc.propertyTable,
+              });
+            }
+          }
+        }
+
+        const globalInstanceId = this._instanceFeatures.size;
+        featureIds[localInstanceId * 3 + 0] = globalInstanceId & 0xFF;
+        featureIds[localInstanceId * 3 + 1] = (globalInstanceId >> 8) & 0xFF;
+        featureIds[localInstanceId * 3 + 2] = (globalInstanceId >> 16) & 0xFF;
+        this._instanceFeatures.set(globalInstanceId, instanceFeatures);
+      }
+    }
+
     return { count, transforms, transformCenter, featureIds };
   }
 

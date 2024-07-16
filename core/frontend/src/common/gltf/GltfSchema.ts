@@ -234,6 +234,14 @@ export interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
   skeletons?: GltfId[];
 }
 
+export interface GltfInstanceFeature {
+  attribute?: number;
+  featureCount: number;
+  label: string;
+  nullFeatureId?: number;
+  propertyTable: number;
+}
+
 /** glTF 2.0 representation of a [[GltfNode]]. Unlike a [[Gltf1Node]], a Gltf2Node may refer to at most one [[GltfMesh]].
  * @internal
  */
@@ -262,6 +270,10 @@ export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         SCALE?: GltfId;
       };
+    };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_instance_features?: {
+      featureIds: GltfInstanceFeature[];
     };
   };
 }
