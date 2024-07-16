@@ -65,7 +65,7 @@
     "source-map-support": "^0.5.6",
     "typemoq": "^2.1.0",
     "typescript": "~5.3.3",
-    "fetch-mock": "~9.11.0"
+    "fetch-mock": "~10.0.8"
   },
   "peerDependencies": {
     "@itwin/appui-abstract": "workspace:*",
