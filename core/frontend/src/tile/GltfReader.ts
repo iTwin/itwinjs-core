@@ -410,15 +410,24 @@ export interface StructuralMetadataTable{
   entries: StructuralMetadataTableEntries[];
 };
 
+/** The deserialized structural metadata contained in the glTF.
+ * @internal
+ */
 export interface StructuralMetadata{
   tables: StructuralMetadataTable[];
 }
 
+/** Represents the feature of a single instance. A single instance can have multiple features
+ * @internal
+ */
 export interface InstanceFeature {
   featureId: number;
   tableId: number;
 }
 
+/** A 2D array of instance features, where each row represents the features of a single instance.
+ *  @internal
+ */
 export type InstanceFeatures = Map<number, InstanceFeature[]>;
 
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
@@ -877,6 +886,7 @@ export abstract class GltfReader {
     const featureIds = ((featureTable && featureTable.isUniform) || node.extensions?.EXT_instance_features) ? new Uint8Array(3 * count) : undefined;
 
     const instanceFeaturesExt = node.extensions?.EXT_instance_features;
+    // Resolve instance features if the EXT_instance_features if present
     if(instanceFeaturesExt && featureIds){
 
       if(!this._instanceFeatures){
@@ -903,6 +913,7 @@ export abstract class GltfReader {
         const instanceFeatures: InstanceFeature[] = [];
         for(const featureIdDesc of instanceFeaturesExt.featureIds){
 
+          // If the attribute is not defined, then the feature id corresponds to the instance id
           if(featureIdDesc.attribute === undefined){
             instanceFeatures.push({
               featureId: localInstanceId,
@@ -914,6 +925,7 @@ export abstract class GltfReader {
               continue;
             }
             const featureId = featureBuffer[localInstanceId];
+            // When the feature id is null, it means that no feature data is present
             if(featureIdDesc.nullFeatureId !== undefined || featureId !== featureIdDesc.nullFeatureId){
               instanceFeatures.push({
                 featureId,
@@ -923,6 +935,7 @@ export abstract class GltfReader {
           }
         }
 
+        // Set the feature ids to the global instance id to that we can lookup all the metadata later
         const globalInstanceId = this._instanceFeatures.size;
         featureIds[localInstanceId * 3 + 0] = globalInstanceId & 0xFF;
         featureIds[localInstanceId * 3 + 1] = (globalInstanceId >> 8) & 0xFF;
