@@ -15,13 +15,15 @@ import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
 import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
 import { ImdlModel as Imdl } from "../common/imdl/ImdlModel";
 import { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../common/imdl/ImdlSchema";
-import { edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../common/imdl/ParseImdlDocument";
+import { convertFeatureTable, edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../common/imdl/ParseImdlDocument";
 import { VertexIndices } from "../common/internal/render/VertexIndices";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
+import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
+import { isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -106,7 +108,11 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
   return result;
 }
 
-interface GraphicsOptions extends ImdlDecodeOptions {
+interface GraphicsOptions {
+  document?: Imdl.Document;
+  iModel?: IModelConnection;
+  system: RenderSystem;
+  isCanceled?: () => boolean;
   textures: Map<string, RenderTexture>;
   patterns: Map<string, RenderGeometry[]>;
 }
@@ -169,8 +175,12 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     return options.system.createRenderMaterial(args);
   }
 
+  if (!options.iModel) {
+    return undefined;
+  }
+
   const material = options.system.findMaterial(mat, options.iModel);
-  if (material || !options.document.json.renderMaterials)
+  if (material || !options.document?.json.renderMaterials)
     return material;
 
   const json = options.document.json.renderMaterials[mat];
@@ -410,4 +420,44 @@ export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<Re
     case 1: return graphics[0];
     default: return system.createGraphicList(graphics);
   }
+}
+
+/** @internal */
+export async function createGraphicFromDescription(descr: GraphicDescription, system: RenderSystem): Promise<RenderGraphic | undefined> {
+  if (!isGraphicDescription(descr)) {
+    throw new Error("Invalid GraphicDescription");
+  }
+
+  const graphics: RenderGraphic[] = [];
+  const graphicsOptions: GraphicsOptions = {
+    system,
+    textures: new Map(),
+    patterns: new Map(),
+  };
+  
+  for (const primitive of descr.primitives) {
+    const gf = createPrimitiveGraphic(primitive, graphicsOptions);
+    if (gf) {
+      graphics.push(gf);
+    }
+  }
+
+  if (graphics.length === 0) {
+    return undefined;
+  }
+
+  let graphic = graphics.length === 1 ? graphics[0] : system.createGraphicList(graphics);
+
+  if (descr.batch) {
+    const featureTable = convertFeatureTable(descr.batch.featureTable, descr.batch.modelId);
+    graphic = system.createBatch(graphic, featureTable, Range3d.fromJSON(descr.batch.range), descr.batch);
+  }
+
+  if (descr.transform) {
+    const branch = new GraphicBranch(true);
+    branch.add(graphic);
+    graphic = system.createBranch(branch, Transform.fromJSON(descr.transform));
+  }
+
+  return graphic;
 }

@@ -15,7 +15,7 @@ import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Ve
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { createGraphicFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
@@ -45,6 +45,7 @@ import { createPointStringParams } from "../common/internal/render/PointStringPa
 import { createPolylineParams } from "../common/internal/render/PolylineParams";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
+import { GraphicDescription, GraphicDescriptionConstraints } from "../common";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -768,6 +769,22 @@ export abstract class RenderSystem implements IDisposable {
   public static async contextLossHandler(): Promise<any> {
     const msg = IModelApp.localization.getLocalizedString("iModelJs:Errors.WebGLContextLost");
     return ToolAdmin.exceptionHandler(msg);
+  }
+
+  /**
+   * @beta
+   */
+  public getGraphicDescriptionConstraints(): GraphicDescriptionConstraints {
+    return {
+      maxTextureSize: this.maxTextureSize,
+    };
+  }
+
+  /**
+   * @beta
+   */
+  public async createGraphicFromDescription(args: { description: GraphicDescription }): Promise<RenderGraphic | undefined> {
+    return createGraphicFromDescription(args.description, this);
   }
 }
 
