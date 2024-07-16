@@ -114,7 +114,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   it("creates a graphic with edges", async () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, constraints, computeChordTolerance });
     expect(builder.wantEdges).to.be.true;
-    builder.setSymbology(ColorDef.green, ColorDef.blue, 3, LinePixels.HiddenLine);
+    builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
     builder.addShape2d([
       new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
     ], 2);
@@ -160,8 +160,8 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(edges.asIndexedEdge).not.to.be.undefined;
     expect(edges.asIndexedEdge!.lut.colorInfo.isUniform).to.be.true;
     expect(edges.asIndexedEdge!.lut.colorInfo.uniform.red).to.equal(0);
-    expect(edges.asIndexedEdge!.lut.colorInfo.uniform.blue).to.equal(0);
-    expect(edges.asIndexedEdge!.lut.colorInfo.uniform.green).to.equal(1);
+    expect(edges.asIndexedEdge!.lut.colorInfo.uniform.blue).to.equal(1);
+    expect(edges.asIndexedEdge!.lut.colorInfo.uniform.green).to.equal(0);
     expect(edges.asIndexedEdge!.lut.colorInfo.uniform.alpha).to.equal(1);
   });
 
