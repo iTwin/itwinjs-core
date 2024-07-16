@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { InstancedGraphicParams } from "../../common";
+import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
 import { RenderAreaPattern } from "../RenderSystem";

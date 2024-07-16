@@ -13,7 +13,7 @@ import {
   IModelApp,
   MockRender,
 } from "../../../core-frontend";
-import { PointStringParams, createPointStringParams } from "../../../common/internal/render/PointStringParams";
+import { createPointStringParams, PointStringParams } from "../../../common/internal/render/PointStringParams";
 import { MeshArgs, PolylineArgs } from "../../../common/internal/render/MeshPrimitives";
 import { VertexTable } from "../../../common/internal/render/VertexTable";
 import { SurfaceType } from "../../../common/internal/render/SurfaceParams";

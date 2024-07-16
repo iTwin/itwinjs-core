@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { GeometryClass } from "@itwin/core-common";
- 
+
 /** Options used when constructing a `Batch` - that is, a [[RenderGraphic]] with an associated [FeatureTable]($common) describing individual [Feature]($common)s within the
  * graphic. Individual features can be resymbolized in a variety of ways including flashing and hiliting.
  * For example, to prevent graphics produced by [[readElementGraphics]] from being hilited when their corresponding element is in the [[SelectionSet]],
@@ -51,4 +51,3 @@ export interface PickableGraphicOptions extends BatchOptions {
   isVolumeClassifier?: boolean;
 }
 
- 

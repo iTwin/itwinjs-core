@@ -149,8 +149,8 @@ export abstract class GraphicBuilder extends GraphicAssembler {
       wantEdges,
       wantNormals,
       preserveOrder,
-    })
-    
+    });
+
     this.iModel = vp?.iModel ?? options.iModel;
     if (!options.viewport) {
       this._computeChordTolerance = options.computeChordTolerance;

@@ -434,7 +434,7 @@ export async function createGraphicFromDescription(descr: GraphicDescription, sy
     textures: new Map(),
     patterns: new Map(),
   };
-  
+
   for (const primitive of descr.primitives) {
     const gf = createPrimitiveGraphic(primitive, graphicsOptions);
     if (gf) {

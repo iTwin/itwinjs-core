@@ -22,7 +22,6 @@ import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;
   let spatialView: SpatialViewState;
-  let accum: GeometryAccumulator;
 
   const canvas = document.createElement("canvas");
   assert(null !== canvas);
@@ -44,7 +43,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPath works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -65,7 +64,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addLoop works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -89,7 +88,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPolyface works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -127,7 +126,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addGeometry works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     expect(accum.geometries.isEmpty).to.be.true;
     expect(accum.isEmpty).to.be.true;
@@ -137,7 +136,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("clear works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     expect(accum.isEmpty).to.be.true;
     accum.addGeometry(new FakeGeometry());
@@ -147,7 +146,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshBuilderMap works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -188,7 +187,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshes works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));

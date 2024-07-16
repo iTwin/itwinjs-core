@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { Id64String, assert } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  Transform, Point3d, Box, Range3d, SolidPrimitive, Polyface, Path, AnyCurvePrimitive, Loop, Arc3d, Point2d, CurvePrimitive, LineSegment3d, LineString3d, IndexedPolyface,
+  AnyCurvePrimitive, Arc3d, Box, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Feature, Frustum, Gradient, GraphicParams, LinePixels, Npc, RenderTexture } from "@itwin/core-common";
 // ###TODO import { _implementationProhibited } from "../../internal/Symbols";
@@ -22,7 +22,7 @@ import { Geometry } from "../internal/render/GeometryPrimitives";
 /**
  * @beta
  */
-export type GraphicAssemblerOptions = {
+export interface GraphicAssemblerOptions {
   type: GraphicType;
   placement: Transform;
   pickable?: PickableGraphicOptions;
@@ -30,7 +30,7 @@ export type GraphicAssemblerOptions = {
   wantNormals: boolean;
   wantEdges: boolean;
   analysisStyle?: AnalysisStyle;
-}
+};
 
 /**
  * @public
@@ -41,7 +41,7 @@ export abstract class GraphicAssembler {
   /** @internal */
   public readonly accum: GeometryAccumulator; // ###TODO rename _accum, make private
   private readonly _graphicParams = new GraphicParams();
-  
+
   public readonly placement: Transform;
 
   public readonly type: GraphicType;

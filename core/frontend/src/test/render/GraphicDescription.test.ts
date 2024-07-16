@@ -3,24 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  Cone, Point2d, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
-} from "@itwin/core-geometry";
-import { ColorByName, ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, LinePixels, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { createBlankConnection } from "../createBlankConnection";
-import { RenderSystem } from "../../render/RenderSystem";
-import { ScreenViewport } from "../../Viewport";
-import { MeshParams } from "../../common/internal/render/MeshParams";
-import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { MeshArgs } from "../../common/internal/render/MeshPrimitives";
+import { Point2d, Range3d } from "@itwin/core-geometry";
+import { ColorDef, EmptyLocalization, LinePixels } from "@itwin/core-common";
+import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, InstancedGraphicParams } from "../../common";
-import { openBlankViewport } from "../openBlankViewport";
+import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
-import { Branch, Graphic, Primitive } from "../../webgl";
+import { Branch } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
@@ -38,7 +28,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     constraints = IModelApp.renderSystem.getGraphicDescriptionConstraints();
   });
-    
+
   after(async () => IModelApp.shutdown());
 
   const computeChordTolerance = () => 0;
@@ -54,7 +44,7 @@ describe.only("GraphicDescriptionBuilder", () => {
       expectOption({ type }, "preserveOrder", type === GraphicType.ViewOverlay || type === GraphicType.WorldOverlay || type === GraphicType.ViewBackground);
     }
   });
-  
+
   it("wants edges for scene graphics or if explicitly requested", () => {
     for (const type of graphicTypes) {
       expectOption({ type, generateEdges: true }, "wantEdges", true);
@@ -62,7 +52,7 @@ describe.only("GraphicDescriptionBuilder", () => {
       expectOption({ type }, "wantEdges", GraphicType.Scene === type);
     }
   });
-  
+
   it("wants normals for scene graphics or if edges are requested", () => {
     for (const type of graphicTypes) {
       expectOption({ type, generateEdges: true }, "wantNormals", true);
@@ -112,7 +102,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(mesh.primitives.length).to.equal(1);
     expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
 
-    const gfPrim = mesh.primitives[0].toPrimitive()!;
+    const gfPrim = mesh.primitives[0].toPrimitive();
     const geom = gfPrim.cachedGeometry.asMesh!;
     expect(geom.lut.colorInfo.isUniform).to.be.true;
     expect(geom.lut.colorInfo.uniform.red).to.equal(0);
@@ -138,7 +128,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(descr.translation).not.to.be.undefined;
     expect(descr.primitives.length).to.equal(1);
     expect(descr.primitives[0].type).to.equal("mesh");
-    
+
     const meshParams = descr.primitives[0].params as ImdlModel.MeshParams;
     const edgeParams = meshParams.edges!;
     expect(edgeParams).not.to.be.undefined;
@@ -158,7 +148,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(mesh.primitives.length).to.equal(2);
     expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
 
-    const gfPrim = mesh.primitives[0].toPrimitive()!;
+    const gfPrim = mesh.primitives[0].toPrimitive();
     const geom = gfPrim.cachedGeometry.asMesh!;
     expect(geom.lut.colorInfo.isUniform).to.be.true;
     expect(geom.lut.colorInfo.uniform.red).to.equal(0);
@@ -166,7 +156,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(geom.lut.colorInfo.uniform.green).to.equal(0);
     expect(geom.lut.colorInfo.uniform.alpha).to.equal(1);
 
-    const edges = mesh.primitives[1].toPrimitive()!.cachedGeometry.asMesh!;
+    const edges = mesh.primitives[1].toPrimitive().cachedGeometry.asMesh!;
     expect(edges.asIndexedEdge).not.to.be.undefined;
     expect(edges.asIndexedEdge!.lut.colorInfo.isUniform).to.be.true;
     expect(edges.asIndexedEdge!.lut.colorInfo.uniform.red).to.equal(0);
@@ -176,18 +166,18 @@ describe.only("GraphicDescriptionBuilder", () => {
   });
 
   it("applies a placement transform to the graphics", () => {
-    
+
   });
-  
+
   it("creates a batch containing a single feature", async () => {
-    
+
   });
 
   it("creates a view-independent graphic", async () => {
-    
+
   });
-  
+
   it("creates a batch containing multiple features", async () => {
-    
+
   });
 });

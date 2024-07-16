@@ -39,7 +39,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
     this.accum.clear();
     return graphic;
   }
-    
+
   private finishGraphic(accum: GeometryAccumulator): RenderGraphic {
     let meshes: MeshList | undefined;
     let range: Range3d | undefined;
@@ -48,9 +48,8 @@ export class PrimitiveBuilder extends GraphicBuilder {
       // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
       // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
       // No point generating edges for graphics that are always rendered in smooth shade mode.
-      const options = this;
       const tolerance = this.computeTolerance(accum);
-      meshes = this.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
+      meshes = this.saveToGraphicList(this.primitives, this, tolerance, this.pickable);
       if (undefined !== meshes) {
         if (meshes.features?.anyDefined)
           featureTable = meshes.features;

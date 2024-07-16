@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { InstancedGraphicParams } from "../../common";
+import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
 import { RenderMemory } from "../RenderMemory";

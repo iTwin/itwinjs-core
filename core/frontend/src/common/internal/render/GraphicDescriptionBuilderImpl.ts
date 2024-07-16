@@ -7,13 +7,13 @@
  */
 
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
-import { ImdlModel, addPrimitiveTransferables } from "../../imdl/ImdlModel";
+import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
 import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
 import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
 import { BatchOptions } from "../../render/BatchOptions";
-import { Id64String, assert } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { createPointStringParams } from "./PointStringParams";
 import { VertexTable } from "./VertexTable";
@@ -26,7 +26,7 @@ export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   range: Range3dProps;
   isVolumeClassifier?: boolean;
   modelId: Id64String;
-}
+};
 
 export interface GraphicDescriptionImpl extends GraphicDescription {
   type: GraphicType;
@@ -38,7 +38,7 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
   private readonly _computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
   private readonly _constraints: GraphicDescriptionConstraints;
-  
+
   public constructor(options: GraphicDescriptionBuilderOptions) {
     const type = options.type;
     const placement = options.placement ?? Transform.createIdentity();
@@ -58,14 +58,13 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       return description;
     }
 
-
     const tolerance = this._computeChordTolerance({ builder: this, computeRange: () => this.accum.geometries.computeRange() });
     const meshes = this.accum.toMeshes(this, tolerance, this.pickable);
     if (meshes.length === 0) {
       return description;
     }
 
-    let featureTable = this.pickable && meshes.features?.anyDefined ? meshes.features : undefined;
+    const featureTable = this.pickable && meshes.features?.anyDefined ? meshes.features : undefined;
     if (featureTable) {
       const features = PackedFeatureTable.pack(featureTable);
       const range = meshes.range ?? new Range3d();
@@ -148,7 +147,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       meshes.range?.low.addInPlace(transformOrigin);
       meshes.range?.high.addInPlace(transformOrigin);
     }
-      
+
     this.accum.clear();
     if (transformOrigin) {
       description.translation = { x: transformOrigin.x, y: transformOrigin.y, z: transformOrigin.z };
@@ -160,7 +159,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   private createPrimitive(mesh: Mesh): ImdlModel.Primitive | undefined {
     const meshArgs = mesh.toMeshArgs();
     if (meshArgs) {
-      return this.createMeshPrimitive(meshArgs)
+      return this.createMeshPrimitive(meshArgs);
     }
 
     const polylineArgs = mesh.toPolylineArgs();
@@ -173,7 +172,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
 
   private createMeshPrimitive(args: MeshArgs): ImdlModel.Primitive | undefined {
     const params = createMeshParams(args, this._constraints.maxTextureSize, true);
-    
+
     return {
       type: "mesh",
       params: {
@@ -227,7 +226,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       },
     };
   }
-  
+
   protected override resolveGradient() {
     // ###TODO support textures and materials.
     return undefined;

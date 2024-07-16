@@ -141,7 +141,6 @@ export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes
   };
 }
 
-
 function convertPolylinesAndEdges(polylines?: PolylineIndices[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
   let numIndices = undefined !== edges ? edges.length : 0;
   if (undefined !== polylines)
@@ -314,9 +313,9 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
 
 /** @internal */
 export function createEdgeParams(args: {
-  meshArgs: MeshArgs,
-  maxWidth: number,
-  createIndexed: boolean,
+  meshArgs: MeshArgs;
+  maxWidth: number;
+  createIndexed: boolean;
 }): EdgeParams | undefined {
   const { meshArgs, maxWidth, createIndexed } = args;
   const edgeArgs = meshArgs.edges;

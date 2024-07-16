@@ -21,8 +21,8 @@ import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource } from "../common/ImageUtil";
 import { MeshParams } from "../common/internal/render/MeshParams";
-import { PointStringParams } from "../common/internal/render/PointStringParams";
-import { PolylineParams } from "../common/internal/render/PolylineParams";
+import { createPointStringParams, PointStringParams } from "../common/internal/render/PointStringParams";
+import { createPolylineParams, PolylineParams } from "../common/internal/render/PolylineParams";
 import { TextureCacheKey } from "../common/render/TextureParams";
 import { ViewRect } from "../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
@@ -41,11 +41,9 @@ import { RenderTarget } from "./RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
-import { createPointStringParams } from "../common/internal/render/PointStringParams";
-import { createPolylineParams } from "../common/internal/render/PolylineParams";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
-import { GraphicDescription, GraphicDescriptionConstraints } from "../common";
+import { GraphicDescription, GraphicDescriptionConstraints } from "../common/render/GraphicDescriptionBuilder";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

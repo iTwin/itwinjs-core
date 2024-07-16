@@ -7,7 +7,7 @@
  */
 
 import { GraphicAssembler } from "./GraphicAssembler";
-import { GraphicDescriptionBuilderImpl, collectGraphicDescriptionTransferables } from "../internal/render/GraphicDescriptionBuilderImpl";
+import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { GraphicType } from "./GraphicType";
@@ -18,6 +18,7 @@ import { PickableGraphicOptions } from "./BatchOptions";
  */
 export interface GraphicDescription {
   // ###TODO [_implementationProhibited]
+  removeMe?: unknown; // ###TODO "empty interface" lint error
 }
 
 /**
@@ -46,8 +47,8 @@ export type FinishGraphicDescriptionArgs = {
 } | {
   instances?: InstancedGraphicParams;
   viewIndependentOrigin?: never;
-}
-  
+};
+
 /**
  * @beta
  */

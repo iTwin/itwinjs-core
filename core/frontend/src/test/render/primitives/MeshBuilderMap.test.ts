@@ -13,7 +13,7 @@ import { ScreenViewport } from "../../../Viewport";
 import { StandardViewId } from "../../../StandardView";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeDisplayParams } from "./Fake";
-import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder"; 
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { GraphicType } from "../../../common/render/GraphicType";
 import { ToleranceRatio } from "../../../common/internal/render/Primitives";
 import { MeshBuilderMap } from "../../../common/internal/render/MeshBuilderMap";
