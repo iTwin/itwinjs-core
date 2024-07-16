@@ -6,7 +6,7 @@ import { expect } from "chai";
 import {
   Cone, Point2d, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@itwin/core-geometry";
-import { ColorByName, ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { ColorByName, ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, LinePixels, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
@@ -21,6 +21,7 @@ import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Branch, Graphic, Primitive } from "../../webgl";
+import { ImdlModel } from "../../common/imdl/ImdlModel";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   expect(range.low.x).to.equal(lx);
@@ -81,6 +82,7 @@ describe.only("GraphicDescriptionBuilder", () => {
 
   it("creates a graphic", async () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, constraints, computeChordTolerance });
+    expect(builder.wantEdges).to.be.false;
     builder.setSymbology(ColorDef.red, ColorDef.blue, 2);
     builder.addShape2d([
       new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
@@ -95,7 +97,11 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(descr.translation).not.to.be.undefined;
     expect(descr.primitives.length).to.equal(1);
     expect(descr.primitives[0].type).to.equal("mesh");
-    // ###TODO vertices
+
+    const meshParams = descr.primitives[0].params as ImdlModel.MeshParams;
+    expect(meshParams.vertices.uniformColor).to.equal(ColorDef.blue.toJSON());
+    expect(meshParams.isPlanar).to.be.true;
+    expect(meshParams.edges).to.be.undefined;
 
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
     expect(branch instanceof Branch).to.be.true;
@@ -116,7 +122,57 @@ describe.only("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a graphic with edges", async () => {
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, constraints, computeChordTolerance });
+    expect(builder.wantEdges).to.be.true;
+    builder.setSymbology(ColorDef.green, ColorDef.blue, 3, LinePixels.HiddenLine);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
+
+    const descr = finish(builder);
+    expect(descr.batch).to.be.undefined;
+    expect(descr.type).to.equal(GraphicType.Scene);
+    expect(descr.translation!.x).to.equal(5);
+    expect(descr.translation!.y).to.equal(2.5);
+    expect(descr.translation!.z).to.equal(2);
+    expect(descr.translation).not.to.be.undefined;
+    expect(descr.primitives.length).to.equal(1);
+    expect(descr.primitives[0].type).to.equal("mesh");
     
+    const meshParams = descr.primitives[0].params as ImdlModel.MeshParams;
+    const edgeParams = meshParams.edges!;
+    expect(edgeParams).not.to.be.undefined;
+    expect(edgeParams.linePixels).to.equal(LinePixels.HiddenLine);
+    expect(edgeParams.weight).to.equal(3);
+    expect(edgeParams.polylines).to.be.undefined;
+    expect(edgeParams.segments).to.be.undefined;
+    expect(edgeParams.silhouettes).to.be.undefined;
+    expect(edgeParams.indexed).not.to.be.undefined;
+
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    expect(branch instanceof Branch).to.be.true;
+    expect(branch.branch.entries.length).to.equal(1);
+
+    const mesh = branch.branch.entries[0] as MeshGraphic;
+    expect(mesh instanceof MeshGraphic).to.be.true;
+    expect(mesh.primitives.length).to.equal(2);
+    expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
+
+    const gfPrim = mesh.primitives[0].toPrimitive()!;
+    const geom = gfPrim.cachedGeometry.asMesh!;
+    expect(geom.lut.colorInfo.isUniform).to.be.true;
+    expect(geom.lut.colorInfo.uniform.red).to.equal(0);
+    expect(geom.lut.colorInfo.uniform.blue).to.equal(1);
+    expect(geom.lut.colorInfo.uniform.green).to.equal(0);
+    expect(geom.lut.colorInfo.uniform.alpha).to.equal(1);
+
+    const edges = mesh.primitives[1].toPrimitive()!.cachedGeometry.asMesh!;
+    expect(edges.asIndexedEdge).not.to.be.undefined;
+    expect(edges.asIndexedEdge!.lut.colorInfo.isUniform).to.be.true;
+    expect(edges.asIndexedEdge!.lut.colorInfo.uniform.red).to.equal(0);
+    expect(edges.asIndexedEdge!.lut.colorInfo.uniform.blue).to.equal(0);
+    expect(edges.asIndexedEdge!.lut.colorInfo.uniform.green).to.equal(1);
+    expect(edges.asIndexedEdge!.lut.colorInfo.uniform.alpha).to.equal(1);
   });
 
   it("applies a placement transform to the graphics", () => {
