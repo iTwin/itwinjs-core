@@ -64,6 +64,8 @@ interface TestResult {
   numSelectedTiles: number;
   /** Approximate time in milliseconds before all tiles were ready for display. */
   tileLoadingTime: number;
+  /** The total number of milliseconds spent decoding content. */
+  tileDecodingTime: number;
   /** Amount of memory requested from the GPU for the graphics of the tiles selected for display. */
   selectedTileGpuBytes: number;
   /** Amount of memory requested from the GPU for the graphics of all tiles in the tile trees viewed by this test.
@@ -580,8 +582,12 @@ export class TestRunner {
     await viewport.waitForSceneCompletion();
     timer.stop();
 
+    const decodingTime = IModelApp.tileAdmin.statistics.decoding.total;
+    IModelApp.tileAdmin.resetStatistics();
+
     const selectedTiles = getSelectedTileStats(viewport);
     return {
+      tileDecodingTime: decodingTime,
       tileLoadingTime: timer.current.milliseconds,
       selectedTileIds: selectedTiles.ids,
       numSelectedTiles: selectedTiles.count,
@@ -901,6 +907,7 @@ export class TestRunner {
     rowData.set("Test Name", this.getTestName(test));
     rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
     if (!this._minimizeOutput) {
+      rowData.set("Tile Decoding Time", test.tileDecodingTime);
       rowData.set("Tile Loading Time", test.tileLoadingTime);
       rowData.set("Num Selected Tiles", test.numSelectedTiles);
       rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));
