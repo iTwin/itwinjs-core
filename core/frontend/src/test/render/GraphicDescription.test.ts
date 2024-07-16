@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, LinePixels } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, GeometryClass, LinePixels, ModelFeature } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
 import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
-import { Branch } from "../../webgl";
+import { Batch, Branch } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
@@ -172,7 +172,7 @@ describe.only("GraphicDescriptionBuilder", () => {
       computeChordTolerance,
       placement: Transform.createTranslationXYZ(6, 7, 8),
     });
-    
+
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
     builder.addShape2d([
       new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
@@ -189,17 +189,13 @@ describe.only("GraphicDescriptionBuilder", () => {
     expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
   });
 
-  it("creates a batch containing a single feature", async () => {
-
-  });
-
   it("creates a view-independent graphic", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldDecoration,
       constraints,
       computeChordTolerance,
     });
-    
+
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
     builder.addShape2d([
       new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
@@ -219,6 +215,69 @@ describe.only("GraphicDescriptionBuilder", () => {
     const mesh = branch.branch.entries[0] as MeshGraphic;
     const geom = mesh.primitives[0].cachedGeometry;
     expect(geom.viewIndependentOrigin!.isExactEqual(viewIndependentOrigin)).to.be.true;
+  });
+
+  it("creates a batch containing a single feature with only an Id", async () => {
+    const builder = GraphicDescriptionBuilder.create({
+      type: GraphicType.WorldOverlay,
+      constraints,
+      computeChordTolerance,
+      pickable: {
+        id: "0x123",
+        geometryClass: GeometryClass.Construction,
+        noFlash: true,
+        locateOnly: true,
+        noHilite: false,
+      },
+    });
+
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
+
+    const descr = finish(builder);
+    const batchDescr = descr.batch!;
+    expect(batchDescr).not.to.be.undefined;
+    expect(batchDescr.featureTable.numFeatures).to.equal(1);
+    expect(batchDescr.featureTable.multiModel).to.be.false;
+    expect(batchDescr.featureTable.numSubCategories).to.be.undefined;
+    expect(batchDescr.noFlash).to.be.true;
+    expect(batchDescr.locateOnly).to.be.true;
+    expect(batchDescr.noHilite).to.be.false;
+    expect(batchDescr.noEmphasis).to.be.undefined;
+    expect(batchDescr.modelId).to.equal("0x123");
+    expect(batchDescr.isVolumeClassifier).to.be.undefined;
+
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    expect(branch instanceof Branch).to.be.true;
+    expect(branch.branch.entries.length).to.equal(1);
+
+    const batch = branch.branch.entries[0] as Batch;
+    expect(batch instanceof Batch).to.be.true;
+
+    expect(batch.options.noFlash).to.be.true;
+    expect(batch.options.locateOnly).to.be.true;
+    expect(batch.options.noHilite).to.be.false;
+    expect(batch.options.noEmphasis).to.be.undefined;
+    expect(batch.locateOnly).to.be.true;
+
+    expect(batch.featureTable.batchModelId).to.equal("0x123");
+    expect(batch.featureTable.numFeatures).to.equal(1);
+
+    const feature = ModelFeature.create();
+    batch.featureTable.getFeature(0, feature);
+    expect(feature.elementId).to.equal("0x123");
+    expect(feature.geometryClass).to.equal(GeometryClass.Construction);
+    expect(feature.subCategoryId).to.equal("0");
+    expect(feature.modelId).to.equal("0x123");
+
+    const mesh = batch.graphic as MeshGraphic;
+    expect(mesh instanceof MeshGraphic).to.be.true;
+    expect(mesh.primitives.length).to.equal(1);
+  });
+
+  it("creates a batch containing a single full feature with a model Id", async () => {
+
   });
 
   it("creates a batch containing multiple features", async () => {

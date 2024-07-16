@@ -66,12 +66,13 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
 
     const featureTable = this.pickable && meshes.features?.anyDefined ? meshes.features : undefined;
     if (featureTable) {
+      assert(undefined !== this.pickable);
       const features = PackedFeatureTable.pack(featureTable);
       const range = meshes.range ?? new Range3d();
       description.batch = {
         ...this.pickable,
         range: range.toJSON(),
-        modelId: featureTable.modelId,
+        modelId: this.pickable.modelId ?? this.pickable.id,
         featureTable: {
           multiModel: false,
           data: features.data,
