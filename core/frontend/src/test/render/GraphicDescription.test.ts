@@ -224,7 +224,6 @@ describe.only("GraphicDescriptionBuilder", () => {
       computeChordTolerance,
       pickable: {
         id: "0x123",
-        geometryClass: GeometryClass.Construction,
         noFlash: true,
         locateOnly: true,
         noHilite: false,
@@ -267,7 +266,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     const feature = ModelFeature.create();
     batch.featureTable.getFeature(0, feature);
     expect(feature.elementId).to.equal("0x123");
-    expect(feature.geometryClass).to.equal(GeometryClass.Construction);
+    expect(feature.geometryClass).to.equal(GeometryClass.Primary);
     expect(feature.subCategoryId).to.equal("0");
     expect(feature.modelId).to.equal("0x123");
 
@@ -277,7 +276,51 @@ describe.only("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a batch containing a single full feature with a model Id", async () => {
+    const builder = GraphicDescriptionBuilder.create({
+      type: GraphicType.WorldOverlay,
+      constraints,
+      computeChordTolerance,
+      pickable: {
+        id: "0x123",
+        geometryClass: GeometryClass.Construction,
+        modelId: "0x456",
+        subCategoryId: "0x789",
+      },
+    });
 
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
+
+    const descr = finish(builder);
+    const batchDescr = descr.batch!;
+    expect(batchDescr).not.to.be.undefined;
+    expect(batchDescr.featureTable.numFeatures).to.equal(1);
+    expect(batchDescr.featureTable.multiModel).to.be.false;
+    expect(batchDescr.featureTable.numSubCategories).to.be.undefined;
+    expect(batchDescr.modelId).to.equal("0x456");
+
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    expect(branch instanceof Branch).to.be.true;
+    expect(branch.branch.entries.length).to.equal(1);
+
+    const batch = branch.branch.entries[0] as Batch;
+    expect(batch instanceof Batch).to.be.true;
+
+    expect(batch.featureTable.batchModelId).to.equal("0x456");
+    expect(batch.featureTable.numFeatures).to.equal(1);
+
+    const feature = ModelFeature.create();
+    batch.featureTable.getFeature(0, feature);
+    expect(feature.elementId).to.equal("0x123");
+    expect(feature.modelId).to.equal("0x456");
+    expect(feature.subCategoryId).to.equal("0x789");
+    expect(feature.geometryClass).to.equal(GeometryClass.Construction);
+
+    const mesh = batch.graphic as MeshGraphic;
+    expect(mesh instanceof MeshGraphic).to.be.true;
+    expect(mesh.primitives.length).to.equal(1);
+    
   });
 
   it("creates a batch containing multiple features", async () => {
