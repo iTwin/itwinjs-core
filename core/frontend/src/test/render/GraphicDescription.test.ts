@@ -7,7 +7,7 @@ import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, LinePixels, ModelFeature, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../common";
+import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionContext } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch } from "../../webgl";
@@ -23,10 +23,10 @@ function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: numbe
 }
 
 describe.only("GraphicDescriptionBuilder", () => {
-  let constraints: GraphicDescriptionConstraints;
+  let context: GraphicDescriptionContext;
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
-    constraints = IModelApp.renderSystem.getGraphicDescriptionConstraints();
+    context = IModelApp.renderSystem.getGraphicDescriptionContext();
   });
 
   after(async () => IModelApp.shutdown());
@@ -34,8 +34,8 @@ describe.only("GraphicDescriptionBuilder", () => {
   const computeChordTolerance = () => 0;
   const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
 
-  function expectOption(options: Omit<GraphicDescriptionBuilderOptions, "constraints" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
-    const builder = GraphicDescriptionBuilder.create({ ...options, constraints, computeChordTolerance });
+  function expectOption(options: Omit<GraphicDescriptionBuilderOptions, "context" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
+    const builder = GraphicDescriptionBuilder.create({ ...options, context: context, computeChordTolerance });
     expect(builder[option]).to.equal(expected);
   }
 
@@ -71,7 +71,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   }
 
   it("creates a graphic", async () => {
-    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, constraints, computeChordTolerance });
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, context: context, computeChordTolerance });
     expect(builder.wantEdges).to.be.false;
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
     builder.addShape2d([
@@ -112,7 +112,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a graphic with edges", async () => {
-    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, constraints, computeChordTolerance });
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, context: context, computeChordTolerance });
     expect(builder.wantEdges).to.be.true;
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
     builder.addShape2d([
@@ -168,7 +168,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   it("applies a placement transform to the graphics", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldDecoration,
-      constraints,
+      context: context,
       computeChordTolerance,
       placement: Transform.createTranslationXYZ(6, 7, 8),
     });
@@ -192,7 +192,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   it("creates a view-independent graphic", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldDecoration,
-      constraints,
+      context: context,
       computeChordTolerance,
     });
 
@@ -226,7 +226,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   it("creates a batch containing a single feature with only an Id", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
-      constraints,
+      context: context,
       computeChordTolerance,
       pickable: {
         id: "0x123",
@@ -281,7 +281,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   it("creates a batch containing a single full feature with a model Id", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
-      constraints,
+      context: context,
       computeChordTolerance,
       pickable: {
         id: "0x123",
@@ -325,7 +325,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   it("creates a batch containing multiple features", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
-      constraints,
+      context: context,
       computeChordTolerance,
       pickable: {
         id: "0xa1",

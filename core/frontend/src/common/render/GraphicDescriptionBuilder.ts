@@ -33,7 +33,7 @@ export namespace GraphicDescription {
 /**
  * @beta
  */
-export interface GraphicDescriptionConstraints {
+export interface GraphicDescriptionContext {
   // ###TODO [_implementationProhibited]
   readonly maxTextureSize: number;
 }
@@ -66,7 +66,7 @@ export interface GraphicDescriptionBuilderOptions {
   pickable?: PickableGraphicOptions;
   generateEdges?: boolean;
   computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-  constraints: GraphicDescriptionConstraints;
+  context: GraphicDescriptionContext;
 }
 
 /**

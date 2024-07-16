@@ -8,7 +8,7 @@
 
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
-import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../render/GraphicDescriptionBuilder";
+import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionContext } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
 import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
@@ -37,7 +37,7 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
 
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
   private readonly _computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-  private readonly _constraints: GraphicDescriptionConstraints;
+  private readonly _constraints: GraphicDescriptionContext;
 
   public constructor(options: GraphicDescriptionBuilderOptions) {
     const type = options.type;
@@ -49,7 +49,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     super({ ...options, type, placement, wantEdges, wantNormals, preserveOrder });
 
     this._computeChordTolerance = options.computeChordTolerance;
-    this._constraints = options.constraints;
+    this._constraints = options.context;
   }
 
   public finish(args?: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
