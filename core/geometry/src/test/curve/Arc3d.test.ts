@@ -791,7 +791,7 @@ describe("ApproximateArc3d", () => {
         const context = EllipticalArcApproximationContext.create(arc);
         const options = EllipticalArcApproximationOptions.create();
         const samples = context.computeSampleFractions(options, true) as QuadrantFractions[];
-        displaySamples(allGeometry, context.arc, samples, 0, dy, 0);
+        displaySamples(allGeometry, context.ellipticalArc, samples, 0, dy, 0);
         const chainError = context.computeApproximationError(samples);
         ck.testDefined(chainError, "cover arc chain approximation error computation");
         const error = chainError!.detailA.a;
@@ -912,17 +912,17 @@ describe("ApproximateArc3d", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc.center, arc.startPoint()], x, y);
 
       const context = EllipticalArcApproximationContext.create(arc);
-      if (!ck.testTrue(context.isValidArc, "context accepted arc"))
+      if (!ck.testTrue(context.isValidEllipticalArc, "context accepted arc"))
         return { err: undefined, nSeg: 0 };
 
-      const squaredAxes = [arc.center.plus(context.arc.vector0), arc.center, arc.center.plus(context.arc.vector90)];
+      const squaredAxes = [arc.center.plus(context.ellipticalArc.vector0), arc.center, arc.center.plus(context.ellipticalArc.vector90)];
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, squaredAxes, x, y);
 
       // test sampler. NOTE: samples correspond to the context's squared arc
       const flatSamples = context.computeSampleFractions(options, false) as number[];
       const samples = context.computeSampleFractions(options, true) as QuadrantFractions[];
-      displaySamples(allGeometry, context.arc, flatSamples, x, y);
-      testAndCompareSamples(context.arc, flatSamples, samples);
+      displaySamples(allGeometry, context.ellipticalArc, flatSamples, x, y);
+      testAndCompareSamples(context.ellipticalArc, flatSamples, samples);
 
       // test construction
       const chain = context.constructCircularArcChainApproximation(options);
@@ -976,7 +976,7 @@ describe("ApproximateArc3d", () => {
           y0 += yDelta(yWidth);
         }
 
-        // the subdivision method (wins if decreases the point count for eMin)
+        // the subdivision method (wins if doesn't increase eMin and nSeg)
         const iSub = remaps.length;
         if (ck.testDefined(eMin, "Have a min error to beat") && ck.testDefined(nMin, "Have #segments to beat")) {
           method = EllipticalArcSampleMethod.AdaptiveSubdivision;
@@ -1039,7 +1039,7 @@ describe("ApproximateArc3d", () => {
       ck.testDefined(approx, "computed an approximation");
       let error = 0;
       let nSamplesQ1 = 0;
-      if (context.isValidArc) {
+      if (context.isValidEllipticalArc) {
         if (display) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, ellipticalArc, x, y, -delta);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, approx, x, y);
@@ -1069,7 +1069,7 @@ describe("ApproximateArc3d", () => {
             ck.testTrue(ellipticalArc === approx, "nearly circular elliptical arc Arc3d approximation is the input arc");
         }
       }
-      return { approx, error, nSamplesQ1, isValidArc: context.isValidArc };
+      return { approx, error, nSamplesQ1, isValidArc: context.isValidEllipticalArc };
     };
 
     // test subdivision against other methods on ellipses of various eccentricities
@@ -1082,14 +1082,19 @@ describe("ApproximateArc3d", () => {
     const optionsC = EllipticalArcApproximationOptions.create();
     for (const e of eccentricities) {
       const b = a * Math.sqrt((1 - e) * (1 + e));
-      for (const reversed of [false, true]) {
-        const arc = Arc3d.createXYEllipse(center, reversed ? a : b, reversed ? b : a, AngleSweep.createStartEndDegrees(0, 90));
+      let prevError: number | undefined;
+      for (const swappedAxes of [false, true]) {
+        const arc = Arc3d.createXYEllipse(center, swappedAxes ? b : a, swappedAxes ? a : b, AngleSweep.createStartEndDegrees(0, 90));
         ++nEllipses;
 
         const resultA = analyzeQ1Approximation(arc, optionsA, true);
         if (!resultA.isValidArc)
           continue; // elliptical arc is essentially circular; no approximation to compare
         ck.testLE(resultA.error, optionsA.maxError, "approx error as per options");
+        if (undefined === prevError)
+          prevError = resultA.error;
+        else
+          ck.testSmallRelative(prevError - resultA.error, "swapping axes doesn't affect approx error");
         y += delta;
 
         let subdivisionLost = false;
@@ -1101,7 +1106,8 @@ describe("ApproximateArc3d", () => {
         ck.testTrue(resultC.isValidArc, "naive method approximation is valid");
         ck.testExactNumber(resultA.nSamplesQ1, resultC.nSamplesQ1, "comparison approximation has expected sample count");
         let subdivisionWins = resultA.error <= resultC.error + Geometry.smallMetricDistance;
-        ck.testLETol(resultA.error, resultC.error, Geometry.smallMetricDistance, `expected subdivision to beat ${iMethodToString(-1)} on ${resultA.nSamplesQ1} samples of eccentricity ${e} ${reversed ? "" : "reversed "}ellipse`);
+        let overshootPct = 100 * (resultA.error - resultC.error) / resultC.error;
+        ck.testLETol(resultA.error, resultC.error, Geometry.smallMetricDistance, `subdivision came within ${overshootPct}% of beating ${iMethodToString(-1)} on ${resultA.nSamplesQ1} samples of eccentricity ${e} ellipse ${swappedAxes ? "(swapped)" : ""}`);
         if (subdivisionWins)
           ++nSubdivisionComparisonWins;
         else
@@ -1117,7 +1123,8 @@ describe("ApproximateArc3d", () => {
           ck.testTrue(resultC.isValidArc, "nonUniformCurvature method approximation is valid");
           ck.testExactNumber(resultA.nSamplesQ1, resultC.nSamplesQ1, "comparison approximation has expected sample count");
           subdivisionWins = resultA.error <= resultC.error + Geometry.smallMetricDistance;
-          ck.testLETol(resultA.error, resultC.error, Geometry.smallMetricDistance, `expected subdivision to beat ${iMethodToString(iRemap)} on ${resultA.nSamplesQ1} samples of eccentricity ${e} ${reversed ? "" : "reversed "}ellipse`);
+          overshootPct = 100 * (resultA.error - resultC.error) / resultC.error;
+          ck.testLETol(resultA.error, resultC.error, Geometry.smallMetricDistance, `subdivision came within ${overshootPct}% of beating ${iMethodToString(iRemap)} on ${resultA.nSamplesQ1} samples of eccentricity ${e} ellipse ${swappedAxes ? "(swapped)" : ""}`);
           if (subdivisionWins)
             ++nSubdivisionComparisonWins;
           else
@@ -1150,6 +1157,13 @@ describe("ApproximateArc3d", () => {
     optionsA.forcePath = true;
     analyzeQ1Approximation(fullEllipse, optionsA);
     analyzeQ1Approximation(fullCircle, optionsA);
+
+    // previously, this arc's approximation exceeded the desired max error
+    const arc0 = Arc3d.createXYEllipse(Point3d.createZero(), 10, 8, AngleSweep.createStartEndDegrees(90, 0));
+    const options0 = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.AdaptiveSubdivision, undefined, 0.001836772806889095);
+    const result0 = analyzeQ1Approximation(arc0, options0, true);
+    ck.testDefined(result0, "anomalous arc approximation is defined");
+    ck.testLE(result0.error, options0.maxError, "anomalous arc approx error as per options");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "SubdivisionSampler");
     expect(ck.getNumErrors()).equals(0);
