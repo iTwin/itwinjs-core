@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d, Range3d } from "@itwin/core-geometry";
+import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
@@ -165,8 +165,28 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(edges.asIndexedEdge!.lut.colorInfo.uniform.alpha).to.equal(1);
   });
 
-  it("applies a placement transform to the graphics", () => {
+  it("applies a placement transform to the graphics", async () => {
+    const builder = GraphicDescriptionBuilder.create({
+      type: GraphicType.WorldDecoration,
+      constraints,
+      computeChordTolerance,
+      placement: Transform.createTranslationXYZ(6, 7, 8),
+    });
+    
+    builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
 
+    const descr = finish(builder);
+    expect(descr.translation!.x).to.equal(5 + 6);
+    expect(descr.translation!.y).to.equal(2.5 + 7);
+    expect(descr.translation!.z).to.equal(2 + 8);
+
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    const mesh = branch.branch.entries[0] as MeshGraphic;
+    expect(mesh.primitives.length).to.equal(1);
+    expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
   });
 
   it("creates a batch containing a single feature", async () => {
