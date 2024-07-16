@@ -211,8 +211,8 @@ export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: RenderFeatureTable;
   public readonly range: ElementAlignedBox3d;
-  public readonly structuralMetadata: StructuralMetadata;
-  public readonly instanceFeatures: InstanceFeatures;
+  public readonly structuralMetadata?: StructuralMetadata;
+  public readonly instanceFeatures?: InstanceFeatures;
   private readonly _context: BatchContext = { batchId: 0 };
   /** Public strictly for tests. */
   public readonly perTargetData = new PerTargetData(this);
@@ -250,8 +250,8 @@ export class Batch extends Graphic {
     this.featureTable = features;
     this.range = range;
     this.options = options ?? {};
-    this.structuralMetadata = structuralMetadata ?? [];
-    this.instanceFeatures = instanceFeatures ?? new Map<number, InstanceFeature[]>();
+    this.instanceFeatures = instanceFeatures;
+    this.structuralMetadata = structuralMetadata ;
   }
 
   private _isDisposed = false;

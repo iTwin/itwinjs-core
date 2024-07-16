@@ -450,12 +450,12 @@ export class ViewManager implements Iterable<ScreenViewport> {
   public async getElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const msg: string[] = await hit.iModel.getToolTipMessage(hit.sourceId); // wait for the locate message(s) from the backend
 
-    if(hit.extra){
-      for(const [key, entry] of Object.entries(hit.extra)){
-        msg.push(`table: ${key}`);
+    if(hit.structuralMetadata){
+      for(const table of hit.structuralMetadata.tables){
+        msg.push(`table: ${table.name}`);
 
-        for(const [attribute, value] of Object.entries(entry)){
-          msg.push(`  ${attribute}: ${value}`);
+        for(const entry of table.entries){
+          msg.push(`  ${entry.key}: ${entry.value}`);
         }
       }
     }

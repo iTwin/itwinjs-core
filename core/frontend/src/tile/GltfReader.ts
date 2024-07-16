@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, ModelFeature, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
+  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -400,12 +400,19 @@ function compareTextureKeys(lhs: TextureKey, rhs: TextureKey): number {
   return compareNumbers(lhs.id, rhs.id);
 }
 
-export interface StructuralMetadataTable{
+export interface StructuralMetadataTableEntries{
   name: string;
-  entries: any[];
+  values: any[];
 };
 
-export type StructuralMetadata = Array<StructuralMetadataTable>;
+export interface StructuralMetadataTable{
+  name: string;
+  entries: StructuralMetadataTableEntries[];
+};
+
+export interface StructuralMetadata{
+  tables: StructuralMetadataTable[];
+}
 
 export interface InstanceFeature {
   featureId: number;
@@ -494,21 +501,6 @@ export abstract class GltfReader {
 
     return transform;
   }
-
-  // private getGltfBufferDataView(id: GltfId){
-  //   const bufferView = this._bufferViews[id];
-  //   if (!bufferView || undefined === bufferView.buffer)
-  //     return undefined;
-
-  //   const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
-  //   if (!bufferData)
-  //     return undefined;
-
-  //   assert(undefined !== bufferView.byteLength); // required by spec; TypeScript interface is wrong.
-  //   const byteOffset = bufferView.byteOffset ?? 0;
-
-  //   return new DataView(bufferData.buffer, byteOffset, bufferView.byteLength);
-  // }
 
   private getGltfBufferDataView(id: GltfId, type: GltfStructuralMetadata.ClassPropertyComponentType){
     const bufferView = this._bufferViews[id];
@@ -636,7 +628,7 @@ export abstract class GltfReader {
 
     if(propertyTables && schema && schema.classes){
 
-      this._structuralMetadata = [];
+      this._structuralMetadata = { tables: [] };
 
       for(const propertyTable of propertyTables){
         if(!propertyTable.properties || !schema.classes){
@@ -661,6 +653,11 @@ export abstract class GltfReader {
             continue;
           }
 
+          const tableEntries: StructuralMetadataTableEntries = {
+            name: propertySchema.name,
+            values: [],
+          };
+
           const getProperty = this.getStructuralMetadataPropertyGetter(property, propertySchema);
 
           if(!getProperty){
@@ -668,14 +665,12 @@ export abstract class GltfReader {
           }
 
           for(let i = 0; i < propertyTable.count; i++){
-            if(structuralMetadataTable.entries.length <= i){
-              structuralMetadataTable.entries.push({});
-            }
-            structuralMetadataTable.entries[i][propertySchema.name] = getProperty(i);
+            tableEntries.values.push(getProperty(i));
           }
-        }
 
-        this._structuralMetadata?.push(structuralMetadataTable);
+          structuralMetadataTable.entries.push(tableEntries);
+        }
+        this._structuralMetadata.tables.push(structuralMetadataTable);
       }
     }
   }
