@@ -22,6 +22,15 @@ import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Branch, Graphic, Primitive } from "../../webgl";
 
+function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
+  expect(range.low.x).to.equal(lx);
+  expect(range.low.y).to.equal(ly);
+  expect(range.low.z).to.equal(lz);
+  expect(range.high.x).to.equal(hx);
+  expect(range.high.y).to.equal(hy);
+  expect(range.high.z).to.equal(hz);
+}
+
 describe.only("GraphicDescriptionBuilder", () => {
   let constraints: GraphicDescriptionConstraints;
   before(async () => {
@@ -80,8 +89,10 @@ describe.only("GraphicDescriptionBuilder", () => {
     const descr = finish(builder);
     expect(descr.batch).to.be.undefined;
     expect(descr.type).to.equal(GraphicType.ViewOverlay);
-    // ###TODO expect(descr.transform)
-    expect(descr.transform).not.to.be.undefined;
+    expect(descr.translation!.x).to.equal(5);
+    expect(descr.translation!.y).to.equal(2.5);
+    expect(descr.translation!.z).to.equal(2);
+    expect(descr.translation).not.to.be.undefined;
     expect(descr.primitives.length).to.equal(1);
     expect(descr.primitives[0].type).to.equal("mesh");
     // ###TODO vertices
@@ -93,6 +104,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     const mesh = branch.branch.entries[0] as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
     expect(mesh.primitives.length).to.equal(1);
+    expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
     const gfPrim = mesh.primitives[0].toPrimitive()!;
     expect(gfPrim).not.to.be.undefined;
     expect(gfPrim.cachedGeometry.asMesh).not.to.be.undefined;

@@ -453,10 +453,10 @@ export async function createGraphicFromDescription(descr: GraphicDescription, sy
     graphic = system.createBatch(graphic, featureTable, Range3d.fromJSON(descr.batch.range), descr.batch);
   }
 
-  if (descr.transform) {
+  if (descr.translation) {
     const branch = new GraphicBranch(true);
     branch.add(graphic);
-    graphic = system.createBranch(branch, Transform.fromJSON(descr.transform));
+    graphic = system.createBranch(branch, Transform.createTranslation(Point3d.fromJSON(descr.translation)));
   }
 
   return graphic;

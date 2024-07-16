@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Point3d, Range3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { ImdlModel, addPrimitiveTransferables } from "../../imdl/ImdlModel";
 import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
@@ -31,7 +31,7 @@ export type BatchDescription = Omit<BatchOptions, "tileId"> & {
 export interface GraphicDescriptionImpl extends GraphicDescription {
   type: GraphicType;
   primitives: ImdlModel.Primitive[];
-  transform?: TransformProps;
+  translation?: XYAndZ;
   batch?: BatchDescription;
 }
 
@@ -151,7 +151,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       
     this.accum.clear();
     if (transformOrigin) {
-      description.transform = Transform.createTranslation(transformOrigin).toJSON();
+      description.translation = { x: transformOrigin.x, y: transformOrigin.y, z: transformOrigin.z };
     }
 
     return description;
