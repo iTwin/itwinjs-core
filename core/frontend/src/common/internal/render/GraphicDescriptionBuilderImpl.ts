@@ -52,7 +52,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     this._constraints = options.constraints;
   }
 
-  public finish(args: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
+  public finish(args?: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
     const description: GraphicDescriptionImpl = { type: this.type, primitives: [] };
     if (this.accum.isEmpty) {
       return description;
@@ -120,13 +120,13 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
 
       const primitive = this.createPrimitive(mesh);
       if (primitive) {
-        const origin = args.viewIndependentOrigin;
+        const origin = args?.viewIndependentOrigin;
         if (origin) {
           primitive.modifier = {
             type: "viewIndependentOrigin",
             origin: { x: origin.x, y: origin.y, z: origin.z },
           };
-        } else if (args.instances) {
+        } else if (args?.instances) {
           primitive.modifier = {
             ...args.instances,
             type: "instances",

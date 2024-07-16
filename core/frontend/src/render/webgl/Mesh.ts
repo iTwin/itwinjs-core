@@ -86,6 +86,9 @@ export class MeshGraphic extends Graphic {
   private readonly _instances?: InstanceBuffers | PatternBuffers;
   private readonly _meshRange: Range3d;
 
+  public get primitives(): readonly Primitive[] { return this._primitives; }
+  public get meshRange(): Readonly<Range3d> { return this._meshRange; }
+
   public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternBuffers): MeshGraphic | undefined {
     let buffers;
     if (instances) {

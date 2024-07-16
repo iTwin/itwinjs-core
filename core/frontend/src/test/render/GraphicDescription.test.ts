@@ -20,7 +20,7 @@ import { GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilde
 import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
-import { Graphic } from "../../webgl";
+import { Branch, Graphic, Primitive } from "../../webgl";
 
 describe.only("GraphicDescriptionBuilder", () => {
   let constraints: GraphicDescriptionConstraints;
@@ -86,10 +86,14 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(descr.primitives[0].type).to.equal("mesh");
     // ###TODO vertices
 
-    const graphic = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr })!;
-    expect(graphic).not.to.be.undefined;
-    expect(graphic instanceof Graphic).to.be.true;
-    const gfPrim = (graphic as Graphic).toPrimitive()!;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    expect(branch instanceof Branch).to.be.true;
+    expect(branch.branch.entries.length).to.equal(1);
+
+    const mesh = branch.branch.entries[0] as MeshGraphic;
+    expect(mesh instanceof MeshGraphic).to.be.true;
+    expect(mesh.primitives.length).to.equal(1);
+    const gfPrim = mesh.primitives[0].toPrimitive()!;
     expect(gfPrim).not.to.be.undefined;
     expect(gfPrim.cachedGeometry.asMesh).not.to.be.undefined;
   });
