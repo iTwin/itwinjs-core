@@ -105,9 +105,14 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(mesh instanceof MeshGraphic).to.be.true;
     expect(mesh.primitives.length).to.equal(1);
     expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
+
     const gfPrim = mesh.primitives[0].toPrimitive()!;
-    expect(gfPrim).not.to.be.undefined;
-    expect(gfPrim.cachedGeometry.asMesh).not.to.be.undefined;
+    const geom = gfPrim.cachedGeometry.asMesh!;
+    expect(geom.lut.colorInfo.isUniform).to.be.true;
+    expect(geom.lut.colorInfo.uniform.red).to.equal(0);
+    expect(geom.lut.colorInfo.uniform.blue).to.equal(1);
+    expect(geom.lut.colorInfo.uniform.green).to.equal(0);
+    expect(geom.lut.colorInfo.uniform.alpha).to.equal(1);
   });
 
   it("creates a graphic with edges", async () => {
