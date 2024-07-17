@@ -694,6 +694,14 @@ export class TransientIdSequence {
   public peekNext(): Id64String {
     return Id64.fromLocalAndBriefcaseIds(this._localId + 1, 0xffffff);
   }
+
+  public skip(numberOfIdsToSkip: number): void {
+    if (numberOfIdsToSkip < 0 || Math.round(numberOfIdsToSkip) !== numberOfIdsToSkip) {
+      throw new Error("Number of Ids to skip must be a non-negative integer");
+    }
+
+    this._localId += numberOfIdsToSkip;
+  }
 }
 
 /**
