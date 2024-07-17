@@ -557,8 +557,8 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
   }
   public getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb {
     const db = this._wsDbs.get(workspaceDbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
-    if (this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
-      throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
+    if (!props.skipCopy && this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
+      throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first, dog.`);
     return db;
   }
 
@@ -596,7 +596,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
       IModelJsFs.removeSync(tempDbFile);
     }
 
-    return this.getWorkspaceDb(args);
+    return this.getWorkspaceDb({ ...args, skipCopy: !this.cloudContainer });
   }
 }
 
