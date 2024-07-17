@@ -22,8 +22,7 @@ import {
 import {
   ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteModeTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool,
   FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
-  ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel,
-  ViewportTileSizeModifierTool,
+  ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportAddSeequentRealityModel, ViewportTileSizeModifierTool,
 } from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
@@ -207,6 +206,7 @@ export class FrontendDevTools {
       ToggleTerrainTool,
       UnsharpenEffect,
       ViewportAddRealityModel,
+      ViewportAddSeequentRealityModel,
       ViewportTileSizeModifierTool,
       VignetteConfig,
       VignetteEffect,
