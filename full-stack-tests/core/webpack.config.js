@@ -13,8 +13,8 @@ function loadEnv(envFile) {
   if (!fs.existsSync(envFile))
     return;
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv");
+  const dotenvExpand = require("dotenv-expand");
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;
@@ -38,14 +38,18 @@ function createConfig(shouldInstrument) {
     },
     devtool: "nosources-source-map",
     resolve: {
-      mainFields: ["main", "module"],
+      mainFields: ["browser", "main", "module"],
       fallback: {
         assert: require.resolve("assert"),
         crypto: require.resolve("crypto-browserify"),
         http: require.resolve("stream-http"),
         https: require.resolve("https-browserify"),
+        net: false,
+        os: false,
         path: require.resolve("path-browserify"),
         stream: require.resolve("stream-browserify"),
+        tls: false,
+        tty: false,
         zlib: require.resolve("browserify-zlib"),
       },
       alias: {
