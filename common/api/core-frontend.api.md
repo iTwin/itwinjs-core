@@ -5391,7 +5391,9 @@ export namespace GltfStructuralMetadata {
     // (undocumented)
     export interface Schema extends GltfProperty {
         // (undocumented)
-        classes?: Class[];
+        classes?: {
+            [classId: string]: Class | undefined;
+        };
         // (undocumented)
         description?: string;
         // (undocumented)
