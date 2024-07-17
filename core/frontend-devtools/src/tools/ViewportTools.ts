@@ -442,7 +442,7 @@ export class ViewportTileSizeModifierTool extends Tool {
   }
 }
 
-/** This tool adds a reality model to the viewport.
+/** This tool adds a seequent reality model to the viewport.
  * @alpha
  */
 export class ViewportAddSeequentRealityModel extends Tool {

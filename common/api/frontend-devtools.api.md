@@ -2622,6 +2622,18 @@ export class ViewportAddRealityModel extends Tool {
     static toolId: string;
 }
 
+// @alpha
+export class ViewportAddSeequentRealityModel extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    parseAndRun(...args: string[]): Promise<boolean>;
+    run(organizationId: string, workspaceId: string, geoscienceObjectId: string, accessToken: string): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class ViewportTileSizeModifierTool extends Tool {
     // (undocumented)
