@@ -1821,7 +1821,7 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
 // @public
 export interface NestedContentValue {
     displayValues: ValuesDictionary<DisplayValue>;
-    label?: string;
+    labelDefinition?: LabelDefinition;
     mergedFieldNames: string[];
     primaryKeys: InstanceKey[];
     values: ValuesDictionary<Value>;
@@ -3070,9 +3070,9 @@ export interface StartItemProps {
 
 // @public
 export interface StartStructProps {
-    description?: string;
     displayValues: DisplayValuesMap;
     hierarchy: FieldHierarchy;
+    label?: LabelDefinition;
     parentFieldName?: string;
     rawValues: ValuesMap;
     valueType: TypeDescription;
