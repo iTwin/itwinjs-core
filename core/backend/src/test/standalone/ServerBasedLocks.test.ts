@@ -270,21 +270,6 @@ describe.only("Server-based locks", () => {
       expectUnlocked();
     });
 
-    it("throws if briefcase has unpushed changes", async () => {
-      
-    });
-
-    it("throws if briefcase has unsaved changes", async () => {
-      expectUnlocked();
-      await bc.acquireSchemaLock();
-      write();
-      await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
-      expectLocked();
-      bc.abandonChanges();
-      await locks.releaseAllLocks();
-      expectUnlocked();
-    });
-
     it("is called when pushChanges is called with no local changes", async () => {
       await bc.acquireSchemaLock();
       expectLocked();
@@ -317,6 +302,28 @@ describe.only("Server-based locks", () => {
       bc.saveChanges();
       await push(true);
       expectLocked();
+      await locks.releaseAllLocks();
+      expectUnlocked();
+    });
+
+    it("throws if briefcase has unpushed changes", async () => {
+      expectUnlocked();
+      await bc.acquireSchemaLock();
+      expectLocked();
+      write();
+      bc.saveChanges();
+      await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
+      await push();
+      expectUnlocked();
+    });
+
+    it("throws if briefcase has unsaved changes", async () => {
+      expectUnlocked();
+      await bc.acquireSchemaLock();
+      write();
+      await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
+      expectLocked();
+      bc.abandonChanges();
       await locks.releaseAllLocks();
       expectUnlocked();
     });
