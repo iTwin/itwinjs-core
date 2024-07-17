@@ -143,7 +143,7 @@ export abstract class RealityTileLoader {
         reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
         break;
       case TileFormat.Gltf:
-        const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
+        const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp );
         if (props) {
           reader = new GltfGraphicsReader(props, {
             iModel,
@@ -152,6 +152,7 @@ export abstract class RealityTileLoader {
             transform: tile.transformToRoot,
             hasChildren: !tile.isLeaf,
             pickableOptions: { id: modelId },
+            idMap: this.getBatchIdMap(),
           });
         }
 

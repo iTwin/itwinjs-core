@@ -46,7 +46,6 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
-import { HitStructuralMetadata, HitStructuralMetadataTable } from "../../HitDetail";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -603,7 +602,6 @@ interface BatchInfo {
   iModel?: IModelConnection;
   tileId?: string;
   viewAttachmentId?: Id64String;
-  structuralMetadata?: HitStructuralMetadata;
 }
 
 // Represents a view of data read from a region of the frame buffer.
@@ -646,25 +644,10 @@ class PixelBuffer implements Pixel.Buffer {
 
   private getBatchInfo(pixelIndex: number): BatchInfo | undefined {
     const featureId = this.getFeatureId(pixelIndex);
-    let structuralMetadata: HitStructuralMetadata | undefined;
     if (undefined !== featureId) {
       const batch = this._batchState.find(featureId);
       if (undefined !== batch){
-        if(batch.structuralMetadata && batch.instanceFeatures &&  batch.instanceFeatures.has(featureId)) {
-          const instanceFeatures = batch.instanceFeatures.get(featureId);
-          if(instanceFeatures) {
-            structuralMetadata = { tables: [] };
-            for(const instanceFeature of instanceFeatures) {
-              const table = batch.structuralMetadata.tables[instanceFeature.tableId];
-              const metadataTable: HitStructuralMetadataTable = { name: table.name, entries: [] };
-              for(const properties of table.entries) {
-                metadataTable.entries.push({ key: properties.name, value: properties.values[instanceFeature.featureId] });
-              }
-              structuralMetadata.tables.push(metadataTable);
-            }
-          }
-        }
-        return { featureTable: batch.featureTable, iModel: batch.batchIModel, tileId: batch.tileId, viewAttachmentId: batch.viewAttachmentId, structuralMetadata };
+        return { featureTable: batch.featureTable, iModel: batch.batchIModel, tileId: batch.tileId, viewAttachmentId: batch.viewAttachmentId };
       }
     }
 
@@ -751,13 +734,12 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModel, tileId, viewAttachmentId, structuralMetadata;
+    let featureTable, iModel, tileId, viewAttachmentId;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
       iModel = batchInfo.iModel;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
-      structuralMetadata = batchInfo.structuralMetadata;
     }
 
     return new Pixel.Data({
@@ -769,7 +751,6 @@ class PixelBuffer implements Pixel.Buffer {
       iModel,
       tileId,
       viewAttachmentId,
-      structuralMetadata,
     });
   }
 

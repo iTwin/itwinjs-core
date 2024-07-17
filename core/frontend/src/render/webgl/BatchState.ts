@@ -79,13 +79,6 @@ export class BatchState {
     if (undefined === batch)
       return undefined;
 
-    // If instance features are present, no need to look in the feature table since the feature Id corresponds to the instance Id.
-    if(batch.instanceFeatures && batch.instanceFeatures.size > 0){
-      const res = ModelFeature.create();
-      res.elementId = Id64.fromUint32Pair(featureId- batch.batchId, 0);
-      return res;
-    }
-
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 

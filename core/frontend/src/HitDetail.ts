@@ -119,23 +119,6 @@ export interface ViewAttachmentHitInfo {
   readonly viewport: Viewport;
 }
 
-/** Describes the table entry contained in a structural metadata table. */
-export interface HitStructuralMetadataTableEntry {
-  key: string;
-  value: any;
-}
-
-/** Describes the table contained in structural metadata. */
-export interface HitStructuralMetadataTable {
-  name: string;
-  entries: HitStructuralMetadataTableEntry[];
-}
-
-/** Describes the hit structural metadata obtained from EXT_structural_metadata, for Gltf models only. */
-export interface HitStructuralMetadata {
-  tables: HitStructuralMetadataTable[];
-}
-
 /** Arguments supplied to the [[HitDetail]] constructor.
  * @public
  */
@@ -179,10 +162,6 @@ export interface HitDetailProps {
    * @beta
    */
   readonly viewAttachment?: ViewAttachmentHitInfo;
-  /** The gltf structural metadata for the pixel at the hit point.
-   * @beta
-   */
-  readonly structuralMetadata?: HitStructuralMetadata;
 }
 
 /** A HitDetail stores the result when locating geometry displayed in a view.
@@ -232,20 +211,15 @@ export class HitDetail {
    * @beta
    */
   public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.viewAttachment; }
-  /** .
-   * @note .
-   * @beta
-   */
-  public get structuralMetadata(): HitStructuralMetadata | undefined { return this._props.structuralMetadata; }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
 
   /** @deprecated in 4.1. Use the overload that takes a [[HitDetailProps]]. */
-  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean, structuralMetadata?: HitStructuralMetadata);
+  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
 
   /** @internal */
-  public constructor(arg0: Point3d | HitDetailProps, viewport?: ScreenViewport, hitSource?: HitSource, hitPoint?: Point3d, sourceId?: string, priority?: HitPriority, distXY?: number, distFraction?: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean, structuralMetadata?: HitStructuralMetadata) {
+  public constructor(arg0: Point3d | HitDetailProps, viewport?: ScreenViewport, hitSource?: HitSource, hitPoint?: Point3d, sourceId?: string, priority?: HitPriority, distXY?: number, distFraction?: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
     if (arg0 instanceof Point3d) {
       assert(undefined !== viewport && undefined !== hitSource && undefined !== hitPoint && undefined !== sourceId);
       assert(undefined !== priority && undefined !== distXY && undefined !== distFraction);
@@ -265,7 +239,6 @@ export class HitDetail {
         sourceIModel,
         tileId,
         isClassifier,
-        structuralMetadata,
       };
     } else {
       // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
@@ -285,7 +258,6 @@ export class HitDetail {
         tileId: arg0.tileId,
         isClassifier: arg0.isClassifier,
         viewAttachment: arg0.viewAttachment,
-        structuralMetadata: arg0.structuralMetadata,
       };
     }
   }

@@ -8,7 +8,7 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
-import { HitPriority, HitStructuralMetadata, ViewAttachmentHitInfo } from "../HitDetail";
+import { HitPriority, ViewAttachmentHitInfo } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
 
@@ -40,10 +40,6 @@ export namespace Pixel {
      * @beta
      */
     public readonly viewAttachmentId?: Id64String;
-    /** The gltf structural metadata that corresponds to the pixel geometry.
-     * @beta
-     */
-    public readonly structuralMetadata?: HitStructuralMetadata;
     /** @internal */
     public get isClassifier(): boolean {
       return undefined !== this.batchType && BatchType.Primary !== this.batchType;
@@ -59,7 +55,6 @@ export namespace Pixel {
       iModel?: IModelConnection;
       tileId?: string;
       viewAttachmentId?: string;
-      structuralMetadata?: HitStructuralMetadata;
     }) {
       if (args?.feature)
         this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
@@ -71,7 +66,6 @@ export namespace Pixel {
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
       this.viewAttachmentId = args?.viewAttachmentId;
-      this.structuralMetadata = args?.structuralMetadata;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -127,7 +121,6 @@ export namespace Pixel {
         isClassifier: this.isClassifier,
         sourceIModel: this.iModel,
         viewAttachment,
-        structuralMetadata: this.structuralMetadata,
       };
     }
   }
@@ -175,10 +168,6 @@ export namespace Pixel {
      * @beta
      */
     viewAttachment?: ViewAttachmentHitInfo;
-    /** The gltf structural metadata that corresponds to the hit geometry.
-     * @beta
-     */
-    structuralMetadata?: HitStructuralMetadata;
   }
 
   /** Describes the type of geometry that produced the [[Pixel.Data]]. */

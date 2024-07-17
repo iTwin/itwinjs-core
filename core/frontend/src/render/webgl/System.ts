@@ -12,7 +12,7 @@ import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { InstanceFeatures, MapTileTreeReference, StructuralMetadata, TileTreeReference } from "../../tile/internal";
+import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { imageElementFromImageSource } from "../../common/ImageUtil";
 import { MeshParams } from "../../common/render/primitives/MeshParams";
 import { PointStringParams } from "../../common/render/primitives/PointStringParams";
@@ -512,8 +512,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new AnimationTransformBranch(graphic, nodeId);
   }
 
-  public createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions, structuralMetadata?: StructuralMetadata, instanceFeatures?: InstanceFeatures): RenderGraphic {
-    return new Batch(graphic, features, range, options, structuralMetadata, instanceFeatures);
+  public createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {
+    return new Batch(graphic, features, range, options);
   }
 
   public override createGraphicOwner(owned: RenderGraphic): RenderGraphicOwner {
