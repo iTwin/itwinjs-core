@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { AccessToken, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
+import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, LockState, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { PhysicalObject } from "../../domains/GenericElements";
@@ -19,6 +20,10 @@ import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
 import { _releaseAllLocks } from "../../internal/Symbols";
+
+const expect = chai.expect;
+const assert = chai.assert;
+chai.use(chaiAsPromised);
 
 describe.only("Server-based locks", () => {
   const createVersion0 = async () => {
@@ -231,17 +236,34 @@ describe.only("Server-based locks", () => {
       expect(bc.locks.isServerBased).to.be.true;
       locks = bc.locks as ServerBasedLocks;
       bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-      elemId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1A");
+      elemId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      expect(elemId).not.to.equal("0");
     });
     
     afterEach(() => bc.close());
 
+    function expectLocked(): void {
+      expect(locks.getLockCount(LockState.Exclusive)).least(1);
+      expect(locks.getLockCount(LockState.Shared)).to.equal(0);
+    }
+
+    function expectUnlocked(): void {
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(0);
+      expect(locks.getLockCount(LockState.Shared)).to.equal(0);
+    }
+
+    function write(): void {
+      const elem = bc.elements.getElement(elemId);
+      elem.jsonProperties.testProp = Guid.createValue();
+      elem.update();
+    }
+
     it("releases all locks", async () => {
-      assertLockCounts(locks, 0, 0);
+      expectUnlocked();
       await bc.acquireSchemaLock();
-      assertLockCounts(locks, 0, 1);
+      expectLocked();
       await locks.releaseAllLocks();
-      assertLockCounts(locks, 0, 0);
+      expectUnlocked();
     });
 
     it("throws if briefcase has unpushed changes", async () => {
@@ -249,7 +271,14 @@ describe.only("Server-based locks", () => {
     });
 
     it("throws if briefcase has unsaved changes", async () => {
-      
+      expectUnlocked();
+      await bc.acquireSchemaLock();
+      write();
+      await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
+      expectLocked();
+      bc.abandonChanges();
+      await locks.releaseAllLocks();
+      expectUnlocked();
     });
 
     it("is called when pushChanges is called with no local changes", async () => {
