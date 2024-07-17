@@ -2031,7 +2031,7 @@ export interface ReadGltfGraphicsArgs {
   transform?: Transform;
   /** @alpha */
   hasChildren?: boolean;
-  /** @alpha */
+  /** @internal */
   idMap?: BatchedTileIdMap;
 }
 

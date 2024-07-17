@@ -234,14 +234,6 @@ export interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
   skeletons?: GltfId[];
 }
 
-export interface GltfInstanceFeature {
-  attribute?: number;
-  featureCount: number;
-  label: string;
-  nullFeatureId?: number;
-  propertyTable: number;
-}
-
 /** glTF 2.0 representation of a [[GltfNode]]. Unlike a [[Gltf1Node]], a Gltf2Node may refer to at most one [[GltfMesh]].
  * @internal
  */
@@ -271,9 +263,18 @@ export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
         SCALE?: GltfId;
       };
     };
+    /** The [EXT_instance_features](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_instance_features/README.md)
+     * extension permits assigning identifiers to individual instances of a mesh, which can be used to look up per-instance data in a property table.
+     */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_instance_features?: {
-      featureIds: GltfInstanceFeature[];
+      featureIds: {
+        attribute?: number;
+        featureCount: number;
+        label?: string;
+        nullFeatureId?: number;
+        propertyTable: number;
+      }[];
     };
   };
 }
