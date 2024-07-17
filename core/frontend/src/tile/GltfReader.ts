@@ -558,7 +558,7 @@ export abstract class GltfReader {
     // If we computed the content range ourselves, it's already in tile space.
     // If the content range was supplied by the caller, it's in tileset space and needs to be transformed to tile space.
     if (featureTable)
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), this._computedContentRange ? contentRange : range, undefined);
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), this._computedContentRange ? contentRange : range);
 
     const viewFlagOverrides = this.viewFlagOverrides;
     if (transform || viewFlagOverrides) {
@@ -694,8 +694,7 @@ export abstract class GltfReader {
     }
 
     const instanceFeaturesExt = node.extensions?.EXT_instance_features;
-
-    const featureIds = ((featureTable && featureTable.isUniform) || instanceFeaturesExt) ? new Uint8Array(3 * count) : undefined;
+    const featureIds = ((featureTable && featureTable.isUniform) || (instanceFeaturesExt && this._structuralMetadata)) ? new Uint8Array(3 * count) : undefined;
 
     // Resolve instance features if the EXT_instance_features if present
     if(this._structuralMetadata && instanceFeaturesExt && featureIds){
