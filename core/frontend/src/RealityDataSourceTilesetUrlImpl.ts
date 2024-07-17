@@ -105,6 +105,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return true;
   }
 
+  /** Returns the tile URL. If the tile path is a full URL, it is returned as is. Otherwise, the base URL is prepended to the tile path. */
   private getTileUrl(tilePath: string){
     return this.isValidURL(tilePath) ? tilePath : this._baseUrl + tilePath;
   }
