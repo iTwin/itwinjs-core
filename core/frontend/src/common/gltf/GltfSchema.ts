@@ -631,7 +631,9 @@ export namespace GltfStructuralMetadata {
     name?: string;
     description?: string;
     version?: string;
-    classes?: any;
+    classes?: {
+      [classId: string]: Class | undefined;
+    };
     enums?: Enum[];
   }
 

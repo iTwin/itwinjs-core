@@ -2278,7 +2278,7 @@ export class GltfGraphicsReader extends GltfReader {
         }
 
         const structuralMetadataTable: StructuralMetadataTable = {
-          name: propertyTableSchema.name,
+          name: propertyTableSchema.name ?? propertyTable.class,
           entries: [],
         };
 
@@ -2297,7 +2297,7 @@ export class GltfGraphicsReader extends GltfReader {
           }
 
           structuralMetadataTable.entries.push({
-            name: propertySchema.name,
+            name: propertySchema.name ?? propertyName,
             values: propertyValues,
           });
         }
