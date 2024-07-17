@@ -20,7 +20,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
 import { _releaseAllLocks } from "../../internal/Symbols";
 
-describe("Server-based locks", () => {
+describe.only("Server-based locks", () => {
   const createVersion0 = async () => {
     const dbName = IModelTestUtils.prepareOutputFile("ServerBasedLocks", "ServerBasedLocks.bim");
     const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
@@ -215,7 +215,57 @@ describe("Server-based locks", () => {
     const child2El = bc2.elements.getElement<PhysicalElement>(child1);
 
     assert.equal(child2El.userLabel, childElJson.userLabel);
+    await bc1.locks.releaseAllLocks();
+    await bc2.locks.releaseAllLocks();
     bc1.close();
     bc2.close();
+  });
+
+  describe("releaseAllLocks", () => {
+    let bc: BriefcaseDb;
+    let locks: ServerBasedLocks;
+    let elemId: string;
+
+    beforeEach(async () => {
+      bc = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      expect(bc.locks.isServerBased).to.be.true;
+      locks = bc.locks as ServerBasedLocks;
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      elemId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1A");
+    });
+    
+    afterEach(() => bc.close());
+
+    it("releases all locks", async () => {
+      assertLockCounts(locks, 0, 0);
+      await bc.acquireSchemaLock();
+      assertLockCounts(locks, 0, 1);
+      await locks.releaseAllLocks();
+      assertLockCounts(locks, 0, 0);
+    });
+
+    it("throws if briefcase has unpushed changes", async () => {
+      
+    });
+
+    it("throws if briefcase has unsaved changes", async () => {
+      
+    });
+
+    it("is called when pushChanges is called with no local changes", async () => {
+      
+    });
+
+    it("is called when pushing changes", async () => {
+      
+    });
+
+    it("is not called when pushChanges is called with no local changes if retainLocks is specified", async () => {
+      
+    });
+
+    it("is not called when pushing changes if retainLocks is specified", async () => {
+      
+    });
   });
 });
