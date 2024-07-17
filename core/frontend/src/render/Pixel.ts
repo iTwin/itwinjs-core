@@ -18,7 +18,6 @@ import type { Viewport } from "../Viewport";
  * @extensions
  */
 export namespace Pixel {
-
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
     /** The feature that produced the pixel. */
