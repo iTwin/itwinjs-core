@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, JsonUtils, Logger, utf8ToString,
 } from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
@@ -378,9 +378,8 @@ export interface GltfReaderArgs {
    * Reality meshes are simpler but do not support some features like lighting.
    */
   vertexTableRequired?: boolean;
-  /**
-   *
-  */
+  /** A table structure to store the Gltf structural metadata if present.
+   */
   idMap?: BatchedTileIdMap;
 }
 
