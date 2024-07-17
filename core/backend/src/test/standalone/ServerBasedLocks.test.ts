@@ -258,6 +258,10 @@ describe.only("Server-based locks", () => {
       elem.update();
     }
 
+    async function push(retainLocks?: true): Promise<void> {
+      return bc.pushChanges({ retainLocks, accessToken: "token", description: "changes" });
+    }
+
     it("releases all locks", async () => {
       expectUnlocked();
       await bc.acquireSchemaLock();
@@ -282,19 +286,39 @@ describe.only("Server-based locks", () => {
     });
 
     it("is called when pushChanges is called with no local changes", async () => {
-      
+      await bc.acquireSchemaLock();
+      expectLocked();
+      await push();
+      expectUnlocked();
     });
 
     it("is called when pushing changes", async () => {
-      
+      await bc.acquireSchemaLock();
+      expectLocked();
+      write();
+      bc.saveChanges();
+      await push();
+      expectUnlocked();
     });
 
     it("is not called when pushChanges is called with no local changes if retainLocks is specified", async () => {
-      
+      await bc.acquireSchemaLock();
+      expectLocked();
+      await push(true);
+      expectLocked();
+      await locks.releaseAllLocks();
+      expectUnlocked();
     });
 
     it("is not called when pushing changes if retainLocks is specified", async () => {
-      
+      await bc.acquireSchemaLock();
+      expectLocked();
+      write();
+      bc.saveChanges();
+      await push(true);
+      expectLocked();
+      await locks.releaseAllLocks();
+      expectUnlocked();
     });
   });
 });
