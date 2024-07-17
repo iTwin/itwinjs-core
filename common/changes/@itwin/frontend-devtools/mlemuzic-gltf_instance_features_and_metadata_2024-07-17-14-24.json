@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/frontend-devtools",
-      "comment": "Add new tool to load a reality model from Seeqent ",
+      "comment": "Add new tool to load a reality model from Seeqent.",
       "type": "none"
     }
   ],
