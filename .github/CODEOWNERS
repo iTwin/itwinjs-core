@@ -89,76 +89,76 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/webgl-compatibility/               @iTwin/itwinjs-core-display
 /common/**/core-webpack-tools/                @aruniverse @calebmshafer @wgoehrig
 
-/common/config/azure-pipelines  @aruniverse @calebmshafer @ColinKerr @wgoehrig
-/core/ecsql                     @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
-/core/backend                   @iTwin/itwinjs-core-admins
-/core/bentley                   @iTwin/itwinjs-core-admins
-/core/common                    @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
+/common/config/azure-pipelines                @aruniverse @calebmshafer @ColinKerr @wgoehrig
+/core/ecsql                                   @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
+/core/backend                                 @iTwin/itwinjs-core-admins
+/core/bentley                                 @iTwin/itwinjs-core-admins
+/core/common                                  @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
-/core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig @christophermlawson @StefanApfel-Bentley
-/core/electron                  @wgoehrig @GytisCepk @ben-polinsky
-/core/express-server            @paulius-valiunas @wgoehrig
-/core/extension                 @calebmshafer @wgoehrig @aruniverse @ben-polinsky
-/core/frontend                  @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
-/core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @ben-polinsky
-/core/frontend-devtools         @iTwin/itwinjs-core-display
-/core/geometry                  @bbastings @dassaf4 @saeeedtorabi
-/core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
-/core/i18n                      @wgoehrig @calebmshafer
-/core/markup                    @pmconne @bbastings
-/core/mobile                    @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
-/core/orbitgt                   @iTwin/itwinjs-core-display
-/core/quantity                  @calebmshafer @ColinKerr
-/core/webgl-compatibility       @iTwin/itwinjs-core-display
+/core/ecschema-*                              @calebmshafer @ColinKerr @wgoehrig @christophermlawson @StefanApfel-Bentley
+/core/electron                                @wgoehrig @GytisCepk @ben-polinsky
+/core/express-server                          @paulius-valiunas @wgoehrig
+/core/extension                               @calebmshafer @wgoehrig @aruniverse @ben-polinsky
+/core/frontend                                @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
+/core/frontend/src/extension                  @calebmshafer @wgoehrig @aruniverse @ben-polinsky
+/core/frontend-devtools                       @iTwin/itwinjs-core-display
+/core/geometry                                @bbastings @dassaf4 @saeeedtorabi
+/core/hypermodeling                           @bbastings @iTwin/itwinjs-core-display
+/core/i18n                                    @wgoehrig @calebmshafer
+/core/markup                                  @pmconne @bbastings
+/core/mobile                                  @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
+/core/orbitgt                                 @iTwin/itwinjs-core-display
+/core/quantity                                @calebmshafer @ColinKerr
+/core/webgl-compatibility                     @iTwin/itwinjs-core-display
 
 /docs   @iTwin/itwinjs-core
-/docs/getting-started @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
-/docs/config          @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
-/docs/presentation    @iTwin/itwinjs-core-presentation
-/docs/bis             @diegoalexdiaz @ColinKerr
-/docs/ui              @iTwin/itwinjs-core-ui @GerardasB
+/docs/getting-started                         @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
+/docs/config                                  @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
+/docs/presentation                            @iTwin/itwinjs-core-presentation
+/docs/bis                                     @diegoalexdiaz @ColinKerr
+/docs/ui                                      @iTwin/itwinjs-core-ui @GerardasB
 
 # These domains should be split up a bit more
-/domains                      @iTwin/itwinjs-core-admins
-/domains/analytical           @ColinKerr @diegoalexdiaz
-/domains/linear-referencing   @ColinKerr @diegoalexdiaz
-/domains/physical-material    @bbastings @diegoalexdiaz @jchick-bentley
+/domains                                      @iTwin/itwinjs-core-admins
+/domains/analytical                           @ColinKerr @diegoalexdiaz
+/domains/linear-referencing                   @ColinKerr @diegoalexdiaz
+/domains/physical-material                    @bbastings @diegoalexdiaz @jchick-bentley
 
-/editor                               @bbastings @pmconne
+/editor                                       @bbastings @pmconne
 
-/example-code                         @iTwin/itwinjs-core-admins
+/example-code                                 @iTwin/itwinjs-core-admins
 
-/extensions                           @aruniverse @calebmshafer
-/extensions/frontend-tiles            @iTwin/itwinjs-core-display @danieliborra
-/extensions/test-extension            @aruniverse @calebmshafer @wgoehrig
-/extensions/map-layers-*              @aruniverse @mdastous-bentley @eringram
+/extensions                                   @aruniverse @calebmshafer
+/extensions/frontend-tiles                    @iTwin/itwinjs-core-display @danieliborra
+/extensions/test-extension                    @aruniverse @calebmshafer @wgoehrig
+/extensions/map-layers-*                      @aruniverse @mdastous-bentley @eringram
 
-/full-stack-tests/core                    @iTwin/itwinjs-core-admins
-/full-stack-tests/ecschema-rpc-interface  @calebmshafer @ColinKerr @wgoehrig
-/full-stack-tests/presentation            @iTwin/itwinjs-core-presentation
-/full-stack-tests/rpc                     @calebmshafer @wgoehrig @swbsi
-/full-stack-tests/rpc-interface           @aruniverse @paulius-valiunas @wgoehrig
+/full-stack-tests/core                        @iTwin/itwinjs-core-admins
+/full-stack-tests/ecschema-rpc-interface      @calebmshafer @ColinKerr @wgoehrig
+/full-stack-tests/presentation                @iTwin/itwinjs-core-presentation
+/full-stack-tests/rpc                         @calebmshafer @wgoehrig @swbsi
+/full-stack-tests/rpc-interface               @aruniverse @paulius-valiunas @wgoehrig
 
-/presentation                   @iTwin/itwinjs-core-presentation
+/presentation                                 @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
-/test-apps/display-performance-test-app     @iTwin/itwinjs-core-display
-/test-apps/display-test-app                 @bbastings @iTwin/itwinjs-core-display
-/test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
-/test-apps/display-test-app/android         @iTwin/mobilesdkadmins
-/test-apps/export-gltf                      @iTwin/itwinjs-core-display
-/test-apps/imjs-importer                    @bbastings @dassaf4 @saeeedtorabi
-/test-apps/imodel-from-geojson              @iTwin/itwinjs-core-display
-/test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
-/test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
+/test-apps/display-performance-test-app       @iTwin/itwinjs-core-display
+/test-apps/display-test-app                   @bbastings @iTwin/itwinjs-core-display
+/test-apps/display-test-app/ios               @iTwin/mobilesdkadmins
+/test-apps/display-test-app/android           @iTwin/mobilesdkadmins
+/test-apps/export-gltf                        @iTwin/itwinjs-core-display
+/test-apps/imjs-importer                      @bbastings @dassaf4 @saeeedtorabi
+/test-apps/imodel-from-geojson                @iTwin/itwinjs-core-display
+/test-apps/imodel-from-orbitgt                @iTwin/itwinjs-core-display
+/test-apps/imodel-from-reality-model          @iTwin/itwinjs-core-display
 
-/tools/backend-webpack @aruniverse @calebmshafer @wgoehrig
-/tools/build @aruniverse @calebmshafer @wgoehrig
-/tools/certa @calebmshafer @wgoehrig
-/tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
-/tools/internal @aruniverse @calebmshafer @wgoehrig
-/tools/perf-tools @aruniverse @calebmshafer @wgoehrig
-/tools/webpack-core @aruniverse @calebmshafer @wgoehrig
+/tools/backend-webpack                        @aruniverse @calebmshafer @wgoehrig
+/tools/build                                  @aruniverse @calebmshafer @wgoehrig
+/tools/certa                                  @calebmshafer @wgoehrig
+/tools/ecschema2ts                            @calebmshafer @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
+/tools/internal                               @aruniverse @calebmshafer @wgoehrig
+/tools/perf-tools                             @aruniverse @calebmshafer @wgoehrig
+/tools/webpack-core                           @aruniverse @calebmshafer @wgoehrig
 
 /ui @iTwin/itwinjs-core-ui
 
@@ -166,7 +166,7 @@ rush.json       @iTwin/itwinjs-core-admins
 
 ## Updates to the package.json should avoid requesting review by everyone
 ## If the version updates or
-/**/package.json    @iTwin/itwinjs-core
-/**/CHANGELOG.json  @iTwin/itwinjs-core
-/**/CHANGELOG.md    @iTwin/itwinjs-core
-/**/LICENSE.md      @iTwin/itwinjs-core-admins
+/**/package.json                              @iTwin/itwinjs-core
+/**/CHANGELOG.json                            @iTwin/itwinjs-core
+/**/CHANGELOG.md                              @iTwin/itwinjs-core
+/**/LICENSE.md                                @iTwin/itwinjs-core-admins
