@@ -28,13 +28,13 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /common/**/analytical-backend.*               @ColinKerr @diegoalexdiaz
 /common/**/analytical-backend/                @ColinKerr @diegoalexdiaz
-/common/**/backend-webpack-tools/             @aruniverse @calebmshafer @wgoehrig
+/common/**/backend-webpack-tools/             @aruniverse @wgoehrig
 /common/**/core-bentley.*                     @iTwin/itwinjs-core-admins
 /common/**/core-bentley/                      @iTwin/itwinjs-core-admins
-/common/**/build-tools/                       @aruniverse @ben-polinsky @calebmshafer @wgoehrig
-/common/**/certa/                             @calebmshafer @wgoehrig
+/common/**/build-tools/                       @aruniverse @ben-polinsky @wgoehrig
+/common/**/certa/                             @aruniverse @wgoehrig
 
-/common/**/*-extension/                       @aruniverse @calebmshafer
+/common/**/*-extension/                       @aruniverse @ben-polinsky
 
 /common/**/ecsql-*/                           @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
 /common/**/ecschema-*.*                       @hl662 @ColinKerr @wgoehrig @christophermlawson @StefanApfel-Bentley
@@ -43,7 +43,6 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/ecschema2ts/                       @hl662 @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
 /common/**/core-electron.*                    @wgoehrig @GytisCepk @ben-polinsky
 /common/**/core-electron/                     @wgoehrig @GytisCepk @ben-polinsky
-/common/**/eslint-plugin/                     @calebmshafer @paulius-valiunas
 /common/**/express-server.*                   @paulius-valiunas @wgoehrig
 /common/**/express-server/                    @paulius-valiunas @wgoehrig
 /common/**/frontend-devtools.*                @iTwin/itwinjs-core-display
@@ -60,12 +59,12 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/core-common/                       @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /common/**/editor-*.*                         @bbastings @pmconne
 /common/**/editor-*/                          @bbastings @pmconne
-/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse @ben-polinsky
-/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse @ben-polinsky
+/common/**/core-extension.*                   @wgoehrig @aruniverse @ben-polinsky
+/common/**/core-extension/                    @wgoehrig @aruniverse @ben-polinsky
 /common/**/core-frontend.*                    @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
 /common/**/core-frontend/                     @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
-/common/**/core-i18n.*                        @calebmshafer @wgoehrig
-/common/**/core-i18n/                         @calebmshafer @wgoehrig
+/common/**/core-i18n.*                        @anmolshres98 @tcobbs-bentley @wgoehrig
+/common/**/core-i18n/                         @anmolshres98 @tcobbs-bentley @wgoehrig
 /common/**/core-markup.*                      @pmconne @bbastings
 /common/**/core-markup/                       @pmconne @bbastings
 /common/**/core-quantity.*                    @hl662 @ColinKerr
@@ -87,9 +86,9 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/appui-*/                           @iTwin/itwinjs-core-ui
 /common/**/webgl-compatibility.*              @iTwin/itwinjs-core-display
 /common/**/webgl-compatibility/               @iTwin/itwinjs-core-display
-/common/**/core-webpack-tools/                @aruniverse @calebmshafer @wgoehrig
+/common/**/core-webpack-tools/                @aruniverse @wgoehrig
 
-/common/config/azure-pipelines                @aruniverse @calebmshafer @ColinKerr @wgoehrig
+/common/config/azure-pipelines                @aruniverse @ben-polinsky @ColinKerr @wgoehrig
 /core/ecsql                                   @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
 /core/backend                                 @iTwin/itwinjs-core-admins
 /core/bentley                                 @iTwin/itwinjs-core-admins
@@ -98,13 +97,13 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/ecschema-*                              @hl662 @ColinKerr @wgoehrig @christophermlawson @StefanApfel-Bentley
 /core/electron                                @wgoehrig @GytisCepk @ben-polinsky
 /core/express-server                          @paulius-valiunas @wgoehrig
-/core/extension                               @calebmshafer @wgoehrig @aruniverse @ben-polinsky
+/core/extension                               @wgoehrig @aruniverse @ben-polinsky
 /core/frontend                                @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
-/core/frontend/src/extension                  @calebmshafer @wgoehrig @aruniverse @ben-polinsky
+/core/frontend/src/extension                  @wgoehrig @aruniverse @ben-polinsky
 /core/frontend-devtools                       @iTwin/itwinjs-core-display
 /core/geometry                                @bbastings @dassaf4 @saeeedtorabi
 /core/hypermodeling                           @bbastings @iTwin/itwinjs-core-display
-/core/i18n                                    @wgoehrig @calebmshafer
+/core/i18n                                    @wgoehrig @anmolshres98 @tcobbs-bentley
 /core/markup                                  @pmconne @bbastings
 /core/mobile                                  @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
 /core/orbitgt                                 @iTwin/itwinjs-core-display
@@ -128,15 +127,15 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /example-code                                 @iTwin/itwinjs-core-admins
 
-/extensions                                   @aruniverse @calebmshafer
+/extensions                                   @aruniverse @ben-polinsky
 /extensions/frontend-tiles                    @iTwin/itwinjs-core-display @danieliborra
-/extensions/test-extension                    @aruniverse @calebmshafer @wgoehrig
-/extensions/map-layers-*                      @aruniverse @mdastous-bentley @eringram
+/extensions/test-extension                    @aruniverse @ben-polinsky @wgoehrig
+/extensions/map-layers*                       @aruniverse @mdastous-bentley @eringram
 
 /full-stack-tests/core                        @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface      @hl662 @ColinKerr @wgoehrig
 /full-stack-tests/presentation                @iTwin/itwinjs-core-presentation
-/full-stack-tests/rpc                         @calebmshafer @wgoehrig @swbsi
+/full-stack-tests/rpc                         @GytisCepk @paulius-valiunas @wgoehrig @swbsi
 /full-stack-tests/rpc-interface               @aruniverse @paulius-valiunas @wgoehrig
 
 /presentation                                 @iTwin/itwinjs-core-presentation
@@ -152,13 +151,13 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/imodel-from-orbitgt                @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model          @iTwin/itwinjs-core-display
 
-/tools/backend-webpack                        @aruniverse @calebmshafer @wgoehrig
-/tools/build                                  @aruniverse @calebmshafer @wgoehrig
+/tools/backend-webpack                        @aruniverse @wgoehrig
+/tools/build                                  @aruniverse @wgoehrig
 /tools/certa                                  @calebmshafer @wgoehrig
 /tools/ecschema2ts                            @hl662 @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
-/tools/internal                               @aruniverse @calebmshafer @wgoehrig
-/tools/perf-tools                             @aruniverse @calebmshafer @wgoehrig
-/tools/webpack-core                           @aruniverse @calebmshafer @wgoehrig
+/tools/internal                               @aruniverse @wgoehrig
+/tools/perf-tools                             @aruniverse @wgoehrig
+/tools/webpack-core                           @aruniverse @wgoehrig
 
 /ui @iTwin/itwinjs-core-ui
 
