@@ -17,9 +17,9 @@ import { Triangulator } from "./Triangulation";
 
 /**
  * Context for repeated insertion of new points in a graph.
- * * Initial graph should have clean outer boundary. (e.g. as typically marked with HalfEdgeMask.EXTERIOR)
+ * * Initial graph should have clean outer boundary (e.g., as typically marked with `HalfEdgeMask.EXTERIOR`).
  * * After each insertion, the current "position" within the graph is remembered so that each subsequent insertion
- *     can reuse that position as start for walking to the new point.
+ * can reuse that position as start for walking to the new point.
  */
 export class InsertAndRetriangulateContext {
   private _graph: HalfEdgeGraph;
@@ -28,7 +28,6 @@ export class InsertAndRetriangulateContext {
   // Temporaries used in reAimFromFace
   // private _lastBefore: HalfEdgePositionDetail;
   // private _firstAfter: HalfEdgePositionDetail;
-
   private constructor(graph: HalfEdgeGraph) {
     this._graph = graph;
     this._edgeSet = MarkedEdgeSet.create(graph)!;
@@ -41,10 +40,13 @@ export class InsertAndRetriangulateContext {
     return new InsertAndRetriangulateContext(graph);
   }
   /** Query the (pointer to) the graph in the context. */
-  public get graph(): HalfEdgeGraph { return this._graph; }
-  // Walk face from edgeNode;  insert new edges back to start node from all except
-  //   immediate successor and predecessor.
-  // insert all new nodes, and nodes of the existing face, in edgeSet.
+  public get graph(): HalfEdgeGraph {
+    return this._graph;
+  }
+  /**
+   * Walk face from edgeNode. Insert new edges back to start node from all except immediate successor and predecessor.
+   * Insert all new nodes and nodes of the existing face in edgeSet.
+   */
   private retriangulateFromBaseVertex(centralNode: HalfEdge) {
     const numNode = centralNode.countEdgesAroundFace();
     this._edgeSet.addAroundFace(centralNode);
@@ -64,13 +66,13 @@ export class InsertAndRetriangulateContext {
   public reset() {
     this._searcher = HalfEdgePositionDetail.create();
   }
-
-  /** Return a (reference to!) the current position in the graph */
-  public get currentPosition() { return this._searcher; }
+  /** Return a (reference to!) the current position in the graph. */
+  public get currentPosition() {
+    return this._searcher;
+  }
   /**
-   * Linear search through the graph
+   * Linear search through the graph.
    * * Returns a HalfEdgePositionDetail for the nearest edge or vertex.
-   * @param xyz
    */
   public searchForNearestEdgeOrVertex(xyz: Point3d): HalfEdgePositionDetail {
     const position = HalfEdgePositionDetail.create();
@@ -119,19 +121,25 @@ export class InsertAndRetriangulateContext {
     }
     return position;
   }
-
-  public resetSearch(xyz: Point3d, maxDim: number) {
+  public resetSearch(xyz: Point3d, maxDim: number): void {
     if (maxDim > 0)
       this._searcher = this.searchForNearestEdgeOrVertex(xyz);
     else
       this._searcher = this.searchForNearestVertex(xyz);
   }
+  /**
+   * Insert a new node in the graph and retriangulate.
+   * @param xyz the coordinates of the node to be inserted.
+   * @param newZWins whether the z-coordinate of the new node should override the z-coordinate of an existing vertex
+   * at the same X and Y coordinates.
+   * @returns true if the node was inserted and re-triangulated, false otherwise.s
+   */
   public insertAndRetriangulate(xyz: Point3d, newZWins: boolean): boolean {
     this.moveToPoint(this._searcher, xyz);
     const seedNode = this._searcher.node;
     let stat = false;
     if (seedNode === undefined) {
-    } else if (this._searcher.isFace) {
+    } else if (this._searcher.isFace) { // if searcher is on a face
       if (!seedNode.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const newInteriorNode = this._graph.createEdgeXYZHalfEdge(xyz.x, xyz.y, xyz.z, 0, seedNode, 0);
         this.retriangulateFromBaseVertex(newInteriorNode);
@@ -139,7 +147,7 @@ export class InsertAndRetriangulateContext {
         this._searcher.resetAsVertex(newInteriorNode);
       }
       stat = true;
-    } else if (this._searcher.isEdge) {
+    } else if (this._searcher.isEdge) { // if searcher is on an edge
       const newA = this._graph.splitEdgeAtFraction(seedNode, this._searcher.edgeFraction!);
       const newB = newA.vertexPredecessor;
       this.retriangulateFromBaseVertex(newA);
@@ -147,8 +155,8 @@ export class InsertAndRetriangulateContext {
       Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
       this._searcher.resetAsVertex(newA);
       stat = true;
-    } else if (this._searcher.isVertex) {
-      // There's already a vertex there.  Maybe the z is different.
+    } else if (this._searcher.isVertex) { // if searcher is on a vertex
+      // there's already a vertex there; maybe the z is different.
       if (newZWins)
         seedNode.setXYZAroundVertex(xyz.x, xyz.y, xyz.z);
       stat = true;
@@ -157,11 +165,16 @@ export class InsertAndRetriangulateContext {
     }
     return stat;
   }
-
-  // Advance movingPosition to a face, edge, or vertex position detail that contains xyz.
-  // Prior content in movingPosition is used as seed.
-  // Return true if successful.
-  public moveToPoint(movingPosition: HalfEdgePositionDetail, xyz: Point3d, announcer?: (position: HalfEdgePositionDetail) => boolean): boolean {
+  /**
+   * Advance movingPosition to a face, edge, or vertex position detail that contains xyz.
+   * Prior content in movingPosition is used as seed.
+   * Return true if successful.
+   */
+  public moveToPoint(
+    movingPosition: HalfEdgePositionDetail,
+    xyz: Point3d,
+    announcer?: (position: HalfEdgePositionDetail) => boolean,
+  ): boolean {
     const psc = PointSearchContext.create();
     movingPosition.setITag(0);
     if (movingPosition.isUnclassified) {
@@ -184,7 +197,7 @@ export class InsertAndRetriangulateContext {
         const lastBefore = HalfEdgePositionDetail.create();
         const firstAfter = HalfEdgePositionDetail.create();
         const rc = psc.reAimAroundFace(movingPosition.node!, ray, ray.a!, lastBefore, firstAfter);
-        // reAimAroundFace returns lots of cases in `lastBefore` !!
+        // reAimAroundFace returns lots of cases in `lastBefore`
         switch (rc) {
           case RayClassification.RC_NoHits: {
             movingPosition.resetAsUnknown();
@@ -213,7 +226,7 @@ export class InsertAndRetriangulateContext {
           case RayClassification.RC_TargetAfter: {
             if (movingPosition.node === lastBefore.node
               && movingPosition.isFace
-              && (lastBefore.isEdge || lastBefore.isVertex)){
+              && (lastBefore.isEdge || lastBefore.isVertex)) {
               trap++;
             } else {
               trap = 0;
@@ -235,26 +248,23 @@ export class InsertAndRetriangulateContext {
     if (movingPosition.isAtXY(xyz.x, xyz.y))
       return true;
     if (trap > 1) {
-      // Ugh.  We exited the loop by repeatedly hitting the same node
-      // with edge or vertex type in lastBefore.
-      // This happens only when the target point is exterior.
-      // (Heavy triangulation use cases start with a convex hull and only do interior intersections,
-      //     so case only happens in contrived unit tests.... so far ...)
-      // What to mark?
-      // Leave it as is, but mark as exterior target
-      //
+      // ugh! We exited the loop by repeatedly hitting the same node with edge or vertex type in lastBefore.
+      // This happens only when the target point is exterior (heavy triangulation use cases start with a convex
+      // hull and only do interior intersections, so case only happens in contrived unit tests so far
+      // What to mark? Leave it as is, but mark as exterior target
       if (movingPosition.node !== undefined) {
-          movingPosition.setIsExteriorTarget(true);
+        movingPosition.setIsExteriorTarget(true);
       }
       return false;
     }
-    // Murky here ...  should never be hit.  Has never been hit in unit tests.
+    // murky here; should never be hit. Has never been hit in unit tests.
     return false;
   }
-
 }
-// Create a VuPositionDetail for specified fraction along any unmasked edge.
-function moveToAnyUnmaskedEdge(graph: HalfEdgeGraph, position: HalfEdgePositionDetail, edgeFraction: number, skipMask: HalfEdgeMask): boolean {
+/** Create a VuPositionDetail for specified fraction along any unmasked edge. */
+function moveToAnyUnmaskedEdge(
+  graph: HalfEdgeGraph, position: HalfEdgePositionDetail, edgeFraction: number, skipMask: HalfEdgeMask,
+): boolean {
   for (const candidate of graph.allHalfEdges) {
     if (!candidate.isMaskSet(skipMask)) {
       position.resetAtEdgeAndFraction(candidate, edgeFraction);

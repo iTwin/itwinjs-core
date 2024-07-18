@@ -24,7 +24,7 @@ import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SweepContour } from "../../solid/SweepContour";
-import { HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
@@ -1128,4 +1128,19 @@ describe("Triangulation", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("createTriangulatedGraphFromPoints", () => {
+    const ck = new Checker();
+    const points = [[0, 0, 0], [5, 0, 0], [0, 2, 0], [5, 2, 0]];
+    const pts = IModelJson.Reader.parsePointArray(points);
+    const graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    graph.announceFaceLoops(
+      (_graph: HalfEdgeGraph, seed: HalfEdge) => {
+        return ck.testTrue(
+          seed.isMaskSet(HalfEdgeMask.EXTERIOR) || seed.countEdgesAroundFace() === 3,
+          `expect face ${seed.id} is a triangle`,
+        );
+      },
+    );
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

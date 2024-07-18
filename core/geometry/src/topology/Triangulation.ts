@@ -154,9 +154,10 @@ export class Triangulator {
     return numFlip;
   }
 
-  /** Create a graph with a triangulation points.
+  /**
+   * Create a graph with a triangulation points.
    * * The outer limit of the graph is the convex hull of the points.
-   * * The outside loop is marked `HalfEdgeMask.EXTERIOR`
+   * * The outside loop is marked `HalfEdgeMask.EXTERIOR`.
    */
   public static createTriangulatedGraphFromPoints(points: Point3d[]): HalfEdgeGraph | undefined {
     if (points.length < 3)
@@ -164,31 +165,37 @@ export class Triangulator {
     const hull: Point3d[] = [];
     const interior: Point3d[] = [];
     Point3dArray.computeConvexHullXY(points, hull, interior, true);
-    const graph = new HalfEdgeGraph();
+    let graph = new HalfEdgeGraph();
     const context = InsertAndRetriangulateContext.create(graph);
     Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
     // HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
     let numInsert = 0;
-    for (const p of interior) {
-      context.insertAndRetriangulate(p, true);
-      numInsert++;
-      if (numInsert > 16) {
-        /*
-        context.reset();
-        Triangulator.flipTriangles(context.graph);
-        // console.log (" intermediate flips " + numFlip);
-        */
-        numInsert = 0;
+    if (interior.length === 0) {
+      const triangulatedGraph = Triangulator.createTriangulatedGraphFromSingleLoop(hull);
+      if (triangulatedGraph)
+        graph = triangulatedGraph;
+    } else {
+      for (const p of interior) {
+        context.insertAndRetriangulate(p, true);
+        numInsert++;
+        if (numInsert > 16) {
+          /*
+          context.reset();
+          Triangulator.flipTriangles(context.graph);
+          // console.log (" intermediate flips " + numFlip);
+          */
+          numInsert = 0;
+        }
       }
     }
     /*
-        // final touchup for aspect ratio flip
-        for (let i = 0; i < 15; i++) {
-          const numFlip = Triangulator.flipTriangles(graph);
-          if (numFlip === 0)
-            break;
-        }
-        */
+    // final touchup for aspect ratio flip
+    for (let i = 0; i < 15; i++) {
+      const numFlip = Triangulator.flipTriangles(graph);
+      if (numFlip === 0)
+        break;
+    }
+    */
     return graph;
   }
   /**
@@ -308,18 +315,15 @@ export class Triangulator {
   /**
    * Triangulate the polygon made up of by a series of points.
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
-   * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops
+   * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops.
    */
   public static createTriangulatedGraphFromSingleLoop(data: LineStringDataVariant): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
-
     if (!startingNode || graph.countNodes() < 6)
       return undefined;
-
     if (!Triangulator.triangulateSingleFace(graph, startingNode))
       return undefined;
-
     Triangulator.flipTriangles(graph);
     return graph;
   }
@@ -442,19 +446,20 @@ export class Triangulator {
     return undefined;
   }
   /**
-   * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
+   * Create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order.
    * * This applies the masks used by typical applications:
-   *   * HalfEdgeMask.BOUNDARY on both sides
+   *   * HalfEdgeMask.BOUNDARY on both sides.
    *   * HalfEdgeMask.PRIMARY_EDGE on both sides.
    * * Use `createFaceLoopFromCoordinatesAndMasks` for detail control of masks.
    */
-  public static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  public static createFaceLoopFromCoordinates(
+    graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean,
+  ): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
     return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop,
       HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE,
       markExterior ? HalfEdgeMask.EXTERIOR : HalfEdgeMask.NULL_MASK);
   }
-
   /**
    * create a circular doubly linked list of internal and external nodes from polygon points.
    * * Optionally jump to the "other" side so the returned loop has positive area
