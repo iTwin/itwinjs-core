@@ -263,7 +263,8 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`);
 
-    expect(() => ecdb.importSchema(xmlpathUpdated)).to.throw("");
+    // although an error should be logged, no error is actually returned to not disrupt currently existing workflows and to alert the user about some wrong/unexpected behavior
+    expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
 
     ecdb.closeDb();
   });
