@@ -691,11 +691,11 @@ describe("TransientIdSequence", () => {
       expect(seq.currentLocalId).to.equal(15);
     });
     
-    it("remaps source local Ids to the end of the current sequence", () => {
-      function expectLocalId(id: Id64String, expected: number): void {
-        expect(Id64.getLocalId(id)).to.equal(expected);
-      }
+    function expectLocalId(id: Id64String, expected: number): void {
+      expect(Id64.getLocalId(id)).to.equal(expected);
+    }
 
+    it("remaps source local Ids to the end of the current sequence", () => {
       const dst = new TransientIdSequence(0);
       let src = TransientIdSequence.fromJSON(dst.fork());
       expectLocalId(src.getNext(), 1);
@@ -726,6 +726,48 @@ describe("TransientIdSequence", () => {
       expect(remap(7)).to.equal(7);
       // Not yet allocated
       expect(remap(8)).to.equal(8);
+    });
+
+    it("merges with multiple forks", () => {
+      const seq = new TransientIdSequence();
+      expectLocalId(seq.getNext(), 1);
+
+      const a = TransientIdSequence.fromJSON(seq.fork());
+      expectLocalId(a.getNext(), 2);
+      expectLocalId(a.getNext(), 3);
+
+      expectLocalId(seq.getNext(), 2);
+      const b = TransientIdSequence.fromJSON(seq.fork());
+      expectLocalId(b.getNext(), 3);
+      expectLocalId(b.getNext(), 4);
+
+      expectLocalId(a.getNext(), 4);
+      expectLocalId(seq.getNext(), 3);
+      expectLocalId(b.getNext(), 5);
+      expectLocalId(b.getNext(), 6);
+
+      expect(seq.currentLocalId).to.equal(3);
+      const mapA = seq.merge(a);
+      expect(seq.currentLocalId).to.equal(6);
+      const mapB = seq.merge(b);
+      expect(seq.currentLocalId).to.equal(10)
+
+
+      // a: 2..4 + 4 => 4..6
+      expect(mapA(1)).to.equal(1);
+      expect(mapA(2)).to.equal(4);
+      expect(mapA(3)).to.equal(5);
+      expect(mapA(4)).to.equal(6);
+      expect(mapA(5)).to.equal(5);
+
+      // b: 3..6 + 7 => 7..10
+      expect(mapB(1)).to.equal(1);
+      expect(mapB(2)).to.equal(2);
+      expect(mapB(3)).to.equal(7);
+      expect(mapB(4)).to.equal(8);
+      expect(mapB(5)).to.equal(9);
+      expect(mapB(6)).to.equal(10);
+      expect(mapB(7)).to.equal(7);
     });
   });
 });
