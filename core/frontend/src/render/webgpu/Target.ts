@@ -18,10 +18,14 @@ import { Pixel } from "../Pixel";
 
 export class WebGPUTarget extends RenderTarget {
   private _system: WebGPUSystem;
+  private _canvas: HTMLCanvasElement;
 
-  public constructor(system: WebGPUSystem) {
+  public constructor(system: WebGPUSystem, canvas: HTMLCanvasElement) {
     super();
     this._system = system;
+    this._canvas = canvas;
+    this._system.initializeTarget(this._canvas);
+    this._system.render(this._canvas);
   }
 
   public get renderSystem(): RenderSystem {

@@ -34,27 +34,27 @@ export const enum ContextState {
 
 /** @internal */
 export class WebGPUSystem extends RenderSystem {
-  public readonly canvas: HTMLCanvasElement;
-  public readonly context: GPUCanvasContext;
+  public readonly mainCanvas: HTMLCanvasElement;
+  public readonly mainContext: GPUCanvasContext;
   private _device: GPUDevice | undefined;
   private _renderPipeline: GPURenderPipeline | undefined;
   private _commandEncoder: GPUCommandEncoder | undefined;
   private _renderPassDescriptor: GPURenderPassDescriptor | undefined;
   private _removeEventListener?: () => void;
+  private _canvasContextMap = new Map<HTMLCanvasElement, GPUCanvasContext>();
 
   protected constructor(canvas: HTMLCanvasElement, context: GPUCanvasContext) {
     super();
-    this.canvas = canvas;
-    this.context = context;
-    // Make this System a subscriber to the IModelConnection onClose event
+    this.mainCanvas = canvas;
+    this.mainContext = context;
+    this._canvasContextMap.set(canvas, context);
     this._removeEventListener = IModelConnection.onClose.addListener((_imodel) => { });
   }
 
   public static get instance() { return IModelApp.renderSystem as WebGPUSystem; }
 
-  public get isValid(): boolean { return this.canvas !== undefined; }
+  public get isValid(): boolean { return this.mainCanvas !== undefined; }
 
-  /** Attempt to create a WebGPU context, returning undefined if unsuccessful. */
   public static createContext(canvas: HTMLCanvasElement): GPUCanvasContext | undefined {
     const context = canvas.getContext("webgpu");
     return context ?? undefined;
@@ -78,12 +78,23 @@ export class WebGPUSystem extends RenderSystem {
 
   public dispose(): void {}
 
-  public createTarget(_canvas: HTMLCanvasElement): RenderTarget {
-    return new WebGPUTarget(this);
+  public createTarget(canvas: HTMLCanvasElement): RenderTarget {
+    const context = WebGPUSystem.createContext(canvas);
+    if (context) {
+      this._canvasContextMap.set(canvas, context);
+      this.initializeTarget(canvas);
+    }
+    return new WebGPUTarget(this, canvas);
   }
 
   public createOffscreenTarget(_rect: ViewRect): RenderTarget {
-    return new WebGPUTarget(this);
+    const canvas = document.createElement("canvas");
+    const context = WebGPUSystem.createContext(canvas);
+    if (context) {
+      this._canvasContextMap.set(canvas, context);
+      this.initializeTarget(canvas);
+    }
+    return new WebGPUTarget(this, canvas);
   }
 
   public doIdleWork(): boolean { return false; }
@@ -111,15 +122,19 @@ export class WebGPUSystem extends RenderSystem {
   private async initialize(): Promise<void> {
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter)
-      throw new Error("Failed to get GPU adapter");
-
+      throw new IModelError(BentleyStatus.ERROR, "Failed to get GPU adapter");
     this._device = await adapter.requestDevice();
 
     const format = navigator.gpu.getPreferredCanvasFormat();
 
-    this.context.configure({
-      device: this._device,
-      format,
+    if (!this._device) {
+      throw new IModelError(BentleyStatus.ERROR, "Failed to obtain GPU device");
+    }
+    this._canvasContextMap.forEach((context) => {
+      context.configure({
+        device: this._device as GPUDevice,
+        format,
+      });
     });
 
     const pipelineLayout = this._device.createPipelineLayout({
@@ -164,7 +179,7 @@ export class WebGPUSystem extends RenderSystem {
     });
 
     this._renderPipeline = pipeline;
-    const textureView: GPUTextureView = this.context.getCurrentTexture().createView();
+    const textureView: GPUTextureView = this.mainContext.getCurrentTexture().createView();
     this._renderPassDescriptor = {
       colorAttachments: [
         {
@@ -177,12 +192,29 @@ export class WebGPUSystem extends RenderSystem {
     };
   }
 
-  public render(): void {
-    if (!this._device || !this._renderPipeline || !this._renderPassDescriptor) {
+  public initializeTarget(canvas: HTMLCanvasElement): void {
+    if (!this._device)
+      return;
+
+    const context = this._canvasContextMap.get(canvas);
+    if (!context)
+      return;
+
+    const format = navigator.gpu.getPreferredCanvasFormat();
+
+    context.configure({
+      device: this._device,
+      format,
+    });
+  }
+
+  public render(canvas: HTMLCanvasElement): void {
+    const context = this._canvasContextMap.get(canvas);
+    if (!this._device || !this._renderPipeline || !this._renderPassDescriptor || !context) {
       return;
     }
 
-    const textureView = this.context.getCurrentTexture().createView();
+    const textureView = context.getCurrentTexture().createView();
     (this._renderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = textureView;
 
     const commandEncoder = this._device.createCommandEncoder();

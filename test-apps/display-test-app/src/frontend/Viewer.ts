@@ -474,7 +474,7 @@ export class Viewer extends Window {
   private async openView(view: ViewState): Promise<void> {
     await this.setView(view);
     IModelApp.viewManager.addViewport(this.viewport);
-    // IModelApp.viewManager.addViewport(this.wgViewport);
+    IModelApp.viewManager.addViewport(this.wgViewport);
   }
 
   private async clearViews(): Promise<void> {

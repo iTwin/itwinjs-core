@@ -3038,9 +3038,11 @@ export class ScreenViewport extends Viewport {
 
     const canvas = document.createElement("canvas");
     const vp = new this(canvas, parentDiv, IModelApp.wgRenderSystem.createTarget(canvas));
+
     vp.initialize();
 
-    // vp.changeView(view);
+    // TODO
+    vp.changeView(_view);
     return vp;
   }
 

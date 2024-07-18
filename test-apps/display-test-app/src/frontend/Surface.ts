@@ -19,7 +19,6 @@ import { openIModel, OpenIModelProps } from "./openIModel";
 import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
 import { openDecorationGeometryExample } from "./DecorationGeometryExample";
-import { WebGPUSystem } from "@itwin/core-frontend/src/render/webgpu/System";
 
 // cspell:ignore textbox topdiv
 
@@ -595,12 +594,20 @@ export class CreateWebGPUWindowTool extends Tool {
     };
     const window = DisplayTestApp.surface.createNamedWindow(props);
 
-    const wgRenderSystem = IModelApp.wgRenderSystem as unknown as WebGPUSystem;
-    wgRenderSystem.render();
-    const canvas = wgRenderSystem.canvas;
-    window.resizeContent(canvas.width, canvas.height);
-    console.log(canvas.width, canvas.height);
-    window.container.appendChild(canvas);
+    const newIModel = BlankConnection.create({
+      location: Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }), // near Exton PA
+      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      name: "WebGPU Example",
+    });
+
+    const viewerProps: ViewerProps = {
+      iModel: newIModel,
+      defaultViewName: "default",
+      disableEdges: false,
+    };
+    const viewer = await DisplayTestApp.surface.createViewer(viewerProps);
+    window.container.appendChild(viewer.wgViewport.canvas);
+
     return true;
   }
 
