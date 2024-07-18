@@ -43,8 +43,8 @@ import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./Scre
 import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
-import { GraphicDescription, GraphicDescriptionConstraints, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionBuilder";
-import { WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicDescription, GraphicDescriptionConstraints, GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionBuilderImpl";
 import { _implementationProhibited } from "../common/internal/Symbols";
 
 /* eslint-disable no-restricted-syntax */
@@ -784,13 +784,34 @@ export abstract class RenderSystem implements IDisposable {
   public createWorkerGraphicDescriptionContextProps(iModel: IModelConnection): WorkerGraphicDescriptionContextProps {
     const props: WorkerGraphicDescriptionContextPropsImpl = {
       [_implementationProhibited]: undefined,
-      minTransientLocalId: iModel.transientIds.currentLocalId,
+      transientIds: iModel.transientIds.fork(),
       constraints: {
         maxTextureSize: this.maxTextureSize,
       },
     };
 
     return props;
+  }
+
+  /**
+   * @beta
+   */
+  public resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): GraphicDescriptionContext {
+    const impl = props as GraphicDescriptionContextPropsImpl;
+    if (typeof impl.transientIds !== "object") {
+      throw new Error("Invalid GraphicDescriptionContextProps");
+    }
+
+    if (impl.resolved) {
+      throw new Error("resolveGraphicDescriptionContext can only be called once for a given GraphicDescriptionContextProps");
+    }
+
+    const remap = iModel.transientIds.merge(impl.transientIds);
+    impl.resolved = true;
+    return {
+      [_implementationProhibited]: undefined,
+      remapTransientLocalId: (source) => remap(source),
+    };
   }
 }
 

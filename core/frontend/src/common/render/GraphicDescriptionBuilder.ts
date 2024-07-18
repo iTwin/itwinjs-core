@@ -13,14 +13,13 @@ import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { GraphicType } from "./GraphicType";
 import { PickableGraphicOptions } from "./BatchOptions";
 import { _implementationProhibited } from "../internal/Symbols";
-import { Id64String } from "@itwin/core-bentley";
+import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
 
 /**
  * @beta
  */
 export interface GraphicDescription {
-  // ###TODO [_implementationProhibited]
-  removeMe?: unknown; // ###TODO "empty interface" lint error
+  readonly [_implementationProhibited]: unknown;
 }
 
 /**
@@ -59,7 +58,7 @@ export interface WorkerGraphicDescriptionContext {
   readonly [_implementationProhibited]: unknown;
 
   readonly constraints: GraphicDescriptionConstraints;
-  getNextTransientId(): Id64String;
+  readonly transientIds: TransientIdSequence;
   toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
 }
 
@@ -78,7 +77,6 @@ export namespace WorkerGraphicDescriptionContext {
 export interface GraphicDescriptionContextProps {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
-  
 }
 
 /** Context holding resources like transient Ids, textures, and materials that were allocated on a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker) by a
@@ -90,6 +88,7 @@ export interface GraphicDescriptionContextProps {
 export interface GraphicDescriptionContext {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
+  remapTransientLocalId(sourceLocalId: number): number;
 }
 
 /**

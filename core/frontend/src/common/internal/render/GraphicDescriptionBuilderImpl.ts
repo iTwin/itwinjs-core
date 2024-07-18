@@ -13,7 +13,7 @@ import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
 import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
 import { BatchOptions } from "../../render/BatchOptions";
-import { assert, Id64String, TransientIdSequence } from "@itwin/core-bentley";
+import { assert, Id64String, TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
 import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { createPointStringParams } from "./PointStringParams";
 import { VertexTable } from "./VertexTable";
@@ -38,12 +38,11 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
 
 export interface WorkerGraphicDescriptionContextPropsImpl extends WorkerGraphicDescriptionContextProps {
   readonly constraints: GraphicDescriptionConstraints;
-  readonly minTransientLocalId: number;
+  readonly transientIds: TransientIdSequenceProps;
 }
 
 export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionContextProps {
-  readonly minTransientLocalId: number;
-  readonly maxTransientLocalId: number;
+  readonly transientIds: TransientIdSequenceProps;
   /** This is set to true the first time we use RenderSystem.createGraphicDescriptionContext on it.
    * That prevents us from remapping transient Ids to different transient Ids, recreating duplicate textures+materials, etc if
    * somebody tries to resolve the same props more than once.
@@ -55,33 +54,23 @@ export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionCo
 export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescriptionContext {
   public readonly [_implementationProhibited] = undefined;
   public readonly constraints: GraphicDescriptionConstraints;
-  private readonly _transientIds: TransientIdSequence;
-  private readonly _minTransientLocalId: number;
-  private _maxTransientLocalId: number;
+  public readonly transientIds: TransientIdSequence;
 
   public constructor(props: WorkerGraphicDescriptionContextProps) {
     const propsImpl = props as WorkerGraphicDescriptionContextPropsImpl;
-    if (typeof propsImpl.minTransientLocalId !== "number" || typeof propsImpl.constraints !== "object") {
+    if (typeof propsImpl.transientIds !== "object" || typeof propsImpl.constraints !== "object") {
       throw new Error("Invalid WorkerGraphicDescriptionContextProps");
     }
 
     this.constraints = propsImpl.constraints;
-    this._transientIds = new TransientIdSequence(propsImpl.minTransientLocalId);
-    this._minTransientLocalId = this._maxTransientLocalId = propsImpl.minTransientLocalId + 1;
-  }
-
-  public getNextTransientId(): Id64String {
-    const id = this._transientIds.getNext();
-    this._maxTransientLocalId = this._transientIds.currentLocalId;
-    return id;
+    this.transientIds = TransientIdSequence.fromJSON(propsImpl.transientIds);
   }
 
   public toProps(_transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
     // We don't yet have any transferable objects. In the future we expect to support transferring texture image data for textures created on the worker thread.
     return {
       [_implementationProhibited]: undefined,
-      minTransientLocalId: this._minTransientLocalId,
-      maxTransientLocalId: this._maxTransientLocalId,
+      transientIds: this.transientIds.toJSON(),
     };
   }
 }
@@ -104,7 +93,12 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   }
 
   public finish(args?: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
-    const description: GraphicDescriptionImpl = { type: this.type, primitives: [] };
+    const description: GraphicDescriptionImpl = {
+      [_implementationProhibited]: undefined,
+      type: this.type,
+      primitives: [],
+    };
+
     if (this.accum.isEmpty) {
       return description;
     }
