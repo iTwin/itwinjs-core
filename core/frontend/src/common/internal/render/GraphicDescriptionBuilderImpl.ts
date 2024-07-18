@@ -306,16 +306,13 @@ export function isGraphicDescription(description: GraphicDescription): descripti
   }
 }
 
-export function collectGraphicDescriptionTransferables(description: GraphicDescription): Transferable[] {
+export function collectGraphicDescriptionTransferables(xfers: Set<Transferable>, description: GraphicDescription): void {
   if (!isGraphicDescription(description)) {
     throw new Error("Invalid GraphicDescription");
   }
 
-  const xfers = new Set<Transferable>();
   for (const primitive of description.primitives) {
     addPrimitiveTransferables(xfers, primitive);
   }
-
-  return Array.from(xfers);
 }
 

@@ -26,8 +26,8 @@ export interface GraphicDescription {
  * @beta
  */
 export namespace GraphicDescription {
-  export function collectTransferables(description: GraphicDescription): Transferable[] {
-    return collectGraphicDescriptionTransferables(description);
+  export function collectTransferables(transferables: Set<Transferable>, description: GraphicDescription): void {
+    return collectGraphicDescriptionTransferables(transferables, description);
   }
 }
 
