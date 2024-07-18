@@ -65,7 +65,6 @@ import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
-import { ECSqlRowArg } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
@@ -1814,6 +1813,11 @@ export class ECSqlInsertResult {
     id?: string | undefined;
     // (undocumented)
     status: DbResult;
+}
+
+// @public
+export interface ECSqlRowArg {
+    rowFormat?: QueryRowFormat;
 }
 
 // @public

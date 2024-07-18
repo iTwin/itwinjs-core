@@ -211,7 +211,6 @@ public;ECSchemaItemProps
 public;ECSchemaProps
 public;ECSchemaReferenceProps
 public;ECSqlReader 
-public;ECSqlRowArg
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs

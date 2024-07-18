@@ -11,27 +11,6 @@ import {
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 
-/**
- * Arguments supplied to [ECSqlStatement.getRow]($backend).
- * @public
- * */
-export interface ECSqlRowArg {
-  /**
-   * default to false. It abbreviate blobs to single bytes. This help cases where wildcard is
-   * used in select clause. Use BlobReader api to read individual blob specially if its of large size.
-   * */
-  abbreviateBlobs?: boolean;
-  /**
-   * Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
-   * When true, XXXXClassId property will be returned as className.
-   * */
-  convertClassIdsToClassNames?: boolean;
-  /** Determine row format. */
-  rowFormat?: QueryRowFormat;
-  /** This is used internally. If true it query will return meta data about query. */
-  includeMetaData?: boolean;
-}
-
 /** @public */
 export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
   private _byPropName = new Map<string, number>();

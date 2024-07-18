@@ -112,6 +112,7 @@ beta;ECSchemaXmlContext
 public;ECSqlBinder
 public;ECSqlColumnInfo
 public;ECSqlInsertResult
+public;ECSqlRowArg
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 

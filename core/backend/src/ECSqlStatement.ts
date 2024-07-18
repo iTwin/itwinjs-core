@@ -8,7 +8,7 @@
 
 import { assert, DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ECJsNames, ECSqlRowArg, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
+import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -25,6 +25,15 @@ import { IModelNative } from "./internal/NativePlatform";
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64String) { }
+}
+
+/**
+ * Arguments supplied to [[ECSqlStatement.getRow]].
+ * @public
+ * */
+export interface ECSqlRowArg {
+  /** Determine row format. */
+  rowFormat?: QueryRowFormat;
 }
 
 /** Executes ECSQL statements.
@@ -323,17 +332,27 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
   public getRow(args?: ECSqlRowArg): any {
-    if (!args) {
-      args = { abbreviateBlobs: false, convertClassIdsToClassNames: true, rowFormat: QueryRowFormat.UseJsPropertyNames, includeMetaData: this._props.length === 0 };
+    args = args ?? {};
+
+    // Set default rowFormat if not provided
+    if (args.rowFormat === undefined) {
+      args.rowFormat = QueryRowFormat.UseJsPropertyNames;
     }
-    const resp = this._stmt!.toRow(args); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+    const toRowOptions = {
+      abbreviateBlobs: false,
+      convertClassIdsToClassNames: true,
+      rowFormat: args.rowFormat,
+      includeMetaData: this._props.length === 0,
+    };
+    const resp = this._stmt!.toRow(toRowOptions); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     return this.formatCurrentRow(resp, args.rowFormat);
   }
 
   /**
    * @internal
    */
-  public formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseECSqlPropertyNames): any[] | object {
+  public formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
     if (this._props.length === 0 && currentResp.meta.length > 0) {
       this._props = new PropertyMetaDataMap(currentResp.meta);
     }
