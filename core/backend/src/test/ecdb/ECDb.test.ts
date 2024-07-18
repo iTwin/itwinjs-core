@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String, using } from "@itwin/core-bentley";
+import * as sinon from "sinon";
+import { DbResult, Id64, Id64String, Logger, using } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -263,9 +264,19 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`);
 
+    let calledCategory = "";
+    let calledMessage = "";
+    const stubbedLogError = sinon.stub(Logger, "logError").callsFake((category: string, message: string) => {
+      calledCategory = category;
+      calledMessage = message;
+    });
+
     // although an error should be logged, no error is actually returned to not disrupt currently existing workflows and to alert the user about some wrong/unexpected behavior
     expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
+    expect(calledCategory).to.equal("ECDb");
+    expect(calledMessage).to.equal("ECSchema import has failed. Schema Test has new changes, but the schema version is not incremented.");
 
+    stubbedLogError.restore();
     ecdb.closeDb();
   });
 });
