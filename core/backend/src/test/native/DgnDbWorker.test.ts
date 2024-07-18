@@ -10,6 +10,7 @@ import { IModelNative } from "../../internal/NativePlatform";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { _nativeDb } from "../../internal/Symbols";
 
 describe("DgnDbWorker", () => {
   let imodel: StandaloneDb;
@@ -32,7 +33,7 @@ describe("DgnDbWorker", () => {
     private readonly _worker: IModelJsNative.TestWorker;
 
     public constructor() {
-      this._worker = new IModelNative.platform.TestWorker(imodel.nativeDb);
+      this._worker = new IModelNative.platform.TestWorker(imodel[_nativeDb]);
     }
 
     public queue() { this.promise = this._worker.queue(); }

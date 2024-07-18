@@ -23,6 +23,7 @@ class NoLocks implements LockControl {
   public [_elementWasCreated](): void { }
   public async acquireLocks() { }
   public async [_releaseAllLocks](): Promise<void> { }
+  public async releaseAllLocks(): Promise<void> { }
 }
 
 export function createNoOpLockControl(): LockControl {

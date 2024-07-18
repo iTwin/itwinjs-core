@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
+import { IModelRpcProps, RpcInterface, RpcManager, RpcOperation, RpcResponseCacheControl } from "@itwin/core-common";
 import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 
 /***
@@ -32,6 +32,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface { // eslint-disa
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @returns                 An array of SchemaKeyProps.
    */
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaKeyProps[]>;
   }
@@ -43,6 +44,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface { // eslint-disa
    * @param schemaName        The name of the schema that shall be returned.
    * @returns                 The SchemaProps.
    */
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaProps>;
   }

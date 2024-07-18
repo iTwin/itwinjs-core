@@ -2,6 +2,30 @@
   "name": "@itwin/map-layers-formats",
   "entries": [
     {
+      "version": "4.7.6",
+      "tag": "@itwin/map-layers-formats_v4.7.6",
+      "date": "Fri, 12 Jul 2024 14:42:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix missing login dialog for some ArcGIS services"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.5",
+      "tag": "@itwin/map-layers-formats_v4.7.5",
+      "date": "Thu, 11 Jul 2024 15:24:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.4",
+      "tag": "@itwin/map-layers-formats_v4.7.4",
+      "date": "Mon, 01 Jul 2024 14:06:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.7.3",
       "tag": "@itwin/map-layers-formats_v4.7.3",
       "date": "Thu, 27 Jun 2024 21:09:02 GMT",

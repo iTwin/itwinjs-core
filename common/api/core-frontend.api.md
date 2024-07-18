@@ -1191,6 +1191,8 @@ export enum ArcGisErrorCode {
     // (undocumented)
     InvalidToken = 498,
     // (undocumented)
+    MissingPermissions = 403,
+    // (undocumented)
     NoTokenService = 1001,
     // (undocumented)
     TokenRequired = 499,
