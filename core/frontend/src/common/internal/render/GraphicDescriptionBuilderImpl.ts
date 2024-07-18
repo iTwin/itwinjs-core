@@ -44,6 +44,12 @@ export interface WorkerGraphicDescriptionContextPropsImpl extends WorkerGraphicD
 export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionContextProps {
   readonly minTransientLocalId: number;
   readonly maxTransientLocalId: number;
+  /** This is set to true the first time we use RenderSystem.createGraphicDescriptionContext on it.
+   * That prevents us from remapping transient Ids to different transient Ids, recreating duplicate textures+materials, etc if
+   * somebody tries to resolve the same props more than once.
+   * We will throw if somebody tries to re-resolve a GraphicDescriptionContextPropsImpl.
+   */
+  resolved?: boolean;
 }
 
 export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescriptionContext {
