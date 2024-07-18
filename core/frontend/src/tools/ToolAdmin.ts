@@ -687,8 +687,10 @@ export class ToolAdmin {
         if (undefined === current.touchTapTimer) {
           current.touchTapTimer = Date.now();
           current.touchTapCount = 1;
+          // NOTE: We cannot await the executeAfter call below, because that prevents any other
+          // taps from being processed, which makes it impossible for double tap to happen.
           // eslint-disable-next-line @typescript-eslint/unbound-method
-          await ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
+          void ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
         } else if (undefined !== current.touchTapCount) {
           current.touchTapCount++;
         }
@@ -853,6 +855,9 @@ export class ToolAdmin {
 
   /** The current tool. May be ViewTool, InputCollector, PrimitiveTool, or IdleTool - in that priority order. */
   public get currentTool(): InteractiveTool { return this.activeTool ? this.activeTool : this.idleTool; }
+
+  /** Allow applications to inhibit specific tooltips, such as for maps. */
+  public wantToolTip(_hit: HitDetail): boolean { return true; }
 
   /** Ask the current tool to provide tooltip contents for the supplied HitDetail. */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> { return this.currentTool.getToolTip(hit); }

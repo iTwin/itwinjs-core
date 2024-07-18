@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add LockControl.releaseAllLocks, which throws if the briefcase contains local changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

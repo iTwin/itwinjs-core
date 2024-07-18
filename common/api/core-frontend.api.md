@@ -1191,6 +1191,8 @@ export enum ArcGisErrorCode {
     // (undocumented)
     InvalidToken = 498,
     // (undocumented)
+    MissingPermissions = 403,
+    // (undocumented)
     NoTokenService = 1001,
     // (undocumented)
     TokenRequired = 499,
@@ -15180,6 +15182,7 @@ export class ToolAdmin {
     updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void;
     // (undocumented)
     get viewTool(): ViewTool | undefined;
+    wantToolTip(_hit: HitDetail): boolean;
 }
 
 // @public
