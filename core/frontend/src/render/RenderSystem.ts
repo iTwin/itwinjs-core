@@ -245,6 +245,11 @@ export interface RenderSkyCubeParams {
 /** @internal */
 export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
+export interface CreateGraphicFromDescriptionArgs {
+  description: GraphicDescription;
+  context: GraphicDescriptionContext;
+}
+
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -774,8 +779,8 @@ export abstract class RenderSystem implements IDisposable {
   /**
    * @beta
    */
-  public async createGraphicFromDescription(args: { description: GraphicDescription }): Promise<RenderGraphic | undefined> {
-    return createGraphicFromDescription(args.description, this);
+  public async createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): Promise<RenderGraphic | undefined> {
+    return createGraphicFromDescription(args.description, args.context, this);
   }
 
   /**
@@ -796,7 +801,7 @@ export abstract class RenderSystem implements IDisposable {
   /**
    * @beta
    */
-  public resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): GraphicDescriptionContext {
+  public async resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): Promise<GraphicDescriptionContext> {
     const impl = props as GraphicDescriptionContextPropsImpl;
     if (typeof impl.transientIds !== "object") {
       throw new Error("Invalid GraphicDescriptionContextProps");

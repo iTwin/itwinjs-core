@@ -7,7 +7,7 @@ import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, LinePixels, ModelFeature, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, WorkerGraphicDescriptionContext } from "../../common";
+import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch } from "../../webgl";
@@ -25,12 +25,18 @@ function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: numbe
 
 describe.only("GraphicDescriptionBuilder", () => {
   let constraints: GraphicDescriptionConstraints;
+  let context: GraphicDescriptionContext;
+
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    // The context stuff is not really relevant to these tests because we're not passing data to worker threads and
+    // we're not allocating transient Ids.
     const iModel = { transientIds: new TransientIdSequence() } as any;
     const contextProps  = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
-    const context = WorkerGraphicDescriptionContext.fromProps(contextProps);
-    constraints = context.constraints;
+    const workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
+    constraints = workerContext.constraints;
+    context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
   });
 
   after(async () => IModelApp.shutdown());
@@ -97,7 +103,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(meshParams.isPlanar).to.be.true;
     expect(meshParams.edges).to.be.undefined;
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
@@ -143,7 +149,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(edgeParams.silhouettes).to.be.undefined;
     expect(edgeParams.indexed).not.to.be.undefined;
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
@@ -187,7 +193,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(descr.translation!.y).to.equal(2.5 + 7);
     expect(descr.translation!.z).to.equal(2 + 8);
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
     const mesh = branch.branch.entries[0] as MeshGraphic;
     expect(mesh.primitives.length).to.equal(1);
     expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
@@ -215,7 +221,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     const origin = Point3d.fromJSON(mod.origin);
     expect(origin.isExactEqual(viewIndependentOrigin)).to.be.true;
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
     const mesh = branch.branch.entries[0] as MeshGraphic;
     const geom = mesh.primitives[0].cachedGeometry;
     expect(geom.viewIndependentOrigin!.isExactEqual(viewIndependentOrigin)).to.be.true;
@@ -258,7 +264,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batchDescr.isVolumeClassifier).to.be.undefined;
     expectRange(Range3d.fromJSON(batchDescr.range), 0, 0, 2, 10, 5, 2);
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
@@ -308,7 +314,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batchDescr.modelId).to.equal("0x456");
     expectRange(Range3d.fromJSON(batchDescr.range), 0, 0, 2, 10, 5, 2);
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
@@ -356,7 +362,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(batchDescr.modelId).to.equal("0xb1");
     expectRange(Range3d.fromJSON(batchDescr.range), 1, 1, 1, 3, 3, 3);
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 

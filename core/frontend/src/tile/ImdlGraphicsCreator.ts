@@ -22,7 +22,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescription, GraphicDescriptionContext } from "../common/render/GraphicDescriptionBuilder";
 import { isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
 
 /** Options provided to [[decodeImdlContent]].
@@ -423,7 +423,7 @@ export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<Re
 }
 
 /** @internal */
-export async function createGraphicFromDescription(descr: GraphicDescription, system: RenderSystem): Promise<RenderGraphic | undefined> {
+export async function createGraphicFromDescription(descr: GraphicDescription, _context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined> {
   if (!isGraphicDescription(descr)) {
     throw new Error("Invalid GraphicDescription");
   }
