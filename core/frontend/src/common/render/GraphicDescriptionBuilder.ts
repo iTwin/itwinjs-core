@@ -9,7 +9,6 @@
 import { GraphicAssembler } from "./GraphicAssembler";
 import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl, WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { GraphicType } from "./GraphicType";
 import { PickableGraphicOptions } from "./BatchOptions";
 import { _implementationProhibited } from "../internal/Symbols";
@@ -94,14 +93,6 @@ export interface GraphicDescriptionContext {
 /**
  * @beta
  */
-export type FinishGraphicDescriptionArgs = {
-  viewIndependentOrigin?: Point3d;
-  instances?: never;
-} | {
-  instances?: InstancedGraphicParams;
-  viewIndependentOrigin?: never;
-};
-
 /**
  * @beta
  */
@@ -113,21 +104,27 @@ export interface ComputeGraphicDescriptionChordToleranceArgs {
 /**
  * @beta
  */
-export interface GraphicDescriptionBuilderOptions {
+export type GraphicDescriptionBuilderOptions = {
   type: GraphicType;
   placement?: Transform;
   pickable?: PickableGraphicOptions;
   generateEdges?: boolean;
   computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
   constraints: GraphicDescriptionConstraints;
-}
+} & ({
+  viewIndependentOrigin?: Point3d;
+  instances?: never;
+}/*) | {
+  instances?: InstancedGraphicParams;
+  viewIndependentOrigin?: never;
+}*/)
 
 /**
  * @beta
  */
 export interface GraphicDescriptionBuilder extends GraphicAssembler {
   // ###TODO [_implementationProhibited]
-  finish(args?: FinishGraphicDescriptionArgs): GraphicDescription;
+  finish(): GraphicDescription;
 }
 
 /**

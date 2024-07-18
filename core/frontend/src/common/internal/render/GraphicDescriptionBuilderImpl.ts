@@ -8,7 +8,10 @@
 
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
-import { ComputeGraphicDescriptionChordToleranceArgs, FinishGraphicDescriptionArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../../render/GraphicDescriptionBuilder";
+import {
+  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContextProps,
+  WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps,
+} from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
 import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
@@ -78,6 +81,7 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
   private readonly _computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
   private readonly _constraints: GraphicDescriptionConstraints;
+  private readonly _viewIndependentOrigin?: Point3d;
 
   public constructor(options: GraphicDescriptionBuilderOptions) {
     const type = options.type;
@@ -90,9 +94,10 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
 
     this._computeChordTolerance = options.computeChordTolerance;
     this._constraints = options.constraints;
+    this._viewIndependentOrigin = options.viewIndependentOrigin?.clone();
   }
 
-  public finish(args?: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
+  public finish(): GraphicDescriptionImpl {
     const description: GraphicDescriptionImpl = {
       [_implementationProhibited]: undefined,
       type: this.type,
@@ -165,22 +170,23 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
 
       const primitive = this.createPrimitive(mesh);
       if (primitive) {
-        const origin = args?.viewIndependentOrigin;
+        const origin = this._viewIndependentOrigin;
         if (origin) {
           primitive.modifier = {
             type: "viewIndependentOrigin",
             origin: { x: origin.x, y: origin.y, z: origin.z },
           };
-        } else if (args?.instances) {
+        /* ###TODO } else if (this._instances) {
           primitive.modifier = {
-            ...args.instances,
+            ...this._instances,
             type: "instances",
-            transformCenter: { x: args.instances.transformCenter.x, y: args.instances.transformCenter.y, z: args.instances.transformCenter.z },
-            range: args.instances.range ? {
-              low: { x: args.instances.range.low.x, y: args.instances.range.low.y, z: args.instances.range.low.z },
-              high: { x: args.instances.range.high.x, y: args.instances.range.high.y, z: args.instances.range.high.z },
+            transformCenter: { x: this._instances.transformCenter.x, y: this._instances.transformCenter.y, z: this._instances.transformCenter.z },
+            range: this._instances.range ? {
+              low: { x: this._instances.range.low.x, y: this._instances.range.low.y, z: this._instances.range.low.z },
+              high: { x: this._instances.range.high.x, y: this._instances.range.high.y, z: this._instances.range.high.z },
             } : undefined,
           };
+        */
         }
 
         description.primitives.push(primitive);

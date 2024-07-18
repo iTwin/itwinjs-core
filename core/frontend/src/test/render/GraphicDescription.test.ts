@@ -7,7 +7,7 @@ import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, LinePixels, ModelFeature, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { FinishGraphicDescriptionArgs, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common";
+import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch } from "../../webgl";
@@ -71,8 +71,8 @@ describe.only("GraphicDescriptionBuilder", () => {
     }
   });
 
-  function finish(builder: GraphicDescriptionBuilder, args?: FinishGraphicDescriptionArgs): GraphicDescriptionImpl {
-    const descr = builder.finish(args);
+  function finish(builder: GraphicDescriptionBuilder): GraphicDescriptionImpl {
+    const descr = builder.finish();
     if (!isGraphicDescription(descr)) {
       throw new Error("not a graphic description");
     }
@@ -200,10 +200,12 @@ describe.only("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a view-independent graphic", async () => {
+    const viewIndependentOrigin = new Point3d(6, 7, 8);
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldDecoration,
       constraints,
       computeChordTolerance,
+      viewIndependentOrigin,
     });
 
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
@@ -211,10 +213,7 @@ describe.only("GraphicDescriptionBuilder", () => {
       new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
     ], 2);
 
-    const viewIndependentOrigin = new Point3d(6, 7, 8);
-    const descr = finish(builder, {
-      viewIndependentOrigin,
-    });
+    const descr = finish(builder);
 
     const mod = descr.primitives[0].modifier as ImdlModel.ViewIndependentOrigin;
     expect(mod.type).to.equal("viewIndependentOrigin");
