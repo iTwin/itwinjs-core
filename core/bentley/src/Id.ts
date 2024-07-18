@@ -6,6 +6,8 @@
  * @module Ids
  */
 
+import { assert } from "./core-bentley";
+
 /** A string containing a well-formed string representation of an [Id64]($core-bentley).
  * See [Working with Ids]($docs/learning/common/Id64.md).
  * @public
@@ -655,6 +657,19 @@ export namespace Id64 {
   }
 }
 
+export interface TransientIdSequenceProps {
+  initialLocalId: number;
+  currentLocalId: number;
+}
+
+function validateLocalId(num: number): void {
+  if (num < 0 || Math.round(num) !== num) {
+    throw new Error("Local Id must be a non-negative integer");
+  }
+}
+
+export type RemapTransientLocalId = (sourceLocalId: number) => number;
+
 /**
  * Generates unique [[Id64String]] values in sequence, which are guaranteed not to conflict with Ids associated with persistent elements or models.
  * This is useful for associating stable, non-persistent identifiers with things like [Decorator]($frontend)s.
@@ -662,13 +677,12 @@ export namespace Id64 {
  * @public
  */
 export class TransientIdSequence {
+  public readonly initialLocalId: number;
   private _localId: number;
 
   public constructor(initialLocalId = 0) {
-    if (initialLocalId < 0 || Math.round(initialLocalId) !== initialLocalId) {
-      throw new Error("Local Id must be a non-negative integer");
-    }
-
+    validateLocalId(initialLocalId);
+    this.initialLocalId = initialLocalId;
     this._localId = initialLocalId;
   }
 
@@ -695,12 +709,51 @@ export class TransientIdSequence {
     return Id64.fromLocalAndBriefcaseIds(this._localId + 1, 0xffffff);
   }
 
-  public skip(numberOfIdsToSkip: number): void {
-    if (numberOfIdsToSkip < 0 || Math.round(numberOfIdsToSkip) !== numberOfIdsToSkip) {
-      throw new Error("Number of Ids to skip must be a non-negative integer");
+  public toJSON(): TransientIdSequenceProps {
+    return {
+      initialLocalId: this.initialLocalId,
+      currentLocalId: this.currentLocalId,
+    };
+  }
+
+  public static fromJSON(props: TransientIdSequenceProps): TransientIdSequence {
+    validateLocalId(props.currentLocalId);
+    const sequence = new TransientIdSequence(props.initialLocalId);
+    sequence._localId = props.currentLocalId;
+    return sequence;
+  }
+
+  public fork(): TransientIdSequenceProps {
+    return {
+      initialLocalId: this.currentLocalId,
+      currentLocalId: this.currentLocalId,
+    };
+  }
+
+  public merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number {
+    const { initialLocalId, currentLocalId } = source;
+    
+    validateLocalId(initialLocalId);
+    validateLocalId(currentLocalId);
+
+    if (initialLocalId > this.currentLocalId) {
+      throw new Error("Transient Id sequences do not intersect");
     }
 
-    this._localId += numberOfIdsToSkip;
+    if (initialLocalId > currentLocalId) {
+      throw new Error("Current local Id cannot be less than initial local Id");
+    }
+
+    const delta = this.currentLocalId - initialLocalId;
+    this._localId += currentLocalId - initialLocalId;
+
+    return (sourceLocalId: number) => {
+      if (sourceLocalId > initialLocalId && sourceLocalId <= currentLocalId) {
+        return sourceLocalId + delta;
+      }
+
+      return sourceLocalId;
+    };
   }
 }
 
