@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix Viewport's never-drawn elements overriding the display style's excluded elements.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
