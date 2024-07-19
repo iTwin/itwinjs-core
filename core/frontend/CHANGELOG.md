@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 11 Jul 2024 15:26:20 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jul 2024 14:54:06 GMT and should not be manually modified.
+
+## 4.7.7
+Fri, 19 Jul 2024 14:52:42 GMT
+
+### Updates
+
+- Fix Viewport's never-drawn elements overriding the display style's excluded elements.
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:55 GMT
+
+### Updates
+
+- Fix missing login dialog for some ArcGIS services
 
 ## 4.7.5
 Thu, 11 Jul 2024 15:24:55 GMT

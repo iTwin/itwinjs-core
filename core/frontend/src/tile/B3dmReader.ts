@@ -60,10 +60,10 @@ export class B3dmReader extends GltfReader {
 
   private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _batchTableLength: number, private _transformToRoot?: Transform, private _batchTableJson?: any
-    , shouldAbort?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false) {
+    , shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false) {
     super({
       props, iModel, system, shouldAbort, deduplicateVertices,
-      is2d: !is3d,
+      is2d: !is3d, idMap: _idMap,
     });
     this._modelId = modelId;
   }
