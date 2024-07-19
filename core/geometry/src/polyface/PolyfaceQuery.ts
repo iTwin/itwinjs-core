@@ -10,7 +10,7 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 // cspell:word internaldocs
 
-import { MultiChainCollector } from "../crv/internalContexts/MultiChainCollector";
+import { MultiChainCollector } from "../curve/internalContexts/MultiChainCollector";
 import { AnyChain, BagOfCurves, CurveCollection, CurveLocationDetail, CurveOps, LinearCurvePrimitive, LineSegment3d, LineString3d, Loop, StrokeOptions } from "../curves";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";

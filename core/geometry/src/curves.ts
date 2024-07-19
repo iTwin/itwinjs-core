@@ -14,36 +14,36 @@
  * A simple explanation: https://medium.com/visual-development/how-to-fix-nasty-circular-dependency-issues-once-and-for-all-in-javascript-typescript-a04c987cf0de
  */
  
-export * from "./crv/CurveExtendMode";
-export * from "./crv/CurveProcessor";
-export * from "./crv/GeometryQuery";
-export * from "./crv/CurvePrimitive";
-export * from "./crv/ProxyCurve";
-export * from "./crv/Arc3d";
-export * from "./crv/LineSegment3d";
-export * from "./crv/LineString3d";
+export * from "./curve/CurveExtendMode";
+export * from "./curve/CurveProcessor";
+export * from "./curve/GeometryQuery";
+export * from "./curve/CurvePrimitive";
+export * from "./curve/ProxyCurve";
+export * from "./curve/Arc3d";
+export * from "./curve/LineSegment3d";
+export * from "./curve/LineString3d";
 
-export * from "./crv/CurveCollection";
-export * from "./crv/Loop";
-export * from "./crv/Path";
+export * from "./curve/CurveCollection";
+export * from "./curve/Loop";
+export * from "./curve/Path";
 
-export * from "./crv/CurveTypes";
-export * from "./crv/ConstructCurveBetweenCurves";
-export * from "./crv/CoordinateXYZ";
-export * from "./crv/CurveChainWithDistanceIndex";
+export * from "./curve/CurveTypes";
+export * from "./curve/ConstructCurveBetweenCurves";
+export * from "./curve/CoordinateXYZ";
+export * from "./curve/CurveChainWithDistanceIndex";
 
-export * from "./crv/CurveCurve";
-export * from "./crv/CurveLocationDetail";
-export * from "./crv/CurveFactory";
-export * from "./crv/CurveOps";
-export * from "./crv/OffsetOptions";
-export * from "./crv/ParityRegion";
-export * from "./crv/RegionMomentsXY";
-export * from "./crv/RegionOps";
-export * from "./crv/PointString3d";
-export * from "./crv/StrokeOptions";
-export * from "./crv/spiral/TransitionSpiral3d";
-export * from "./crv/spiral/IntegratedSpiral3d";
-export * from "./crv/spiral/DirectSpiral3d";
-export * from "./crv/UnionRegion";
-export * from "./crv/Query/StrokeCountMap";
+export * from "./curve/CurveCurve";
+export * from "./curve/CurveLocationDetail";
+export * from "./curve/CurveFactory";
+export * from "./curve/CurveOps";
+export * from "./curve/OffsetOptions";
+export * from "./curve/ParityRegion";
+export * from "./curve/RegionMomentsXY";
+export * from "./curve/RegionOps";
+export * from "./curve/PointString3d";
+export * from "./curve/StrokeOptions";
+export * from "./curve/spiral/TransitionSpiral3d";
+export * from "./curve/spiral/IntegratedSpiral3d";
+export * from "./curve/spiral/DirectSpiral3d";
+export * from "./curve/UnionRegion";
+export * from "./curve/Query/StrokeCountMap";

@@ -35,7 +35,7 @@ import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/M
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "../topology/Graph.test";
-import { PlaneAltitudeRangeContext } from "../../crv/internalContexts/PlaneAltitudeRangeContext";
+import { PlaneAltitudeRangeContext } from "../../curve/internalContexts/PlaneAltitudeRangeContext";
 
 describe("RegionBoolean", () => {
   it("SimpleSplits", () => {

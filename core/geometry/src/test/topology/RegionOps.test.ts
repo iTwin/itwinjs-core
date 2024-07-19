@@ -34,8 +34,8 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
-import { PolygonWireOffsetContext } from "../../crv/internalContexts/PolygonOffsetContext";
-import { ChainCollectorContext } from "../../crv/internalContexts/ChainCollectorContext";
+import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
+import { ChainCollectorContext } from "../../curve/internalContexts/ChainCollectorContext";
 
 const diegoPathA = [
   {

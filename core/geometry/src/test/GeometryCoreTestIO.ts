@@ -18,7 +18,7 @@ import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatB
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
 import { Arc3d, CurveLocationDetail, CurveLocationDetailPair, GeometryQuery, LineSegment3d, LineString3d, Loop } from "../curves";
-import { CurveChainWireOffsetContext } from "../crv/internalContexts/PolygonOffsetContext";
+import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {

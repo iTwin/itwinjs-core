@@ -33,7 +33,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
-import { CylindricalRangeQuery } from "../../crv/Query/CylindricalRange";
+import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 
 class StrokeCountSearch extends NullGeometryHandler {
   public emitPackedStrokeCountMap(m: StrokeCountMap): any {

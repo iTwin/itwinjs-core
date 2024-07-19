@@ -22,13 +22,13 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { TransitionConditionalProperties } from "../../crv/spiral/TransitionConditionalProperties";
-import { ClothoidSeriesRLEvaluator } from "../../crv/spiral/ClothoidSeries";
-import { CzechSpiralEvaluator } from "../../crv/spiral/CzechSpiralEvaluator";
-import { NormalizedBiQuadraticTransition, NormalizedBlossTransition, NormalizedClothoidTransition, NormalizedCosineTransition, NormalizedSineTransition } from "../../crv/spiral/NormalizedTransition";
-import { DirectHalfCosineSpiralEvaluator } from "../../crv/spiral/DirectHalfCosineSpiralEvaluator";
-import { AustralianRailCorpXYEvaluator } from "../../crv/spiral/AustralianRailCorpXYEvaluator";
-import { PolishCubicEvaluator } from "../../crv/spiral/PolishCubicSpiralEvaluator";
+import { TransitionConditionalProperties } from "../../curve/spiral/TransitionConditionalProperties";
+import { ClothoidSeriesRLEvaluator } from "../../curve/spiral/ClothoidSeries";
+import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
+import { NormalizedBiQuadraticTransition, NormalizedBlossTransition, NormalizedClothoidTransition, NormalizedCosineTransition, NormalizedSineTransition } from "../../curve/spiral/NormalizedTransition";
+import { DirectHalfCosineSpiralEvaluator } from "../../curve/spiral/DirectHalfCosineSpiralEvaluator";
+import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
+import { PolishCubicEvaluator } from "../../curve/spiral/PolishCubicSpiralEvaluator";
 
 function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalProperties) {
   const data1 = data.clone();

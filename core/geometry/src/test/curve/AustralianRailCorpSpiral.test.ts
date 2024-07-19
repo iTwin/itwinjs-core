@@ -9,9 +9,9 @@ import { Transform } from "../../geometry3d/Transform";
 import { Quadrature } from "../../numerics/Quadrature";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { AustralianRailCorpXYEvaluator } from "../../crv/spiral/AustralianRailCorpXYEvaluator";
+import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
 import { DirectSpiral3d } from "../../curves";
-import { CzechSpiralEvaluator } from "../../crv/spiral/CzechSpiralEvaluator";
+import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
 
 describe("AustralianRailCorpSpiral", () => {
   it("HelloWorld", () => {

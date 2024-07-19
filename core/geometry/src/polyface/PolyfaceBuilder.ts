@@ -8,8 +8,8 @@
  */
 
 import { AxisOrder, Geometry } from "../Geometry";
-import { CylindricalRangeQuery } from "../crv/Query/CylindricalRange";
-import { StrokeCountSection } from "../crv/Query/StrokeCountChain";
+import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
+import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
 import { AnyCurve, AnyRegion, Arc3d, ConstructCurveBetweenCurves, CurveChain, CurveCollection, CurveFactory, CurvePrimitive, GeometryQuery, LineString3d, Loop, ParityRegion, StrokeOptions, UnionRegion } from "../curves";
 import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";

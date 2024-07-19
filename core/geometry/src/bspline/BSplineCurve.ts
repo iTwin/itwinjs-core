@@ -6,8 +6,8 @@
  * @module Bspline
  */
 
-import { CurveOffsetXYHandler } from "../crv/internalContexts/CurveOffsetXYHandler";
-import { PlaneAltitudeRangeContext } from "../crv/internalContexts/PlaneAltitudeRangeContext";
+import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
+import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
 import { CurveIntervalRole, CurveLocationDetail, CurvePrimitive, LineString3d, OffsetOptions, StrokeCountMap, StrokeOptions } from "../curves";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";

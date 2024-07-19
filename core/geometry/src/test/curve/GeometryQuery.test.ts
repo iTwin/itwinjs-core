@@ -28,8 +28,8 @@ import { Checker } from "../Checker";
 import { Range1d } from "../../geometry3d/Range";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
-import { CylindricalRangeQuery } from "../../crv/Query/CylindricalRange";
-import { StrokeCountSection } from "../../crv/Query/StrokeCountChain";
+import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
+import { StrokeCountSection } from "../../curve/Query/StrokeCountChain";
 
 /** Like  NullGeometryHandler, but allow various CurveCollections to flow to base class, where they reach handleCurveCollection. */
 export class MinimalGeometryHandler extends GeometryHandler {
