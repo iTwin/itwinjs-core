@@ -366,33 +366,32 @@ export class RunLayout {
   private computeGraphemeOffsets(layoutContext: LayoutContext): GraphemeOffset[] {
     const content = this.stringify();
     const style = layoutContext.createRunSettings(this.source);
-    switch (this.source.type) {
-      case "text": {
-        // OLD TO DO COMMENT: TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
-        // But doing so causes inexplicable issues with initialization of Model.modeledElement.
-        // So until that's resolved, access it via cast to any.
-        // NEW TO DO COMMENT: Is the above still an issue? Mobile add-on also does not include Intl...
-        const segmenter = new (global as any).Intl.Segmenter(undefined, {granularity: "grapheme"});
-        const graphemes: IntlSegmenterStandInType[] = Array.from(segmenter.segment(content));
-        const graphemeOffsets: {charOffset: number, graphemeOffset: number}[] = [];
-        const baselineShift = this.source.baselineShift;
-        let proccessedText = "";
-        graphemes.forEach((grapheme, index) => {
-          // Get all characters between this grapheme and the next one, or if this is the last grapheme, this grapheme and the end of the run
-          const nextGraphemeCharIndex = graphemes[index+1] ? graphemes[index+1].index : content.length;
-          proccessedText += content.substring(grapheme.index, nextGraphemeCharIndex);
-          const rangeForText = layoutContext.computeRangeForText(proccessedText, style, baselineShift);
-          graphemeOffsets.push({
-            charOffset: grapheme.index,
-            graphemeOffset: rangeForText.layout.high.x,
-          });
-        });
-        return graphemeOffsets;
-      }
-      default: {
-        return [];
-      }
+    if (this.source.type !== "text") {
+      return [];
     }
+    // OLD TO DO COMMENT: TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
+    // But doing so causes inexplicable issues with initialization of Model.modeledElement.
+    // So until that's resolved, access it via cast to any.
+    // NEW TO DO COMMENT: Is the above still an issue? Mobile add-on also does not include Intl...
+    const segmenter = new (global as any).Intl.Segmenter(undefined, {granularity: "grapheme"});
+    const graphemes: IntlSegmenterStandInType[] = Array.from(segmenter.segment(content));
+    const graphemeOffsets: GraphemeOffset[] = [];
+    const baselineShift = this.source.baselineShift;
+    let processedText = "";
+    let prevGraphemeOffset = 0;
+    graphemes.forEach((grapheme, index) => {
+      // Get all characters between this grapheme and the next one, or if this is the last grapheme, this grapheme and the end of the run
+      const nextGraphemeCharIndex = graphemes[index+1] ? graphemes[index+1].index : content.length;
+      processedText += content.substring(grapheme.index, nextGraphemeCharIndex);
+      const rangeForText = layoutContext.computeRangeForText(processedText, style, baselineShift);
+      graphemeOffsets.push({
+        charOffset: grapheme.index,
+        leadingGraphemeOffset: prevGraphemeOffset,
+        trailingGraphemeOffset: rangeForText.layout.high.x,
+      });
+      prevGraphemeOffset = rangeForText.layout.high.x;
+    });
+    return graphemeOffsets;
   }
 
   public toResult(paragraph: Paragraph, layoutContext: LayoutContext): RunLayoutResult {
