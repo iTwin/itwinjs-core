@@ -1654,7 +1654,7 @@ export class BatchedTileIdMap implements BatchTableProperties {
         id: Id64String;
         properties: Record<string, any>;
     }>;
-    getBatchId(properties: any, allowDuplicates?: boolean): Id64String;
+    getBatchId(properties: any): Id64String;
     // (undocumented)
     getFeatureProperties(id: Id64String): Record<string, any> | undefined;
 }
@@ -4934,6 +4934,8 @@ export class GltfGraphicsReader extends GltfReader {
     get sceneNodes(): GltfId[];
     // (undocumented)
     get scenes(): GltfDictionary<GltfScene>;
+    // (undocumented)
+    get structuralMetadata(): StructuralMetadata | undefined;
     // (undocumented)
     get textures(): GltfDictionary<GltfTexture>;
     // (undocumented)
