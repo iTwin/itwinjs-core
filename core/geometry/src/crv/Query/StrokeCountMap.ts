@@ -7,7 +7,7 @@
  */
 
 import { Geometry } from "../../Geometry";
-import { CurvePrimitive } from "../CurvePrimitive";
+import { CurvePrimitive } from "../../curves";
 
 /**
  * Data carrier interface for per-primitive stroke counts and distances used by PolyfaceBuilder.

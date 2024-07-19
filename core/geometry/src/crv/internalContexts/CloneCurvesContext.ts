@@ -7,9 +7,7 @@
  */
 
 import { Transform } from "../../geometry3d/Transform";
-import { BagOfCurves, CurveChain, CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
+import { BagOfCurves, CurveChain, CurveCollection, CurvePrimitive, RecursiveCurveProcessorWithStack } from "../../curves";
 
 /**
  * Algorithmic class for cloning curve collections.

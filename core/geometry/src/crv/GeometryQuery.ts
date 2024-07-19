@@ -11,10 +11,7 @@ import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Polyface } from "../polyface/Polyface";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
-import { CoordinateXYZ } from "./CoordinateXYZ";
-import { CurveCollection } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { PointString3d } from "./PointString3d";
+import { CoordinateXYZ, CurveCollection, CurvePrimitive, PointString3d } from "../curves";
 
 /**
  * Describes the category of a [[GeometryQuery]], enabling type-switching like:

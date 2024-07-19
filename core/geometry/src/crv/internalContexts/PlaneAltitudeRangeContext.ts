@@ -18,12 +18,9 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { SineCosinePolynomial } from "../../numerics/Polynomials";
-import { Arc3d } from "../Arc3d";
-import { GeometryQuery } from "../GeometryQuery";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { StrokeOptions } from "../StrokeOptions";
-
+import {
+  Arc3d, GeometryQuery, LineSegment3d, LineString3d, StrokeOptions,
+} from "../../curves";
 /**
  * Accumulator context for searching for extrema of geometry along a plane.
  * @internal

@@ -16,15 +16,9 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
-import { Arc3d } from "../Arc3d";
-import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
-import { CurveCollection } from "../CurveCollection";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { AnyCurve } from "../CurveTypes";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-
+import {
+  Arc3d, CurveChainWithDistanceIndex, CurveCollection, CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, AnyCurve, LineSegment3d, LineString3d,
+} from "../../curves";
 // cspell:word XYRR
 
 /**

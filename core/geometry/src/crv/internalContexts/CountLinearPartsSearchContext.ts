@@ -6,12 +6,9 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-
+import {
+  CurveCollection, CurvePrimitive, RecursiveCurveProcessorWithStack, LineSegment3d, LineString3d,
+} from "../../curves";
 /** Algorithmic class: Count LineSegment3d and LineString3d primitives.
  * @internal
  */

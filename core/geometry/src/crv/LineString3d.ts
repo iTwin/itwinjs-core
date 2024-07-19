@@ -22,15 +22,11 @@ import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY, XYZProps } from "../geometry3d/XYZProps";
-import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { LineSegment3d } from "./LineSegment3d";
-import { OffsetOptions } from "./OffsetOptions";
+import {
+  CurveExtendOptions, VariantCurveExtendParameter, CurveIntervalRole, CurveLocationDetail, CurveSearchStatus, AnnounceNumberNumberCurvePrimitive, CurvePrimitive, GeometryQuery, LineSegment3d, OffsetOptions, StrokeOptions,
+} from "../curves";
 import { StrokeCountMap } from "./Query/StrokeCountMap";
-import { StrokeOptions } from "./StrokeOptions";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 
 /**
  * Starting with the segment at (baseIndex, baseIndex + 1):

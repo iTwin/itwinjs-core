@@ -10,17 +10,9 @@ import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Arc3d } from "../Arc3d";
-import { CurveChain } from "../CurveCollection";
-import { CurveFactory } from "../CurveFactory";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { Loop } from "../Loop";
-import { ParityRegion } from "../ParityRegion";
-import { Path } from "../Path";
-import { ConsolidateAdjacentCurvePrimitivesOptions } from "../RegionOps";
-import { UnionRegion } from "../UnionRegion";
-
+import {
+  Arc3d, CurveChain, CurveFactory, LineSegment3d, LineString3d, Loop, ParityRegion, Path, ConsolidateAdjacentCurvePrimitivesOptions, UnionRegion,
+} from "../../curves";
 /**
  * * Implementation class for ConsolidateAdjacentCurvePrimitives.
  *

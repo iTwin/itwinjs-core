@@ -8,7 +8,7 @@
  */
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import { TransitionSpiral3d } from "./TransitionSpiral3d";
+import { TransitionSpiral3d } from "../../curves";
 // import {} from "./";
 /** A true transition spiral is a curve defined by its curvature, with the curvature function symmetric about midpoint.
  * * The symmetry condition creates a relationship among the following 4 quantities:

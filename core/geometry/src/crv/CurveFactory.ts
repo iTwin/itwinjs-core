@@ -30,19 +30,9 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { Cone } from "../solid/Cone";
 import { RuledSweep } from "../solid/RuledSweep";
 import { TorusPipe } from "../solid/TorusPipe";
-import { Arc3d, ArcBlendData } from "./Arc3d";
-import { AnyCurve } from "./CurveTypes";
-import { CurveChain } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
-import { Loop } from "./Loop";
-import { Path } from "./Path";
-import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
-import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
-import { StrokeOptions } from "./StrokeOptions";
-
+import {
+  Arc3d, ArcBlendData, AnyCurve, CurveChain, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop, Path, IntegratedSpiral3d, IntegratedSpiralTypeName, StrokeOptions,
+} from "../curves";
 // cspell:word CCWXY
 
 /**

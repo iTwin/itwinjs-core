@@ -6,11 +6,10 @@
  * @module Curve
  */
 
-import { TransitionSpiral3d } from "./TransitionSpiral3d";
+import { GeometryQuery, LineString3d, StrokeOptions, TransitionSpiral3d } from "../../curves";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Transform } from "../../geometry3d/Transform";
-import { LineString3d } from "../LineString3d";
 import { NormalizedTransition } from "./NormalizedTransition";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
 import { Quadrature } from "../../numerics/Quadrature";
@@ -19,11 +18,9 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Angle } from "../../geometry3d/Angle";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { AxisOrder, Geometry } from "../../Geometry";
-import { StrokeOptions } from "../StrokeOptions";
 import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { GeometryQuery } from "../GeometryQuery";
 /**
  * An IntegratedSpiral3d is a curve defined by integrating its curvature.
  * * The first integral of curvature (with respect to distance along the curve) is the bearing angle (in radians)

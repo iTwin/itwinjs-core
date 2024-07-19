@@ -17,19 +17,11 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeToNumberFunction } from "../
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
-import { Arc3d } from "./Arc3d";
-import { CurveCurve } from "./CurveCurve";
-import { CurveLocationDetail } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyRegion } from "./CurveTypes";
-import { GeometryQuery } from "./GeometryQuery";
-import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { LineSegment3d } from "./LineSegment3d";
-import { Loop } from "./Loop";
-import { ParityRegion } from "./ParityRegion";
+import {
+  Arc3d, CurveCurve, CurveLocationDetail, CurvePrimitive, AnyRegion, GeometryQuery, LineSegment3d, Loop, ParityRegion, GraphCheckPointFunction, RegionBinaryOpType, RegionOps, UnionRegion,
+} from "../curves";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
-import { GraphCheckPointFunction, RegionBinaryOpType, RegionOps } from "./RegionOps";
-import { UnionRegion } from "./UnionRegion";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 
 /**
  * base class for callbacks during region sweeps.

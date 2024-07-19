@@ -23,15 +23,11 @@ import { XYAndZ } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { SineCosinePolynomial, SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
-import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
+import {
+  CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter, CurveIntervalRole, CurveLocationDetail, CurveSearchStatus, AnnounceNumberNumberCurvePrimitive, CurvePrimitive, GeometryQuery, LineString3d, OffsetOptions, StrokeOptions,
+} from "../curves";
 import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { LineString3d } from "./LineString3d";
-import { OffsetOptions } from "./OffsetOptions";
-import { StrokeOptions } from "./StrokeOptions";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 

@@ -8,7 +8,7 @@
 
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { StrokeOptions } from "./StrokeOptions";
+import { StrokeOptions } from "../curves";
 
 /**
  * Control parameters for joint construction, used in offset construction methods such as [[RegionOps.constructPolygonWireXYOffset]] and [[Region.Ops.constructCurveXYOffset]].

@@ -10,18 +10,9 @@ import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { Arc3d } from "../Arc3d";
-import { CurveChain, CurveCollection } from "../CurveCollection";
-import { CurveCurve } from "../CurveCurve";
-import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { Loop } from "../Loop";
-import { JointOptions, OffsetOptions } from "../OffsetOptions";
-import { Path } from "../Path";
-import { RegionOps } from "../RegionOps";
-
+import {
+  Arc3d, CurveChain, CurveCollection, CurveCurve, CurveCurveApproachType, CurveLocationDetailPair, CurvePrimitive, LineSegment3d, LineString3d, Loop, JointOptions, OffsetOptions, Path, RegionOps,
+} from "../../curves";
 // cspell:word CCWXY
 
 /**

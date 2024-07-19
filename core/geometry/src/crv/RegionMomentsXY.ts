@@ -15,16 +15,9 @@ import { Angle } from "../geometry3d/Angle";
 import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { MomentData } from "../geometry4d/MomentData";
-import { Arc3d } from "./Arc3d";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
-import { Loop } from "./Loop";
-import { ParityRegion } from "./ParityRegion";
-import { StrokeOptions } from "./StrokeOptions";
-import { TransitionSpiral3d } from "./spiral/TransitionSpiral3d";
-import { UnionRegion } from "./UnionRegion";
-
+import {
+  Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Loop, ParityRegion, StrokeOptions, TransitionSpiral3d, UnionRegion,
+} from "../curves";
 /**
  * Implementation class for computing XY area moments.
  * @internal

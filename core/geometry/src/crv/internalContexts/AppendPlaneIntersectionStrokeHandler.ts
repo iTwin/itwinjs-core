@@ -12,8 +12,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Order2Bezier } from "../../numerics/BezierPolynomials";
 import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
-import { CurveLocationDetail } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
+import { CurveLocationDetail, CurvePrimitive } from "../../curves";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
 /**

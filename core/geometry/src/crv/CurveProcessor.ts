@@ -5,13 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { AnyCurve } from "./CurveTypes";
-import { BagOfCurves, CurveCollection } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { Loop } from "./Loop";
-import { ParityRegion } from "./ParityRegion";
-import { Path } from "./Path";
-import { UnionRegion } from "./UnionRegion";
+import { AnyCurve, BagOfCurves, CurveCollection, CurvePrimitive, Loop, ParityRegion, Path, UnionRegion } from "../curves";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 

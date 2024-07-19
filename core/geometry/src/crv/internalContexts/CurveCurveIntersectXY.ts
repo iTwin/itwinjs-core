@@ -27,15 +27,9 @@ import { Point4d } from "../../geometry4d/Point4d";
 import { UnivariateBezier } from "../../numerics/BezierPolynomials";
 import { CurveCurveIntersectionXYRRToRRD, Newton2dUnboundedWithDerivative } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
-import { Arc3d } from "../Arc3d";
-import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
-import { CurveCollection } from "../CurveCollection";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { AnyCurve } from "../CurveTypes";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-
+import {
+  Arc3d, CurveChainWithDistanceIndex, CurveCollection, CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, AnyCurve, LineSegment3d, LineString3d,
+} from "../../curves";
 // cspell:word XYRR
 /**
  * Handler class for XY intersections between _geometryB and another geometry.

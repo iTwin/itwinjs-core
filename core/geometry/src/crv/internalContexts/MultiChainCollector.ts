@@ -11,18 +11,9 @@ import { Geometry } from "../../Geometry";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { XYAndZ } from "../../geometry3d/XYZProps";
-import { Arc3d } from "../Arc3d";
-import { BagOfCurves, CurveCollection } from "../CurveCollection";
-import { CurveCurve } from "../CurveCurve";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { AnyChain, AnyCurve } from "../CurveTypes";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { Loop } from "../Loop";
-import { Path } from "../Path";
-import { RegionOps } from "../RegionOps";
-import { StrokeOptions } from "../StrokeOptions";
-
+import {
+  Arc3d, BagOfCurves, CurveCollection, CurveCurve, CurvePrimitive, AnyChain, AnyCurve, LineSegment3d, LineString3d, Loop, Path, RegionOps, StrokeOptions,
+} from "../../curves";
 /**
  * Manage a growing array of arrays of curve primitives that are to be joined "head to tail" in paths.
  * * The caller makes a sequence of calls to announce individual primitives.

@@ -16,15 +16,10 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { CurveChain } from "./CurveCollection";
-import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
-import { GeometryQuery } from "./GeometryQuery";
+import {
+  CurveChain, CurveExtendMode, CurveExtendOptions, CurveLocationDetail, CurveLocationDetailPair, GeometryQuery, LineString3d, OffsetOptions, Path, StrokeOptions, VariantCurveExtendParameter,
+} from "../curves";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { LineString3d } from "./LineString3d";
-import { OffsetOptions } from "./OffsetOptions";
-import { Path } from "./Path";
-import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * Annotation of a fragment, i.e. an interval of a curve.

@@ -6,10 +6,7 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurveChain, CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
-
+import { CurveChain, CurveCollection, CurvePrimitive, RecursiveCurveProcessorWithStack } from "../../curves";
 // import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 /**
  * Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.

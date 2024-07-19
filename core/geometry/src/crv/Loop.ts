@@ -9,13 +9,7 @@
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { CurveChain } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineString3d } from "./LineString3d";
-import { StrokeOptions } from "./StrokeOptions";
-
+import { CurveChain, CurvePrimitive, RecursiveCurveProcessor, GeometryQuery, LineString3d, StrokeOptions } from "../curves";
 /**
  * A `Loop` is a curve chain that is the boundary of a closed (planar) loop.
  * @see [Curve Collections]($docs/learning/geometry/CurveCollection.md) learning article.

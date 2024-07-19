@@ -7,7 +7,7 @@
  */
 
 import { NewtonEvaluatorRtoR } from "../../numerics/Newton";
-import { CurvePrimitive } from "../CurvePrimitive";
+import { CurvePrimitive } from "../../curves";
 
 /** Intermediate class for managing the parentCurve announcements from an IStrokeHandler.
  * @internal

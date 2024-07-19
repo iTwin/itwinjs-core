@@ -13,13 +13,10 @@ import { Point3d, type Vector3d } from "../geometry3d/Point3dVector3d";
 import { type Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { GeometryQuery } from "./GeometryQuery";
 import { AppendPlaneIntersectionStrokeHandler } from "./internalContexts/AppendPlaneIntersectionStrokeHandler";
 import { ClosestPointStrokeHandler } from "./internalContexts/ClosestPointStrokeHandler";
 import { CurveLengthContext } from "./internalContexts/CurveLengthContext";
-import { LineString3d } from "./LineString3d";
-
+import { GeometryQuery, CurveIntervalRole, CurveLocationDetail, CurveSearchStatus, LineString3d } from "../curves";
 import type { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 import type { Arc3d } from "./Arc3d";
 import type { BezierCurve3d } from "../bspline/BezierCurve3d";

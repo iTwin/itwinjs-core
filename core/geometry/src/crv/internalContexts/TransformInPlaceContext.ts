@@ -6,9 +6,7 @@
  * @module Curve
  */
 import { Transform } from "../../geometry3d/Transform";
-import { CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessor } from "../CurveProcessor";
+import { CurveCollection, CurvePrimitive, RecursiveCurveProcessor } from "../../curves";
 
 /** Algorithmic class: Transform curves in place.
  * @internal

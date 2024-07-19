@@ -9,7 +9,7 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { GeometryQuery } from "./GeometryQuery";
+import { GeometryQuery } from "../curves";
 
 /**
  * A Coordinate is a Point3d with supporting methods from the GeometryQuery abstraction.

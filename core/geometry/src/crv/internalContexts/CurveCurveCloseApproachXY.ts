@@ -20,15 +20,9 @@ import {
   Newton1dUnbounded, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD,
 } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
-import { Arc3d } from "../Arc3d";
-import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
-import { CurveCollection } from "../CurveCollection";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { AnyCurve } from "../CurveTypes";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-
+import {
+  Arc3d, CurveChainWithDistanceIndex, CurveCollection, CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, AnyCurve, LineSegment3d, LineString3d,
+} from "../../curves";
 // cspell:word XYRR currentdFdX
 
 /**
