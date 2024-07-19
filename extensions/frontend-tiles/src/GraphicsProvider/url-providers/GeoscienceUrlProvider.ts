@@ -48,6 +48,8 @@ export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
   enableCDN?: boolean;
 }
 
+const defaultEndpoint = "https://351mt.api.integration.seequent.com";
+
 /**
  * Obtains the URL for a geoscience tileset.
  * @alpha
@@ -58,12 +60,12 @@ export async function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): P
     Authorization: args.accessToken,
   };
 
-  const baseUrl = "https://351mt.api.integration.seequent.com";
+  const baseUrl = args.urlPrefix ?? defaultEndpoint;
   const url = `${baseUrl}/visualization/orgs/${args.organizationId}/workspaces/${args.workspaceId}/geoscience-object/${args.geoscienceObjectId}`;
   const response = await fetch(url, { headers });
 
   if(!response.ok) {
-    Logger.logError(loggerCategory, `Received invalid response from https://351mt.api.integration.seequent.com: status: ${response.status},${response.statusText}`);
+    Logger.logError(loggerCategory, `Received invalid response from ${baseUrl}, status: ${response.status}, text: ${response.statusText}`);
     return undefined;
   }
 
