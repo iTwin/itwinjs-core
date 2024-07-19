@@ -5,6 +5,8 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, LinePixels, ModelFeature, RenderFeatureTable } from "@itwin/core-common";
+import { WorkerProxy, createWorkerProxy } from "../../common/WorkerProxy";
+import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
 import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common";
@@ -23,7 +25,7 @@ function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: numbe
   expect(range.high.z).to.equal(hz);
 }
 
-describe.only("GraphicDescriptionBuilder", () => {
+describe("GraphicDescriptionBuilder", () => {
   let constraints: GraphicDescriptionConstraints;
   let context: GraphicDescriptionContext;
 
@@ -376,5 +378,16 @@ describe.only("GraphicDescriptionBuilder", () => {
     expectFeature(0, batch.featureTable, { elementId: "0xa1", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
     expectFeature(1, batch.featureTable, { elementId: "0xa2", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
     expectFeature(2, batch.featureTable, { elementId: "0xa3", subCategoryId: "0xc2", geometryClass: GeometryClass.Primary, modelId: "0xb1" });
+  });
+
+  describe.only("Worker", () => {
+    const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");
+
+    it("throws on invalid context", async () => {
+      const worker = createWorker();
+      await expect(worker.createGraphic({ } as any)).to.be.eventually.rejectedWith("Invalid WorkerGraphicDescriptionContextProps");
+      worker.terminate();
+      expect(worker.isTerminated).to.be.true;
+    });
   });
 });
