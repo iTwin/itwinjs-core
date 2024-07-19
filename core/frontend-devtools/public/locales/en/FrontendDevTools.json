@@ -159,9 +159,6 @@
     "ViewportAddRealityModel": {
       "keyin": "fdt attach reality model"
     },
-    "ViewportAddSeequentRealityModel": {
-      "keyin": "fdt attach seequent reality model"
-    },
     "ViewportDetachRealityModel": {
       "keyin": "fdt detach reality model"
     },

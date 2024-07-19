@@ -533,7 +533,7 @@ export abstract class GltfReader {
     if(this._instanceProperties.length > 0 && this._idMap){
       featureTable = new FeatureTable(this._instanceProperties.length, featureTableModelId);
       for(let instanceId = 0; instanceId < this._instanceProperties.length; instanceId++){
-        featureTable.insertWithIndex(new Feature(this._idMap.getBatchId(this._instanceProperties[instanceId], true)), instanceId);
+        featureTable.insertWithIndex(new Feature(this._idMap.getBatchId(this._instanceProperties[instanceId])), instanceId);
       }
     }
 
@@ -2192,8 +2192,8 @@ export class GltfGraphicsReader extends GltfReader {
       }
 
       getPropertyValue = (index: number) => {
-        const previousOffset = index === 0 ? 0 : stringOffsets[index];
-        const offset = stringOffsets[index+1];
+        const previousOffset = index === 0 ? 0 : stringOffsets[index-1];
+        const offset = stringOffsets[index];
         return utf8ToString(stringValues.subarray(previousOffset, offset));
       };
     } else {
@@ -2231,7 +2231,7 @@ export class GltfGraphicsReader extends GltfReader {
         return undefined;
       }
 
-      const values = this.getGltfStructuralMetadataBuffer(property.values, classProperty.componentType) as Float64Array;
+      const values = this.getGltfStructuralMetadataBuffer(property.values, classProperty.componentType);
       if(!values){
         return undefined;
       }
@@ -2253,7 +2253,12 @@ export class GltfGraphicsReader extends GltfReader {
 
     const propertyValues: any[] = [];
     for(let i = 0; i < count; i++){
-      propertyValues.push(getPropertyValue(i));
+      const propertyValue = getPropertyValue(i);
+      if(typeof propertyValue === "bigint" ){
+        propertyValues.push(propertyValue.toString());
+      } else{
+        propertyValues.push(propertyValue);
+      }
     }
 
     return propertyValues;
@@ -2312,6 +2317,7 @@ export class GltfGraphicsReader extends GltfReader {
     return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._contentRange, this._transform);
   }
 
+  public get structuralMetadata(): StructuralMetadata | undefined { return this._structuralMetadata; }
   public get nodes(): GltfDictionary<GltfNode> { return this._nodes; }
   public get scenes(): GltfDictionary<GltfScene> { return this._glTF.scenes ?? emptyDict; }
   public get sceneNodes(): GltfId[] { return this._sceneNodes; }

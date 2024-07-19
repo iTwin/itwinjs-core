@@ -24,10 +24,8 @@ export class BatchedTileIdMap implements BatchTableProperties {
     this._iModel = iModel;
   }
 
-  /** Obtains or allocates the Id64String corresponding to the supplied set of JSON properties.
-   * If allowDuplicates is true, entries with the same properties will be allowed to have different Id64Strings, default is false.
-  */
-  public getBatchId(properties: any, allowDuplicates?: boolean): Id64String {
+  /** Obtains or allocates the Id64String corresponding to the supplied set of JSON properties. */
+  public getBatchId(properties: any): Id64String {
     if (undefined === this._featureMap || undefined === this._idMap) {
       assert(undefined === this._featureMap && undefined === this._idMap);
       this._featureMap = new Map<string, { id: Id64String, properties: any }>();
@@ -35,14 +33,11 @@ export class BatchedTileIdMap implements BatchTableProperties {
     }
 
     const key = JSON.stringify(properties);
-    let entry = allowDuplicates ? undefined : this._featureMap.get(key);
+    let entry = this._featureMap.get(key);
     if (undefined === entry) {
       const id = this._iModel.transientIds.getNext();
       entry = { id, properties };
-
-      if(!allowDuplicates) {
-        this._featureMap.set(key, entry);
-      }
+      this._featureMap.set(key, entry);
       this._idMap.set(id, properties);
     }
 

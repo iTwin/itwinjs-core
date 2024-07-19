@@ -11,6 +11,8 @@ import { IModelApp } from "../../IModelApp";
 import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
 import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
+import exp from "constants";
+import { BatchedTileIdMap } from "../../core-frontend";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
 const minimalJson = { asset: { version: "02.00" }, meshes: [] };
@@ -98,9 +100,9 @@ describe("GltfReader", () => {
     await IModelApp.shutdown();
   });
 
-  function createReader(gltf: Uint8Array | GltfDocument): GltfGraphicsReader | undefined {
+  function createReader(gltf: Uint8Array | GltfDocument, idMap: BatchedTileIdMap | undefined = undefined): GltfGraphicsReader | undefined {
     const props = GltfReaderProps.create(gltf, true);
-    return props ? new GltfGraphicsReader(props, { gltf, iModel }) : undefined;
+    return props ? new GltfGraphicsReader(props, { gltf, iModel, idMap }) : undefined;
   }
 
   it("accepts minimal glb", () => {
@@ -435,6 +437,624 @@ describe("GltfReader", () => {
       expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
       expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.Repeat, wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
       expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+    });
+  });
+
+  const instanceFeaturesExt: GltfDocument = JSON.parse(`
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+			"extensions": {
+				"EXT_instance_features": {
+					"featureIds": [
+					  {
+								"featureCount": 4,
+								"propertyTable": 0
+						},
+						{
+								"attribute": 0,
+								"featureCount": 4,
+								"propertyTable": 1
+						}
+					]
+				},
+				"EXT_mesh_gpu_instancing": {
+					"attributes": {
+						"_FEATURE_ID_0": 1,
+            "TRANSLATION": 2
+					}
+				}
+			},
+			"mesh": 0
+		}
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          }
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "data:application/octet-stream;base64,AQIDBA==",
+      "byteLength": 4
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AQACAAMABAA=",
+      "byteLength": 8
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AQAAAAIAAAADAAAABAAAAA==",
+      "byteLength": 16
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AQAAAAAAAAACAAAAAAAAAAMAAAAAAAAABAAAAAAAAAA=",
+      "byteLength": 32
+    },
+    {
+      "uri": "data:application/octet-stream;base64,//79/A==",
+      "byteLength": 4
+    },
+    {
+      "uri": "data:application/octet-stream;base64,///+//3//P8=",
+      "byteLength": 8
+    },
+    {
+      "uri": "data:application/octet-stream;base64,//////7////9/////P///w==",
+      "byteLength": 16
+    },
+    {
+      "uri": "data:application/octet-stream;base64,///////////+//////////3//////////P////////8=",
+      "byteLength": 32
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AACAPwAAAEAAAEBAAACAQA==",
+      "byteLength": 16
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEA=",
+      "byteLength": 32
+    },
+    {
+      "uri": "data:application/octet-stream;base64,b25ldHdvdGhyZWVmb3Vy",
+      "byteLength": 15
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AwAAAAYAAAALAAAAEAAAAA==",
+      "byteLength": 16
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QA==",
+      "byteLength": 64
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+      "byteLength": 36
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AgAAAAEAAAADAAAAAAAAAA==",
+      "byteLength": 16
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 4
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 0,
+      "byteLength": 8
+    },
+    {
+      "buffer": 2,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 3,
+      "byteOffset": 0,
+      "byteLength": 32
+    },
+    {
+      "buffer": 4,
+      "byteOffset": 0,
+      "byteLength": 4
+    },
+    {
+      "buffer": 5,
+      "byteOffset": 0,
+      "byteLength": 8
+    },
+    {
+      "buffer": 6,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 7,
+      "byteOffset": 0,
+      "byteLength": 32
+    },
+    {
+      "buffer": 8,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 9,
+      "byteOffset": 0,
+      "byteLength": 32
+    },
+    {
+      "buffer": 10,
+      "byteOffset": 0,
+      "byteLength": 15
+    },
+    {
+      "buffer": 11,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 8
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 12
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 36
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 64
+    },
+    {
+      "buffer": 13,
+      "byteOffset": 0,
+      "byteLength": 36
+    },
+    {
+      "buffer": 14,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 36
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 17,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3",
+      "max": [
+        1.0,
+        1.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+		{
+			"bufferView": 18,
+			"componentType": 5125,
+			"count": 4,
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 19,
+			"componentType": 5126,
+			"count": 4,
+			"type": "VEC3"
+		}
+  ],
+  "extensions": {
+    "EXT_structural_metadata": {
+      "propertyTables": [
+        {
+          "class": "propertySet0",
+          "count": 4,
+          "name": "propertySet0",
+          "properties": {
+            "property0": {
+              "values": 0
+            },
+            "property1": {
+              "values": 1
+            },
+            "property2": {
+              "values": 2
+            },
+            "property3": {
+              "values": 3
+            },
+            "property4": {
+              "values": 4
+            },
+            "property5": {
+              "values": 5
+            },
+            "property6": {
+              "values": 6
+            },
+            "property7": {
+              "values": 7
+            },
+            "property8": {
+              "values": 8
+            },
+            "property9": {
+              "values": 9
+            },
+            "property10": {
+              "values": 10,
+              "stringOffsets": 11
+            }
+          }
+        },
+        {
+          "class": "propertySet1",
+          "count": 4,
+          "name": "propertySet1",
+          "properties": {
+            "property0": {
+              "values": 12
+            },
+            "property1": {
+              "values": 13
+            },
+            "property2": {
+              "values": 14
+            },
+            "property3": {
+              "values": 15
+            },
+            "property4": {
+              "values": 15
+            },
+            "property5": {
+              "values": 16
+            }
+          }
+        }
+      ],
+      "schema": {
+        "classes": {
+          "propertySet0": {
+            "name": "propertySet0",
+            "properties": {
+              "property0": {
+                "componentType": "UINT8",
+                "name": "UINT8_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property1": {
+                "componentType": "UINT16",
+                "name": "UINT16_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property2": {
+                "componentType": "UINT32",
+                "name": "UINT32_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property3": {
+                "componentType": "UINT64",
+                "name": "UINT64_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property4": {
+                "componentType": "INT8",
+                "name": "INT8_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property5": {
+                "componentType": "INT16",
+                "name": "INT16_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property6": {
+                "componentType": "INT32",
+                "name": "INT32_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property7": {
+                "componentType": "INT64",
+                "name": "INT64_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property8": {
+                "componentType": "FLOAT32",
+                "name": "FLOAT32_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property9": {
+                "componentType": "FLOAT64",
+                "name": "FLOAT64_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property10": {
+                "name": "STRING_VALUES",
+                "required": true,
+                "type": "STRING"
+              }
+            }
+          },
+          "propertySet1": {
+            "name": "propertySet1",
+            "properties": {
+              "property0": {
+                "componentType": "UINT8",
+                "name": "UINT8_VEC2_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "VEC2"
+              },
+              "property1": {
+                "componentType": "UINT8",
+                "name": "UINT8_VEC3_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "VEC3"
+              },
+              "property2": {
+                "componentType": "UINT8",
+                "name": "UINT8_VEC4_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "VEC4"
+              },
+              "property3": {
+                "componentType": "UINT8",
+                "name": "UINT8_MAT2_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "MAT2"
+              },
+              "property4": {
+                "componentType": "UINT8",
+                "name": "UINT8_MAT3_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "MAT3"
+              },
+              "property5": {
+                "componentType": "UINT8",
+                "name": "UINT8_MAT4_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "MAT4"
+              }
+            }
+          }
+        },
+        "id": "testProperties"
+      }
+    }
+  }
+}`);
+
+  const compareArrays = (a: any[], b: any[]) => {
+    for (let i = 0; i < a.length; i++) {
+      if(Array.isArray(a[i])){
+        if (!compareArrays(a[i], b[i])){
+          return false;
+        }
+      } else{
+        if (a[i] !== b[i]){
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  describe("EXT_structural_metadata", () => {
+
+    const instanceFeatures = [2,1,3,0];
+    const expectedValuesUnsigned = [1,2,3,4];
+    const expectedValuesBigUnsigned = ["1","2","3","4"];
+    const expectedValuesSigned = [-1,-2,-3,-4];
+    const expectedValuesBigSigned = ["-1","-2","-3","-4"];
+    const expectedValuesString = ["one","two","three","four"];
+
+    const expectedValuesVec2 = [[1,2],[3,4],[5,6],[7,8]];
+    const expectedValuesVec3 = [[1,2,3],[4,5,6],[7,8,9],[10,11,12]];
+    const expectedValuesVec4 = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]];
+    const expectedValuesMat3 = [[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18],[19,20,21,22,23,24,25,26,27],[28,29,30,31,32,33,34,35,36]];
+    const expectedValuesMat4 = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],[17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32], [33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48], [49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64]];
+
+    it("parses structural metadata", async () => {
+      const reader = createReader(instanceFeaturesExt)!;
+      expect(reader).not.to.be.undefined;
+      const result = await reader.read();
+      expect(result.graphic).not.to.be.undefined;
+      expect(reader.structuralMetadata).not.to.be.undefined;
+      const structuralMetadata = reader.structuralMetadata!;
+
+      expect(structuralMetadata.tables.length === 2);
+      expect(structuralMetadata.tables[0].entries.length === 11);
+
+      for(const entry of structuralMetadata.tables[0].entries ?? []) {
+        if(entry.name === "UINT8_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
+        } else if(entry.name === "UINT16_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
+        } else if(entry.name === "UINT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
+        } else if(entry.name === "UINT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesBigUnsigned)).to.be.true;
+        } else if(entry.name === "INT8_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).to.be.true;
+        } else if(entry.name === "INT16_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).to.be.true;
+        } else if(entry.name === "INT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).to.be.true;
+        } else if(entry.name === "INT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesBigSigned)).to.be.true;
+        }else if(entry.name === "FLOAT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
+        } else if(entry.name === "FLOAT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
+        } else if(entry.name === "STRING_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesString)).to.be.true;
+        }
+      }
+
+      expect(structuralMetadata.tables[1].entries.length === 6);
+      for(const entry of structuralMetadata.tables[1].entries ?? []) {
+        if(entry.name === "UINT8_VEC2_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec2)).to.be.true;
+        } else if(entry.name === "UINT8_VEC3_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec3)).to.be.true;
+        } else if(entry.name === "UINT8_VEC4_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec4)).to.be.true;
+        } else if(entry.name === "UINT8_MAT2_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec4)).to.be.true;
+        } else if(entry.name === "UINT8_MAT3_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesMat3)).to.be.true;
+        } else if(entry.name === "UINT8_MAT4_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesMat4)).to.be.true;
+        }
+      }
+    });
+
+    it("parses instance features", async () => {
+      const idMap = new BatchedTileIdMap(iModel);
+
+      const reader = createReader(instanceFeaturesExt, idMap)!;
+      expect(reader).not.to.be.undefined;
+
+      const result = await reader.read();
+      expect(result).not.to.be.undefined;
+
+      let entryCount = 0;
+      for(const entry of idMap.entries()) {
+        expect(entry).not.to.be.undefined;
+
+        let propertyCount0 = 0;
+        for(const [key, value] of Object.entries(entry.properties.propertySet0)){
+          if(key === "UINT8_VALUES") {
+            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "UINT16_VALUES") {
+            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "UINT32_VALUES") {
+            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "UINT64_VALUES") {
+            expect(value === expectedValuesBigUnsigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "INT8_VALUES") {
+            expect(value === expectedValuesSigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "INT16_VALUES") {
+            expect(value === expectedValuesSigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "INT32_VALUES") {
+            expect(value === expectedValuesSigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "INT64_VALUES") {
+            expect(value === expectedValuesBigSigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "FLOAT32_VALUES") {
+            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "FLOAT64_VALUES") {
+            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+            propertyCount0++;
+          } else if(key === "STRING_VALUES") {
+            expect(value === expectedValuesString[entryCount]).to.be.true;
+            propertyCount0++;
+          }
+        }
+        expect(propertyCount0 === 11).to.be.true;
+
+        let propertyCount1 = 0;
+        for(const [key, value] of Object.entries(entry.properties.propertySet1)){
+          const array = value as any[];
+          if(key === "UINT8_VEC2_VALUES") {
+            expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]] )).to.be.true;
+            propertyCount1++;
+          } else if(key === "UINT8_VEC3_VALUES") {
+            expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]] )).to.be.true;
+            propertyCount1++;
+          } else if(key === "UINT8_VEC4_VALUES") {
+            expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]] )).to.be.true;
+            propertyCount1++;
+          } else if(key === "UINT8_MAT2_VALUES") {
+            expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]] )).to.be.true;
+            propertyCount1++;
+          } else if(key === "UINT8_MAT3_VALUES") {
+            expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]] )).to.be.true;
+            propertyCount1++;
+          }else if(key === "UINT8_MAT4_VALUES") {
+            expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]] )).to.be.true;
+            propertyCount1++;
+          }
+        }
+        expect(propertyCount1 === 6).to.be.true;
+        entryCount ++;
+      }
+      expect(entryCount === 4).to.be.true;
     });
   });
 });
