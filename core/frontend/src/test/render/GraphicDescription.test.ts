@@ -389,5 +389,17 @@ describe("GraphicDescriptionBuilder", () => {
       worker.terminate();
       expect(worker.isTerminated).to.be.true;
     });
+
+    it("creates a graphic description", async () => {
+      const worker = createWorker();
+
+      const iModel = { transientIds: new TransientIdSequence() } as any;
+      const workerContext = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
+      const result = await worker.createGraphic(workerContext);
+      expect(result.description).not.to.be.undefined;
+      expect(result.context).not.to.be.undefined;
+
+      worker.terminate();
+    });
   });
 });
