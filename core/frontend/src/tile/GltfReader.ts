@@ -724,7 +724,9 @@ export abstract class GltfReader {
           // If the attribute is not defined, then the feature id corresponds to the instance id
           if(featureIdDesc.attribute === undefined){
             for(const entries of table.entries){
-              instanceProps[table.name][entries.name] = entries.values[localInstanceId];
+              if(entries.values[localInstanceId] !== undefined){
+                instanceProps[table.name][entries.name] = entries.values[localInstanceId];
+              }
             }
           } else if(featureBuffers.has(featureIdDesc.attribute)) {
             const featureBuffer = featureBuffers.get(featureIdDesc.attribute);
@@ -738,7 +740,9 @@ export abstract class GltfReader {
             }
 
             for(const entries of table.entries){
-              instanceProps[table.name][entries.name] = entries.values[featureId];
+              if(entries.values[featureId] !== undefined){
+                instanceProps[table.name][entries.name] = entries.values[featureId];
+              }
             }
           }
         }
@@ -2192,9 +2196,9 @@ export class GltfGraphicsReader extends GltfReader {
       }
 
       getPropertyValue = (index: number) => {
-        const previousOffset = index === 0 ? 0 : stringOffsets[index-1];
-        const offset = stringOffsets[index];
-        return utf8ToString(stringValues.subarray(previousOffset, offset));
+        const begin = stringOffsets[index];
+        const end = stringOffsets[index+1];
+        return utf8ToString(stringValues.subarray(begin, end));
       };
     } else {
 
@@ -2253,11 +2257,12 @@ export class GltfGraphicsReader extends GltfReader {
 
     const propertyValues: any[] = [];
     for(let i = 0; i < count; i++){
-      const propertyValue = getPropertyValue(i);
-      if(typeof propertyValue === "bigint" ){
-        propertyValues.push(propertyValue.toString());
-      } else{
+      const value = getPropertyValue(i);
+      const propertyValue = (typeof value === "bigint" ) ? value.toString() : value;
+      if(!classProperty.noData || propertyValue !== classProperty.noData){
         propertyValues.push(propertyValue);
+      } else{
+        propertyValues.push(undefined);
       }
     }
 

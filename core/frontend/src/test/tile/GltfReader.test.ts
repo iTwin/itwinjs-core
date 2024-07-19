@@ -465,7 +465,8 @@ describe("GltfReader", () => {
 						{
 								"attribute": 0,
 								"featureCount": 4,
-								"propertyTable": 1
+								"propertyTable": 1,
+								"nullFeatureId": 3
 						}
 					]
 				},
@@ -536,8 +537,8 @@ describe("GltfReader", () => {
       "byteLength": 15
     },
     {
-      "uri": "data:application/octet-stream;base64,AwAAAAYAAAALAAAAEAAAAA==",
-      "byteLength": 16
+      "uri": "data:application/octet-stream;base64,AAAAAAMAAAAGAAAACwAAABAAAAA=",
+      "byteLength": 20
     },
     {
       "uri": "data:application/octet-stream;base64,AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QA==",
@@ -611,7 +612,7 @@ describe("GltfReader", () => {
     {
       "buffer": 11,
       "byteOffset": 0,
-      "byteLength": 16
+      "byteLength": 20
     },
     {
       "buffer": 12,
@@ -651,7 +652,7 @@ describe("GltfReader", () => {
     {
       "buffer": 12,
       "byteOffset": 0,
-      "byteLength": 36
+      "byteLength": 48
     }
   ],
   "accessors": [
@@ -763,76 +764,77 @@ describe("GltfReader", () => {
               "property0": {
                 "componentType": "UINT8",
                 "name": "UINT8_VALUES",
-                "noData": 0,
+                "noData": 4,
                 "required": true,
                 "type": "SCALAR"
               },
               "property1": {
                 "componentType": "UINT16",
                 "name": "UINT16_VALUES",
-                "noData": 0,
+                "noData": 4,
                 "required": true,
                 "type": "SCALAR"
               },
               "property2": {
                 "componentType": "UINT32",
                 "name": "UINT32_VALUES",
-                "noData": 0,
+                "noData": 4,
                 "required": true,
                 "type": "SCALAR"
               },
               "property3": {
                 "componentType": "UINT64",
                 "name": "UINT64_VALUES",
-                "noData": 0,
+                "noData": "4",
                 "required": true,
                 "type": "SCALAR"
               },
               "property4": {
                 "componentType": "INT8",
                 "name": "INT8_VALUES",
-                "noData": 0,
+                "noData": -4,
                 "required": true,
                 "type": "SCALAR"
               },
               "property5": {
                 "componentType": "INT16",
                 "name": "INT16_VALUES",
-                "noData": 0,
+                "noData": -4,
                 "required": true,
                 "type": "SCALAR"
               },
               "property6": {
                 "componentType": "INT32",
                 "name": "INT32_VALUES",
-                "noData": 0,
+                "noData": -4,
                 "required": true,
                 "type": "SCALAR"
               },
               "property7": {
                 "componentType": "INT64",
                 "name": "INT64_VALUES",
-                "noData": 0,
+                "noData": "-4",
                 "required": true,
                 "type": "SCALAR"
               },
               "property8": {
                 "componentType": "FLOAT32",
                 "name": "FLOAT32_VALUES",
-                "noData": 0,
+                "noData": 4,
                 "required": true,
                 "type": "SCALAR"
               },
               "property9": {
                 "componentType": "FLOAT64",
                 "name": "FLOAT64_VALUES",
-                "noData": 0,
+                "noData": 4,
                 "required": true,
                 "type": "SCALAR"
               },
               "property10": {
                 "name": "STRING_VALUES",
                 "required": true,
+                "noData": "four",
                 "type": "STRING"
               }
             }
@@ -909,11 +911,11 @@ describe("GltfReader", () => {
   describe("EXT_structural_metadata", () => {
 
     const instanceFeatures = [2,1,3,0];
-    const expectedValuesUnsigned = [1,2,3,4];
-    const expectedValuesBigUnsigned = ["1","2","3","4"];
-    const expectedValuesSigned = [-1,-2,-3,-4];
-    const expectedValuesBigSigned = ["-1","-2","-3","-4"];
-    const expectedValuesString = ["one","two","three","four"];
+    const expectedValuesUnsigned = [1,2,3,undefined];
+    const expectedValuesBigUnsigned = ["1","2","3",undefined];
+    const expectedValuesSigned = [-1,-2,-3,undefined];
+    const expectedValuesBigSigned = ["-1","-2","-3",undefined];
+    const expectedValuesString = ["one","two","three",undefined];
 
     const expectedValuesVec2 = [[1,2],[3,4],[5,6],[7,8]];
     const expectedValuesVec3 = [[1,2,3],[4,5,6],[7,8,9],[10,11,12]];
@@ -989,69 +991,80 @@ describe("GltfReader", () => {
       for(const entry of idMap.entries()) {
         expect(entry).not.to.be.undefined;
 
-        let propertyCount0 = 0;
-        for(const [key, value] of Object.entries(entry.properties.propertySet0)){
-          if(key === "UINT8_VALUES") {
-            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "UINT16_VALUES") {
-            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "UINT32_VALUES") {
-            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "UINT64_VALUES") {
-            expect(value === expectedValuesBigUnsigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "INT8_VALUES") {
-            expect(value === expectedValuesSigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "INT16_VALUES") {
-            expect(value === expectedValuesSigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "INT32_VALUES") {
-            expect(value === expectedValuesSigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "INT64_VALUES") {
-            expect(value === expectedValuesBigSigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "FLOAT32_VALUES") {
-            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "FLOAT64_VALUES") {
-            expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
-            propertyCount0++;
-          } else if(key === "STRING_VALUES") {
-            expect(value === expectedValuesString[entryCount]).to.be.true;
-            propertyCount0++;
+        // Expect empty property set for noData = 4 | -4 | "four"
+        if(entryCount === 3){
+          expect(JSON.stringify(entry.properties.propertySet0) === JSON.stringify({})).to.be.true;
+        } else {
+          let propertyCount0 = 0;
+          for(const [key, value] of Object.entries(entry.properties.propertySet0)){
+            if(key === "UINT8_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "UINT16_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "UINT32_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "UINT64_VALUES") {
+              expect(value === expectedValuesBigUnsigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "INT8_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "INT16_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "INT32_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "INT64_VALUES") {
+              expect(value === expectedValuesBigSigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "FLOAT32_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "FLOAT64_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
+              propertyCount0++;
+            } else if(key === "STRING_VALUES") {
+              expect(value === expectedValuesString[entryCount]).to.be.true;
+              propertyCount0++;
+            }
           }
+          expect(propertyCount0 === 11).to.be.true;
         }
-        expect(propertyCount0 === 11).to.be.true;
 
-        let propertyCount1 = 0;
-        for(const [key, value] of Object.entries(entry.properties.propertySet1)){
-          const array = value as any[];
-          if(key === "UINT8_VEC2_VALUES") {
-            expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]] )).to.be.true;
-            propertyCount1++;
-          } else if(key === "UINT8_VEC3_VALUES") {
-            expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]] )).to.be.true;
-            propertyCount1++;
-          } else if(key === "UINT8_VEC4_VALUES") {
-            expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]] )).to.be.true;
-            propertyCount1++;
-          } else if(key === "UINT8_MAT2_VALUES") {
-            expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]] )).to.be.true;
-            propertyCount1++;
-          } else if(key === "UINT8_MAT3_VALUES") {
-            expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]] )).to.be.true;
-            propertyCount1++;
-          }else if(key === "UINT8_MAT4_VALUES") {
-            expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]] )).to.be.true;
-            propertyCount1++;
+        // Expect empty property set for null feature id = 3
+        if(instanceFeatures[entryCount] === 3){
+          expect(JSON.stringify(entry.properties.propertySet1) === JSON.stringify({})).to.be.true;
+        } else {
+          let propertyCount1 = 0;
+          for(const [key, value] of Object.entries(entry.properties.propertySet1)){
+            const array = value as any[];
+            if(key === "UINT8_VEC2_VALUES") {
+              expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]] )).to.be.true;
+              propertyCount1++;
+            } else if(key === "UINT8_VEC3_VALUES") {
+              expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]] )).to.be.true;
+              propertyCount1++;
+            } else if(key === "UINT8_VEC4_VALUES") {
+              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]] )).to.be.true;
+              propertyCount1++;
+            } else if(key === "UINT8_MAT2_VALUES") {
+              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]] )).to.be.true;
+              propertyCount1++;
+            } else if(key === "UINT8_MAT3_VALUES") {
+              expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]] )).to.be.true;
+              propertyCount1++;
+            }else if(key === "UINT8_MAT4_VALUES") {
+              expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]] )).to.be.true;
+              propertyCount1++;
+            }
           }
+          expect(propertyCount1 === 6).to.be.true;
         }
-        expect(propertyCount1 === 6).to.be.true;
+
         entryCount ++;
       }
       expect(entryCount === 4).to.be.true;
