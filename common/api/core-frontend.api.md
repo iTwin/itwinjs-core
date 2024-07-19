@@ -5124,7 +5124,9 @@ export abstract class GltfReader {
     // (undocumented)
     protected readonly _iModel: IModelConnection;
     // (undocumented)
-    protected _instanceProperties: any[];
+    protected _instanceElementIdToFeatureId: Map<string, number>;
+    // (undocumented)
+    protected _instanceFeatures: Feature[];
     // (undocumented)
     protected readonly _is3d: boolean;
     // (undocumented)
