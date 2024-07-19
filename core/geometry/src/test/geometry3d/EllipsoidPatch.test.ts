@@ -4,14 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import {
+  Arc3d, CurveFactory, AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop, StrokeOptions,
+} from "../../curves";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";

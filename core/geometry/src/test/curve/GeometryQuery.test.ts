@@ -9,17 +9,9 @@ import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH } from "../../bspline/BSplineSurface";
-import { Arc3d } from "../../curve/Arc3d";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { CurveCollection } from "../../curve/CurveCollection";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Path } from "../../curve/Path";
-import { PointString3d } from "../../curve/PointString3d";
-import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
-import { StrokeCountSection } from "../../curve/Query/StrokeCountChain";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
+import {
+  Arc3d, CoordinateXYZ, CurveCollection, LineSegment3d, LineString3d, Loop, ParityRegion, Path, PointString3d, StrokeOptions, TransitionSpiral3d,
+} from "../../curves";
 import { GeometryHandler, NullGeometryHandler, RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
@@ -34,10 +26,10 @@ import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { Range1d } from "../../geometry3d/Range";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Loop } from "../../curve/Loop";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
+import { CylindricalRangeQuery } from "../../crv/Query/CylindricalRange";
+import { StrokeCountSection } from "../../crv/Query/StrokeCountChain";
 
 /** Like  NullGeometryHandler, but allow various CurveCollections to flow to base class, where they reach handleCurveCollection. */
 export class MinimalGeometryHandler extends GeometryHandler {

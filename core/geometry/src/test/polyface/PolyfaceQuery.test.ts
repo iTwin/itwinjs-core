@@ -4,15 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveTypes";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { JointOptions } from "../../curve/OffsetOptions";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import {
+  Arc3d, AnyCurve, GeometryQuery, LineSegment3d, LineString3d, Loop, JointOptions, RegionBinaryOpType, StrokeOptions, RegionOps,
+} from "../../curves";
 import { Geometry, PolygonLocation } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";

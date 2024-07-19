@@ -7,7 +7,6 @@ import * as fs from "fs";
 import { BSplineSurface3d, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect, WeightStyle } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
-import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
@@ -17,10 +16,10 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { StrokeOptions } from "../../curve/StrokeOptions";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { NumberArray, Point3dArray, Point4dArray } from "../../geometry3d/PointHelpers";
 import { Point4d } from "../../geometry4d/Point4d";
+import { GeometryQuery, StrokeOptions } from "../../curves";
 
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;

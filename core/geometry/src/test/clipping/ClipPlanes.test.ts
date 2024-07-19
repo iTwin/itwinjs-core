@@ -8,12 +8,6 @@ import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipStatus, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { Arc3d } from "../../curve/Arc3d";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -40,6 +34,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ImportedSample } from "../ImportedSamples";
 import { prettyPrint } from "../testFunctions";
+import { AnnounceNumberNumberCurvePrimitive, Arc3d, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop } from "../../curves";
 
 Checker.noisy.clipPlane = false;
 /**

@@ -7,7 +7,7 @@
  * @module Curve
  */
 
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurvePrimitive } from "../curves";
 
 import type { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";

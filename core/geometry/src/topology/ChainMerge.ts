@@ -8,8 +8,7 @@
  */
 
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
+import { LineSegment3d, LineString3d } from "../curves";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";

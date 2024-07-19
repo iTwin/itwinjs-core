@@ -6,7 +6,7 @@
  * @module Curve
  */
 import { assert } from "@itwin/core-bentley";
-import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
+import { StrokeCountMap } from "../curves";
 import { AxisOrder, Geometry, type PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d, type Vector3d } from "../geometry3d/Point3dVector3d";

@@ -4,15 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
+import {
+  Arc3d, CurveChainWithDistanceIndex, CurveCurve, CurveLocationDetail, GeometryQuery, LineSegment3d, LineString3d, Loop, Path,
+} from "../../curves";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";

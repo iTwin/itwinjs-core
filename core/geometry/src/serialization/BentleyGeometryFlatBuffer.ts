@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Serialization
  */
-import { GeometryQuery } from "../curve/GeometryQuery";
+import { GeometryQuery } from "../curves";
 import { BGFBReader } from "./BGFBReader";
 import { BGFBWriter } from "./BGFBWriter";
 

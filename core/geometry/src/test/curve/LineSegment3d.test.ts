@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
+import {
+  CoordinateXYZ, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, GeometryQuery, LineSegment3d,
+} from "../../curves";
 import { AxisOrder, Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";

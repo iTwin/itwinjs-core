@@ -6,19 +6,15 @@
 import { expect } from "chai";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Arc3d } from "../../curve/Arc3d";
 import { Checker } from "../Checker";
-import { CurveFactory } from "../../curve/CurveFactory";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Transform } from "../../geometry3d/Transform";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Arc3d, CurveFactory, GeometryQuery, LineString3d, StrokeOptions } from "../../curves";
 
 describe("PipePath", () => {
   it("TorusPipeAlongArc", () => {

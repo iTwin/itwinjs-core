@@ -6,12 +6,9 @@
 import { expect } from "chai";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import {
+  CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, StrokeOptions,
+} from "../../curves";
 import { Geometry, PolygonLocation } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d } from "../../geometry3d/Point3dVector3d";

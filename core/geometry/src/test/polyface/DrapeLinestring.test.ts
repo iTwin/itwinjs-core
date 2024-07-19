@@ -5,9 +5,6 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -20,6 +17,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { CurvePrimitive, GeometryQuery, LineString3d } from "../../curves";
 
 /** Functions useful for modifying test data. */
 export class RFunctions {

@@ -8,8 +8,8 @@ import { Checker } from "../Checker";
 import { Sample } from "../../serialization/GeometrySamples";
 import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
+import { GeometryQuery } from "../../curves";
 
 describe("AkimaCurve3d", () => {
   it("HelloWorld", () => {

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-import { Path } from "../../curve/Path";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Arc3d } from "../../curves";
+import { GeometryQuery } from "../../curves";
+import { LineString3d } from "../../curves";
+import { Path } from "../../curves";
+import { StrokeOptions } from "../../curves";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";

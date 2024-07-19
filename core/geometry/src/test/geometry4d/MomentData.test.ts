@@ -4,16 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { Arc3d } from "../../curve/Arc3d";
-import { AnyRegion } from "../../curve/CurveTypes";
-import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { RegionOps } from "../../curve/RegionOps";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import {
+  Arc3d, AnyRegion, CurveChain, CurveCollection, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop, RegionOps, StrokeOptions,
+} from "../../curves";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";

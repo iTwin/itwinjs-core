@@ -6,15 +6,9 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveCollection } from "../../curve/CurveCollection";
-import { CurveFactory, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import {
+  Arc3d, CurveCollection, CurveFactory, MiteredSweepOutputSelect, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop, StrokeOptions,
+} from "../../curves";
 import { AxisOrder, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";

@@ -7,8 +7,7 @@
  * @module Solid
  */
 
-import { CurveCollection } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
+import { CurveCollection, GeometryQuery } from "../curves";
 import { Transform } from "../geometry3d/Transform";
 import { Box } from "./Box";
 import { Cone } from "./Cone";

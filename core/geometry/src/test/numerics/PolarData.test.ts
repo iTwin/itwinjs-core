@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
+import { Arc3d } from "../../curves";
+import { GeometryQuery } from "../../curves";
+import { LineSegment3d } from "../../curves";
+import { LineString3d } from "../../curves";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { ConstraintState, PolarData } from "../../numerics/PolarData";

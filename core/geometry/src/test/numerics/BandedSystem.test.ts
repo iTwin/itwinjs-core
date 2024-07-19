@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BSplineCurveOps } from "../../bspline/BSplineCurveOps";
-import { GeometryQuery } from "../../curve/GeometryQuery";
+import { GeometryQuery } from "../../curves";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d } from "../../geometry3d/Point3dVector3d";

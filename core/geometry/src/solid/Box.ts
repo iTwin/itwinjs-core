@@ -7,10 +7,7 @@
  * @module Solid
  */
 
-import { CurveCollection } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
+import { CurveCollection, GeometryQuery, LineString3d, Loop } from "../curves";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";

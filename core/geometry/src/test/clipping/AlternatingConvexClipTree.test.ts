@@ -6,12 +6,6 @@
 import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { AlternatingCCTreeNode } from "../../clipping/AlternatingConvexClipTree";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -27,6 +21,7 @@ import { UsageSums } from "../../numerics/UsageSums";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker, SaveAndRestoreCheckTransform } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Arc3d, CurveLocationDetailPair, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d } from "../../curves";
 
 // Globals
 let clipEvalCount = 0;

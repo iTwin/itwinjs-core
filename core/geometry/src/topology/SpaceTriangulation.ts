@@ -7,7 +7,7 @@
  * @module Topology
  */
 
-import { LineString3d } from "../curve/LineString3d";
+import { LineString3d } from "../curves";
 import { Geometry } from "../Geometry";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";

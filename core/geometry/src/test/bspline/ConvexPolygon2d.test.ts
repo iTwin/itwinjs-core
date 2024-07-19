@@ -4,9 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
@@ -17,6 +14,7 @@ import { ConvexPolygon2d } from "../../numerics/ConvexPolygon2d";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { CurveLocationDetail, GeometryQuery, LineSegment3d } from "../../curves";
 
 // Form rays from centroid to each point.
 // Compute points fractionally on the chord.

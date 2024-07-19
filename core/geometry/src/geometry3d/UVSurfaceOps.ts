@@ -5,8 +5,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { LineString3d } from "../curve/LineString3d";
-import { StrokeOptions } from "../curve/StrokeOptions";
+import { LineString3d, StrokeOptions } from "../curves";
 import { Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { EllipsoidPatch } from "./Ellipsoid";

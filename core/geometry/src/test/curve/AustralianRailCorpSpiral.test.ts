@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
-import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
-import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Quadrature } from "../../numerics/Quadrature";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { AustralianRailCorpXYEvaluator } from "../../crv/spiral/AustralianRailCorpXYEvaluator";
+import { DirectSpiral3d } from "../../curves";
+import { CzechSpiralEvaluator } from "../../crv/spiral/CzechSpiralEvaluator";
 
 describe("AustralianRailCorpSpiral", () => {
   it("HelloWorld", () => {

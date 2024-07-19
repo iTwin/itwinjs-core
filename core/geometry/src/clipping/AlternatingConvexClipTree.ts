@@ -8,12 +8,7 @@
  */
 
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { Arc3d } from "../curve/Arc3d";
-import { CurveCollection } from "../curve/CurveCollection";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
+import { Arc3d, CurveCollection, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, LineSegment3d, LineString3d } from "../curves";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";

@@ -7,23 +7,10 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { Arc3d } from "../../curve/Arc3d";
-import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
-import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { ChainCollectorContext } from "../../curve/internalContexts/ChainCollectorContext";
-import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { JointOptions, OffsetOptions } from "../../curve/OffsetOptions";
-import { Path } from "../../curve/Path";
-import { RegionOps } from "../../curve/RegionOps";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import {
+  Arc3d, BagOfCurves, CurveChain, CurveCollection, CurveFactory, CurveLocationDetail, CurvePrimitive, RecursiveCurveProcessor, AnyCurve, AnyRegion, GeometryQuery,
+  LineSegment3d, LineString3d, Loop, JointOptions, OffsetOptions, Path, RegionOps, StrokeOptions,
+} from "../../curves";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -47,6 +34,8 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
+import { PolygonWireOffsetContext } from "../../crv/internalContexts/PolygonOffsetContext";
+import { ChainCollectorContext } from "../../crv/internalContexts/ChainCollectorContext";
 
 const diegoPathA = [
   {

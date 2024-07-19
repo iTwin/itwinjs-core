@@ -3,16 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Arc3d } from "../../curve/Arc3d";
+import { Arc3d, LineSegment3d, Path, Loop, CurvePrimitive } from "../../curves";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Path } from "../../curve/Path";
-import { Loop } from "../../curve/Loop";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 /**
  * Assorted static methods for constructing fragmentary and complete curves for offsets from linestrings.

@@ -3,17 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Arc3d } from "../../curve/Arc3d";
-import { BagOfCurves } from "../../curve/CurveCollection";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Path } from "../../curve/Path";
-import { UnionRegion } from "../../curve/UnionRegion";
+import {
+  Arc3d, BagOfCurves, CurveCurve, CurveLocationDetailPair, GeometryQuery, LineSegment3d, LineString3d, Loop, ParityRegion, Path, UnionRegion,
+} from "../../curves";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";

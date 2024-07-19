@@ -5,17 +5,9 @@
 
 import { expect } from "chai";
 import { ClipPlane } from "../../clipping/ClipPlane";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { CurveOps } from "../../curve/CurveOps";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { AnyCurve } from "../../curve/CurveTypes";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import {
+  Arc3d, CurveLocationDetail, CurveOps, CurvePrimitive, AnyCurve, GeometryQuery, LineSegment3d, LineString3d, Loop, Path, StrokeOptions,
+} from "../../curves";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";

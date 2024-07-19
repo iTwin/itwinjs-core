@@ -16,23 +16,10 @@ import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { Arc3d } from "../curve/Arc3d";
-import { CoordinateXYZ } from "../curve/CoordinateXYZ";
-import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
-import { BagOfCurves } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Path } from "../curve/Path";
-import { PointString3d } from "../curve/PointString3d";
-import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
-import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { UnionRegion } from "../curve/UnionRegion";
+import {
+  Arc3d, CoordinateXYZ, CurveChainWithDistanceIndex, BagOfCurves, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop, ParityRegion,
+  Path, PointString3d, DirectSpiral3d, IntegratedSpiral3d, TransitionSpiral3d, StrokeOptions, UnionRegion,
+} from "../curves";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";

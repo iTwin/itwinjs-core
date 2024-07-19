@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { LineString3d } from "../../curve/LineString3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import { CurvePrimitive, LineString3d, StrokeOptions } from "../../curves";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";

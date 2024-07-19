@@ -6,14 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AnyRegion } from "../curve/CurveTypes";
-import { CurveChain } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { ParityRegion } from "../curve/ParityRegion";
-import { RegionOps } from "../curve/RegionOps";
-import { UnionRegion } from "../curve/UnionRegion";
+import { AnyRegion, CurveChain, CurvePrimitive, LineString3d, Loop, ParityRegion, RegionOps, UnionRegion } from "../curves";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Point3d } from "./Point3dVector3d";
 import { PolygonOps } from "./PolygonOps";

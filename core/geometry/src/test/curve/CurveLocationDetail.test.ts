@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { LineSegment3d } from "../../curve/LineSegment3d";
+import { CurveLocationDetail, CurveLocationDetailPair, LineSegment3d } from "../../curves";
 import { Geometry } from "../../Geometry";
 import { Checker } from "../Checker";
 import { Point3d } from "../../geometry3d/Point3dVector3d";

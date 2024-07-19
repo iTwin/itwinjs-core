@@ -4,12 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
-import { CurveFactory } from "../../curve/CurveFactory";
-import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
+import {
+  CurveFactory, CurveCurveApproachType, GeometryQuery, LineSegment3d, LineString3d,
+} from "../../curves";
 import { AxisOrder, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { BarycentricTriangle, TriangleLocationDetail } from "../../geometry3d/BarycentricTriangle";

@@ -12,12 +12,6 @@ import { assert } from "@itwin/core-bentley";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { AnyRegion } from "../curve/CurveTypes";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { UnionRegion } from "../curve/UnionRegion";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
@@ -32,6 +26,7 @@ import { RangeSearch } from "./multiclip/RangeSearch";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { PolyfaceQuery } from "./PolyfaceQuery";
+import { AnyRegion, LineString3d, Loop, RegionBinaryOpType, RegionOps, StrokeOptions, UnionRegion } from "../curves";
 
 /**
  * carrier for a point array with an index into UnionOfConvexClipPlaneSets

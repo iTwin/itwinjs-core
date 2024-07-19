@@ -7,11 +7,7 @@
  * @module Solid
  */
 
-import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { AnyCurve } from "../curve/CurveTypes";
-import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { GeometryQuery } from "../curve/GeometryQuery";
+import { ConstructCurveBetweenCurves, AnyCurve, CurveChain, CurveCollection, CurvePrimitive, GeometryQuery } from "../curves";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Range3d } from "../geometry3d/Range";

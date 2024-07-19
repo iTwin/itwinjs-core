@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { CurveLocationDetail } from "../curves";
 import { UVSurface } from "../geometry3d/GeometryHandler";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";

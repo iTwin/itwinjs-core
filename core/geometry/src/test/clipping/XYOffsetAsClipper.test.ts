@@ -6,17 +6,6 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { CurveOps } from "../../curve/CurveOps";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { JointOptions } from "../../curve/OffsetOptions";
-import { Path } from "../../curve/Path";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -33,6 +22,7 @@ import { SweepContour } from "../../solid/SweepContour";
 import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Arc3d, CurveChain, CurveCollection, CurveFactory, CurveOps, GeometryQuery, JointOptions, LineSegment3d, LineString3d, Loop, Path, RegionBinaryOpType, RegionOps } from "../../curves";
 
 function captureClippedPolygon(allGeometry: GeometryQuery[], points: Point3d[], clipper: UnionOfConvexClipPlaneSets,
   x0: number,

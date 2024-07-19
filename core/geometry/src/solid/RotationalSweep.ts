@@ -7,10 +7,7 @@
  * @module Solid
  */
 
-import { AnyCurve } from "../curve/CurveTypes";
-import { CurveCollection } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { StrokeOptions } from "../curve/StrokeOptions";
+import { AnyCurve, CurveCollection, GeometryQuery, StrokeOptions } from "../curves";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";

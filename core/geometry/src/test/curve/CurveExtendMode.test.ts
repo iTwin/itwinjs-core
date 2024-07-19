@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CurveExtendMode, CurveExtendOptions } from "../../curve/CurveExtendMode";
+import { CurveExtendMode, CurveExtendOptions } from "../../curves";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Checker } from "../Checker";
 

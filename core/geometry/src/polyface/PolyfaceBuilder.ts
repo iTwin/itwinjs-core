@@ -7,21 +7,10 @@
  * @module Polyface
  */
 
-import { Arc3d } from "../curve/Arc3d";
-import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
-import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurveFactory } from "../curve/CurveFactory";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { ParityRegion } from "../curve/ParityRegion";
-import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
-import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { UnionRegion } from "../curve/UnionRegion";
 import { AxisOrder, Geometry } from "../Geometry";
+import { CylindricalRangeQuery } from "../crv/Query/CylindricalRange";
+import { StrokeCountSection } from "../crv/Query/StrokeCountChain";
+import { AnyCurve, AnyRegion, Arc3d, ConstructCurveBetweenCurves, CurveChain, CurveCollection, CurveFactory, CurvePrimitive, GeometryQuery, LineString3d, Loop, ParityRegion, StrokeOptions, UnionRegion } from "../curves";
 import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";

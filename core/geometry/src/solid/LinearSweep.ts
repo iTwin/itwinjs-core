@@ -7,12 +7,7 @@
  * @module Solid
  */
 
-import { AnyCurve } from "../curve/CurveTypes";
-import { CurveCollection } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
+import { AnyCurve, CurveCollection, GeometryQuery, LineString3d, Loop, Path } from "../curves";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";

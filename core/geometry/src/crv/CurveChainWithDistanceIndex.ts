@@ -7,8 +7,7 @@
  * @module Curve
  */
 import { assert } from "@itwin/core-bentley";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
+import { CurvePrimitive, StrokeCountMap } from "../curves";
 import { Geometry } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";

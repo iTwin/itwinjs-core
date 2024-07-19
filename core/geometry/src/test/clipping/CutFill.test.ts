@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
@@ -16,6 +15,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { GeometryQuery } from "../../curves";
 
 function clipMeshToRange(range: Range3d, mesh: Polyface): { inside: Polyface | undefined, outside: Polyface | undefined } {
   const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);

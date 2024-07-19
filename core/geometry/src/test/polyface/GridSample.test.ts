@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { GeometryQuery } from "../../curve/GeometryQuery";
+import { GeometryQuery } from "../../curves";
 import { Geometry } from "../../Geometry";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";

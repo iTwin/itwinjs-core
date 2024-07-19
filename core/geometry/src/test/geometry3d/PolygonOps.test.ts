@@ -4,13 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { RegionOps } from "../../curve/RegionOps";
-import { UnionRegion } from "../../curve/UnionRegion";
+import {
+  GeometryQuery, LineSegment3d, LineString3d, Loop, ParityRegion, RegionOps, UnionRegion
+} from "../../curves";
 import { Geometry, PolygonLocation } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";

@@ -7,18 +7,6 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Arc3d } from "../curve/Arc3d";
-import { BagOfCurves } from "../curve/CurveCollection";
-import { CurveFactory } from "../curve/CurveFactory";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
-import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
-import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
-import { UnionRegion } from "../curve/UnionRegion";
 import { Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -38,6 +26,7 @@ import { ClipVector } from "./ClipVector";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOffsetClipperContext";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, AnyCurve, AnyRegion, Arc3d, BagOfCurves, CurveFactory, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop, Path, RegionBinaryOpType, RegionOps, UnionRegion } from "../curves";
 
 /**
  * Enumerated type for describing where geometry lies with respect to clipping planes.

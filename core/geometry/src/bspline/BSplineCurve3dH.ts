@@ -6,10 +6,7 @@
  * @module Serialization
  */
 
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { LineString3d } from "../curve/LineString3d";
-import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { StrokeOptions } from "../curve/StrokeOptions";
+import { CurvePrimitive, LineString3d, StrokeCountMap, StrokeOptions } from "../curves";
 import { Geometry } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";

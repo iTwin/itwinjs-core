@@ -8,7 +8,7 @@
  */
 
 import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { CurveLocationDetail } from "../curves";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
 import { UVSurface } from "./GeometryHandler";

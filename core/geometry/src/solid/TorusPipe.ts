@@ -7,11 +7,7 @@
  * @module Solid
  */
 
-import { Arc3d } from "../curve/Arc3d";
-import { CurveCollection } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
+import { Arc3d, CurveCollection, GeometryQuery, Loop, Path } from "../curves";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";

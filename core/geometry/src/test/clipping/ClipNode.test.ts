@@ -10,12 +10,6 @@ import { BooleanClipNode } from "../../clipping/BooleanClipNode";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -23,9 +17,9 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
+import { Arc3d, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop, RegionBinaryOpType, RegionOps } from "../../curves";
 
 /**
  *

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineSurface3dH, UVSelect } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
-import { GeometryQuery } from "../../curve/GeometryQuery";
+import { GeometryQuery } from "../../curves";
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray, Point3dArray, Point4dArray } from "../../geometry3d/PointHelpers";
