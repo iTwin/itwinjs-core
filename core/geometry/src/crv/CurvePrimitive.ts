@@ -18,21 +18,16 @@ import { ClosestPointStrokeHandler } from "./internalContexts/ClosestPointStroke
 import { CurveLengthContext } from "./internalContexts/CurveLengthContext";
 import { GeometryQuery, CurveIntervalRole, CurveLocationDetail, CurveSearchStatus, LineString3d } from "../curves";
 import type { AkimaCurve3d } from "../bspline/AkimaCurve3d";
-import type { Arc3d } from "./Arc3d";
 import type { BezierCurve3d } from "../bspline/BezierCurve3d";
 import type { BSplineCurve3d } from "../bspline/BSplineCurve";
 import type { Clipper } from "../clipping/ClipUtils";
-import type { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
-import type { DirectSpiral3d } from "./spiral/DirectSpiral3d";
-import type { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
+import type {
+  Arc3d, CurveChainWithDistanceIndex, DirectSpiral3d, IntegratedSpiral3d, LineSegment3d, OffsetOptions, StrokeOptions, VariantCurveExtendParameter,
+} from "../curves";
 import type { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import type { IStrokeHandler } from "../geometry3d/GeometryHandler";
-import type { LineSegment3d } from "./LineSegment3d";
-import type { OffsetOptions } from "./OffsetOptions";
 import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import type { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import type { StrokeOptions } from "./StrokeOptions";
-import type { VariantCurveExtendParameter } from "./CurveExtendMode";
 
 /**
  * Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used
