@@ -238,6 +238,7 @@ export class MarkupApp {
    * @note see [MarkupApp.props.result] for options.
    */
   public static async stop(): Promise<MarkupData> {
+    await IModelApp.toolAdmin.startDefaultTool(); // Make sure current markup tool exits first...
     const data = await this.readMarkup();
     if (!this.markup)
       return data;

@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { AccessToken, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
+import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, LockState, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { PhysicalObject } from "../../domains/GenericElements";
@@ -19,6 +20,10 @@ import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
 import { _releaseAllLocks } from "../../internal/Symbols";
+
+const expect = chai.expect;
+const assert = chai.assert;
+chai.use(chaiAsPromised);
 
 describe("Server-based locks", () => {
   const createVersion0 = async () => {
@@ -215,7 +220,112 @@ describe("Server-based locks", () => {
     const child2El = bc2.elements.getElement<PhysicalElement>(child1);
 
     assert.equal(child2El.userLabel, childElJson.userLabel);
+    await bc1.locks.releaseAllLocks();
+    await bc2.locks.releaseAllLocks();
     bc1.close();
     bc2.close();
+  });
+
+  describe("releaseAllLocks", () => {
+    let bc: BriefcaseDb;
+    let locks: ServerBasedLocks;
+    let elemId: string;
+
+    beforeEach(async () => {
+      bc = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      expect(bc.locks.isServerBased).to.be.true;
+      locks = bc.locks as ServerBasedLocks;
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      elemId = IModelTestUtils.queryByUserLabel(bc, "ChildObject1B");
+      expect(elemId).not.to.equal("0");
+    });
+
+    afterEach(() => bc.close());
+
+    function expectLocked(): void {
+      expect(locks.getLockCount(LockState.Exclusive)).least(1);
+      expect(locks.getLockCount(LockState.Shared)).to.equal(0);
+    }
+
+    function expectUnlocked(): void {
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(0);
+      expect(locks.getLockCount(LockState.Shared)).to.equal(0);
+    }
+
+    function write(): void {
+      const elem = bc.elements.getElement(elemId);
+      elem.jsonProperties.testProp = Guid.createValue();
+      elem.update();
+    }
+
+    async function push(retainLocks?: true): Promise<void> {
+      return bc.pushChanges({ retainLocks, accessToken: "token", description: "changes" });
+    }
+
+    it("releases all locks", async () => {
+      expectUnlocked();
+      await bc.acquireSchemaLock();
+      expectLocked();
+      await locks.releaseAllLocks();
+      expectUnlocked();
+    });
+
+    it("is called when pushChanges is called with no local changes", async () => {
+      await bc.acquireSchemaLock();
+      expectLocked();
+      await push();
+      expectUnlocked();
+    });
+
+    it("is called when pushing changes", async () => {
+      await bc.acquireSchemaLock();
+      expectLocked();
+      write();
+      bc.saveChanges();
+      await push();
+      expectUnlocked();
+    });
+
+    it("is not called when pushChanges is called with no local changes if retainLocks is specified", async () => {
+      await bc.acquireSchemaLock();
+      expectLocked();
+      await push(true);
+      expectLocked();
+      await locks.releaseAllLocks();
+      expectUnlocked();
+    });
+
+    it("is not called when pushing changes if retainLocks is specified", async () => {
+      await bc.acquireSchemaLock();
+      expectLocked();
+      write();
+      bc.saveChanges();
+      await push(true);
+      expectLocked();
+      await locks.releaseAllLocks();
+      expectUnlocked();
+    });
+
+    it("throws if briefcase has unpushed changes", async () => {
+      expectUnlocked();
+      await bc.acquireSchemaLock();
+      expectLocked();
+      write();
+      bc.saveChanges();
+      await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
+      await push();
+      expectUnlocked();
+    });
+
+    it("throws if briefcase has unsaved changes", async () => {
+      expectUnlocked();
+      await bc.acquireSchemaLock();
+      write();
+      await expect(locks.releaseAllLocks()).to.eventually.be.rejectedWith("local changes");
+      expectLocked();
+      bc.abandonChanges();
+      await locks.releaseAllLocks();
+      expectUnlocked();
+    });
   });
 });
