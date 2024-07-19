@@ -9,8 +9,8 @@ import { attachGeoscienceTileset } from "@itwin/frontend-tiles";
 /** This tool adds a seequent reality model to the viewport.
  * @alpha
  */
-export class ViewportAddSeequentRealityModel extends Tool {
-  public static override toolId = "ViewportAddSeequentRealityModel";
+export class AddSeequentRealityModel extends Tool {
+  public static override toolId = "AddSeequentRealityModel";
   public static override get minArgs() { return 4; }
   public static override get maxArgs() { return 4; }
 
