@@ -11,7 +11,6 @@ import { IModelApp } from "../../IModelApp";
 import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
 import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
-import exp from "constants";
 import { BatchedTileIdMap } from "../../core-frontend";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
