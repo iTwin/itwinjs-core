@@ -6,13 +6,13 @@
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
 import { loggerCategory } from "../../LoggerCategory";
-import { GetGeoscienceTilesetArgs, getGeoscienceTilesetUrl } from "../url-providers/GeoscienceUrlProvider";
+import { BaseGeoscienceArgs, getGeoscienceTilesetUrl } from "../url-providers/GeoscienceUrlProvider";
 
 /**
  * Represents the arguments required to initialize geoscience tileset.
  * @alpha
  */
-export type AttachGeoscienceTilesetArgs = GetGeoscienceTilesetArgs;
+export type AttachGeoscienceTilesetArgs = BaseGeoscienceArgs;
 
 /** Initialize the geoscience tileset by attaching it as a Reality Model.
  * @alpha

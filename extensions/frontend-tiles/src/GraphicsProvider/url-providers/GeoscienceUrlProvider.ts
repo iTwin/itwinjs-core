@@ -12,6 +12,11 @@ import { loggerCategory } from "../../LoggerCategory";
  */
 export interface BaseGeoscienceArgs {
   /**
+   * The endpoint URL for the geoscience service.
+   */
+  endpointUrl: string;
+
+  /**
    * The access token for authentication.
    */
   accessToken: string;
@@ -48,8 +53,6 @@ export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
   enableCDN?: boolean;
 }
 
-const defaultEndpoint = "https://351mt.api.integration.seequent.com";
-
 /**
  * Obtains the URL for a geoscience tileset.
  * @alpha
@@ -60,7 +63,7 @@ export async function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): P
     Authorization: args.accessToken,
   };
 
-  const baseUrl = args.urlPrefix ?? defaultEndpoint;
+  const baseUrl = args.endpointUrl;
   const url = `${baseUrl}/visualization/orgs/${args.organizationId}/workspaces/${args.workspaceId}/geoscience-object/${args.geoscienceObjectId}`;
   const response = await fetch(url, { headers });
 

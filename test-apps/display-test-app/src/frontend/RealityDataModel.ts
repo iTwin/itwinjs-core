@@ -17,10 +17,10 @@ export class AddSeequentRealityModel extends Tool {
   /** This method runs the tool, adding a reality model to the viewport
    * @param url the URL which points to the reality model tileset
    */
-  public override async run(endpoint: string, organizationId: string, workspaceId: string, geoscienceObjectId: string, accessToken: string): Promise<boolean> {
+  public override async run(endpointUrl: string, organizationId: string, workspaceId: string, geoscienceObjectId: string, accessToken: string): Promise<boolean> {
 
     const args = {
-      urlPrefix: endpoint,
+      endpointUrl,
       accessToken,
       organizationId,
       workspaceId,
