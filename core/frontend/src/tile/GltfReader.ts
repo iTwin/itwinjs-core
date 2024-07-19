@@ -438,7 +438,8 @@ export abstract class GltfReader {
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
   private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
   private _containsPointCloud = false;
-  protected _instanceProperties: any[] = [];
+  protected _instanceFeatures: Feature[] = [];
+  protected _instanceElementIdToFeatureId: Map<string, number> = new Map<string, number>();
   protected _structuralMetadata?: StructuralMetadata;
   protected readonly _idMap?: BatchedTileIdMap;
 
@@ -509,9 +510,10 @@ export abstract class GltfReader {
     else
       this._computedContentRange = undefined;
 
+    // Save feature table model id in case we need to recreate it after reading instances
     const featureTableModelId = featureTable?.modelId;
     // Flush feature table if instance features are used
-    if(this._structuralMetadata && this._glTF.extensionsUsed?.includes("EXT_instance_features")){
+    if(this._structuralMetadata && this._glTF.extensionsUsed?.includes("EXT_instance_features") && this._idMap){
       featureTable = undefined;
     }
 
@@ -529,11 +531,12 @@ export abstract class GltfReader {
         return { readStatus, isLeaf };
     }
 
-    // Create a feature table based on instance properties
-    if(this._instanceProperties.length > 0 && this._idMap){
-      featureTable = new FeatureTable(this._instanceProperties.length, featureTableModelId);
-      for(let instanceId = 0; instanceId < this._instanceProperties.length; instanceId++){
-        featureTable.insertWithIndex(new Feature(this._idMap.getBatchId(this._instanceProperties[instanceId])), instanceId);
+    // Creates a feature table based on instance features
+    // The table must be created after reading instances, since the maximum number of features is not known until all instances have been read.
+    if(this._instanceFeatures.length > 0 && this._idMap){
+      featureTable = new FeatureTable(this._instanceFeatures.length, featureTableModelId);
+      for(let instanceFeatureId = 0; instanceFeatureId < this._instanceFeatures.length; instanceFeatureId++){
+        featureTable.insertWithIndex(this._instanceFeatures[instanceFeatureId], instanceFeatureId);
       }
     }
 
@@ -693,12 +696,13 @@ export abstract class GltfReader {
       transforms[idx + 11] = tf.origin.z;
     }
 
-    const instanceFeaturesExt = node.extensions?.EXT_instance_features;
-    const featureIds = ((featureTable && featureTable.isUniform) || (instanceFeaturesExt && this._structuralMetadata)) ? new Uint8Array(3 * count) : undefined;
+    let featureIds = ((featureTable && featureTable.isUniform)) ? new Uint8Array(3 * count) : undefined;
 
     // Resolve instance features if the EXT_instance_features if present
-    if(this._structuralMetadata && instanceFeaturesExt && featureIds){
-
+    const instanceFeaturesExt = node.extensions?.EXT_instance_features;
+    if(this._structuralMetadata && instanceFeaturesExt && this._idMap){
+      if(!featureIds)
+        featureIds = new Uint8Array(3 * count);
       // Resolve feature buffers before creating instance table
       const featureBuffers = new Map<number, GltfDataBuffer>();
       for(const featureIdDesc of instanceFeaturesExt.featureIds){
@@ -747,11 +751,19 @@ export abstract class GltfReader {
           }
         }
 
-        const globalInstanceId = this._instanceProperties.length;
-        featureIds[localInstanceId * 3 + 0] = globalInstanceId & 0xFF;
-        featureIds[localInstanceId * 3 + 1] = (globalInstanceId >> 8) & 0xFF;
-        featureIds[localInstanceId * 3 + 2] = (globalInstanceId >> 16) & 0xFF;
-        this._instanceProperties.push(instanceProps);
+        const instanceElementId = this._idMap.getBatchId(instanceProps);
+
+        // If the element id is already assigned to a previous instance,
+        // reuse the previous feature id to avoid collision in the feature table
+        if(!this._instanceElementIdToFeatureId.has(instanceElementId)){
+          this._instanceElementIdToFeatureId.set(instanceElementId, this._instanceFeatures.length);
+          this._instanceFeatures.push(new Feature(instanceElementId));
+        }
+
+        const instanceFeatureId = this._instanceElementIdToFeatureId.get(instanceElementId)!;
+        featureIds[localInstanceId * 3 + 0] = instanceFeatureId & 0xFF;
+        featureIds[localInstanceId * 3 + 1] = (instanceFeatureId >> 8) & 0xFF;
+        featureIds[localInstanceId * 3 + 2] = (instanceFeatureId >> 16) & 0xFF;
       }
     }
 
