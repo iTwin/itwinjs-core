@@ -1020,7 +1020,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("SubdivisionSampler", () => {
+  it("SubdivisionSampler", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     const center = Point3d.createZero();
@@ -1072,7 +1072,7 @@ describe("ApproximateArc3d", () => {
       return { approx, error, nSamplesQ1, isValidArc: context.isValidEllipticalArc };
     };
 
-    // test subdivision against other methods on ellipses of various eccentricities
+/*    // test subdivision against other methods on ellipses of various eccentricities
     const eccentricities = [
       0.000001, 0.00001, 0.0001,  // these are essentially circular thus invalid for approximating (not drawn below)
       0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99, 0.999,
@@ -1157,13 +1157,22 @@ describe("ApproximateArc3d", () => {
     optionsA.forcePath = true;
     analyzeQ1Approximation(fullEllipse, optionsA);
     analyzeQ1Approximation(fullCircle, optionsA);
+*/
 
-    // previously, this arc's approximation exceeded the desired max error
-    const arc0 = Arc3d.createXYEllipse(Point3d.createZero(), 10, 8, AngleSweep.createStartEndDegrees(90, 0));
-    const options0 = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.AdaptiveSubdivision, undefined, 0.001836772806889095);
-    const result0 = analyzeQ1Approximation(arc0, options0, true);
-    ck.testDefined(result0, "anomalous arc approximation is defined");
-    ck.testLE(result0.error, options0.maxError, "anomalous arc approx error as per options");
+    // previously, these arcs' approximations exceeded the desired max error
+    interface AnomalousArc { arc: Arc3d, maxError: number };
+    const anomalousArcs: AnomalousArc[] = [];
+    anomalousArcs.push({ arc: Arc3d.createXYEllipse(Point3d.createZero(), 10, 8, AngleSweep.createStartEndDegrees(90, 0)), maxError: 0.001836772806889095 });
+//    anomalousArcs.push({ arc: Arc3d.create(Point3d.createZero(), Vector3d.create(2, 4, -1), Vector3d.create(3, 2, -3)), maxError: 0.004891996419172132 });
+//    anomalousArcs.push({ arc: Arc3d.create(Point3d.createZero(), Vector3d.create(2, 4, -1), Vector3d.create(3, 2, -3), AngleSweep.createStartEndDegrees(-15, 345)), maxError: 0.0005076837030701749 });
+    const optionsB = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.AdaptiveSubdivision);
+    for (const anomalousArc of anomalousArcs) {
+      optionsB.maxError = anomalousArc.maxError;
+      const resultB = analyzeQ1Approximation(anomalousArc.arc, optionsB, true);
+      ck.testDefined(resultB, "anomalous arc approximation is defined");
+      ck.testLE(resultB.error, optionsB.maxError, "anomalous arc approx error as per options");
+      x += delta;
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "SubdivisionSampler");
     expect(ck.getNumErrors()).equals(0);
