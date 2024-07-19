@@ -232,7 +232,6 @@ beta;UnmaskMapTool
 beta;UnmaskRealityModelTool 
 beta;UnsharpenEffect 
 beta;ViewportAddRealityModel 
-alpha;ViewportAddSeequentRealityModel 
 beta;ViewportTileSizeModifierTool 
 beta;class ViewportToggleTool 
 beta;VignetteConfig 
