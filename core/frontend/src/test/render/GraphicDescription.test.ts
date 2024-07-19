@@ -14,7 +14,7 @@ import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
-import { TransientIdSequence } from "@itwin/core-bentley";
+import { Id64, TransientIdSequence } from "@itwin/core-bentley";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   expect(range.low.x).to.equal(lx);
@@ -390,6 +390,11 @@ describe("GraphicDescriptionBuilder", () => {
       expect(worker.isTerminated).to.be.true;
     });
 
+    function expectTransientId(id: string, expectedLocalId: number): void {
+      expect(Id64.isTransient(id)).to.be.true;
+      expect(Id64.getLocalId(id)).to.equal(expectedLocalId);
+    }
+
     it("creates a graphic description", async () => {
       const worker = createWorker();
 
@@ -400,6 +405,32 @@ describe("GraphicDescriptionBuilder", () => {
       expect(result.context).not.to.be.undefined;
 
       worker.terminate();
+
+      const d = result.description as GraphicDescriptionImpl;
+      
+      expect(d.translation!.x).to.equal(5);
+      expect(d.translation!.y).to.equal(10);
+      expect(d.translation!.z).to.equal(-1);
+
+      expect(d.batch).not.to.be.undefined;
+      expect(d.batch!.featureTable.numFeatures).to.equal(3);
+      expectTransientId(d.batch!.modelId, 2);
+      expectRange(Range3d.fromJSON(d.batch!.range), 0, 0, -4, 10, 20, 2);
+      
+      expect(d.primitives.length).to.equal(3);
+      expect(d.primitives[0].type).to.equal("mesh");
+      expect(d.primitives[1].type).to.equal("polyline");
+      expect(d.primitives[2].type).to.equal("point");
+      for (const primitive of d.primitives) {
+        expect(primitive.modifier!.type).to.equal("viewIndependentOrigin");
+        const origin = (primitive.modifier as ImdlModel.ViewIndependentOrigin).origin;
+        expect(origin.x).to.equal(0);
+        expect(origin.y).to.equal(1);
+        expect(origin.z).to.equal(2);
+      }
+
+      //const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(result.context, iModel);
+      
     });
   });
 });
