@@ -2030,16 +2030,4 @@ describe("PolyfaceVisitor", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceVisitor", "SubsetConstructor");
     expect(ck.getNumErrors()).equals(0);
   });
-
-  it.only("TriangulatorHang", () => {
-    const ck = new Checker(true, true);
-    const allGeometry: GeometryQuery[] = [];
-    const pts = IModelJson.Reader.parsePointArray(JSON.parse(fs.readFileSync("d:/repos/itwinjs-core/core/geometry/src/test/output/Arc3d/tilePoints-min.txt", "utf8")));
-    const mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
-    GeometryCoreTestIO.consoleLog(prettyPrint(mesh));  // won't get here
-
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "TriangulatorHang");
-    expect(ck.getNumErrors()).equals(0);
-  });
 });

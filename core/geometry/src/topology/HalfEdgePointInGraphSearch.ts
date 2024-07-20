@@ -37,11 +37,12 @@ export class PointSearchContext {
     return HalfEdgePositionDetail.create();
   }
   /**
-   * Aim to reposition `edgeHit` based on a ray and a target distance. It uses geometric classifications to determine
-   * the new position and updates `edgeHit` accordingly.
-   * @param edgeHit the detail to reposition.
-   * @param ray the ray to use for repositioning.
-   * @param targetDistance the target distance to aim for.
+   * Reposition `edgeHit` to an adjacent face or vertex, or another position on the edge, that is closer to the
+   * target point.
+   * @param edgeHit start point on edge, updated and returned.
+   * @param ray the ray to the target point.
+   * @param targetDistance distance along the ray to the target point.
+   * @return detail closer to the target point.
    */
   public reAimFromEdge(
     edgeHit: HalfEdgePositionDetail, ray: Ray3d, targetDistance: number,
@@ -116,10 +117,7 @@ export class PointSearchContext {
     const vertexNode = searchBase.node;
     let result;
     let outboundEdge = vertexNode!;
-    let tz = 0;
     do {
-      console.log("tz: ", tz);
-      tz++;
       // DPoint3d xyzBase;
       // vu_getDPoint3d(& xyzBase, outboundEdge);
       const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
@@ -170,13 +168,13 @@ export class PointSearchContext {
     return this.panic();
   }
   /**
-   * Visit all edges around the face, updating `lastBefore` and `firstAfter` to describe the progress towards the target
-   * distance on the ray.
-   * @param faceNode the node on the face.
-   * @param ray the ray to use for repositioning.
-   * @param targetDistance distance to target point.
-   * @param lastBefore the detail to reset as the first hit on the negative side of the ray (CALLER CREATED).
-   * @param firstAfter the detail to reset as the first hit on the positive side of the ray (CALLER CREATED).
+   * Visit all edges around the face, updating `lastBefore` and `firstAfter` to the intersection of the ray with an
+   * edge directly before and/or after the target point.
+   * @param faceNode starting node on the face.
+   * @param ray the ray to the target point.
+   * @param targetDistance distance along the ray to the target point.
+   * @param lastBefore the detail to reset as the last hit on the ray before the target point (CALLER CREATED).
+   * @param firstAfter the detail to reset as the first hit on the ray after the target point (CALLER CREATED).
    * @returns the classification of the ray.
    */
   public reAimAroundFace(
@@ -214,28 +212,28 @@ export class PointSearchContext {
       } else if (v0 * v1 < 0.0) {
         // edge crossing
         const edgeFraction = -v0 / (v1 - v0);
-        const uEdge = Geometry.interpolate(u0, edgeFraction, u1);
+        const rayFraction = Geometry.interpolate(u0, edgeFraction, u1);
         const edgeHit = HalfEdgePositionDetail.createEdgeAtFraction(data0.node, edgeFraction);
-        edgeHit.setDTag(uEdge);
-        if (Math.abs(uEdge - targetDistance) <= this._tol) {
+        edgeHit.setDTag(rayFraction);
+        if (Math.abs(rayFraction - targetDistance) <= this._tol) {
           firstAfter.setFrom(edgeHit);
           lastBefore.setFrom(edgeHit);
           return RayClassification.RC_TargetOnEdge;
         }
-        if (uEdge > targetDistance && uEdge < firstAfter.getDTag()!) {
+        if (rayFraction > targetDistance && rayFraction < firstAfter.getDTag()!) {
           firstAfter.setFrom(edgeHit);
           firstAfter.setITag(v0 > 0.0 ? -1 : 1);
         }
-        if (uEdge < targetDistance && uEdge > lastBefore.getDTag()!) {
+        if (rayFraction < targetDistance && rayFraction > lastBefore.getDTag()!) {
           lastBefore.setFrom(edgeHit);
-          lastBefore.setDTag(uEdge);
+          lastBefore.setDTag(rayFraction);
         }
       }
       data0.setFrom(data1);
       node0 = node0.faceSuccessor;
     } while (node0 !== faceNode);
     // returned to start node
-    const afterTag = firstAfter.getITag();
+    const afterTag = firstAfter.getITag(); // TODO: what is ITag used for? getITag only called here and in moveToPoint...
     firstAfter.setITag(0);
     lastBefore.setITag(0);
     if (lastBefore.isUnclassified) {
@@ -263,9 +261,11 @@ export class PointSearchContext {
     ray.origin.setFromPoint3d(start);
     Vector3d.createStartEnd(ray.origin, target, ray.direction);
     ray.direction.z = 0.0;
-    const distanceToTarget = ray.direction.magnitudeXY();
-    ray.a = ray.direction.magnitude();
-    ray.direction.scaleInPlace(1 / ray.a);
-    return distanceToTarget >= this._tol;
+    const distanceToTargetXY = ray.direction.magnitudeXY();
+    if (distanceToTargetXY < this._tol)
+      return false; // TODO: set ray, start to vertex?
+    ray.a = distanceToTargetXY;
+    ray.direction.scaleInPlace(1 / distanceToTargetXY);
+    return true;
   }
 }

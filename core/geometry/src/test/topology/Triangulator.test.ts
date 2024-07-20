@@ -1141,6 +1141,24 @@ describe("Triangulation", () => {
         );
       },
     );
+  });
+
+  it.only("TriangulatorHang", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const pts = [
+      Point3d.create(29.38440446735313, -46.664765115079454, 49.58476279246775),
+      Point3d.create(78.7791513050385, -46.66476333748565, 47.07249011143456),
+      Point3d.create(78.77823641152756, -46.66476229743052, 45.60256502436375),
+      Point3d.create(51.51740469722874, -46.66476418232037, 48.26649267203187),
+      Point3d.create(51.5164898037178, -46.66476314226524, 46.79656758496107),
+      Point3d.create(55.21859962987817, 29.55516271079307, 48.370060922134726),
+      Point3d.create(50.334340847282135, -46.66476423327051, 48.33850061288565),
+    ];
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pts, 0.2);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
+    const mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
+    ck.testDefined(mesh, "computed triangulation");
     expect(ck.getNumErrors()).equals(0);
   });
 });
