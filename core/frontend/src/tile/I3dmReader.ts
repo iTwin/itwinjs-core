@@ -73,10 +73,10 @@ export class I3dmReader extends GltfReader {
 
   private constructor(private _featureBinary: Uint8Array, private _featureJson: any, private _batchTableJson: any, props: GltfReaderProps,
     iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d,
-    private _isLeaf: boolean, shouldAbort?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, deduplicateVertices=false) {
+    private _isLeaf: boolean, shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, deduplicateVertices=false) {
     super({
       props, iModel, system, shouldAbort, deduplicateVertices,
-      is2d: !is3d,
+      is2d: !is3d, idMap: _idMap,
     });
     this._modelId = modelId;
   }

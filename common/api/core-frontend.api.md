@@ -1188,6 +1188,8 @@ export enum ArcGisErrorCode {
     // (undocumented)
     InvalidToken = 498,
     // (undocumented)
+    MissingPermissions = 403,
+    // (undocumented)
     NoTokenService = 1001,
     // (undocumented)
     TokenRequired = 499,
@@ -4027,6 +4029,15 @@ export class GlobeAnimator implements Animator {
 }
 
 // @internal
+        EXT_instance_features?: {
+            featureIds: {
+                attribute?: number;
+                featureCount: number;
+                label?: string;
+                nullFeatureId?: number;
+                propertyTable: number;
+            }[];
+        };
 export class GltfBufferData {
     constructor(buffer: GltfDataBuffer, count: number);
     // (undocumented)
@@ -4095,6 +4106,8 @@ export class GltfGraphicsReader extends GltfReader {
     get sceneNodes(): GltfId[];
     // (undocumented)
     get scenes(): GltfDictionary<GltfScene>;
+    // (undocumented)
+    get structuralMetadata(): StructuralMetadata | undefined;
     // (undocumented)
     get textures(): GltfDictionary<GltfTexture>;
     // (undocumented)
@@ -4175,11 +4188,17 @@ export abstract class GltfReader {
     // (undocumented)
     protected readonly _glTF: GltfDocument;
     // (undocumented)
+    protected readonly _idMap?: BatchedTileIdMap;
+    // (undocumented)
     protected get _images(): GltfDictionary<GltfImage & {
         resolvedImage?: TextureImageSource;
     }>;
     // (undocumented)
     protected readonly _iModel: IModelConnection;
+    // (undocumented)
+    protected _instanceElementIdToFeatureId: Map<string, number>;
+    // (undocumented)
+    protected _instanceFeatures: Feature[];
     // (undocumented)
     protected readonly _is3d: boolean;
     // (undocumented)
@@ -4254,6 +4273,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected readonly _sceneNodes: GltfId[];
     // (undocumented)
+    protected _structuralMetadata?: StructuralMetadata;
+    // (undocumented)
     protected readonly _system: RenderSystem;
     // (undocumented)
     protected get _textures(): GltfDictionary<GltfTexture>;
@@ -4274,6 +4295,7 @@ export abstract class GltfReader {
 // @internal
 export interface GltfReaderArgs {
     deduplicateVertices?: boolean;
+    idMap?: BatchedTileIdMap;
     iModel: IModelConnection;
     is2d?: boolean;
     props: GltfReaderProps;
@@ -4306,6 +4328,9 @@ export interface GltfReaderResult extends TileContent {
     readStatus: TileReadStatus;
 }
 
+        classes?: Class[];
+            [classId: string]: Class | undefined;
+        };
 // @internal (undocumented)
 export interface GLTimerResult {
     children?: GLTimerResult[];
@@ -8725,6 +8750,8 @@ export interface ReadGltfGraphicsArgs {
     gltf: Uint8Array | Object;
     // @alpha (undocumented)
     hasChildren?: boolean;
+    // @internal (undocumented)
+    idMap?: BatchedTileIdMap;
     iModel: IModelConnection;
     pickableOptions?: PickableGraphicOptions;
     // @alpha (undocumented)

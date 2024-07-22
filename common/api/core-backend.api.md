@@ -3969,6 +3969,28 @@ export class LockConflict extends IModelError {
     readonly briefcaseId: BriefcaseId;
 }
 
+// @public
+export interface LockControl {
+    // @internal
+    [_close]: () => void;
+    // @internal
+    [_elementWasCreated]: (id: Id64String) => void;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    [_releaseAllLocks]: () => Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
+    checkExclusiveLock(id: Id64String, type: string, operation: string): void;
+    checkSharedLock(id: Id64String, type: string, operation: string): void;
+    holdsExclusiveLock(id: Id64String): boolean;
+    holdsSharedLock(id: Id64String): boolean;
+    readonly isServerBased: boolean;
+    releaseAllLocks(): Promise<void>;
+}
+
 // @internal (undocumented)
 export type LockMap = Map<Id64String, LockState_2>;
 
