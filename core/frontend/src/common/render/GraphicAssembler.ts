@@ -11,7 +11,7 @@ import {
   AnyCurvePrimitive, Arc3d, Box, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Feature, Frustum, Gradient, GraphicParams, LinePixels, Npc, RenderTexture } from "@itwin/core-common";
-// ###TODO import { _implementationProhibited } from "../../internal/Symbols";
+import { _accumulator, _implementationProhibited } from "../internal/Symbols";
 import { GraphicType } from "./GraphicType";
 import { PickableGraphicOptions } from "./BatchOptions";
 import { GraphicPrimitive } from "./GraphicPrimitive";
@@ -39,7 +39,7 @@ export abstract class GraphicAssembler {
   // ###TODO protected abstract [_implementationProhibited]: unknown;
 
   /** @internal */
-  public readonly accum: GeometryAccumulator; // ###TODO rename _accum, make private
+  public readonly [_accumulator]: GeometryAccumulator;
   private readonly _graphicParams = new GraphicParams();
 
   public readonly placement: Transform;
@@ -67,7 +67,7 @@ export abstract class GraphicAssembler {
     this.wantNormals = options.wantNormals;
     this.analysisStyle = options.analysisStyle;
 
-    this.accum = new GeometryAccumulator({
+    this[_accumulator] = new GeometryAccumulator({
       analysisStyleDisplacement: this.analysisStyle?.displacement,
     });
 
@@ -120,7 +120,7 @@ export abstract class GraphicAssembler {
   public activateFeature(feature: Feature): void {
     assert(undefined !== this.pickable, "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied");
     if (this.pickable) {
-      this.accum.currentFeature = feature;
+      this[_accumulator].currentFeature = feature;
     }
   }
 
@@ -140,9 +140,9 @@ export abstract class GraphicAssembler {
    */
   public addLineString(points: Point3d[]): void {
     if (2 === points.length && points[0].isAlmostEqual(points[1]))
-      this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
+      this[_accumulator].addPointString(points, this.getLinearDisplayParams(), this.placement);
     else
-      this.accum.addLineString(points, this.getLinearDisplayParams(), this.placement);
+      this[_accumulator].addLineString(points, this.getLinearDisplayParams(), this.placement);
   }
 
   /**
@@ -160,7 +160,7 @@ export abstract class GraphicAssembler {
    * @param points Array of vertices in the point string.
    */
   public addPointString(points: Point3d[]): void {
-    this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
+    this[_accumulator].addPointString(points, this.getLinearDisplayParams(), this.placement);
   }
 
   /**
@@ -179,7 +179,7 @@ export abstract class GraphicAssembler {
    */
   public addShape(points: Point3d[]): void {
     const loop = Loop.create(LineString3d.create(points));
-    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
+    this[_accumulator].addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
   }
 
   /**
@@ -213,9 +213,9 @@ export abstract class GraphicAssembler {
     }
     const displayParams = curve.isAnyRegionType ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
     if (curve instanceof Loop)
-      this.accum.addLoop(curve, displayParams, this.placement, false);
+      this[_accumulator].addLoop(curve, displayParams, this.placement, false);
     else
-      this.accum.addPath(curve, displayParams, this.placement, false);
+      this[_accumulator].addPath(curve, displayParams, this.placement, false);
   }
 
   /**
@@ -237,12 +237,12 @@ export abstract class GraphicAssembler {
 
   /** Append a 3d open path to the builder. */
   public addPath(path: Path): void {
-    this.accum.addPath(path, this.getLinearDisplayParams(), this.placement, false);
+    this[_accumulator].addPath(path, this.getLinearDisplayParams(), this.placement, false);
   }
 
   /** Append a 3d planar region to the builder. */
   public addLoop(loop: Loop): void {
-    this.accum.addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
+    this[_accumulator].addLoop(loop, this.getMeshDisplayParams(), this.placement, false);
   }
 
   /** Append a [CurvePrimitive]($core-geometry) to the builder. */
@@ -271,12 +271,12 @@ export abstract class GraphicAssembler {
    * @param _filled If the mesh describes a planar region, indicates whether its interior area should be drawn with fill in [[RenderMode.Wireframe]].
    */
   public addPolyface(meshData: Polyface, _filled = false): void {
-    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
+    this[_accumulator].addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
   }
 
   /** Append a solid primitive to the builder. */
   public addSolidPrimitive(primitive: SolidPrimitive): void {
-    this.accum.addSolidPrimitive(primitive, this.getMeshDisplayParams(), this.placement);
+    this[_accumulator].addSolidPrimitive(primitive, this.getMeshDisplayParams(), this.placement);
   }
 
   /** Append any primitive to the builder.
@@ -434,7 +434,7 @@ export abstract class GraphicAssembler {
 
   protected abstract resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined;
 
-  public add(geom: Geometry): void { this.accum.addGeometry(geom); }
+  public add(geom: Geometry): void { this[_accumulator].addGeometry(geom); }
 }
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {

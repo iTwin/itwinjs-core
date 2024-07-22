@@ -16,6 +16,7 @@ import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumu
 import { MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
+import { _accumulator } from "../../common/internal/Symbols";
 
 // Set to true to add a range box to every graphic produced by PrimitiveBuilder.
 let addDebugRangeBox = false;
@@ -35,8 +36,8 @@ export class PrimitiveBuilder extends GraphicBuilder {
   }
 
   public override finish(): RenderGraphic {
-    const graphic = this.finishGraphic(this.accum);
-    this.accum.clear();
+    const graphic = this.finishGraphic(this[_accumulator]);
+    this[_accumulator].clear();
     return graphic;
   }
 
@@ -92,7 +93,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
    * removed ViewContext
    */
   public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): MeshList | undefined {
-    const meshes = this.accum.toMeshes(options, tolerance, pickable);
+    const meshes = this[_accumulator].toMeshes(options, tolerance, pickable);
     if (0 === meshes.length)
       return undefined;
 

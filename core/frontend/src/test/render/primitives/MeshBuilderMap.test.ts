@@ -21,6 +21,7 @@ import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { GeometryList } from "../../../common/internal/render/GeometryList";
 import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive";
+import { _accumulator } from "../../../common/internal/Symbols";
 
 describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;
@@ -80,9 +81,9 @@ describe("MeshBuilderMap Tests", () => {
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom: Geometry | undefined = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
@@ -130,9 +131,9 @@ describe("MeshBuilderMap Tests", () => {
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom: Geometry | undefined = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
@@ -183,9 +184,9 @@ describe("MeshBuilderMap Tests", () => {
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom: Geometry | undefined = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
@@ -323,9 +324,9 @@ describe("MeshBuilderMap Tests", () => {
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom: Geometry | undefined = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
@@ -360,9 +361,9 @@ describe("MeshBuilderMap Tests", () => {
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom: Geometry | undefined = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;

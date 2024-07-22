@@ -23,7 +23,7 @@ import { VertexTable } from "./VertexTable";
 import { createPolylineParams } from "./PolylineParams";
 import { createMeshParams } from "./VertexTableBuilder";
 import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
-import { _implementationProhibited } from "../Symbols";
+import { _accumulator, _implementationProhibited } from "../Symbols";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
@@ -109,12 +109,12 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       primitives: [],
     };
 
-    if (this.accum.isEmpty) {
+    if (this[_accumulator].isEmpty) {
       return description;
     }
 
-    const tolerance = this._computeChordTolerance({ builder: this, computeRange: () => this.accum.geometries.computeRange() });
-    const meshes = this.accum.toMeshes(this, tolerance, this.pickable);
+    const tolerance = this._computeChordTolerance({ builder: this, computeRange: () => this[_accumulator].geometries.computeRange() });
+    const meshes = this[_accumulator].toMeshes(this, tolerance, this.pickable);
     if (meshes.length === 0) {
       return description;
     }
@@ -205,7 +205,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       meshes.range?.high.addInPlace(transformOrigin);
     }
 
-    this.accum.clear();
+    this[_accumulator].clear();
     if (transformOrigin) {
       description.translation = { x: transformOrigin.x, y: transformOrigin.y, z: transformOrigin.z };
     }

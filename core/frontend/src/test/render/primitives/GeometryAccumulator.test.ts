@@ -18,6 +18,7 @@ import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
+import { _accumulator } from "../../../common/internal/Symbols";
 
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;
@@ -232,7 +233,7 @@ describe("GeometryAccumulator tests", () => {
       type: GraphicType.Scene,
       computeChordTolerance: () => 0,
     });
-    const accum = builder.accum;
+    const accum = builder[_accumulator];
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));

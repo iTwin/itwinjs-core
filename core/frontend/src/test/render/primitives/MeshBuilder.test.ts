@@ -20,6 +20,7 @@ import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../commo
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface";
 import { Mesh } from "../../../common/internal/render/MeshPrimitives";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { _accumulator } from "../../../common/internal/Symbols";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {
@@ -74,9 +75,9 @@ describe("Mesh Builder Tests", () => {
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom: Geometry | undefined = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
