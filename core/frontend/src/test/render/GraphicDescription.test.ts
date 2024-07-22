@@ -12,7 +12,7 @@ import { MeshGraphic } from "../../render/webgl/Mesh";
 import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
-import { Batch, Branch } from "../../webgl";
+import { Batch, Branch, GraphicsArray } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
 import { Id64, Id64String, TransientIdSequence } from "@itwin/core-bentley";
 
@@ -434,7 +434,7 @@ describe("GraphicDescriptionBuilder", () => {
       }
     });
 
-    it("remaps transient Ids", async () => {
+    it("remaps transient Ids and creates a RenderGraphic", async () => {
       const transientIds = new TransientIdSequence();
       expectTransientId(transientIds.getNext(), 1);
 
@@ -468,6 +468,11 @@ describe("GraphicDescriptionBuilder", () => {
       expectFeature(0, ft, { elementId: makeTransientId(4), subCategoryId: makeTransientId(6), geometryClass: GeometryClass.Construction, modelId });
       expectFeature(1, ft, { elementId: makeTransientId(7), subCategoryId: "0x123", geometryClass: GeometryClass.Primary, modelId });
       expectFeature(2, ft, { elementId: "0x456", subCategoryId: makeTransientId(8), geometryClass: GeometryClass.Primary, modelId });
+
+      const list = batch.graphic as GraphicsArray;
+      expect(list instanceof GraphicsArray).to.be.true;
+      expect(list.graphics.length).to.equal(3);
+      expect(list.graphics[0] instanceof MeshGraphic).to.be.true;
     });
   });
 });
