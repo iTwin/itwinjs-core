@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, LinePixels, ModelFeature, RenderFeatureTable } from "@itwin/core-common";
-import { WorkerProxy, createWorkerProxy } from "../../common/WorkerProxy";
+import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
@@ -14,7 +14,7 @@ import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
-import { Id64, TransientIdSequence } from "@itwin/core-bentley";
+import { Id64, Id64String, TransientIdSequence } from "@itwin/core-bentley";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   expect(range.low.x).to.equal(lx);
@@ -23,6 +23,12 @@ function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: numbe
   expect(range.high.x).to.equal(hx);
   expect(range.high.y).to.equal(hy);
   expect(range.high.z).to.equal(hz);
+}
+
+function expectFeature(index: number, featureTable: RenderFeatureTable, expected: ModelFeature): void {
+  const actual = ModelFeature.create();
+  featureTable.getFeature(index, actual);
+  expect(actual).to.deep.equal(expected);
 }
 
 describe("GraphicDescriptionBuilder", () => {
@@ -228,12 +234,6 @@ describe("GraphicDescriptionBuilder", () => {
     expect(geom.viewIndependentOrigin!.isExactEqual(viewIndependentOrigin)).to.be.true;
   });
 
-  function expectFeature(index: number, featureTable: RenderFeatureTable, expected: ModelFeature): void {
-    const actual = ModelFeature.create();
-    featureTable.getFeature(index, actual);
-    expect(actual).to.deep.equal(expected);
-  }
-
   it("creates a batch containing a single feature with only an Id", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
@@ -395,6 +395,10 @@ describe("GraphicDescriptionBuilder", () => {
       expect(Id64.getLocalId(id)).to.equal(expectedLocalId);
     }
 
+    function makeTransientId(localId: number): Id64String {
+      return Id64.fromLocalAndBriefcaseIds(localId, 0xffffff);
+    }
+
     it("creates a graphic description", async () => {
       const worker = createWorker();
 
@@ -428,9 +432,42 @@ describe("GraphicDescriptionBuilder", () => {
         expect(origin.y).to.equal(1);
         expect(origin.z).to.equal(2);
       }
+    });
 
-      //const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(result.context, iModel);
+    it("remaps transient Ids", async () => {
+      const transientIds = new TransientIdSequence();
+      expectTransientId(transientIds.getNext(), 1);
+
+      const iModel = { transientIds } as any;
+      const worker = createWorker();
+      const result = await worker.createGraphic(IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel));
+      worker.terminate;
       
+      expectTransientId(transientIds.getNext(), 2);
+      expectTransientId(transientIds.getNext(), 3);
+      
+      const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(result.context, iModel);
+      const graphic = await IModelApp.renderSystem.createGraphicFromDescription({ context, description: result.description });
+      expect(graphic).not.to.be.undefined;
+      
+      const branch = graphic as Branch;
+      expect(branch.branch.entries.length).to.equal(1);
+      const batch = branch.branch.entries[0] as Batch;
+      expect(batch instanceof Batch).to.be.true;
+
+      // TestWorker.createWorker assigns the following Ids, starting with transient local Id 2 because we allocated 1 above.
+      //   modelId: 0xffffff0000000003
+      //   point string: elem 0xffffff00000000002, subcat 0xffffff0000000004, class Construction
+      //   shape: elem 0xffffff0000000005 subcat: 0x123 class: Primary
+      //   polyline: elem 0x456 subcat: 0xffffff0000000006 class: Primary
+      // The  transient Ids should be remapped so that their local Ids are increased by 2, because we allocated 2 more transient Ids before resolving the context.
+      const ft = batch.featureTable;
+      expect(ft.numFeatures).to.equal(3);
+      const modelId = ft.batchModelId;
+      expectTransientId(modelId, 5);
+      expectFeature(0, ft, { elementId: makeTransientId(4), subCategoryId: makeTransientId(6), geometryClass: GeometryClass.Construction, modelId });
+      expectFeature(1, ft, { elementId: makeTransientId(7), subCategoryId: "0x123", geometryClass: GeometryClass.Primary, modelId });
+      expectFeature(2, ft, { elementId: "0x456", subCategoryId: makeTransientId(8), geometryClass: GeometryClass.Primary, modelId });
     });
   });
 });
