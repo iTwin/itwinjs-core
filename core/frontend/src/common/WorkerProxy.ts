@@ -16,7 +16,7 @@ interface Task {
 /** The successful result of a worker operation, correlated with the id of the caller to resolve with the result.
  * @internal
  */
-export interface WorkerResult {
+interface WorkerResult {
   msgId: number;
   result: any;
   error?: never;
@@ -25,7 +25,7 @@ export interface WorkerResult {
 /** An error resulting from a worker operation, correlated with the id of the caller to reject with the error.
  * @internal
  */
-export interface WorkerError {
+interface WorkerError {
   msgId: number;
   error: Error;
   result?: never;
@@ -34,7 +34,7 @@ export interface WorkerError {
 /** Response to `postMessage` produced by a worker operation.
  * @internal
  */
-export type WorkerResponse = WorkerResult | WorkerError;
+type WorkerResponse = WorkerResult | WorkerError;
 
 /** Given an interface T that defines the operations provided by a worker, produce an interface that can be used to asynchronously invoke those operations
  * from the main thread, optionally passing an array of values to be transferred from the main thread to the worker.
