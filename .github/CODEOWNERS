@@ -110,7 +110,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/quantity                                @hl662 @ColinKerr
 /core/webgl-compatibility                     @iTwin/itwinjs-core-display
 
-/docs   @iTwin/itwinjs-core
+/docs                                         @iTwin/itwinjs-core
 /docs/getting-started                         @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
 /docs/config                                  @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
 /docs/presentation                            @iTwin/itwinjs-core-presentation
