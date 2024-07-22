@@ -9,7 +9,7 @@
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
 import {
-  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContextProps,
+  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, GraphicDescriptionContextProps,
   WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps,
 } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
@@ -37,6 +37,11 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
   primitives: ImdlModel.Primitive[];
   translation?: XYAndZ;
   batch?: BatchDescription;
+  /** Initialized the first time createGraphicFromDescription remaps the description in-place using a GraphicDescriptionContext.
+   * Subsequently attempting to remap using same context should be a no-op.
+   * Attempting to remap using a different context is an error.
+   */
+  remapContext?: GraphicDescriptionContext;
 }
 
 export interface WorkerGraphicDescriptionContextPropsImpl extends WorkerGraphicDescriptionContextProps {

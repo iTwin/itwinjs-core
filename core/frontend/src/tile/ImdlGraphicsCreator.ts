@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { JsonUtils } from "@itwin/core-bentley";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
@@ -23,7 +23,7 @@ import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
 import { GraphicDescription, GraphicDescriptionContext } from "../common/render/GraphicDescriptionBuilder";
-import { isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -422,11 +422,65 @@ export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<Re
   }
 }
 
+function remapGraphicDescription(descr: GraphicDescriptionImpl, context: GraphicDescriptionContext): void {
+  if (descr.remapContext === context) {
+    // Already remapped.
+    return;
+  } else if (descr.remapContext) {
+    throw new Error("You cannot create a graphic from a GraphicDescription using two different contexts");
+  }
+
+  descr.remapContext = context;
+
+  const batch = descr.batch;
+  if (!batch) {
+    return;
+  }
+
+  if (Id64.isTransient(batch.modelId)) {
+    const modelLocalId = context.remapTransientLocalId(Id64.getLocalId(batch.modelId));
+    batch.modelId = Id64.fromLocalAndBriefcaseIds(modelLocalId, 0xffffff);
+  }
+
+  const data = batch.featureTable.data;
+  const remapId = (offset: number) => {
+    let hi = data[offset + 1];
+    if (hi >= 0xffffff00) {
+      const hi8 = hi & 0xff;
+      const lo = data[offset];
+
+      // Avoid bitwise operators because they truncate at 32 bits (we need 40) and are stupid about the sign bit.
+      const sourceLocalId = lo + (hi8 * 0xffffffff);
+      const localId = context.remapTransientLocalId(sourceLocalId);
+      data[offset] = localId & 0xffffffff;
+      data[offset + 1] = 0xffffff00 + hi8;
+    }
+  }
+
+  const subCatsOffset = 3 * batch.featureTable.numFeatures;
+  for (let i = 0; i < subCatsOffset; i += 3) {
+    remapId(i);
+  }
+
+  const subCatsEnd = undefined !== batch.featureTable.numSubCategories ? subCatsOffset + 2 * batch.featureTable.numSubCategories : data.length;
+  for (let i = subCatsOffset; i < subCatsEnd; i++) {
+    remapId(i);
+  }
+
+  if (undefined !== batch.featureTable.numSubCategories) {
+    for (let i = subCatsEnd; i < data.length; i++) {
+      remapId(i + 1);
+    }
+  }
+}
+
 /** @internal */
-export async function createGraphicFromDescription(descr: GraphicDescription, _context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined> {
+export async function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined> {
   if (!isGraphicDescription(descr)) {
     throw new Error("Invalid GraphicDescription");
   }
+
+  remapGraphicDescription(descr, context);
 
   const graphics: RenderGraphic[] = [];
   const graphicsOptions: GraphicsOptions = {
