@@ -159,7 +159,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /tools/perf-tools                             @aruniverse @wgoehrig
 /tools/webpack-core                           @aruniverse @wgoehrig
 
-/ui @iTwin/itwinjs-core-ui
+/ui                                           @iTwin/itwinjs-core-ui
 
 # These are at the end to override all previous reviews
 
