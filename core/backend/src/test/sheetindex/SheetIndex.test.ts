@@ -3,7 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedElement, SheetProps } from "@itwin/core-common";
 
 import { IModelDb, SnapshotDb } from "../../IModelDb";
@@ -11,110 +11,47 @@ import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { Sheet, SheetIndex, SheetIndexFolder, SheetReference } from "../../Element";
 import { expect } from "chai";
 import { DictionaryModel, DocumentListModel, SheetModel } from "../../Model";
-import { ECSqlStatement } from "../../ECSqlStatement";
 
-enum DPChannels {
-  channelKey = "DrawingProduction",
-  channel = "DPChannel",
-  subject = "DrawingProductionSubject",
-  documentPartition = "DrawingProductionDocumentPartition",
-}
-
-const getOrCreateSubjectId = async (iModel: IModelDb) => {
-  try {
-    let subjectId: string | undefined;
-
-    // check if channel subject already exists, if yes then get id
-    iModel.withPreparedStatement(
-      "SELECT ECInstanceId FROM BisCore:Subject WHERE CodeValue = ?",
-      (stmt: ECSqlStatement) => {
-        stmt.bindString(1, DPChannels.subject);
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          const row: any = stmt.getRow();
-          subjectId = row.id;
-        }
-      }
-    );
-
-    if (subjectId === undefined) {
-      await iModel.locks.acquireLocks({
-        shared: iModel.elements.getRootSubject().id,
-      });
-
-      subjectId = iModel.channels.insertChannelSubject({
-        subjectName: DPChannels.subject,
-        channelKey: DPChannels.channelKey,
-      });
-    }
-
-    return subjectId;
-  } catch (error) {
-    throw new Error(`Error creating channel subject: ${error}`);
-  }
-};
-
+let documentListModelId: string | undefined;
 const getOrCreateDocumentList = async (iModel: IModelDb): Promise<Id64String> => {
-  const documentListName = "DrawingProduction.SheetsList";
-  try {
-    const channelSubjectId = await getOrCreateSubjectId(iModel);
-    // Attempt to find an existing document partition and document list model
-    let documentListModelId: string | undefined;
-    iModel.withPreparedStatement(
-      "SELECT ECInstanceId FROM bis:DocumentPartition WHERE CodeValue = ?",
-      (stmt: ECSqlStatement) => {
-        stmt.bindString(1, documentListName);
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-          const row: any = stmt.getRow();
-          documentListModelId = row.id;
-        }
-      }
-    );
-
-    // If they do not exist, create the document partition and document list model
-    if (documentListModelId === undefined) {
-      await iModel.locks.acquireLocks({
-        shared: channelSubjectId,
-      });
-      documentListModelId = DocumentListModel.insert(iModel, channelSubjectId, documentListName);
-    }
-
-    return documentListModelId;
-  } catch (error) {
-    throw new Error(`Error getting document list: ${error}`);
+  // If they do not exist, create the document partition and document list model
+  if (documentListModelId === undefined) {
+    const channelSubjectId = iModel.elements.getRootSubject().id;
+    await iModel.locks.acquireLocks({
+      shared: channelSubjectId,
+    });
+    documentListModelId = DocumentListModel.insert(iModel, channelSubjectId, "SheetsList");
   }
+
+  return documentListModelId;
 };
 
-const insertSheet = async (iModel: IModelDb): Promise<Id64String> => {
-  const sheetName = "TestSheet";
+const insertSheet = async (iModel: IModelDb, sheetName: string): Promise<Id64String> => {
   const createSheetProps = {
     height: 42,
     width: 42,
-    scale: 69,
+    scale: 42,
   };
-  try {
-    // Get or make documentListModelId
-    const documentListModelId = await getOrCreateDocumentList(iModel);
+  // Get or make documentListModelId
+  const modelId = await getOrCreateDocumentList(iModel);
 
-    // Acquire locks and create sheet
-    await iModel.locks.acquireLocks({ shared: documentListModelId });
-    const sheetElementProps: SheetProps = {
-      ...createSheetProps,
-      classFullName: Sheet.classFullName,
-      code: Sheet.createCode(iModel, documentListModelId, sheetName),
-      model: documentListModelId,
-    };
-    const sheetElementId = iModel.elements.insertElement(sheetElementProps);
+  // Acquire locks and create sheet
+  await iModel.locks.acquireLocks({ shared: documentListModelId });
+  const sheetElementProps: SheetProps = {
+    ...createSheetProps,
+    classFullName: Sheet.classFullName,
+    code: Sheet.createCode(iModel, modelId, sheetName),
+    model: modelId,
+  };
+  const sheetElementId = iModel.elements.insertElement(sheetElementProps);
 
-    const sheetModelProps: GeometricModel2dProps = {
-      classFullName: SheetModel.classFullName,
-      modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
-    };
-    const sheetModelId = iModel.models.insertModel(sheetModelProps);
+  const sheetModelProps: GeometricModel2dProps = {
+    classFullName: SheetModel.classFullName,
+    modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+  };
+  const sheetModelId = iModel.models.insertModel(sheetModelProps);
 
-    return sheetModelId;
-  } catch (error) {
-    throw new Error(`Inserting sheet failed: ${error}`);
-  }
+  return sheetModelId;
 };
 
 describe("SheetIndex", () => {
@@ -138,14 +75,14 @@ describe("SheetIndex", () => {
 
   // Currently busted
   // test.skip("SheetIndexModel Should insert", async () => {
-  //   const subjectId = await getOrCreateSubjectId(iModel);
+  //   const subjectId = iModel.elements.getRootSubject().id;
 
   //   const modelId = SheetIndexModel.insert(iModel, subjectId, "testSheetIndex");
   //   expect(Id64.isValidId64(modelId)).to.be.true;
   // });
 
   it("SheetIndex Should insert", async () => {
-    const subjectId = await getOrCreateSubjectId(iModel);
+    const subjectId = iModel.elements.getRootSubject().id;
 
     await iModel.locks.acquireLocks({
       shared: subjectId,
@@ -162,7 +99,7 @@ describe("SheetIndex", () => {
   });
 
   it("SheetIndexFolders Should insert", async () => {
-    const subjectId = await getOrCreateSubjectId(iModel);
+    const subjectId = iModel.elements.getRootSubject().id;
 
     const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
     iModel.codeSpecs.insert(spec);
@@ -182,7 +119,7 @@ describe("SheetIndex", () => {
 
   describe("SheetReferences", () => {
     it("Should insert SheetReferences without a Sheet", async () => {
-      const subjectId = await getOrCreateSubjectId(iModel);
+      const subjectId = iModel.elements.getRootSubject().id;
 
       const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
       iModel.codeSpecs.insert(spec);
@@ -200,9 +137,9 @@ describe("SheetIndex", () => {
       expect(Id64.isValidId64(sheetRef)).to.be.true;
     });
 
-    it("Should insert with Sheet", async () => {
-      const subjectId = await getOrCreateSubjectId(iModel);
-      const sheetId = await insertSheet(iModel);
+    it("Should insert and with a  Sheet", async () => {
+      const subjectId = iModel.elements.getRootSubject().id;
+      const sheetId = await insertSheet(iModel, "sheet-1");
 
       const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
       iModel.codeSpecs.insert(spec);
