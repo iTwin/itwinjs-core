@@ -119,7 +119,7 @@ export class SheetIndexOwnsEntries extends RelatedElement {
   }
 }
 
-/** Relates a [[SheetIndexFolder]] and [[Entries]] that it owns.
+/** Relates a [[SheetReference]] and [[Sheet]] that it owns.
  * @public
  */
 export class SheetReferenceRefersToSheet extends RelatedElement {
