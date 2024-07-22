@@ -45,13 +45,15 @@ When the identified entity is pure information in nature, it will often have its
 
 A `CodeSpec` (aka **Code Specification**) names and specifies a new *classification* for Codes.
 A `CodeSpec` also captures the rules for encoding and decoding significant business information into and from a Code.
-For example, the Codes for ViewDefinitions and the Codes for Equipment have different *encoding* rules and uniqueness constraints, so would each have a separate `CodeSpec`.
+For example, the Codes for software artifacts, like ViewDefinitions, and the Codes for Equipment, such as Piping Components, have different *encoding* rules and uniqueness constraints, so would each have a separate `CodeSpec`.
 
-Typically, a `CodeSpec` has a strong correlation with a branch of the Element class hierarchy and is often named after an abstract base class that defines the starting point of that branch. It is common for all subclasses (direct or indirect) descending from that base class to share the same `CodeSpec`.
+For instance, an Industrial Process Plant-focused implementation may require Codes for Piping Components to follow a Specification such as: [plant area code]-[equipment-type code]-[equipment number] (e.g. OIL-AAV-001, which *encodes* a Valve of a particular type "AAV" in an area known as "OIL" at a specific Industrial Plant).
+
+In many cases, a `CodeSpec` has a strong correlation with a branch of the Element class hierarchy and is often named after an abstract base class that defines the starting point of that branch. It is common for all subclasses (direct or indirect) descending from that base class to share the same `CodeSpec`.
 
 For example, the standard `CodeSpec` called "bis:ViewDefinition" helps ensure unique names for all subclasses of the `BisCore:ViewDefinition` Element class.
 
-Configuration can define the association between Element class and CodeSpec so that a shared service (e.g. 'Identification Code Service') can be used to generate and validate Codes.
+Additional Configuration in an application can define the association between Element class and CodeSpec so that a shared service (e.g. 'Identification Code Service') can be used to generate and validate Codes.
 
 The CodeSpec can also dictate that Codes for instances of the Element class should be null. This is appropriate when the modeled real-world entities don’t have a meaningful real-world identifier (e.g. a piece of baseboard, a pile of dirt, an average bolt).
 
