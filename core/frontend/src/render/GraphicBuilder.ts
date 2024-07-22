@@ -14,6 +14,7 @@ import { RenderGraphic } from "./RenderGraphic";
 import { GraphicType } from "../common/render/GraphicType";
 import type { PickableGraphicOptions} from "../common/render/BatchOptions";
 import { GraphicAssembler } from "../common/render/GraphicAssembler";
+import { _implementationProhibited } from "../common/internal/Symbols";
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
@@ -145,6 +146,7 @@ export abstract class GraphicBuilder extends GraphicAssembler {
 
     super({
       ...options,
+      [_implementationProhibited]: undefined,
       placement,
       wantEdges,
       wantNormals,

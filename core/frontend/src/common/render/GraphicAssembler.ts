@@ -19,10 +19,12 @@ import { GeometryAccumulator } from "../internal/render/GeometryAccumulator";
 import { DisplayParams } from "../internal/render/DisplayParams";
 import { Geometry } from "../internal/render/GeometryPrimitives";
 
-/**
- * @beta
- */
+/** @internal Used by GraphicAssembler's internal constructor. Subclasses define their own constructor arguments. */
 export interface GraphicAssemblerOptions {
+  /** The constructor is internal, but protected.
+   * Prevent anyone outside of itwinjs-core from being able to invoke it.
+   */
+  [_implementationProhibited]: unknown;
   type: GraphicType;
   placement: Transform;
   pickable?: PickableGraphicOptions;
@@ -32,8 +34,19 @@ export interface GraphicAssemblerOptions {
   analysisStyle?: AnalysisStyle;
 };
 
-/**
+/** Provides methods for assembling geometric primitives and symbology into a graphical representation.
+ * Two concrete implementations are provided:
+ *  - [[GraphicBuilder]], for creating [[RenderGraphic]]s directly; and
+ *  - [[GraphicDescriptionBuilder]], for creating a [[GraphicDescription]] from which a [[RenderGraphic]] can be produced.
+ *
+ * GraphicBuilder can only be used on the main JavaScript thread, so its use should be reserved for relatively simple, quick-to-produce graphics like [[Decorations]].
+ * GraphicDescriptionBuilder is designed for use in a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker). It can be used to assemble more
+ * complex graphics without blocking the main thread.
+ *
+ * @note Most of the methods which add geometry to the builder take ownership of their inputs rather than cloning them.
+ * So, for example, if you pass an array of points to [[addLineString]], you should not subsequently modify that array.
  * @public
+ * @extensions
  */
 export abstract class GraphicAssembler {
   /** @internal */
@@ -43,18 +56,24 @@ export abstract class GraphicAssembler {
   public readonly [_accumulator]: GeometryAccumulator;
   private readonly _graphicParams = new GraphicParams();
 
+  /** The local-to-world transform in which the builder's geometry is to be defined. */
   public readonly placement: Transform;
-
+  /** The type of graphic to be produced. */
   public readonly type: GraphicType;
-
+  /** If the graphic is to be interactive, specifies its Id and other options. */
   public readonly pickable?: Readonly<PickableGraphicOptions>;
-
+  /** If true, the order in which geometry is added to the builder is preserved.
+   * This enables overlay and background graphics, which draw without using the depth buffer, to specify which geometry display in front of others when
+   * they overlap.
+   * For example, to draw an overlay containing a red shape with a white outline, you would add the shape to the GraphicAssember first, followed by its outline,
+   * to ensure the outline draws on top of the shape.
+   * This incurs a performance penalty due to the increased number of draw calls, and is never useful for graphics that draw using the depth buffer.
+   */
   public readonly preserveOrder: boolean;
-
+  /** If true, normal vectors will be generated for surfaces, allowing 3d geometry to receive lighting and reduce z-fighting. */
   public readonly wantNormals: boolean;
-
+  /** If true, edges are generated for surfaces, to be drawn if edge display is enabled for the view in which the graphic is drawn. */
   public readonly wantEdges: boolean;
-
   /** @alpha */
   public readonly analysisStyle?: AnalysisStyle;
 
@@ -78,15 +97,14 @@ export abstract class GraphicAssembler {
   }
 
   /** Whether the builder's geometry is defined in [[CoordSystem.View]] coordinates.
+   * Only graphics of type [[GraphicType.ViewBackground]] or [[GraphicType.ViewOverlay]] are defined in view coordinates.
    * @see [[isWorldCoordinates]].
    */
   public get isViewCoordinates(): boolean {
     return this.type === GraphicType.ViewBackground || this.type === GraphicType.ViewOverlay;
   }
 
-  /** Whether the builder's geometry is defined in [[CoordSystem.World]] coordinates.
-   * @see [[isViewCoordinates]].
-   */
+  /** Whether the builder's geometry is defined in [[CoordSystem.World]] coordinates - the inverse of [[isViewCoordinates]]. */
   public get isWorldCoordinates(): boolean {
     return !this.isViewCoordinates;
   }
@@ -108,7 +126,7 @@ export abstract class GraphicAssembler {
 
   /** Sets the current active symbology for this builder. Any new geometry subsequently added to the builder will be drawn using the specified symbology.
    * @param graphicParams The symbology to apply to subsequent geometry.
-   * @see [[GraphicBuilder.setSymbology]] for a convenient way to set common symbology options.
+   * @see [[setSymbology]] for a convenient way to set common symbology options.
    */
   public activateGraphicParams(graphicParams: GraphicParams): void {
     graphicParams.clone(this._graphicParams);
@@ -116,19 +134,19 @@ export abstract class GraphicAssembler {
 
   /** Change the [Feature]($common) to be associated with subsequently-added geometry. This permits multiple features to be batched together into a single graphic
    * for more efficient rendering.
-   * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
+   * @note This method has no effect if [[pickable]] is not defined.
    */
   public activateFeature(feature: Feature): void {
-    assert(undefined !== this.pickable, "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied");
+    assert(undefined !== this.pickable, "GraphicAssembler.activateFeature has no effect if PickableGraphicOptions were not supplied");
     if (this.pickable) {
       this[_accumulator].currentFeature = feature;
     }
   }
 
   /** Change the pickable Id to be associated with subsequently-added geometry. This permits multiple pickable objects to be batched  together into a single graphic
-   * for more efficient rendering. This method calls [[activateFeature]], using the subcategory Id and [GeometryClass]($common) specified in [[GraphicBuilder.pickable]]
+   * for more efficient rendering. This method calls [[activateFeature]], using the subcategory Id and [GeometryClass]($common) specified in [[pickable]]
    * at construction, if any.
-   * @note This method has no effect if [[GraphicBuilderOptions.pickable]] was not supplied to the GraphicBuilder's constructor.
+   * @note This method has no effect if [[pickable]] is not defined.
    */
   public activatePickableId(id: Id64String): void {
     const pick = this.pickable;
@@ -414,7 +432,7 @@ export abstract class GraphicAssembler {
    * @param fillColor The color in which to draw filled regions.
    * @param lineWidth The width in pixels to draw lines. The renderer will clamp this value to an integer in the range [1, 32].
    * @param linePixels The pixel pattern in which to draw lines.
-   * @see [[GraphicBuilder.activateGraphicParams]] for additional symbology options.
+   * @see [[activateGraphicParams]] for additional symbology options.
    */
   public setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid) {
     this.activateGraphicParams(GraphicParams.fromSymbology(lineColor, fillColor, lineWidth, linePixels));

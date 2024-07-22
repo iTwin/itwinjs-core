@@ -96,7 +96,15 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     const wantNormals = wantEdges || type === GraphicType.Scene;
     const preserveOrder = type === GraphicType.ViewOverlay || type === GraphicType.WorldOverlay || type === GraphicType.ViewBackground;
 
-    super({ ...options, type, placement, wantEdges, wantNormals, preserveOrder });
+    super({
+      ...options,
+      [_implementationProhibited]: undefined,
+      type,
+      placement,
+      wantEdges,
+      wantNormals,
+      preserveOrder,
+    });
 
     this._computeChordTolerance = options.computeChordTolerance;
     this._constraints = options.constraints;
