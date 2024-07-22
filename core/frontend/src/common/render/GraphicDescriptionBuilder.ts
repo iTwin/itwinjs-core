@@ -12,7 +12,7 @@ import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { GraphicType } from "./GraphicType";
 import { PickableGraphicOptions } from "./BatchOptions";
 import { _implementationProhibited } from "../internal/Symbols";
-import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
+import { TransientIdSequence } from "@itwin/core-bentley";
 
 /**
  * @beta
