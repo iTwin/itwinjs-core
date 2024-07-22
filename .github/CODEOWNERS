@@ -32,7 +32,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/core-bentley.*                     @iTwin/itwinjs-core-admins
 /common/**/core-bentley/                      @iTwin/itwinjs-core-admins
 /common/**/build-tools/                       @aruniverse @ben-polinsky @wgoehrig
-/common/**/certa/                             @aruniverse @wgoehrig
+/common/**/certa/                             @aruniverse @wgoehrig @GytisCepk
 
 /common/**/*-extension/                       @aruniverse @ben-polinsky
 
@@ -97,7 +97,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/ecschema-*                              @hl662 @ColinKerr @wgoehrig @christophermlawson @StefanApfel-Bentley
 /core/electron                                @wgoehrig @GytisCepk @ben-polinsky
 /core/express-server                          @paulius-valiunas @wgoehrig
-/core/extension                               @wgoehrig @aruniverse @ben-polinsky
+/core/extension                               @wgoehrig @aruniverse @ben-polinsky @GytisCepk
 /core/frontend                                @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
 /core/frontend/src/extension                  @wgoehrig @aruniverse @ben-polinsky
 /core/frontend-devtools                       @iTwin/itwinjs-core-display
@@ -153,7 +153,7 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /tools/backend-webpack                        @aruniverse @wgoehrig
 /tools/build                                  @aruniverse @wgoehrig
-/tools/certa                                  @aruniverse @wgoehrig
+/tools/certa                                  @aruniverse @wgoehrig @GytisCepk
 /tools/ecschema2ts                            @hl662 @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
 /tools/internal                               @aruniverse @wgoehrig
 /tools/perf-tools                             @aruniverse @wgoehrig
