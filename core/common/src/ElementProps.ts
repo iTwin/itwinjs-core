@@ -1,14 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Entities
  */
 
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AngleProps, ClipVectorProps, LowAndHighXYProps, LowAndHighXYZProps, TransformProps, XYProps, XYZProps, YawPitchRollProps,
+  AngleProps,
+  ClipVectorProps,
+  LowAndHighXYProps,
+  LowAndHighXYZProps,
+  TransformProps,
+  XYProps,
+  XYZProps,
+  YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
@@ -75,7 +82,7 @@ export class RelatedElement implements RelatedElementProps {
 
   /** Accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
   public static idFromJson(json: any): Id64String {
-    if ((typeof json === "object") && ("id" in json)) {
+    if (typeof json === "object" && "id" in json) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
         throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json");
@@ -92,11 +99,49 @@ export class RelatedElement implements RelatedElementProps {
   }
 }
 
+/** Relates a [[SheetIndexFolder]] and [[Entries]] that it owns.
+ * @public
+ */
+export class SheetIndexFolderOwnsEntries extends RelatedElement {
+  public static classFullName = "BisCore:SheetIndexFolderOwnsEntries";
+  public constructor(parentId: Id64String, relClassName: string = SheetIndexFolderOwnsEntries.classFullName) {
+    super({ id: parentId, relClassName });
+  }
+}
+
+/** Relates a [[SheetIndex]] and [[Entries]] that it owns.
+ * @public
+ */
+export class SheetIndexOwnsEntries extends RelatedElement {
+  public static classFullName = "BisCore:SheetIndexOwnsEntries";
+  public constructor(parentId: Id64String, relClassName: string = SheetIndexOwnsEntries.classFullName) {
+    super({ id: parentId, relClassName });
+  }
+}
+
+/** Relates a [[SheetIndexFolder]] and [[Entries]] that it owns.
+ * @public
+ */
+export class SheetReferenceRefersToSheet extends RelatedElement {
+  public static classFullName = "BisCore:SheetReferenceRefersToSheet";
+  public constructor(parentId: Id64String, relClassName: string = SheetReferenceRefersToSheet.classFullName) {
+    super({ id: parentId, relClassName });
+  }
+}
+
+/** Relates a [[SheetIndexReference]] to a [[SheetIndex]] it refers.
+ * @public
+ */
+export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
+  public static classFullName = "BisCore:SheetIndexReferenceRefersToSheetIndex";
+  public constructor(parentId: Id64String, relClassName: string = SheetIndexReferenceRefersToSheetIndex.classFullName) {
+    super({ id: parentId, relClassName });
+  }
+}
 /** A [RelatedElement]($common) relationship that describes the [TypeDefinitionElement]($backend) of an element.
  * @public
  */
-export class TypeDefinition extends RelatedElement {
-}
+export class TypeDefinition extends RelatedElement {}
 
 /** Properties of a [GeometricElement]($backend)
  * @public
@@ -453,7 +498,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
    * @note Warning: if defined, jsonProperties must be a *string*, specifically a valid JSON string.
    * @note Warning: in a future major release, the type of `jsonProperties` will be changed to object, and itwin.js will automatically stringify it when writing to the iModel.
    * This will be a breaking change, since application code will have to change from supplying a string to supplying an object.
-  */
+   */
   jsonProperties?: any;
   /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   source?: RelatedElementProps;
