@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curves";
+import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Matrix3d } from "./Matrix3d";

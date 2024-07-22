@@ -19,10 +19,14 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { SmallSystem } from "../numerics/Polynomials";
-import {
-  CurveExtendOptions, VariantCurveExtendParameter, CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair, AnnounceNumberNumberCurvePrimitive, CurvePrimitive, GeometryQuery, LineString3d, OffsetOptions, StrokeOptions,
-} from "../curves";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { LineString3d } from "./LineString3d";
+import { OffsetOptions } from "./OffsetOptions";
+import { StrokeOptions } from "./StrokeOptions";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 

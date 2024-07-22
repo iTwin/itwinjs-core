@@ -472,7 +472,7 @@ export class Point4dArray {
       weights.push(data[i + 3]);
     }
   }
-  private static _workPoint4d?: Point4d;
+  private static _workPoint4d = Point4d.create();
   /**
    * Multiply (and replace) each block of 4 values as a Point4d.
    * @param transform transform to apply
@@ -480,7 +480,7 @@ export class Point4dArray {
    */
   public static multiplyInPlace(transform: Transform, xyzw: Float64Array): void {
     const numXYZW = xyzw.length;
-    const xyzw1 = Point4dArray._workPoint4d ?? (Point4dArray._workPoint4d = Point4d.create());
+    const xyzw1 = Point4dArray._workPoint4d;
     for (let i = 0; i + 3 < numXYZW; i += 4) {
       transform.multiplyXYZW(xyzw[i], xyzw[i + 1], xyzw[i + 2], xyzw[i + 3], xyzw1);
       xyzw[i] = xyzw1.x;

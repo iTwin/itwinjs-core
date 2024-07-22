@@ -5,9 +5,16 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
-import {
-  AnyCurve, BagOfCurves, CurveChain, CurveCollection, CurveOps, GeometryQuery, LineSegment3d, LineString3d, Loop, JointOptions, Path, RegionOps,
-} from "../../curves";
+import { AnyCurve } from "../../curve/CurveTypes";
+import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
+import { CurveOps } from "../../curve/CurveOps";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { JointOptions } from "../../curve/OffsetOptions";
+import { Path } from "../../curve/Path";
+import { RegionOps } from "../../curve/RegionOps";
 import { Geometry } from "../../Geometry";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";

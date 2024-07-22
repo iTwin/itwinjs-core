@@ -13,7 +13,7 @@ import { Geometry } from "../../Geometry";
 import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { CurvePrimitive } from "../../curves";
+import { CurvePrimitive } from "../CurvePrimitive";
 
 /**
  * Context for constructing the xy-offset of a CurvePrimitive by interpolating the xy-offsets of computed strokes.

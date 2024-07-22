@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 
-import { Arc3d } from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";

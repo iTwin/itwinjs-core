@@ -7,7 +7,7 @@
  * @module Curve
  */
 
-import { CurvePrimitive } from "../curves";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 
 import type { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -16,7 +16,9 @@ import type { Ray3d } from "../geometry3d/Ray3d";
 import type { Transform } from "../geometry3d/Transform";
 import type { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import type { Range1d, Range3d } from "../geometry3d/Range";
-import type { LineString3d, OffsetOptions, StrokeOptions } from "../curves";
+import type { OffsetOptions } from "./OffsetOptions";
+import type { LineString3d } from "./LineString3d";
+import type { StrokeOptions } from "./StrokeOptions";
 
 /**
  * A ProxyCurve is expected to be used as a base class for curve types that use some existing curve (the proxy)

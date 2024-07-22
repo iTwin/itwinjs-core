@@ -9,11 +9,13 @@
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { Point3dArray } from "../geometry3d/PointHelpers";
+import { ProxyCurve } from "../curve/ProxyCurve";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { BSplineCurve3d } from "./BSplineCurve";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { XYZProps } from "../geometry3d/XYZProps";
-import { CurvePrimitive, GeometryQuery, ProxyCurve } from "../curves";
 
 /**
  * fitPoints  [[AkimaCurve3d]]

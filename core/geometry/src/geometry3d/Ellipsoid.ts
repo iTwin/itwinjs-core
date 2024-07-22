@@ -9,7 +9,9 @@
 
 import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
 import { Clipper } from "../clipping/ClipUtils";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, Arc3d, CurveLocationDetail } from "../curves";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { AxisIndex, AxisOrder, Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Order3Bezier } from "../numerics/BezierPolynomials";

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { GeometryQuery } from "../../curves";
-import { LineString3d } from "../../curves";
-import { StrokeOptions } from "../../curves";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d } from "../../geometry3d/Point3dVector3d";

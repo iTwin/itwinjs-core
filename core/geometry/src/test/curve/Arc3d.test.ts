@@ -5,9 +5,14 @@
 
 import { assert, expect } from "chai";
 import { Plane3dByOriginAndUnitNormal } from "../../core-geometry";
-import {
-  Arc3d, CoordinateXYZ, CurveChainWithDistanceIndex, GeometryQuery, LineSegment3d, LineString3d, Path, StrokeOptions,
-} from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";

@@ -17,10 +17,20 @@ import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 import { BSplineSurface3d, BSplineSurface3dH, UVSelect, WeightStyle } from "../bspline/BSplineSurface";
 import { InterpolationCurve3d as InterpolationCurve3d, InterpolationCurve3dProps } from "../bspline/InterpolationCurve3d";
 import { BSplineWrapMode } from "../bspline/KnotVector";
-import {
-  Arc3d, CoordinateXYZ, BagOfCurves, CurveCollection, AnyGeometryQuery, GeometryQuery, LineSegment3d, LineString3d, Loop, ParityRegion, Path, PointString3d, DirectSpiral3d,
-  IntegratedSpiral3d, TransitionSpiral3d, UnionRegion,
-} from "../curves";
+import { Arc3d } from "../curve/Arc3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { AnyGeometryQuery, GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
+import { PointString3d } from "../curve/PointString3d";
+import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { UnionRegion } from "../curve/UnionRegion";
 import { AngleProps, AngleSweepProps, AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";

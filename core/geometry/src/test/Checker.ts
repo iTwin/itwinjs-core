@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Arc3d, GeometryQuery ,LineString3d } from "../curves";
+import { Arc3d } from "../curve/Arc3d";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineString3d } from "../curve/LineString3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";

@@ -5,10 +5,10 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
-import { CurveCollection } from "../../curves";
-import { GeometryQuery } from "../../curves";
-import { ParityRegion } from "../../curves";
-import { RegionOps } from "../../curves";
+import { CurveCollection } from "../../curve/CurveCollection";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { RegionOps } from "../../curve/RegionOps";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";

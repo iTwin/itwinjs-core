@@ -301,7 +301,7 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     // and only if x = o + a*u + b*v, where a and b are scalars.
     return this.origin.clone(result);
   }
-  private static _workVector?: Vector3d;
+  private static _workVector: Vector3d;
   /** Return (if possible) a ray with origin at plane origin, direction as unit normal to the plane */
   public unitNormalRay(result?: Ray3d): Ray3d | undefined {
     if (!Plane3dByOriginAndVectors._workVector)

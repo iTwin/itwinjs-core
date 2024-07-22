@@ -6,7 +6,7 @@
  * @module RangeSearch
  */
 
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curves";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode";

@@ -22,11 +22,15 @@ import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY, XYZProps } from "../geometry3d/XYZProps";
-import {
-  CurveExtendOptions, VariantCurveExtendParameter, CurveIntervalRole, CurveLocationDetail, CurveSearchStatus, AnnounceNumberNumberCurvePrimitive, CurvePrimitive, GeometryQuery, LineSegment3d, OffsetOptions, StrokeOptions,
-} from "../curves";
-import { StrokeCountMap } from "./Query/StrokeCountMap";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { LineSegment3d } from "./LineSegment3d";
+import { OffsetOptions } from "./OffsetOptions";
+import { StrokeCountMap } from "./Query/StrokeCountMap";
+import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * Starting with the segment at (baseIndex, baseIndex + 1):
@@ -87,16 +91,10 @@ function accumulateGoodUnitPerpendicular(
 export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /** String name for schema properties */
   public readonly curvePrimitiveType = "lineString";
-  private static __workPointA?: Point3d;
-  private static __workPointB?: Point3d;
-  private static __workPointC?: Point3d;
-  private static __workRay?: Ray3d;
-
-  private static get _workPointA() { return this.__workPointA ?? (this.__workPointA = Point3d.create()); }
-  private static get _workPointB() { return this.__workPointB ?? (this.__workPointB = Point3d.create()); }
-  private static get _workPointC() { return this.__workPointC ?? (this.__workPointC = Point3d.create()); }
-  private static get _workRay() { return this.__workRay ?? (this.__workRay = Ray3d.createXAxis()); }
-
+  private static _workPointA = Point3d.create();
+  private static _workPointB = Point3d.create();
+  private static _workPointC = Point3d.create();
+  private static _workRay = Ray3d.createXAxis();
   /** test if `other` is an instance of `LineString3d` */
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof LineString3d;

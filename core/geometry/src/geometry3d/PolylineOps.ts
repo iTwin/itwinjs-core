@@ -6,9 +6,10 @@
  * @module CartesianGeometry
  */
 
-import {
-  CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter, CurveLocationDetailPair, LineSegment3d, LineString3d,
-} from "../curves";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";

@@ -5,7 +5,11 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import { BSplineCurve3dBase } from "../../bspline/BSplineCurve";
-import { Arc3d, CoordinateXYZ, CurvePrimitive, GeometryQuery, Path } from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Path } from "../../curve/Path";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { DeepCompare } from "../../serialization/DeepCompare";

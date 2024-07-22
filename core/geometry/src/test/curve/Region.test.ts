@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LineSegment3d, LineString3d, Loop, ParityRegion, UnionRegion } from "../../curves";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 

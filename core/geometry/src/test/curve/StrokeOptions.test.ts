@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Arc3d, GeometryQuery, StrokeOptions } from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Checker } from "../Checker";

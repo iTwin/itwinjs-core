@@ -7,7 +7,7 @@
  * @module Topology
  */
 
-import { LineSegment3d } from "../curves";
+import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";

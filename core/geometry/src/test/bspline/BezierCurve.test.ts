@@ -9,13 +9,15 @@ import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSpline1dNd } from "../../bspline/BSpline1dNd";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery, LineSegment3d, LineString3d } from "../../curves";
 
 function exercise1dNdBase(ck: Checker, curve: Bezier1dNd) {
   ck.testLE(1, curve.order, "Bezier1dNd has nontrivial order");

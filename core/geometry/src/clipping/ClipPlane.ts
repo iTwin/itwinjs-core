@@ -7,8 +7,9 @@
  * @module CartesianGeometry
  */
 
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { AxisOrder, Geometry } from "../Geometry";
-import { AnnounceNumberNumberCurvePrimitive, Arc3d } from "../curves";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";

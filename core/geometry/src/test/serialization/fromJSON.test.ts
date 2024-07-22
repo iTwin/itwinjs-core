@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 // import { expect } from "chai";
-import { LineSegment3d, LineString3d, PointString3d } from "../../curves";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { PointString3d } from "../../curve/PointString3d";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";

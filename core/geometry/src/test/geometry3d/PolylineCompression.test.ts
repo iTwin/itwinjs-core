@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { GeometryQuery, LineString3d } from "../../curves";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolygonOps } from "../../geometry3d/PolygonOps";

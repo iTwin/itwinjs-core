@@ -7,7 +7,13 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { Arc3d, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, LineSegment3d, LineString3d, Loop, LoopCurveLoopCurve, RegionOps, SignedLoops, } from "../../curves";
+import { Arc3d } from "../Arc3d";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
+import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
+import { RegionOps } from "../RegionOps";
 
 /** @packageDocumentation
  * @module Curve

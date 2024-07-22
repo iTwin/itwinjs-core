@@ -10,9 +10,15 @@
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import {
-  CurveCollection, CurvePrimitive, AnyCurve, AnyRegion, LineString3d, Loop, ParityRegion, Path, RegionOps, StrokeOptions,
-} from "../curves";
+import { CurveCollection } from "../curve/CurveCollection";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
+import { RegionOps } from "../curve/RegionOps";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";

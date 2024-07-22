@@ -10,8 +10,8 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 // cspell:word internaldocs
 
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
-import { GeometryQuery } from "../curves";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";

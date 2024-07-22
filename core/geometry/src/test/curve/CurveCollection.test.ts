@@ -6,9 +6,17 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import {
-  Arc3d, BagOfCurves, CurveCollection, CurveFactory, CurveLocationDetail, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop, Path, ConsolidateAdjacentCurvePrimitivesOptions, RegionOps,
-} from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
+import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../../curve/RegionOps";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";

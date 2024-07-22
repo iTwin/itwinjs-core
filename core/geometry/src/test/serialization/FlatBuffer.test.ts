@@ -5,9 +5,13 @@
 import { expect } from "chai";
 import { flatbuffers } from "flatbuffers";
 import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
-import {
-  Arc3d, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, PointString3d, IntegratedSpiral3d,
-} from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { PointString3d } from "../../curve/PointString3d";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";

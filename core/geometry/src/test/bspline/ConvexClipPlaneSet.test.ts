@@ -9,6 +9,7 @@ import { BooleanClipNode } from "../../clipping/BooleanClipNode";
 import { Clipper } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -16,7 +17,6 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
-import { LineSegment3d } from "../../curves";
 
 describe("ConvexClipPlaneSet", () => {
   it("HelloWorld", () => {

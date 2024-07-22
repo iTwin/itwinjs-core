@@ -11,7 +11,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { GaussMapper } from "../../numerics/Quadrature";
-import { CurvePrimitive } from "../../curves";
+import { CurvePrimitive } from "../CurvePrimitive";
 
 /**
  * Context for computing the length of a CurvePrimitive.

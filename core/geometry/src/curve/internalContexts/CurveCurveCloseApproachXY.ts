@@ -20,9 +20,15 @@ import {
   Newton1dUnbounded, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD,
 } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
-import {
-  Arc3d, CurveChainWithDistanceIndex, CurveCollection, CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, AnyCurve, LineSegment3d, LineString3d,
-} from "../../curves";
+import { Arc3d } from "../Arc3d";
+import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
+import { CurveCollection } from "../CurveCollection";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyCurve } from "../CurveTypes";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
+
 // cspell:word XYRR currentdFdX
 
 /**
@@ -68,16 +74,11 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    */
   private _results: CurveLocationDetailPair[];
 
-  private static __workPointAA0?: Point3d;
-  private static get _workPointAA0() { return this.__workPointAA0 ?? (this.__workPointAA0 = Point3d.create()); }
-  private static __workPointAA1?: Point3d;
-  private static get _workPointAA1() { return this.__workPointAA1 ?? (this.__workPointAA1 = Point3d.create()); }
-  private static __workPointBB0?: Point3d;
-  private static get _workPointBB0() { return this.__workPointBB0 ?? (this.__workPointBB0 = Point3d.create()); }
-  private static __workPointBB1?: Point3d;
-  private static get _workPointBB1() { return this.__workPointBB1 ?? (this.__workPointBB1 = Point3d.create()); }
-  private static __workPointB?: Point3d;
-  private static get _workPointB() { return this.__workPointB ?? (this.__workPointB = Point3d.create()); }
+  private static _workPointAA0 = Point3d.create();
+  private static _workPointAA1 = Point3d.create();
+  private static _workPointBB0 = Point3d.create();
+  private static _workPointBB1 = Point3d.create();
+  private static _workPointB = Point3d.create();
 
   /**
    * Constructor.
@@ -316,7 +317,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       fractionB = 0;
     else if (fractionB > 1)
       fractionB = 1;
-    this.__workPointB = pointB0.interpolate(fractionB, pointB1, this._workPointB);
+    this._workPointB = pointB0.interpolate(fractionB, pointB1, this._workPointB);
     const distanceSquared = this._workPointB.distanceSquaredXY(pointA);
     if (distanceSquared <= Math.min(maxDistanceSquared, closestApproach.detailA.a)) {
       closestApproach.detailA.setFP(fractionA, pointA, undefined, distanceSquared);

@@ -13,9 +13,11 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import {
-  CurveLocationDetail, CurvePrimitive, RecursiveCurveProcessor, AnyCurve, type AnyRegion, GeometryQuery, LineString3d, type Loop, type Path, ProxyCurve, StrokeOptions,
-} from "../curves";
+import { CurveLocationDetail } from "./CurveLocationDetail";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { AnyCurve, type AnyRegion } from "./CurveTypes";
+import { GeometryQuery } from "./GeometryQuery";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
 import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
@@ -23,6 +25,12 @@ import { GapSearchContext } from "./internalContexts/GapSearchContext";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
 import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
+import { LineString3d } from "./LineString3d";
+import { ProxyCurve } from "./ProxyCurve";
+import { StrokeOptions } from "./StrokeOptions";
+
+import type { Path } from "./Path";
+import type { Loop } from "./Loop";
 
 /** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 

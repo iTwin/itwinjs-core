@@ -9,9 +9,16 @@
 
 import { Geometry } from "../Geometry";
 import { Range3d } from "../geometry3d/Range";
-import { AnyChain, AnyCurve, BagOfCurves, CurveCollection, CurvePrimitive, LineString3d, Loop, OffsetOptions, Path, StrokeOptions } from "../curves";
+import { BagOfCurves, CurveCollection } from "./CurveCollection";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyChain, AnyCurve } from "./CurveTypes";
 import { MultiChainCollector } from "./internalContexts/MultiChainCollector";
 import { CurveChainWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { LineString3d } from "./LineString3d";
+import { Loop } from "./Loop";
+import { OffsetOptions } from "./OffsetOptions";
+import { Path } from "./Path";
+import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * Static methods for miscellaneous curve operations.

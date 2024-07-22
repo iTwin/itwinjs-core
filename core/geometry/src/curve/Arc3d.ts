@@ -23,11 +23,15 @@ import { XYAndZ } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { SineCosinePolynomial, SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
-import {
-  CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter, CurveIntervalRole, CurveLocationDetail, CurveSearchStatus, AnnounceNumberNumberCurvePrimitive, CurvePrimitive, GeometryQuery, LineString3d, OffsetOptions, StrokeOptions,
-} from "../curves";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
 import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { LineString3d } from "./LineString3d";
+import { OffsetOptions } from "./OffsetOptions";
+import { StrokeOptions } from "./StrokeOptions";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
@@ -73,18 +77,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   private _center: Point3d;
   private _matrix: Matrix3d; // columns are [vector0, vector90, unitNormal]
   private _sweep: AngleSweep; // sweep limits
-  private static __workPointA?: Point3d;
-  private static __workPointB?: Point3d;
-  private static __workPointC?: Point3d;
-  private static __workVectorU?: Vector3d;
-  private static __workVectorV?: Vector3d;
-
-  private static get _workPointA() { return this.__workPointA ?? ( this.__workPointA = Point3d.create()); }
-  private static get _workPointB() { return this.__workPointB ?? ( this.__workPointB = Point3d.create()); }
-  private static get _workPointC() { return this.__workPointC ?? ( this.__workPointC = Point3d.create()); }
-  private static get _workVectorU() { return this.__workVectorU ?? ( this.__workVectorU = Vector3d.create()); }
-  private static get _workVectorV() { return this.__workVectorV ?? ( this.__workVectorV = Vector3d.create()); }
-
+  private static _workPointA = Point3d.create();
+  private static _workPointB = Point3d.create();
+  private static _workPointC = Point3d.create();
+  private static _workVectorU = Vector3d.create();
+  private static _workVectorV = Vector3d.create();
   /** Read property for (clone of) center */
   public get center(): Point3d {
     return this._center.clone();

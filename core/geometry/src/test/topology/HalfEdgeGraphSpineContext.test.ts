@@ -5,7 +5,11 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
-import { GeometryQuery, LineSegment3d, Loop, ParityRegion, RegionBinaryOpType, RegionOps } from "../../curves";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { MultiLineStringDataVariant } from "../../geometry3d/IndexedXYZCollection";

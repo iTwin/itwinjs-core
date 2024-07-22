@@ -11,7 +11,12 @@ import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { AnyRegion, CurvePrimitive, CurveIntervalRole, CurveLocationDetail, Loop, ParityRegion, UnionRegion } from "../../curves";
+import { AnyRegion } from "../CurveTypes";
+import { CurveIntervalRole, CurveLocationDetail } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { Loop } from "../Loop";
+import { ParityRegion } from "../ParityRegion";
+import { UnionRegion } from "../UnionRegion";
 
 /**
  * Context for testing containment in Loop, ParityRegion and UnionRegion.

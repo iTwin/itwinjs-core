@@ -3,6 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
@@ -27,7 +33,6 @@ import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Arc3d, GeometryQuery, LineSegment3d, LineString3d, Loop, StrokeOptions } from "../../curves";
 
 /**
  * Return the radius of a circle with area matching centroidData.a

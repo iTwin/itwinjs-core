@@ -6,7 +6,10 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurveCollection, CurvePrimitive, RecursiveCurveProcessor } from "../../curves";
+import { CurveCollection } from "../CurveCollection";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { RecursiveCurveProcessor } from "../CurveProcessor";
+
 /**
  * Algorithmic class: Sum lengths of curves
  * @internal

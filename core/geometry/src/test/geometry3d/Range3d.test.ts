@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
@@ -16,7 +19,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { Arc3d, GeometryQuery, LineString3d } from "../../curves";
 
 // (assume points are distinct ...)
 function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Point3d[]) {

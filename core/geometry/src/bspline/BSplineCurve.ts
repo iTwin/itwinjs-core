@@ -6,9 +6,14 @@
  * @module Bspline
  */
 
+import { CurveIntervalRole, CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
-import { CurveIntervalRole, CurveLocationDetail, CurvePrimitive, LineString3d, OffsetOptions, StrokeCountMap, StrokeOptions } from "../curves";
+import { LineString3d } from "../curve/LineString3d";
+import { OffsetOptions } from "../curve/OffsetOptions";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";

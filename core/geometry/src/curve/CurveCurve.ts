@@ -8,7 +8,9 @@
 
 import { Geometry } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { AnyCurve, CurveLocationDetailPair, CurvePrimitive } from "../curves";
+import { CurveLocationDetailPair } from "./CurveLocationDetail";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyCurve } from "./CurveTypes";
 import { CurveCurveCloseApproachXY } from "./internalContexts/CurveCurveCloseApproachXY";
 import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY";
 import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXYZ";

@@ -6,7 +6,7 @@
  * @module Bspline
  */
 
-import { LineString3d } from "../curves";
+import { LineString3d } from "../curve/LineString3d";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d } from "../geometry3d/Point2dVector2d";

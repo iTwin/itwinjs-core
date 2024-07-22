@@ -16,9 +16,15 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
-import {
-  Arc3d, CurveChainWithDistanceIndex, CurveCollection, CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, AnyCurve, LineSegment3d, LineString3d,
-} from "../../curves";
+import { Arc3d } from "../Arc3d";
+import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
+import { CurveCollection } from "../CurveCollection";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyCurve } from "../CurveTypes";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
+
 // cspell:word XYRR
 
 /**
@@ -32,16 +38,11 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
   private _geometryB: AnyCurve;
   private _extendB: boolean;
   private _results: CurveLocationDetailPair[];
-  private static __workVector2dA?: Vector2d;
-  private static get _workVector2dA() { return this.__workVector2dA ?? (this.__workVector2dA = Vector2d.create()); }
-  private static __workPointAA0?: Point3d;
-  private static get _workPointAA0() { return this.__workPointAA0 ?? (this.__workPointAA0 = Point3d.create()); }
-  private static __workPointAA1?: Point3d;
-  private static get _workPointAA1() { return this.__workPointAA1 ?? (this.__workPointAA1 = Point3d.create()); }
-  private static __workPointBB0?: Point3d;
-  private static get _workPointBB0() { return this.__workPointBB0 ?? (this.__workPointBB0 = Point3d.create()); }
-  private static __workPointBB1?: Point3d;
-  private static get _workPointBB1() { return this.__workPointBB1 ?? (this.__workPointBB1 = Point3d.create()); }
+  private static _workVector2dA = Vector2d.create();
+  private static _workPointAA0 = Point3d.create();
+  private static _workPointAA1 = Point3d.create();
+  private static _workPointBB0 = Point3d.create();
+  private static _workPointBB1 = Point3d.create();
   /**
    * @param extendA flag to enable using extension of the other geometry.
    * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.

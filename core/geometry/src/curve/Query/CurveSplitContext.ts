@@ -8,7 +8,12 @@
  */
 
 import { Geometry } from "../../Geometry";
-import { AnyCurve, CurveChain, CurveCollection, CurveCurve, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive, Path } from "../../curves";
+import { AnyCurve } from "../CurveTypes";
+import { CurveChain, CurveCollection } from "../CurveCollection";
+import { CurveCurve } from "../CurveCurve";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { Path } from "../Path";
 
 /**
  * Data about a curve cut.

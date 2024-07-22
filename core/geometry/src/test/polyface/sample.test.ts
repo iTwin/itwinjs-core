@@ -6,19 +6,19 @@
 // import { expect } from "chai";
 // import { Checker } from "../Checker";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Loop } from "../../curves";
+import { Loop } from "../../curve/Loop";
 import { LinearSweep } from "../../solid/LinearSweep";
-import { ParityRegion } from "../../curves";
-import { Arc3d } from "../../curves";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { Arc3d } from "../../curve/Arc3d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curves";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { Angle } from "../../geometry3d/Angle";
-import { StrokeOptions } from "../../curves";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 describe("MeshConstruction", () => {
   /**
    * Example of constructing a plate with holes.

@@ -7,7 +7,8 @@
  * @module Curve
  */
 import { assert } from "@itwin/core-bentley";
-import { CurvePrimitive, StrokeCountMap } from "../curves";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { Geometry } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -16,10 +17,15 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import {
-  CurveChain, CurveExtendMode, CurveExtendOptions, CurveLocationDetail, CurveLocationDetailPair, GeometryQuery, LineString3d, OffsetOptions, Path, StrokeOptions, VariantCurveExtendParameter,
-} from "../curves";
+import { CurveChain } from "./CurveCollection";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
+import { GeometryQuery } from "./GeometryQuery";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { LineString3d } from "./LineString3d";
+import { OffsetOptions } from "./OffsetOptions";
+import { Path } from "./Path";
+import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * Annotation of a fragment, i.e. an interval of a curve.

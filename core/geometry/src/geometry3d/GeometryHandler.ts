@@ -15,9 +15,20 @@ import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
-import { Arc3d, CoordinateXYZ, CurveChainWithDistanceIndex, BagOfCurves, CurveCollection, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop,
-  ParityRegion, Path, PointString3d, TransitionSpiral3d, UnionRegion,
-} from "../curves";
+import { Arc3d } from "../curve/Arc3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
+import { PointString3d } from "../curve/PointString3d";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { UnionRegion } from "../curve/UnionRegion";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { Box } from "../solid/Box";
 import { Cone } from "../solid/Cone";

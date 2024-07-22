@@ -6,8 +6,8 @@
  * @module Bspline
  */
 
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { AxisOrder, Geometry } from "../Geometry";
-import { GeometryQuery } from "../curves";
 import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";

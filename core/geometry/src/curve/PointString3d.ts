@@ -15,7 +15,7 @@ import { Point3dArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { XYZProps } from "../geometry3d/XYZProps";
-import { GeometryQuery } from "../curves";
+import { GeometryQuery } from "./GeometryQuery";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 

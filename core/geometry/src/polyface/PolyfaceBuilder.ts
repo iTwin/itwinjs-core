@@ -7,10 +7,21 @@
  * @module Polyface
  */
 
-import { AxisOrder, Geometry } from "../Geometry";
+import { Arc3d } from "../curve/Arc3d";
+import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
+import { CurveChain, CurveCollection } from "../curve/CurveCollection";
+import { CurveFactory } from "../curve/CurveFactory";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
 import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
 import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
-import { AnyCurve, AnyRegion, Arc3d, ConstructCurveBetweenCurves, CurveChain, CurveCollection, CurveFactory, CurvePrimitive, GeometryQuery, LineString3d, Loop, ParityRegion, StrokeOptions, UnionRegion } from "../curves";
+import { StrokeOptions } from "../curve/StrokeOptions";
+import { UnionRegion } from "../curve/UnionRegion";
+import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";
@@ -363,12 +374,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public findOrAddParamXY(x: number, y: number): number {
     return this.addParamXY(x, y);
   }
-  private static get _workPointFindOrAddA() { return this.__workPointFindOrAddA ?? ( this.__workPointFindOrAddA =  Point3d.create()); }
-  private static get _workVectorFindOrAdd() { return this.__workVectorFindOrAdd ?? ( this.__workVectorFindOrAdd =  Vector3d.create()); }
-  private static get _workUVFindOrAdd() { return this.__workUVFindOrAdd ?? ( this.__workUVFindOrAdd =  Point2d.create()); }
-  private static __workPointFindOrAddA?: Point3d;
-  private static __workVectorFindOrAdd?: Vector3d;
-  private static __workUVFindOrAdd?: Point2d;
+  private static _workPointFindOrAddA = Point3d.create();
+  private static _workVectorFindOrAdd = Vector3d.create();
+  private static _workUVFindOrAdd = Point2d.create();
   /**
    * Add a point to the polyface. The implementation is free to either create a new point or return the index of a
    * prior point with the same coordinates.

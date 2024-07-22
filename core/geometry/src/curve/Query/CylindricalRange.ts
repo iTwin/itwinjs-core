@@ -12,7 +12,11 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Arc3d } from "../Arc3d";
-import { AnyCurve, GeometryQuery, LineSegment3d, LineString3d, StrokeOptions } from "../../curves";
+import { AnyCurve } from "../CurveTypes";
+import { GeometryQuery } from "../GeometryQuery";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
+import { StrokeOptions } from "../StrokeOptions";
 
 /**
  * Context for computing geometry range around an axis.

@@ -9,9 +9,13 @@
 
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import {
-  CurveChain, CurvePrimitive, RecursiveCurveProcessor, GeometryQuery, LineString3d, StrokeOptions,
-} from "../curves";
+import { CurveChain } from "./CurveCollection";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { GeometryQuery } from "./GeometryQuery";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
+
 /**
  * * A `Path` object is a collection of curves that join head-to-tail to form a path.
  * * A `Path` object does not bound a planar region. Use `Loop` to indicate region bounding.

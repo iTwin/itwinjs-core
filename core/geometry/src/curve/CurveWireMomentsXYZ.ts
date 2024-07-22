@@ -14,7 +14,9 @@ import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { MomentData } from "../geometry4d/MomentData";
 import { GaussMapper } from "../numerics/Quadrature";
-import { AnyCurve, CurveCollection, CurvePrimitive } from "../curves";
+import { AnyCurve } from "./CurveTypes";
+import { CurveCollection } from "./CurveCollection";
+import { CurvePrimitive } from "./CurvePrimitive";
 
 /**
  * Class to visit curve primitives and accumulate wire moment integrations.

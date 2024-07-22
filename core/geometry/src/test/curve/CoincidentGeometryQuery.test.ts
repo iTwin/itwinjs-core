@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Arc3d, CurveLocationDetail, GeometryQuery, LineSegment3d } from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
 import { Point3d } from "../../geometry3d/Point3dVector3d";

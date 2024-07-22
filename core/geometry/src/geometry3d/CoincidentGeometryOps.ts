@@ -7,7 +7,9 @@
  * @module CartesianGeometry
  */
 import { assert } from "@itwin/core-bentley";
-import { Arc3d, CurveLocationDetail, CurveLocationDetailPair, CurvePrimitive } from "../curves";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "./AngleSweep";
 import { Point3d, Vector3d } from "./Point3dVector3d";

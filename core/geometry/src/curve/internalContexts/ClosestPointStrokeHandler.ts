@@ -11,7 +11,9 @@ import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
-import { CurveExtendOptions, CurveLocationDetail, CurvePrimitive, VariantCurveExtendParameter } from "../../curves";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
+import { CurveLocationDetail } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
 /**

@@ -8,6 +8,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -22,7 +25,6 @@ import { ClipPlane } from "./ClipPlane";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveProps, ClipShape } from "./ClipPrimitive";
 import { Clipper, ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, Arc3d, LineSegment3d } from "../curves";
 
 /**
  * Wire format describing a [[ClipVector]].

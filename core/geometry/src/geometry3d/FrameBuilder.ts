@@ -10,7 +10,11 @@
 // import { Point2d } from "./Geometry2d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
-import { Arc3d, CurveCollection, CurvePrimitive, LineSegment3d, LineString3d } from "../curves";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveCollection } from "../curve/CurveCollection";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
 import { AxisOrder, AxisScaleSelect, Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Matrix3d } from "./Matrix3d";

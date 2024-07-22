@@ -3,6 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { UVSurface } from "../geometry3d/GeometryHandler";
@@ -17,8 +24,6 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatBuffer";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
-import { Arc3d, CurveLocationDetail, CurveLocationDetailPair, GeometryQuery, LineSegment3d, LineString3d, Loop } from "../curves";
-import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {

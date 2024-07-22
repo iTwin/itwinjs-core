@@ -8,10 +8,23 @@ import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
-import {
-  Arc3d, CoordinateXYZ, CurveChainWithDistanceIndex, BagOfCurves, CurveCollection, CurveExtendMode, CurveIntervalRole, CurveLocationDetail, CurveSearchStatus,
-  CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Path, StrokeCountMap, DirectSpiral3d, IntegratedSpiral3d, TransitionSpiral3d, StrokeOptions,
-} from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
+import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
+import { CurveExtendMode } from "../../curve/CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
+import { StrokeCountMap } from "../../curve/Query/StrokeCountMap";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -33,7 +46,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
-import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 
 class StrokeCountSearch extends NullGeometryHandler {
   public emitPackedStrokeCountMap(m: StrokeCountMap): any {

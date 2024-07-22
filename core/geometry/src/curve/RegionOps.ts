@@ -7,7 +7,6 @@
  * @module Curve
  */
 
-import { AnyChain, AnyCurve, AnyRegion, BagOfCurves, CurveChain, CurveCollection, CurveCurve, CurveOps, CurvePrimitive, GeometryQuery, JointOptions, LineString3d, Loop, OffsetOptions, ParityRegion, Path, RegionMomentsXY, SignedLoops, StrokeOptions } from "../curves";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import {
@@ -28,14 +27,27 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphOps } from "../topology/Merging";
 import { Triangulator } from "../topology/Triangulation";
+import { BagOfCurves, CurveChain, CurveCollection } from "./CurveCollection";
+import { CurveCurve } from "./CurveCurve";
+import { CurveOps } from "./CurveOps";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyChain, AnyCurve, AnyRegion } from "./CurveTypes";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
+import { GeometryQuery } from "./GeometryQuery";
 import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
 import { PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { LineString3d } from "./LineString3d";
+import { Loop, SignedLoops } from "./Loop";
+import { JointOptions, OffsetOptions } from "./OffsetOptions";
+import { ParityRegion } from "./ParityRegion";
+import { Path } from "./Path";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
 import { CurveSplitContext } from "./Query/CurveSplitContext";
 import { PointInOnOutContext } from "./Query/InOutTests";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
+import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
+import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
 
 /**

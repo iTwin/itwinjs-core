@@ -6,9 +6,13 @@ import { expect } from "chai";
 import { randomInt } from "crypto";
 import * as fs from "fs";
 import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
-import {
-  Arc3d, GeometryQuery, LineString3d, Loop, ParityRegion, Path, StrokeOptions,
-} from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";

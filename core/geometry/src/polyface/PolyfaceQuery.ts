@@ -10,8 +10,16 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 // cspell:word internaldocs
 
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { CurveOps } from "../curve/CurveOps";
+import { LinearCurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyChain } from "../curve/CurveTypes";
 import { MultiChainCollector } from "../curve/internalContexts/MultiChainCollector";
-import { AnyChain, BagOfCurves, CurveCollection, CurveLocationDetail, CurveOps, LinearCurvePrimitive, LineSegment3d, LineString3d, Loop, StrokeOptions } from "../curves";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";

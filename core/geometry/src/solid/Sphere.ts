@@ -7,7 +7,12 @@
  * @module Solid
  */
 
-import { Arc3d, CurveCollection, GeometryQuery, LineString3d, Loop, StrokeOptions } from "../curves";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveCollection } from "../curve/CurveCollection";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";

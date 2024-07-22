@@ -5,6 +5,9 @@
 
 import { expect } from "chai";
 
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Geometry, PolygonLocation } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { BarycentricTriangle, TriangleLocationDetail } from "../../geometry3d/BarycentricTriangle";
@@ -16,7 +19,6 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery, LineSegment3d, LineString3d } from "../../curves";
 
 // cspell:word subtriangle
 function verifyTriangle(ck: Checker, triangle: BarycentricTriangle) {

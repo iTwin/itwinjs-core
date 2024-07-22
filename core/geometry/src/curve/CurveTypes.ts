@@ -7,9 +7,12 @@
  * @module Curve
  */
 
-import type {
- BagOfCurves, CurveCollection, CurvePrimitive, Loop, Path, ParityRegion, UnionRegion,
-} from "../curves";
+import type { BagOfCurves, CurveCollection } from "./CurveCollection";
+import type { CurvePrimitive } from "./CurvePrimitive";
+import type { Loop } from "./Loop";
+import type { Path } from "./Path";
+import type { ParityRegion } from "./ParityRegion";
+import type { UnionRegion } from "./UnionRegion";
 
 /**
  * Union type for `GeometryQuery` classes that have contain curves, either as individual parameter space or as collections.

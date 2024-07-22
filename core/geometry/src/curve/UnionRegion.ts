@@ -7,9 +7,14 @@
  * @module Curve
  */
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import {
-  AnyCurve, CurveCollection, RecursiveCurveProcessor, GeometryQuery, Loop, ParityRegion, StrokeOptions,
-} from "../curves";
+import { AnyCurve } from "./CurveTypes";
+import { CurveCollection } from "./CurveCollection";
+import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { GeometryQuery } from "./GeometryQuery";
+import { Loop } from "./Loop";
+import { ParityRegion } from "./ParityRegion";
+import { StrokeOptions } from "./StrokeOptions";
+
 /**
  * * A `UnionRegion` is a collection of other planar region types -- `Loop` and `ParityRegion`.
  * * The composite is the union of the contained regions.

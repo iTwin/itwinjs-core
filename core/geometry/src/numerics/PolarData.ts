@@ -2,8 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Arc3d } from "../curve/Arc3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
-import { Arc3d, CoordinateXYZ, GeometryQuery, LineSegment3d } from "../curves";
 import { Angle } from "../geometry3d/Angle";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 

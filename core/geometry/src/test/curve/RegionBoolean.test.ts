@@ -7,10 +7,21 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
-import {
-  Arc3d, CurveCollection, CurveCurve, CurveFactory, CurveLocationDetailPair, CurvePrimitive, AnyCurve, AnyRegion, GeometryQuery, LineSegment3d, LineString3d, Loop,
-  SignedLoops, ParityRegion, RegionBinaryOpType, RegionOps, UnionRegion,
-} from "../../curves";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurveCollection } from "../../curve/CurveCollection";
+import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { PlaneAltitudeRangeContext } from "../../curve/internalContexts/PlaneAltitudeRangeContext";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop, SignedLoops } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -35,7 +46,6 @@ import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/M
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "../topology/Graph.test";
-import { PlaneAltitudeRangeContext } from "../../curve/internalContexts/PlaneAltitudeRangeContext";
 
 describe("RegionBoolean", () => {
   it("SimpleSplits", () => {

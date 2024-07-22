@@ -5,10 +5,28 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
+import { CurveCollection } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Path } from "../../curve/Path";
+import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
+import { ClothoidSeriesRLEvaluator } from "../../curve/spiral/ClothoidSeries";
+import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
+import { DirectHalfCosineSpiralEvaluator } from "../../curve/spiral/DirectHalfCosineSpiralEvaluator";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import {
-  CurveChainWithDistanceIndex, CurveCollection, CurveFactory, CurveLocationDetail, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Path, DirectSpiral3d,
-  IntegratedSpiral3d, TransitionSpiral3d, StrokeOptions,
-} from "../../curves";
+  NormalizedBiQuadraticTransition, NormalizedBlossTransition, NormalizedClothoidTransition, NormalizedCosineTransition, NormalizedSineTransition,
+} from "../../curve/spiral/NormalizedTransition";
+import { PolishCubicEvaluator } from "../../curve/spiral/PolishCubicSpiralEvaluator";
+import { TransitionConditionalProperties } from "../../curve/spiral/TransitionConditionalProperties";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { AxisIndex, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -22,13 +40,6 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { TransitionConditionalProperties } from "../../curve/spiral/TransitionConditionalProperties";
-import { ClothoidSeriesRLEvaluator } from "../../curve/spiral/ClothoidSeries";
-import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
-import { NormalizedBiQuadraticTransition, NormalizedBlossTransition, NormalizedClothoidTransition, NormalizedCosineTransition, NormalizedSineTransition } from "../../curve/spiral/NormalizedTransition";
-import { DirectHalfCosineSpiralEvaluator } from "../../curve/spiral/DirectHalfCosineSpiralEvaluator";
-import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
-import { PolishCubicEvaluator } from "../../curve/spiral/PolishCubicSpiralEvaluator";
 
 function exerciseCloneAndScale(ck: Checker, data: TransitionConditionalProperties) {
   const data1 = data.clone();

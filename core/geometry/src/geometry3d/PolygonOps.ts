@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 import { assert } from "@itwin/core-bentley";
-import { CurveLocationDetailPair } from "../curves";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator, PolygonLocation } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";

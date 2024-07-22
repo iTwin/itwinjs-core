@@ -7,7 +7,10 @@
  * @module Curve
  */
 
-import { CurveCollection, CurvePrimitive, LineSegment3d, LineString3d } from "../../curves";
+import { CurveCollection } from "../CurveCollection";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
 import { CloneCurvesContext } from "./CloneCurvesContext";
 
 /**

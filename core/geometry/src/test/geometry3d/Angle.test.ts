@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { AngleSweepProps, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -11,7 +14,6 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Arc3d, GeometryQuery, LineSegment3d } from "../../curves";
 
 /* cspell:word isnan */
 

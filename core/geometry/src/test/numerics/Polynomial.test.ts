@@ -4,6 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -26,7 +30,6 @@ import { Quadrature } from "../../numerics/Quadrature";
 import { Sphere } from "../../solid/Sphere";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Arc3d, GeometryQuery, LineSegment3d, LineString3d } from "../../curves";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {

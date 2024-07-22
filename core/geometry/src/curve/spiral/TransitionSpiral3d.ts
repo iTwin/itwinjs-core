@@ -12,9 +12,11 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { CurvePrimitive } from "../CurvePrimitive";
 import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "../internalContexts/PlaneAltitudeRangeContext";
-import { CurvePrimitive, LineString3d, OffsetOptions } from "../../curves";
+import { LineString3d } from "../LineString3d";
+import { OffsetOptions } from "../OffsetOptions";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
 
 import type { Vector3d } from "../../geometry3d/Point3dVector3d";

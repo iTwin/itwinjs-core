@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { GeometryQuery, StrokeOptions } from "../../curves";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";

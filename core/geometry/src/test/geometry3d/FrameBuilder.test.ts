@@ -6,6 +6,14 @@ import { expect } from "chai";
 
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
+import { Arc3d } from "../../curve/Arc3d";
+import { AnyCurve } from "../../curve/CurveTypes";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { RegionOps } from "../../curve/RegionOps";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { AxisScaleSelect, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
@@ -19,7 +27,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { MatrixTests } from "./Matrix3d.test";
-import { AnyCurve, Arc3d, DirectSpiral3d, GeometryQuery, LineSegment3d, LineString3d, Loop, RegionOps } from "../../curves";
 
 describe("FrameBuilder", () => {
 

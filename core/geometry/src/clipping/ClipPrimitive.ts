@@ -24,7 +24,8 @@ import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./U
 import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolylineOps } from "../geometry3d/PolylineOps";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, Arc3d } from "../curves";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 // cspell:word zlow
 // cspell:word zhigh
 /**

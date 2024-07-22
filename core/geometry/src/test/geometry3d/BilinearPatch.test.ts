@@ -15,7 +15,8 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery, StrokeOptions } from "../../curves";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 
 function verifyPatch(ck: Checker, patch: BilinearPatch) {

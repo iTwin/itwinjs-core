@@ -4,7 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BagOfCurves, CurvePrimitive, GeometryQuery, LineSegment3d, LineString3d, Loop } from "../../curves";
+import { BagOfCurves } from "../../curve/CurveCollection";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
 import { BilinearPatch } from "../../geometry3d/BilinearPatch";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
