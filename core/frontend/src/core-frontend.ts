@@ -128,6 +128,7 @@ export * from "./tools/ToolSettings";
 export * from "./tools/ToolAdmin";
 export * from "./tools/ToolAssistance";
 export * from "./tools/ViewTool";
+export * from "./workers/RegisterWorker";
 export * from "./BackgroundMapGeometry";
 export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
