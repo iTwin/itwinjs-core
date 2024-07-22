@@ -791,6 +791,7 @@ export abstract class RenderSystem implements IDisposable {
       [_implementationProhibited]: undefined,
       transientIds: iModel.transientIds.fork(),
       constraints: {
+        [_implementationProhibited]: undefined,
         maxTextureSize: this.maxTextureSize,
       },
     };

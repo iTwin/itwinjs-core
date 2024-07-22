@@ -18,6 +18,7 @@ import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentl
  * @beta
  */
 export interface GraphicDescription {
+  /** @internal */
   readonly [_implementationProhibited]: unknown;
 }
 
@@ -34,7 +35,8 @@ export namespace GraphicDescription {
  * @beta
  */
 export interface GraphicDescriptionConstraints {
-  // ###TODO [_implementationProhibited]
+  /** @internal */
+  readonly [_implementationProhibited]: unknown;
   readonly maxTextureSize: number;
 }
 
@@ -93,9 +95,6 @@ export interface GraphicDescriptionContext {
 /**
  * @beta
  */
-/**
- * @beta
- */
 export interface ComputeGraphicDescriptionChordToleranceArgs {
   builder: GraphicDescriptionBuilder;
   computeRange: () => Range3d;
@@ -123,7 +122,6 @@ export type GraphicDescriptionBuilderOptions = {
  * @beta
  */
 export interface GraphicDescriptionBuilder extends GraphicAssembler {
-  // ###TODO [_implementationProhibited]
   finish(): GraphicDescription;
 }
 

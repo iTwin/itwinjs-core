@@ -8,9 +8,11 @@ import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicPrimitive } from "../../common/render/GraphicPrimitive";
+import { _implementationProhibited } from "../../common/internal/Symbols";
 
 describe("GraphicPrimitive", () => {
   class Builder extends GraphicBuilder {
+    public readonly [_implementationProhibited] = undefined;
     private _primitive?: GraphicPrimitive;
 
     protected set primitive(primitive: GraphicPrimitive) {

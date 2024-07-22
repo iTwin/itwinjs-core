@@ -84,6 +84,7 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
 }
 
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
+  public readonly [_implementationProhibited] = undefined;
   private readonly _computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
   private readonly _constraints: GraphicDescriptionConstraints;
   private readonly _viewIndependentOrigin?: Point3d;

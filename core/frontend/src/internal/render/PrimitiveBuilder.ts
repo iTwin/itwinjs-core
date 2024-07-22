@@ -16,13 +16,14 @@ import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumu
 import { MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
-import { _accumulator } from "../../common/internal/Symbols";
+import { _accumulator, _implementationProhibited } from "../../common/internal/Symbols";
 
 // Set to true to add a range box to every graphic produced by PrimitiveBuilder.
 let addDebugRangeBox = false;
 
 /** @internal */
 export class PrimitiveBuilder extends GraphicBuilder {
+  public readonly [_implementationProhibited] = undefined;
   public readonly system: RenderSystem;
   public primitives: RenderGraphic[] = [];
   private readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;

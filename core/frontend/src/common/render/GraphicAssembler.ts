@@ -36,7 +36,8 @@ export interface GraphicAssemblerOptions {
  * @public
  */
 export abstract class GraphicAssembler {
-  // ###TODO protected abstract [_implementationProhibited]: unknown;
+  /** @internal */
+  public abstract [_implementationProhibited]: unknown;
 
   /** @internal */
   public readonly [_accumulator]: GeometryAccumulator;
