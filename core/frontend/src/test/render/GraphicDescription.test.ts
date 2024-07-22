@@ -380,7 +380,7 @@ describe("GraphicDescriptionBuilder", () => {
     expectFeature(2, batch.featureTable, { elementId: "0xa3", subCategoryId: "0xc2", geometryClass: GeometryClass.Primary, modelId: "0xb1" });
   });
 
-  describe.only("Worker", () => {
+  describe("Worker", () => {
     const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");
 
     it("throws on invalid context", async () => {
