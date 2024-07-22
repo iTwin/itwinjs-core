@@ -13,27 +13,21 @@ interface Task {
   resolve: (error: Error) => void;
 }
 
-/** The successful result of a worker operation, correlated with the id of the caller to resolve with the result.
- * @internal
- */
+/** The successful result of a worker operation, correlated with the id of the caller to resolve with the result. */
 interface WorkerResult {
   msgId: number;
   result: any;
   error?: never;
 }
 
-/** An error resulting from a worker operation, correlated with the id of the caller to reject with the error.
- * @internal
- */
+/** An error resulting from a worker operation, correlated with the id of the caller to reject with the error. */
 interface WorkerError {
   msgId: number;
   error: Error;
   result?: never;
 }
 
-/** Response to `postMessage` produced by a worker operation.
- * @internal
- */
+/** Response to `postMessage` produced by a worker operation. */
 type WorkerResponse = WorkerResult | WorkerError;
 
 /** Given an interface T that defines the operations provided by a worker, produce an interface that can be used to asynchronously invoke those operations
@@ -44,7 +38,7 @@ type WorkerResponse = WorkerResult | WorkerError;
  *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `async multiArgFunc(args: [U, V], transfer?: Transferable[]): Promise<R>`.
  * @note All parameters of all methods of `T` must support [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) -
  * attempts to pass functions, instances of classes, DOM nodes, WebGL resources, and other non-cloneable types will compile but fail at run-time.
- * @internal
+ * @beta
  */
 export type WorkerInterface<T> = {
   [P in keyof T]: T[P] extends () => any ? () => Promise<ReturnType<T[P]>> :
@@ -56,7 +50,7 @@ export type WorkerInterface<T> = {
 /** Augments each method of `T` with the ability to specify values to be transferred from the worker thread to the main thread.
  * Each return type `R` is replaced with `R | { result: R; transfer: Transferable[]; }`.
  * @see [[WorkerImplementation]].
- * @internal
+ * @beta
  */
 export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | { result: ReturnType<T>, transfer: Transferable[] };
 
@@ -69,7 +63,7 @@ export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | 
  *  - `multiArgFunc(arg1: U, arg2: V): R` becomes `multiArgFunc([U, V]): R | { result: R; transfer: Transferable[]; }`.
  * @note All parameters of all methods of `T` must support [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) -
  * attempts to pass functions, instances of classes, DOM nodes, WebGL resources, and other non-cloneable types will compile but fail at run-time.
- * @internal
+ * @beta
  */
 export type WorkerImplementation<T> = {
   [P in keyof T]: T[P] extends () => any ? () => WorkerReturnType<T[P]> :
@@ -82,7 +76,7 @@ export type WorkerImplementation<T> = {
  * the methods of `T`.
  * To use a worker proxy, define a worker script that provides [[registerWorker]] with an implementation of `T`, and obtain a proxy
  * via [[createWorkerProxy]] on the main thread. The proxy can then be used to asynchronously invoke methods of `T` on the worker.
- * @internal
+ * @beta
  */
 export type WorkerProxy<T> = WorkerInterface<T> & {
   /** Terminate the worker. */
@@ -92,7 +86,7 @@ export type WorkerProxy<T> = WorkerInterface<T> & {
 };
 
 /** Create a [[WorkerProxy]] implementing the methods of `T` using the specified worker script.
- * @internal
+ * @beta
  */
 export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
   const tasks = new Map<number, Task>();
