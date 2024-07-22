@@ -32,11 +32,16 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
   private _geometryB: AnyCurve;
   private _extendB: boolean;
   private _results: CurveLocationDetailPair[];
-  private static _workVector2dA = Vector2d.create();
-  private static _workPointAA0 = Point3d.create();
-  private static _workPointAA1 = Point3d.create();
-  private static _workPointBB0 = Point3d.create();
-  private static _workPointBB1 = Point3d.create();
+  private static __workVector2dA?: Vector2d;
+  private static get _workVector2dA() { return this.__workVector2dA ?? (this.__workVector2dA = Vector2d.create()); }
+  private static __workPointAA0?: Point3d;
+  private static get _workPointAA0() { return this.__workPointAA0 ?? (this.__workPointAA0 = Point3d.create()); }
+  private static __workPointAA1?: Point3d;
+  private static get _workPointAA1() { return this.__workPointAA1 ?? (this.__workPointAA1 = Point3d.create()); }
+  private static __workPointBB0?: Point3d;
+  private static get _workPointBB0() { return this.__workPointBB0 ?? (this.__workPointBB0 = Point3d.create()); }
+  private static __workPointBB1?: Point3d;
+  private static get _workPointBB1() { return this.__workPointBB1 ?? (this.__workPointBB1 = Point3d.create()); }
   /**
    * @param extendA flag to enable using extension of the other geometry.
    * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.

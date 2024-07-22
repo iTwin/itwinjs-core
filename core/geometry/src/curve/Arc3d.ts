@@ -73,11 +73,18 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   private _center: Point3d;
   private _matrix: Matrix3d; // columns are [vector0, vector90, unitNormal]
   private _sweep: AngleSweep; // sweep limits
-  private static _workPointA = Point3d.create();
-  private static _workPointB = Point3d.create();
-  private static _workPointC = Point3d.create();
-  private static _workVectorU = Vector3d.create();
-  private static _workVectorV = Vector3d.create();
+  private static __workPointA?: Point3d;
+  private static __workPointB?: Point3d;
+  private static __workPointC?: Point3d;
+  private static __workVectorU?: Vector3d;
+  private static __workVectorV?: Vector3d;
+
+  private static get _workPointA() { return this.__workPointA ?? ( this.__workPointA = Point3d.create()); }
+  private static get _workPointB() { return this.__workPointB ?? ( this.__workPointB = Point3d.create()); }
+  private static get _workPointC() { return this.__workPointC ?? ( this.__workPointC = Point3d.create()); }
+  private static get _workVectorU() { return this.__workVectorU ?? ( this.__workVectorU = Vector3d.create()); }
+  private static get _workVectorV() { return this.__workVectorV ?? ( this.__workVectorV = Vector3d.create()); }
+
   /** Read property for (clone of) center */
   public get center(): Point3d {
     return this._center.clone();

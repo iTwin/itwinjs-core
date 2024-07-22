@@ -87,10 +87,16 @@ function accumulateGoodUnitPerpendicular(
 export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /** String name for schema properties */
   public readonly curvePrimitiveType = "lineString";
-  private static _workPointA = Point3d.create();
-  private static _workPointB = Point3d.create();
-  private static _workPointC = Point3d.create();
-  private static _workRay = Ray3d.createXAxis();
+  private static __workPointA?: Point3d;
+  private static __workPointB?: Point3d;
+  private static __workPointC?: Point3d;
+  private static __workRay?: Ray3d;
+
+  private static get _workPointA() { return this.__workPointA ?? (this.__workPointA = Point3d.create()); }
+  private static get _workPointB() { return this.__workPointB ?? (this.__workPointB = Point3d.create()); }
+  private static get _workPointC() { return this.__workPointC ?? (this.__workPointC = Point3d.create()); }
+  private static get _workRay() { return this.__workRay ?? (this.__workRay = Ray3d.createXAxis()); }
+
   /** test if `other` is an instance of `LineString3d` */
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof LineString3d;

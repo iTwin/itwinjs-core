@@ -363,9 +363,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public findOrAddParamXY(x: number, y: number): number {
     return this.addParamXY(x, y);
   }
-  private static _workPointFindOrAddA = Point3d.create();
-  private static _workVectorFindOrAdd = Vector3d.create();
-  private static _workUVFindOrAdd = Point2d.create();
+  private static get _workPointFindOrAddA() { return this.__workPointFindOrAddA ?? ( this.__workPointFindOrAddA =  Point3d.create()); }
+  private static get _workVectorFindOrAdd() { return this.__workVectorFindOrAdd ?? ( this.__workVectorFindOrAdd =  Vector3d.create()); }
+  private static get _workUVFindOrAdd() { return this.__workUVFindOrAdd ?? ( this.__workUVFindOrAdd =  Point2d.create()); }
+  private static __workPointFindOrAddA?: Point3d;
+  private static __workVectorFindOrAdd?: Vector3d;
+  private static __workUVFindOrAdd?: Point2d;
   /**
    * Add a point to the polyface. The implementation is free to either create a new point or return the index of a
    * prior point with the same coordinates.
