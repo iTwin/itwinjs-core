@@ -166,13 +166,15 @@ export class InsertAndRetriangulateContext {
     return stat;
   }
   /**
-   * Advance movingPosition to a face, edge, or vertex position detail that contains xyz.
-   * Prior content in movingPosition is used as seed.
-   * Return true if successful.
+   * Advance movingPosition to a face, edge, or vertex position detail that contains `target`.
+   * @param movingPosition input seed for search, updated on return
+   * @param target point to search for containing topology in the graph
+   * @param announcer optional callback invoked during search loop; return false to end search
+   * @returns true if search was successful
    */
   public moveToPoint(
     movingPosition: HalfEdgePositionDetail,
-    xyz: Point3d,
+    target: Point3d,
     announcer?: (position: HalfEdgePositionDetail) => boolean,
   ): boolean {
     const psc = PointSearchContext.create();
@@ -191,7 +193,7 @@ export class InsertAndRetriangulateContext {
         if (!continueSearch)
           break;
       }
-      if (!psc.setSearchRay(movingPosition, xyz, ray)) {
+      if (!psc.setSearchRay(movingPosition, target, ray)) {
         return false;
       } else if (movingPosition.isFace) {
         const lastBefore = HalfEdgePositionDetail.create();
@@ -214,12 +216,12 @@ export class InsertAndRetriangulateContext {
             break;
           }
           case RayClassification.RC_Bracket: {
-            movingPosition.resetAsFace(lastBefore.node, xyz);
+            movingPosition.resetAsFace(lastBefore.node, target);
             movingPosition.setITag(1);
             break;
           }
           case RayClassification.RC_TargetBefore: {
-            movingPosition.resetAsFace(movingPosition.node, xyz);
+            movingPosition.resetAsFace(movingPosition.node, target);
             movingPosition.setITag(1);
             break;
           }
@@ -245,7 +247,7 @@ export class InsertAndRetriangulateContext {
           break;
       }
     }
-    if (movingPosition.isAtXY(xyz.x, xyz.y))
+    if (movingPosition.isAtXY(target.x, target.y))
       return true;
     if (trap > 1) {
       // ugh! We exited the loop by repeatedly hitting the same node with edge or vertex type in lastBefore.

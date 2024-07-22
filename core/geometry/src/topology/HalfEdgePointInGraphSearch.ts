@@ -168,14 +168,23 @@ export class PointSearchContext {
     return this.panic();
   }
   /**
-   * Visit all edges around the face, updating `lastBefore` and `firstAfter` to the intersection of the ray with an
-   * edge directly before and/or after the target point.
+   * Visit all edges around the face, updating `lastBefore` and `firstAfter` to ray-edge intersections that
+   * lie directly before and/or after the target point on the ray, if at all.
    * @param faceNode starting node on the face.
    * @param ray the ray to the target point.
    * @param targetDistance distance along the ray to the target point.
    * @param lastBefore the detail to reset as the last hit on the ray before the target point (CALLER CREATED).
    * @param firstAfter the detail to reset as the first hit on the ray after the target point (CALLER CREATED).
-   * @returns the classification of the ray.
+   * @returns summary of the updated details:
+   * * [[RayClassification.RC_TargetOnVertex]] - target lies at a vertex of the face (details are identical)
+   * * [[RayClassification.RC_TargetOnEdge]] - target lies on an edge of the face (details are identical)
+   * * [[RayClassification.RC_TargetBefore]] - target lies before the face; the ray intersects the face beyond
+   * the target point.
+   * * [[RayClassification.RC_TargetAfter]] - target lies after the face; the ray intersects the face before
+   * the target point.
+   * * [[RayClassification.RC_Bracket]] - target lies between intersections of the ray and the face; if the face
+   * is convex, this means the target lies inside the face.
+   * * [[RayClassification.RC_NoHits]] - the face does not intersect the ray
    */
   public reAimAroundFace(
     faceNode: HalfEdge,
@@ -222,7 +231,8 @@ export class PointSearchContext {
         }
         if (rayFraction > targetDistance && rayFraction < firstAfter.getDTag()!) {
           firstAfter.setFrom(edgeHit);
-          firstAfter.setITag(v0 > 0.0 ? -1 : 1);
+          if (v0 > 0)
+            firstAfter.setITag(-1); // face is not locally convex; this "after" hit cannot bracket
         }
         if (rayFraction < targetDistance && rayFraction > lastBefore.getDTag()!) {
           lastBefore.setFrom(edgeHit);
@@ -233,7 +243,7 @@ export class PointSearchContext {
       node0 = node0.faceSuccessor;
     } while (node0 !== faceNode);
     // returned to start node
-    const afterTag = firstAfter.getITag(); // TODO: what is ITag used for? getITag only called here and in moveToPoint...
+    const afterTag = firstAfter.getITag();
     firstAfter.setITag(0);
     lastBefore.setITag(0);
     if (lastBefore.isUnclassified) {
@@ -244,7 +254,7 @@ export class PointSearchContext {
     if (firstAfter.isUnclassified || (firstAfter.isEdge && afterTag && afterTag < 0)) {
       return RayClassification.RC_TargetAfter;
     } else {
-      return RayClassification.RC_Bracket;
+      return RayClassification.RC_Bracket; // face is locally convex; target lies inside this face
     }
   }
   /**
