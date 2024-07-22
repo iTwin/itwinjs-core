@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed performance problem for planar clip masks",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
