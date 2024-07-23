@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BentleyStatus, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps,
@@ -535,10 +535,6 @@ describe("GeometryStream", () => {
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
-    Logger.initializeToConsole();
-    Logger.setLevel("core-backend", LogLevel.Trace);
-    Logger.setLevel("core-backend.IModelDb", LogLevel.Trace);
-    Logger.setLevel("core-backend.IModelDb.ElementTreeWalker", LogLevel.Trace);
     deleteElementTree(imodel, mySubject, 1);
     expect(imodel.elements.tryGetElement(mySubject)).not.undefined;
   });
@@ -550,10 +546,6 @@ describe("GeometryStream", () => {
 
     createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
 
-    Logger.initializeToConsole();
-    Logger.setLevel("core-backend", LogLevel.Trace);
-    Logger.setLevel("core-backend.IModelDb", LogLevel.Trace);
-    Logger.setLevel("core-backend.IModelDb.ElementTreeWalker", LogLevel.Trace);
     deleteElementTree(imodel, mySubject, 2);
     expect(imodel.elements.tryGetElement(mySubject)).undefined;
   });
