@@ -10,7 +10,6 @@ import {
 } from "@itwin/core-frontend";
 import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/internal/render/PrimitiveBuilder";
 import { DisplayParams } from "@itwin/core-frontend/lib/cjs/common/internal/render/DisplayParams";
-import { GeometryAccumulator } from "@itwin/core-frontend/lib/cjs/common/internal/render/GeometryAccumulator";
 import { _accumulator } from "@itwin/core-frontend/lib/cjs/common/internal/Symbols";
 import { Geometry } from "@itwin/core-frontend/lib/cjs/common/internal/render/GeometryPrimitives";
 import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
@@ -334,7 +333,7 @@ describe("PrimitiveBuilder", () => {
 
   it("should be able to finish graphics", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
-    const accum = new GeometryAccumulator();
+    const accum = primBuilder[_accumulator];
 
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
@@ -368,7 +367,7 @@ describe("PrimitiveBuilder", () => {
     accum.addPolyface(loopGeom.getPolyfaces(0.22)![0].indexedPolyface, displayParams, Transform.createIdentity());
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
-    const graphic = (primBuilder as any).finishGraphic(accum);
+    const graphic = primBuilder.finish();
     expect(primBuilder.primitives.length).to.equal(0); // if only 1 entry (a branch), the list of primitives is popped.
     expect(graphic instanceof Branch).to.be.true;
     expect((graphic as Branch).branch.entries.length).to.equal(2);
