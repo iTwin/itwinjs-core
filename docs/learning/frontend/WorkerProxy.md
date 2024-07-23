@@ -13,7 +13,7 @@ JavaScript provides [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Wo
 
 ## Example: Calculator
 
-To illustrate the use of `WorkerProxy`, let's use the simple example of a "calculator". Here's the interface describing the operations the calculator provides:
+To illustrate the basics of `WorkerProxy`, let's use a contrived example of a "calculator". Here's the interface describing the operations the calculator provides:
 
 ```ts
 [[include:Worker_CalculatorInterface]]
@@ -61,4 +61,27 @@ We can continue invoking operations on the Worker for as long as we need it. Whe
 
 ```ts
 [[include:Worker_TerminateCalculatorProxy]]
+```
+
+## Example: Creating graphics
+
+Graphics creation represents a more realistic use case for Workers than the contrived calculated example above. [GraphicBuilder]($frontend) is fine for creating simple [RenderGraphic]($frontend)s like decorations on the main thread. But imagine you are streaming large data sets like point clouds, GeoJSON, or Shapefiles which you must process into complex graphics - attempting to do so on the main thread would utterly degrade the responsiveness of the application.
+
+[GraphicDescriptionBuilder]($frontend) provides almost exactly the same API as [GraphicBuilder]($frontend), except that it can be used on a Worker. Instead of a [RenderGraphic]($frontend), it produces a [GraphicDescription]($frontend) that can be efficiently converted into a `RenderGraphic` on the main thread.
+
+The `GraphicCreator` interface and related types below illustrate the concept using a simple method that creates a `GraphicDescription` from a description of any number of circles with location, radius, and color attributes:
+
+```ts
+[[include:Worker_GraphicCreatorInterface]]
+```
+
+We can implement the `createCircles` method in a worker script as follows:
+```ts
+[[include:Worker_GraphicCreatorRegister]]
+```
+
+Then we can define a `createCircleGraphic` function that can be called from the main thread to create a `RenderGraphic`, leveraging the Worker defined above to move most of the processing to a background thread:
+
+```ts
+[[include:Worker_GraphicCreatorInvoke]]
 ```
