@@ -39,7 +39,9 @@ describe("CloudSqlite", () => {
       { containerId: "test1", logId: "logId-1" },
       { containerId: "test2" },
       { containerId: "test3", logId: "logId-3", isPublic: true },
-      { containerId: "test1", logId: "logId-1" },
+      { containerId: "test1", logId: "logId-1", lockExpireSeconds: 5 },
+      { containerId: "test1", logId: "logId-1", lockExpireSeconds: 60 },
+
     ]);
     caches = azSqlite.makeCaches(["cache1", "cache2"]);
     azSqlite.initializeContainers(testContainers);
@@ -228,8 +230,8 @@ describe("CloudSqlite", () => {
   it.only("Should user1 fail to upload changes if user2 holds write lock after user1's expiration time", async () => {
     // simulate two users in two processes
     // test container 1 and test container 2 are actually the same cloud container
-    const testContainer1 = testContainers[0];
-    const testContainer2 = testContainers[3];
+    const testContainer1 = testContainers[3];
+    const testContainer2 = testContainers[4];
     expect(testContainer1.containerId).equal(testContainer2.containerId);
     expect(testContainer1.baseUri).equal(testContainer2.baseUri);
     const testCache1 = azSqlite.makeCaches(["testCache1"])[0];
@@ -247,7 +249,9 @@ describe("CloudSqlite", () => {
     testContainer2.connect(testCache2);
     testContainer2.acquireWriteLock(user2);
     // user1 tries to upload changes, it should fail because user1's write lock has expired and user2 is using it
-    await expect(testContainer1.uploadChanges()).to.eventually.be.rejectedWith("container is currently locked by another user");
+    // await expect(testContainer1.uploadChanges()).to.eventually.be.rejectedWith("container is currently locked by another user");
+    expect( async () => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is currently locked by another user`);
+
     // expect(testContainer1.uploadChanges()).throws("container is currently locked by another user");
     // try {
     //   await testContainer1.uploadChanges();
