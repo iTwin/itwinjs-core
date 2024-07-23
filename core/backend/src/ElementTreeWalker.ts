@@ -465,13 +465,14 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String, maxP
 /** Deletes all element sub-trees that are selected by the supplied filter. Uses ElementSubTreeDeleter.
  * If the filter selects the top element itself, then the entire tree (including the top element) is deleted.
  * That has the same effect as calling [[deleteElementTree]] on the top element.
+ * @note The caller may have to call this function multiple times if there are multiple layers of dependencies among definition elements.
  * @param iModel The iModel
  * @param topElement Where to start the search.
  * @param filter Callback that selects sub-trees that should be deleted.
  * @param maxPasses Maximum number of passes to make when deleting definitions
  * @beta
  */
-export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter, maxPasses: number = 5): void {
+export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void {
   const del = new ElementSubTreeDeleter(iModel, filter);
   del.deleteNormalElementSubTrees(topElement);
   del.deleteSpecialElementSubTrees();
