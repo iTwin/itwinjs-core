@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { ECVersion, InvertedUnit, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaEditType } from "../../Editing/SchmaEditType";
 
 describe("Inverted Units tests", () => {
   let testEditor: SchemaContextEditor;
@@ -47,38 +48,38 @@ describe("Inverted Units tests", () => {
   });
 
   it("try creating InvertedUnit in unknown schema, throws error", async () => {
-    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
     await expect(testEditor.invertedUnits.create(badKey, "testInvertedUnit", invertsUnitKey, unitSystemKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaNotFound);
     });
   });
 
   it("try creating InvertedUnit with existing name, throws error", async () => {
     await testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey);
     await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `InvertedUnit testSchema.testInvertedUnit already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
   });
 
   it("try creating InvertedUnit with unknown invertsUnit, throws error", async () => {
     const badKey = new SchemaItemKey("unknownInvertsUnit", testKey);
     await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", badKey, unitSystemKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Unit ${badKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNotFound);
     });
   });
 
   it("try creating InvertedUnit with unknown unitSystem, throws error", async () => {
     const badKey = new SchemaItemKey("unknownUnitSystem", testKey);
     await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, badKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `UnitSystem ${badKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNotFound);
     });
   });
 });

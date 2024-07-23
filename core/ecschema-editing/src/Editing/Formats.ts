@@ -10,8 +10,10 @@ import { Format, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey,
 import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
+import { SchemaItemId } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 /**
  * @alpha
@@ -28,7 +30,7 @@ export class Formats extends SchemaItems {
 
       if (units !== undefined) {
         for (const unit of units) {
-          const unitItem =  await this.schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
+          const unitItem = await this.schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
           if (!unitItem) {
             throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(SchemaItemType.Unit, unit));
           }
@@ -47,7 +49,7 @@ export class Formats extends SchemaItems {
       newFormat.setFormatType(formatType);
       return newFormat.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
   }
 
@@ -61,7 +63,7 @@ export class Formats extends SchemaItems {
       const newFormat = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), formatProps);
       return newFormat.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name!, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name!, schemaKey), e);
     }
   }
 }

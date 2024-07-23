@@ -9,6 +9,7 @@ import {
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaEditType } from "../../Editing/SchmaEditType";
 
 describe("KindOfQuantities tests", () => {
   // let testFormatKey: SchemaItemKey;
@@ -51,20 +52,20 @@ describe("KindOfQuantities tests", () => {
   });
 
   it("try creating KindOfQuantity in unknown schema, throws error", async () => {
-    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
     await expect(testEditor.kindOfQuantities.create(badKey, "testInvertedUnit", unitKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaNotFound);
     });
   });
 
   it("try creating KindOfQuantity with existing name, throws error", async () => {
     await testEditor.kindOfQuantities.create(testKey, "testKoq", unitKey);
     await expect(testEditor.kindOfQuantities.create(testKey, "testKoq", unitKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `KindOfQuantity testSchema.testKoq already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
   });
 });

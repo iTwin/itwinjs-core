@@ -12,8 +12,10 @@ import {
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { SchemaEditingError } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
+import { SchemaItemId } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 /**
  * @alpha
@@ -38,7 +40,7 @@ export class InvertedUnits extends SchemaItems {
 
       return newUnit.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
   }
 
@@ -47,7 +49,7 @@ export class InvertedUnits extends SchemaItems {
       const newUnit = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createInvertedUnit.bind(schema), invertedUnitProps);
       return newUnit.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, invertedUnitProps.name!, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, invertedUnitProps.name!, schemaKey), e);
     }
   }
 
@@ -56,8 +58,8 @@ export class InvertedUnits extends SchemaItems {
       const invertedUnit = await this.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
       const invertsUnit = await this.getSchemaItem<Unit>(invertedUnitKey, SchemaItemType.Unit);
       invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
-    } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.SetInvertsUnit, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);
+    } catch (e: any) {
+      throw new SchemaEditingError(SchemaEditType.SetInvertsUnit, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);
     }
   }
 
@@ -66,8 +68,8 @@ export class InvertedUnits extends SchemaItems {
       const invertedUnit = await this.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
       const unitSystem = await this.getSchemaItem<UnitSystem>(unitSystemKey, SchemaItemType.UnitSystem);
       invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
-    } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.SetUnitSystem, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);
+    } catch (e: any) {
+      throw new SchemaEditingError(SchemaEditType.SetUnitSystem, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);
     }
   }
 }

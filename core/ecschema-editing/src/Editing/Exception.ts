@@ -7,88 +7,32 @@
  */
 
 import { AnyDiagnostic } from "../Validation/Diagnostic";
-import { AnyEnumerator, CustomAttributeContainerProps, Enumeration, PrimitiveType, primitiveTypeToString, Property, RelationshipConstraint, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { SchemaKey } from "@itwin/ecschema-metadata";
+import { AnyIdentifier, ClassId, CustomAttributeId, EnumeratorId, PropertyId, RelationshipConstraintId, SchemaId, SchemaItemId, SchemaTypeIdentifiers } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 /** @alpha */
 export enum ECEditingStatus {
-  EC_EDITING_ERROR_BASE = 0x30000,
-  Unknown = 0,
-  RuleViolation = EC_EDITING_ERROR_BASE + 1,
-  SchemaNotFound,
-  SchemaItemNotFound,
-  SchemaItemNotFoundInContext,
-  PropertyAlreadyExists,
-  PropertyNotFound,
-  InvalidPropertyType,
-  BaseClassIsNotElement,
-  BaseClassIsNotElementUniqueAspect,
-  BaseClassIsNotElementMultiAspect,
-  SchemaItemNameNotSpecified,
-  InvalidSchemaItemType,
-  SchemaItemNameAlreadyExists,
-  InvalidEnumeratorType,
-  InvalidBaseClass,
-  EnumeratorDoesNotExist,
-  InvalidECName,
-  InvalidFormatUnitsSpecified,
-  // Outer Errors
-  CreateSchemaItemFailed,
-  CreateSchemaItemFromProps,
-  CreateElement,
-  CreateElementUniqueAspect,
-  CreateElementMultiAspect,
-  SetBaseClass,
-  SetSourceConstraint,
-  SetTargetConstraint,
-  AddConstraintClass,
-  RemoveConstraintClass,
-  SetAbstractConstraint,
-  AddCustomAttributeToConstraint,
-  AddCustomAttributeToProperty,
-  AddCustomAttributeToClass,
-  CreateNavigationProperty,
-  CreateNavigationPropertyFromProps,
-  SetInvertsUnit,
-  SetUnitSystem,
-  SetDescription,
-  SetLabel,
-  SetIsReadOnly,
-  SetPriority,
-  SetCategory,
-  SetMinOccurs,
-  SetMaxOccurs,
-  SetExtendedTypeName,
-  SetMinLength,
-  SetMaxLength,
-  SetMinValue,
-  SetMaxValue,
-  SetPropertyName,
-  AddMixin,
-  AddEnumerator,
-  SetEnumeratorLabel,
-  SetEnumeratorDescription,
-  AddPresentationUnit,
-  AddPresentationOverride,
-  CreateFormatOverride,
-  SetPropertyCategoryPriority,
-  CreatePrimitiveProperty,
-  CreatePrimitivePropertyFromProps,
-  CreateEnumerationProperty,
-  CreateEnumerationPropertyFromProps,
-  CreatePrimitiveArrayProperty,
-  CreatePrimitiveArrayPropertyFromProps,
-  CreateEnumerationArrayProperty,
-  CreateEnumerationArrayPropertyFromProps,
-  CreateStructProperty,
-  CreateStructPropertyFromProps,
-  CreateStructArrayProperty,
-  CreateStructArrayPropertyFromProps,
-  DeleteProperty,
-  DeleteClass,
-  SetClassName,
-  AddSchemaReference,
-  SetSchemaVersion,
-  IncrementSchemaMinorVersion,
+  Unknown = "Unknown",
+  RuleViolation = "RuleViolation",
+  SchemaNotFound = "SchemaNotFound",
+  SchemaItemNotFound = "SchemaItemNotFound",
+  SchemaItemNotFoundInContext = "SchemaItemNotFoundInContext",
+  PropertyAlreadyExists = "PropertyAlreadyExists",
+  PropertyNotFound = "PropertyNotFound",
+  InvalidPropertyType = "InvalidPropertyType",
+  BasePropertyDifferentType = "BasePropertyDifferentType",
+  BaseClassIsNotElement = "BaseClassIsNotElement",
+  BaseClassIsNotElementUniqueAspect = "BaseClassIsNotElementUniqueAspect",
+  BaseClassIsNotElementMultiAspect = "BaseClassIsNotElementMultiAspect",
+  SchemaItemNameNotSpecified = "SchemaItemNameNotSpecified",
+  InvalidSchemaItemType = "InvalidSchemaItemType",
+  SchemaItemNameAlreadyExists = "SchemaItemNameAlreadyExists",
+  InvalidEnumeratorType = "InvalidEnumeratorType",
+  InvalidBaseClass = "InvalidBaseClass",
+  EnumeratorDoesNotExist = "EnumeratorDoesNotExist",
+  InvalidECName = "InvalidECName",
+  InvalidFormatUnitsSpecified = "InvalidFormatUnitsSpecified",
 }
 
 /**
@@ -96,258 +40,6 @@ export enum ECEditingStatus {
  * @alpha
  */
 export type AnyEditingError = SchemaEditingError | Error;
-
-/**
- * Defines the possible property type names.
- * @alpha
- */
-export enum PropertyTypeName {
-  ArrayProperty = "ArrayProperty",
-  PrimitiveProperty = "PrimitiveProperty",
-  EnumerationProperty = "EnumerationProperty",
-  NavigationProperty = "NavigationProperty",
-  StructProperty = "StructProperty"
-}
-
-/**
- * Defines the possible schema type identifiers.
- * @alpha
- */
-export enum SchemaTypeIdentifiers {
-  SchemaIdentifier = "Schema",
-  SchemaItemIdentifier = "SchemaItem",
-  ClassIdentifier = "Class",
-  PropertyIdentifier = "Property",
-  EnumeratorIdentifier = "Enumerator",
-  CustomAttributeIdentifier = "CustomAttribute",
-  RelationshipConstraintIdentifier = "RelationshipConstraint"
-}
-
-/**
- * Type that constrains SchemaItemType enum to those used by EC Class types.
- * @alpha
- */
-export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
-
-/**
- * Type that defines the possible SchemaTypeIdentifiers for SchemaItemId classes.
- * @alpha
- */
-export type AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier;
-
-/**
- * Type that encompasses all ISchemaTypeIdentifier interfaces
- * @alpha
- */
-export type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier;
-
-/**
- * A base interface that defines what is needed to identity any schema type.
- * @alpha
- */
-export interface ISchemaTypeIdentifier {
-  readonly name: string;
-  readonly schemaKey: SchemaKey;
-  readonly typeIdentifier: SchemaTypeIdentifiers;
-}
-
-/**
- * Interface that defines the data needed to identify a Schema.
- * @alpha
- */
-export interface ISchemaIdentifier extends ISchemaTypeIdentifier {
-  readonly typeIdentifier: SchemaTypeIdentifiers.SchemaIdentifier;
-}
-
-/**
- * Interface that defines the data needed to identify a SchemaItem.
- * @alpha
- */
-export interface ISchemaItemIdentifier extends ISchemaTypeIdentifier {
-  readonly schemaItemType: SchemaItemType;
-  readonly schemaItemKey: SchemaItemKey;
-  readonly typeIdentifier: AnySchemaItemTypeIdentifier;
-}
-
-/**
- * Interface that defines the data needed to identify an EC Class.
- * @alpha
- */
-export interface IClassIdentifier extends ISchemaTypeIdentifier {
-  readonly schemaItemType: ECClassSchemaItems;
-  readonly schemaItemKey: SchemaItemKey;
-  readonly typeIdentifier: SchemaTypeIdentifiers.ClassIdentifier;
-}
-
-/**
- * Interface that defines the data needed to identify an EC Property.
- * @alpha
- */
-export interface IPropertyIdentifier extends ISchemaTypeIdentifier {
-  readonly fullName: string;
-  readonly ecClass: ClassId;
-  readonly typeName?: PropertyTypeName;
-  readonly typeIdentifier: SchemaTypeIdentifiers.PropertyIdentifier;
-}
-
-/**
- * Interface that defines the data needed to identify an Enumerator.
- * @alpha
- */
-interface IEnumeratorIdentifier extends ISchemaTypeIdentifier {
-  readonly enumeratorType: string;
-  readonly enumeration: SchemaItemKey;
-  readonly enumerationType: string;
-  readonly typeIdentifier: SchemaTypeIdentifiers.EnumeratorIdentifier;
-}
-
-/**
- * Interface that defines the data needed to identify a CustomAttribute.
- * @alpha
- */
-export interface ICustomAttributeIdentifier extends ISchemaTypeIdentifier {
-  readonly containerFullName: string;
-  readonly typeIdentifier: SchemaTypeIdentifiers.CustomAttributeIdentifier;
-}
-
-/**
- * Interface that defines the data needed to identify a RelationshipConstraint.
- * @alpha
- */
-export interface IRelationshipConstraintIdentifier extends ISchemaTypeIdentifier {
-  readonly relationshipKey: SchemaItemKey;
-  readonly typeIdentifier: SchemaTypeIdentifiers.RelationshipConstraintIdentifier;
-}
-
-/**
- * An ISchemaIdentifier implementation to identify Schemas
- * @alpha
- */
-export class SchemaId implements ISchemaIdentifier {
-  public readonly typeIdentifier = SchemaTypeIdentifiers.SchemaIdentifier;
-  public readonly name: string;
-  public readonly schemaKey: SchemaKey;
-  constructor(schemaKey: SchemaKey) {
-    this.name = schemaKey.name;
-    this.schemaKey = schemaKey;
-  }
-}
-
-/**
- * An ISchemItemIdentifier implementation to identify SchemaItems
- * @alpha
- */
-export class SchemaItemId implements ISchemaItemIdentifier {
-  public readonly typeIdentifier: AnySchemaItemTypeIdentifier;
-  public readonly name: string;
-  public readonly schemaKey: SchemaKey;
-  public readonly schemaItemType: SchemaItemType;
-  public readonly schemaItemKey: SchemaItemKey;
-
-  constructor(schemaItemType: SchemaItemType, schemaItemKeyOrName: SchemaItemKey | string, schemaKey?: SchemaKey) {
-    if (typeof(schemaItemKeyOrName) === "string") {
-      if (!schemaKey)
-        throw new Error("schemaKey if required if the specified schemaItem the name of the schema item.");
-
-      this.schemaKey = schemaKey!;
-      this.schemaItemKey = new SchemaItemKey(schemaItemKeyOrName, schemaKey);
-    } else {
-      this.schemaKey = schemaItemKeyOrName.schemaKey;
-      this.schemaItemKey = schemaItemKeyOrName;
-    }
-
-    this.schemaItemType = schemaItemType;
-    this.name = this.schemaItemKey.fullName;
-    this.typeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier;
-  }
-}
-
-/**
- * An IClassIdentifier implementation to identify Class instances.
- * @alpha
- */
-export class ClassId extends SchemaItemId implements IClassIdentifier {
-  public override readonly typeIdentifier = SchemaTypeIdentifiers.ClassIdentifier;
-  public override readonly schemaItemType: ECClassSchemaItems;
-  constructor(schemaItemType: ECClassSchemaItems, schemaItemKeyOrName: SchemaItemKey | string, schemaKey?: SchemaKey) {
-    super(schemaItemType, schemaItemKeyOrName, schemaKey);
-    this.schemaItemType = schemaItemType;
-  }
-}
-
-/**
- * An IPropertyIdentifier implementation to identify Property instances.
- * @alpha
- */
-export class PropertyId implements IPropertyIdentifier {
-  public readonly typeIdentifier = SchemaTypeIdentifiers.PropertyIdentifier;
-  public readonly name: string;
-  public readonly fullName: string;
-  public readonly ecClass: ClassId;
-  public readonly schemaKey: SchemaKey;
-  public readonly typeName?: PropertyTypeName;
-
-  constructor(schemaItemType: ECClassSchemaItems, classKey: SchemaItemKey, property: Property | string, typeName?: PropertyTypeName) {
-    this.name = property instanceof Property ? property.name : property;
-    this.fullName = property instanceof Property ? property.fullName : `${classKey.name}.${property}`;
-    this.ecClass = new ClassId(schemaItemType, classKey);
-    this.schemaKey = classKey.schemaKey;
-    this.typeName = typeName;
-  }
-}
-
-/**
- * An IEnumeratorIdentifier implementation to identify Enumerator instances.
- * @alpha
- */
-export class EnumeratorId implements IEnumeratorIdentifier{
-  public readonly typeIdentifier = SchemaTypeIdentifiers.EnumeratorIdentifier;
-  public readonly enumeration: SchemaItemKey;
-  public readonly enumerationType: string;
-  public readonly enumeratorType: string;
-  public readonly name: string;
-  public readonly schemaKey: SchemaKey;
-
-  constructor(enumerator: AnyEnumerator | string, enumeration: Enumeration) {
-    this.enumeration = enumeration.key;
-    this.enumerationType = enumeration.type ? primitiveTypeToString(enumeration.type): "string";
-    this.enumeratorType = getEnumeratorType(enumeration ?? PrimitiveType.String, enumerator);
-    this.name = typeof(enumerator) === "string" ? enumerator : enumerator.name;
-    this.schemaKey = enumeration.schema.schemaKey;
-  }
-}
-
-/**
- * An ICustomAttributeIdentifier implementation to identify CustomAttribute instances.
- * @alpha
- */
-export class CustomAttributeId implements ICustomAttributeIdentifier {
-  public readonly typeIdentifier = SchemaTypeIdentifiers.CustomAttributeIdentifier;
-  public readonly name: string;
-  public readonly schemaKey: SchemaKey;
-  public readonly containerFullName: string;
-  constructor(name: string, container: CustomAttributeContainerProps) {
-    this.name = name;
-    this.schemaKey = container.schema.schemaKey;
-    this.containerFullName = container.fullName;
-  }
-}
-
-/**
- * An IRelationshipConstraintIdentifier implementation to identify RelationshipConstraints.
- * @alpha
- */
-export class RelationshipConstraintId implements IRelationshipConstraintIdentifier {
-  public readonly typeIdentifier = SchemaTypeIdentifiers.RelationshipConstraintIdentifier;
-  public readonly name: string;
-  public readonly relationshipKey: SchemaItemKey;
-  public readonly schemaKey: SchemaKey;
-  constructor(constraint: RelationshipConstraint) {
-    this.name = constraint.isSource ? "Source" : "Target";
-    this.relationshipKey = constraint.relationshipClass.key;
-    this.schemaKey = this.relationshipKey.schemaKey;
-  }
-}
 
 /**
  * An exception class for the ecschema-editing API. Contains identifiers for schema types involved in the
@@ -361,19 +53,47 @@ export class SchemaEditingError extends Error {
   private _ruleViolations?: AnyDiagnostic[];
   private _schemaKey: SchemaKey;
 
+  public readonly identifier: AnyIdentifier
+  public readonly errorStatus: ECEditingStatus;
+  public readonly schemaEditType?: SchemaEditType;
+  public readonly innerError?: AnyEditingError
+
+  public constructor(errorStatus: ECEditingStatus, identifier: AnyIdentifier, innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string);
+  public constructor(schemaEditType: SchemaEditType, identifier: AnyIdentifier, innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string);
   /**
    * Constructs a new SchemaEditingError instance.
-   * @param errorNumber The unique ECEditingStatus code identifying the error.
+   * @param errorStatus The unique ECEditingStatus or SchemaEditType code identifying the error.
    * @param identifier The identifier instance containing information about the EC object involved with the exception.
    * @param innerError The SchemaEditingError containing the identifier of the EC object that caused the initial exception.
    * @param ruleViolations Will contain EC rule violations of type [[AnyDiagnostic]] for exceptions with the error code ECEditingStatus.RuleViolation.
    * @param message Optional error message. Most messages on automatically generated by this class based on the ECEditingStatus code.
    */
-  public constructor(public readonly errorNumber: ECEditingStatus, public readonly identifier: AnyIdentifier, public readonly innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string) {
+  public constructor(errorStatusOrEditType: ECEditingStatus | SchemaEditType, identifier: AnyIdentifier, innerError?: AnyEditingError, ruleViolations?: AnyDiagnostic[], message?: string) {
     super(message);
     this._ruleViolations = ruleViolations;
-    this._schemaKey = identifier.schemaKey,
+    this._schemaKey = identifier.schemaKey;
+    this.identifier = identifier;
+    this.innerError = innerError;
+
+    if (this.isSchemaEditType(errorStatusOrEditType)) {
+      if (!innerError)
+        throw new Error("innerError is required if a schemaEditType was specified");
+      this.schemaEditType = errorStatusOrEditType;
+      this.errorStatus = this.isSchemaEditingError(innerError) ? innerError.errorStatus : ECEditingStatus.Unknown;
+    } else {
+      this.errorStatus = errorStatusOrEditType;
+    }
+
+
     this.generateMessage();
+  }
+
+  private isSchemaEditType(code: string): code is SchemaEditType {
+    return code in SchemaEditType;
+  }
+
+  private isSchemaEditingError(error: AnyEditingError): error is SchemaEditingError {
+    return "errorStatus" in error;
   }
 
   /**
@@ -422,7 +142,7 @@ export class SchemaEditingError extends Error {
    */
   private get _enumeratorId(): EnumeratorId {
     if (this.identifier.typeIdentifier !== SchemaTypeIdentifiers.EnumeratorIdentifier)
-      throw new Error("identifier is not a EnumerationId.");
+      throw new Error("identifier is not a EnumeratorId.");
     return this.identifier as EnumeratorId;
   }
 
@@ -466,14 +186,20 @@ export class SchemaEditingError extends Error {
       else
         innerMessage = ` Inner error: ${this.innerError.message}`;
     }
-    return this._appendMessage(`ECEditingStatus.${ECEditingStatus[this.errorNumber]}`) + innerMessage;
+    const statusText = this.schemaEditType ? `SchemaEditType.${this.schemaEditType}` : `ECEditingStatus.${this.errorStatus}`;
+    return this._appendMessage(`${statusText}`) + innerMessage;
   }
 
   private generateMessage() {
     if (this.message)
       return;
 
-    switch(this.errorNumber) {
+    if (this.schemaEditType) {
+      this.message = this._createTaskErrorMessage();
+      return;
+    }
+
+    switch(this.errorStatus) {
       case ECEditingStatus.SchemaNotFound:
         this.message = `Schema Key ${this._schemaKey.toString(true)} could not be found in the context.`;
         return;
@@ -504,6 +230,8 @@ export class SchemaEditingError extends Error {
       case ECEditingStatus.InvalidPropertyType:
         this.message = `Expected property ${this._propertyId.name} to be of type ${this._propertyId.typeName}.`;
         return;
+      case ECEditingStatus.BasePropertyDifferentType:
+        this.message = `Base property ${this._propertyId.name} `
       case ECEditingStatus.BaseClassIsNotElement:
         this.message = `Expected base class ${this._schemaItemId.name} to derive from BisCore.Element.`;
         return;
@@ -526,7 +254,7 @@ export class SchemaEditingError extends Error {
         this.message = `Could not rename class ${this._schemaItemId.name} because the specified name is not a valid ECName.`;
         return;
       default:
-        this.message = this._createTaskErrorMessage();
+        this.message = "";
     }
   }
 
@@ -561,7 +289,7 @@ export class SchemaEditingError extends Error {
 
   private _createTaskErrorMessage() {
     // Make sure we have an inner error or else it is not a task error
-    if (!this.innerError)
+    if (!this.innerError || !this.schemaEditType)
       return "";
 
     switch (this.identifier.typeIdentifier) {
@@ -569,9 +297,9 @@ export class SchemaEditingError extends Error {
       case SchemaTypeIdentifiers.SchemaItemIdentifier:
       case SchemaTypeIdentifiers.ClassIdentifier:
       case SchemaTypeIdentifiers.RelationshipConstraintIdentifier:
-        return `While performing task '${ECEditingStatus[this.errorNumber]}' an error occurred editing ${this.identifier.typeIdentifier} ${this.identifier.name}.`;
+        return `While performing task '${this.schemaEditType}' an error occurred editing ${this.identifier.typeIdentifier} ${this.identifier.name}.`;
       case SchemaTypeIdentifiers.PropertyIdentifier:
-        return `While performing task '${ECEditingStatus[this.errorNumber]}' an error occurred editing ${this.identifier.typeIdentifier} ${this.identifier.fullName}.`;
+        return `While performing task '${this.schemaEditType}' an error occurred editing ${this.identifier.typeIdentifier} ${this.identifier.fullName}.`;
       default:
         throw new Error ("Invalid identifier.");
     }
@@ -584,12 +312,4 @@ export class SchemaEditingError extends Error {
 
     return false;
   }
-}
-
-function getEnumeratorType(enumeration: Enumeration, enumerator: AnyEnumerator | string) {
-  if (typeof(enumerator) === "string") {
-    return enumeration.type ? primitiveTypeToString(enumeration.type) : "string";
-  }
-
-  return typeof(enumerator.value) === "string" ? "string" : "int";
 }

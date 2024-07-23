@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { Constant, ConstantProps, ECVersion, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaEditType } from "../../Editing/SchmaEditType";
 
 describe("Constant tests", () => {
   let testEditor: SchemaContextEditor;
@@ -40,20 +41,20 @@ describe("Constant tests", () => {
   });
 
   it("try creating Constant to unknown schema, throws error", async () => {
-    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
     await expect(testEditor.constants.create(badKey, "testConstant", phenomenonKey, "testDefinition")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaNotFound);
     });
   });
 
   it("try creating Constant with existing name, throws error", async () => {
     await testEditor.constants.create(testKey, "testConstant", phenomenonKey, "testDefinition");
     await expect(testEditor.constants.create(testKey, "testConstant", phenomenonKey, "testDefinition")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Constant testSchema.testConstant already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
   });
 });

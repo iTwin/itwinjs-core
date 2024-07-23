@@ -9,6 +9,7 @@ import {
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaEditType } from "../../Editing/SchmaEditType";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -90,21 +91,21 @@ describe("Entities tests", () => {
   });
 
   it("try creating a new entity class with base class from unknown schema, returns error", async () => {
-    const badSchemaKey = new SchemaKey("badSchema", new ECVersion(1,0,0));
+    const badSchemaKey = new SchemaKey("badSchema", new ECVersion(1, 0, 0));
     const baseClassKey = new SchemaItemKey("testBaseClass", badSchemaKey);
     await expect(testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badSchemaKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaNotFound);
     });
   });
 
   it("try creating a new entity class with a base class that cannot be located, returns error", async () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     await expect(testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `EntityClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNotFound);
     });
   });
 
@@ -231,14 +232,14 @@ describe("Entities tests", () => {
   });
 
   it("try adding base class with unknown schema to existing entity class, returns error", async () => {
-    const badSchemaKey = new SchemaKey("badSchema", new ECVersion(1,0,0));
+    const badSchemaKey = new SchemaKey("badSchema", new ECVersion(1, 0, 0));
     const baseClassKey = new SchemaItemKey("testBaseClass", badSchemaKey);
     const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
 
     await expect(testEditor.entities.setBaseClass(entityResult, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badSchemaKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaNotFound);
     });
   });
 
@@ -246,9 +247,9 @@ describe("Entities tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     const createResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
     await expect(testEditor.entities.setBaseClass(createResult, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `EntityClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNotFound);
     });
   });
 
@@ -261,74 +262,74 @@ describe("Entities tests", () => {
     const unitResult = await testEditor.unitSystems.createFromProps(testKey, unitSystemProps);
     const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
     await expect(testEditor.entities.setBaseClass(entityResult, unitResult)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Expected ${unitResult.fullName} to be of type EntityClass.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidSchemaItemType);
     });
   });
 
   it("try adding base class to non-existing custom attribute class, returns error", async () => {
     const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel");
-    const entityKey =  new SchemaItemKey("testEntityClass", testKey);
+    const entityKey = new SchemaItemKey("testEntityClass", testKey);
 
     await expect(testEditor.entities.setBaseClass(entityKey, baseClassRes)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `EntityClass ${entityKey.fullName} could not be found in the schema context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
   it("try adding base class with unknown schema to existing entity class, returns error", async () => {
-    const schemaKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    const schemaKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
     const baseClassKey = new SchemaItemKey("testBaseClass", schemaKey);
     const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
 
     await expect(testEditor.entities.setBaseClass(entityRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${schemaKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaNotFound);
     });
   });
 
   it("try changing the entity base class to one that doesn't derive from, returns error", async () => {
     const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel");
-    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel",baseClassRes);
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassRes);
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(entityRes);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes));
 
     const newBaseClassRes = await testEditor.entities.create(testKey, "newBaseClass", ECClassModifier.None, "testLabel");
     await expect(testEditor.entities.setBaseClass(entityRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Base class ${newBaseClassRes.fullName} must derive from ${baseClassRes.fullName}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidBaseClass);
     });
   });
 
   it("try creating entity class to unknown schema, throws error", async () => {
-    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
     await expect(testEditor.entities.create(badKey, "testEntity", ECClassModifier.None, "testLabel")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaNotFound);
     });
   });
 
   it("try creating entity class with unknown base class, throws error", async () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     await expect(testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `EntityClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNotFound);
     });
   });
 
   it("try creating entity with existing name, throws error", async () => {
     await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
     await expect(testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `EntityClass testSchema.testEntity already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
   });
 });

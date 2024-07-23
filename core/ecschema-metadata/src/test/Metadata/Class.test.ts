@@ -1670,6 +1670,47 @@ describe("ECClass", () => {
       expect(result).to.eql(expectedCallBackObjects);
     });
 
+    it("traverseDerivedClasses, should correctly traverse a complex inheritance hierarchy", async () => {
+      const result: Array<{ name: string, arg: string }> = [];
+
+      schema = await Schema.fromJson(testSchemaJson, new SchemaContext());
+      expect(schema).to.exist;
+
+      const testClass = await schema.getItem<ECClass>("A");
+      expect(testClass).to.exist;
+
+      const callback = async (ecClass: ECClass,  out: (traverseDerivedClasses: boolean) => void, arg: any): Promise<boolean> => {
+        out(true);
+        result.push({ name: ecClass.name, arg });
+        return false;
+      };
+
+      await testClass!.traverseDerivedClasses(callback, "testArg");
+
+      expect(result).to.eql([{ name: "G", arg: "testArg" }, { name: "H", arg: "testArg" }]);
+    });
+
+    it("traverseDerivedClasses, out callback returns false to stop traversal, should correctly stop traversal", async () => {
+      const result: Array<{ name: string, arg: string }> = [];
+
+      schema = await Schema.fromJson(testSchemaJson, new SchemaContext());
+      expect(schema).to.exist;
+
+      const testClass = await schema.getItem<ECClass>("A");
+      expect(testClass).to.exist;
+
+      const callback = async (ecClass: ECClass,  out: (traverseDerivedClasses: boolean) => void, arg: any): Promise<boolean> => {
+        const continueTraversal = ecClass.name === "G" ? false: true;
+        result.push({ name: ecClass.name, arg });
+        out(continueTraversal);
+        return false;
+      };
+
+      await testClass!.traverseDerivedClasses(callback, "testArg");
+
+      expect(result).to.eql([{ name: "G", arg: "testArg" }]);
+    });
+
     it("class 'is' a base class", async () => {
       schema = Schema.fromJsonSync(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;

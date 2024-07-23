@@ -11,6 +11,7 @@ import { SchemaContextEditor } from "../../Editing/Editor";
 import { AnyDiagnostic } from "../../Validation/Diagnostic";
 import { Diagnostics } from "../../Validation/ECRules";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaEditType } from "../../Editing/SchmaEditType";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -137,8 +138,8 @@ describe("Editor tests", () => {
         testKey = schemaA.schemaKey;
 
         await expect(testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
-          expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
-          expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+          expect(error).to.have.property("schemaEditType", SchemaEditType.AddCustomAttributeToClass);
+          expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.RuleViolation);
           expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from CustomAttribute SchemaB.TestCustomAttribute, container ${testKey.name}: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
           const violations = error.innerError.ruleViolations as AnyDiagnostic[];
           expect(violations[0]).to.deep.equal(new Diagnostics.CustomAttributeClassNotFound(schemaA, ["SchemaA", "SchemaB.TestCustomAttribute"]));
@@ -218,8 +219,8 @@ describe("Editor tests", () => {
         try {
           await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
         } catch (e: any) {
-          expect(e).to.have.property("errorNumber", ECEditingStatus.AddSchemaReference);
-          expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+          expect(e).to.have.property("schemaEditType", SchemaEditType.AddSchemaReference);
+          expect(e).to.have.nested.property("innerError.errorStatus", ECEditingStatus.RuleViolation);
           expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Schema ${schemaA.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
           const violations = e.innerError.ruleViolations as AnyDiagnostic[];
           expect(violations[0]).to.deep.equal(new Diagnostics.SchemaRefAliasMustBeUnique(schemaA, [schemaA.name, "b", "SchemaB", "SchemaC"]));

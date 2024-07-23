@@ -9,8 +9,10 @@
 import { Phenomenon, PhenomenonProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { SchemaEditingError } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
+import { SchemaItemId } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 /**
  * @alpha
@@ -32,7 +34,7 @@ export class Phenomena extends SchemaItems {
 
       return newPhenomenon.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
   }
 
@@ -41,7 +43,7 @@ export class Phenomena extends SchemaItems {
       const newPhenomenon = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPhenomenon.bind(schema), phenomenonProps);
       return newPhenomenon.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, phenomenonProps.name!, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, phenomenonProps.name!, schemaKey), e);
     }
   }
 }

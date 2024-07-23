@@ -9,8 +9,10 @@
 import { Constant, ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutableConstant } from "./Mutable/MutableConstant";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { SchemaEditingError } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
+import { SchemaItemId } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 /**
  * @alpha
@@ -41,7 +43,7 @@ export class Constants extends SchemaItems {
 
       return newConstant.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
   }
 
@@ -55,7 +57,7 @@ export class Constants extends SchemaItems {
       const newConstant = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), constantProps);
       return newConstant.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, constantProps.name!, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, constantProps.name!, schemaKey), e);
     }
   }
 }

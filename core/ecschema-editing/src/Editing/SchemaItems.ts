@@ -8,9 +8,11 @@
 
 import { ECObjectsError, ECObjectsStatus, SchemaItem, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
+import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { MutableSchemaItem } from "./Mutable/MutableSchemaItem";
+import { SchemaId, SchemaItemId } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 export type CreateSchemaItem<T extends SchemaItem> = (schema: MutableSchema) => (name: string, ...args: any[]) => Promise<T>;
 export type CreateSchemaItemFromProps<T extends SchemaItem> = (props: SchemaItemProps, ...args: any[]) => Promise<T>;
@@ -52,11 +54,11 @@ export abstract class SchemaItems {
       return mutableItem.key;
     } catch(e: any) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
-        throw new SchemaEditingError(ECEditingStatus.SetClassName, new SchemaItemId(this.schemaItemType, itemKey),
+        throw new SchemaEditingError(SchemaEditType.SetClassName, new SchemaItemId(this.schemaItemType, itemKey),
           new SchemaEditingError(ECEditingStatus.InvalidECName, new SchemaItemId(this.schemaItemType, itemKey)));
       }
 
-      throw new SchemaEditingError(ECEditingStatus.SetClassName, new SchemaItemId(this.schemaItemType, itemKey), e);
+      throw new SchemaEditingError(SchemaEditType.SetClassName, new SchemaItemId(this.schemaItemType, itemKey), e);
     }
   }
 
@@ -68,7 +70,7 @@ export abstract class SchemaItems {
   public async setDescription(schemaItemKey: SchemaItemKey, description: string) {
     const item = await this.getSchemaItem<MutableSchemaItem>(schemaItemKey)
       .catch((e: any) => {
-        throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
+        throw new SchemaEditingError(SchemaEditType.SetDescription, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
     item.setDescription(description);
   }
@@ -81,7 +83,7 @@ export abstract class SchemaItems {
   public async setDisplayLabel(schemaItemKey: SchemaItemKey, label: string) {
     const item = await this.getSchemaItem<MutableSchemaItem>(schemaItemKey)
       .catch((e: any) => {
-        throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
+        throw new SchemaEditingError(SchemaEditType.SetLabel, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
     item.setDisplayLabel(label);
   }

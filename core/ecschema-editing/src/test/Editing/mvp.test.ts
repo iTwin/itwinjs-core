@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { ECClass, ECClassModifier, ECVersion, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext,
+import {
+  ECClass, ECClassModifier, ECVersion, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext,
   SchemaItemKey, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaEditType } from "../../Editing/SchmaEditType";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -36,14 +38,14 @@ describe("SchemaEditor tests", () => {
     it("should create a new schema and return a SchemaEditResults", async () => {
       const schemaKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
       expect(schemaKey).to.not.be.undefined;
-      expect(schemaKey).to.deep.equal(new SchemaKey("testSchema", new ECVersion(1,0,0)));
+      expect(schemaKey).to.deep.equal(new SchemaKey("testSchema", new ECVersion(1, 0, 0)));
     });
   });
 
   describe("Class tests", () => {
     beforeEach(async () => {
       testSchemaKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-      const result2 =  await testEditor.schemaContext.getCachedSchema(testSchemaKey);
+      const result2 = await testEditor.schemaContext.getCachedSchema(testSchemaKey);
       if (!result2)
         throw new Error("Could not retrieve cached schema!");
       testSchema = result2;
@@ -151,27 +153,27 @@ describe("SchemaEditor tests", () => {
     it("Creating Element, try subclassing unsupported base class, throws", async () => {
       const elementKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
       await expect(testEditor.entities.createElement(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.CreateElement);
         expect(error).to.have.nested.property("innerError.message", `Expected base class ${elementKey.fullName} to derive from BisCore.Element.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElement);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.BaseClassIsNotElement);
       });
     });
 
     it("Creating ElementUniqueAspect, try subclassing unsupported base class, throws", async () => {
       const uniqueAspectKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
       await expect(testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement", ECClassModifier.None, uniqueAspectKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.CreateElement);
         expect(error).to.have.nested.property("innerError.message", `Expected base class ${uniqueAspectKey.fullName} to derive from BisCore.ElementUniqueAspect.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElementUniqueAspect);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.BaseClassIsNotElementUniqueAspect);
       });
     });
 
     it("Creating ElementMultiAspect, try subclassing unsupported base class, throws", async () => {
       const multiAspectKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
       await expect(testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, multiAspectKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.CreateElement);
         expect(error).to.have.nested.property("innerError.message", `Expected base class ${multiAspectKey.fullName} to derive from BisCore.ElementMultiAspect.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElementMultiAspect);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.BaseClassIsNotElementMultiAspect);
       });
     });
 

@@ -9,8 +9,10 @@
 import { PropertyCategory, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
 import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
+import { SchemaItemId } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 /**
  * @alpha
@@ -30,7 +32,7 @@ export class PropertyCategories extends SchemaItems {
 
       return newPropCategory.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
   }
 
@@ -39,7 +41,7 @@ export class PropertyCategories extends SchemaItems {
       const newPropCategory = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPropertyCategory.bind(schema), propertyCategoryProps);
       return newPropCategory.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, propertyCategoryProps.name!, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, propertyCategoryProps.name!, schemaKey), e);
     }
   }
 
@@ -47,8 +49,8 @@ export class PropertyCategories extends SchemaItems {
     try {
       const propertyCategory = await this.getSchemaItem<MutablePropertyCategory>(propCategoryKey);
       propertyCategory.setPriority(priority);
-    } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.SetPropertyCategoryPriority, new SchemaItemId(this.schemaItemType, propCategoryKey), e);
+    } catch (e: any) {
+      throw new SchemaEditingError(SchemaEditType.SetPropertyCategoryPriority, new SchemaItemId(this.schemaItemType, propCategoryKey), e);
     }
   }
 }

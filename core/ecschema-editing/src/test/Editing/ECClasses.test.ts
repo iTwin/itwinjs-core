@@ -11,6 +11,7 @@ import {
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaEditType } from "../../Editing/SchmaEditType";
 
 describe("ECClass tests", () => {
   // Uses an entity class to create properties.
@@ -42,9 +43,9 @@ describe("ECClass tests", () => {
   it("try changing class name to invalid name, throws error", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
     await expect(testEditor.entities.setName(result1, "123")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetClassName);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetClassName);
       expect(error).to.have.nested.property("innerError.message", `Could not rename class ${result1.fullName} because the specified name is not a valid ECName.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidECName);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidECName);
     });
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
@@ -55,9 +56,9 @@ describe("ECClass tests", () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
     await testEditor.entities.create(testKey, "testEntity2", ECClassModifier.None);
     await expect(testEditor.entities.setName(result1, "testEntity2")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetClassName);
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetClassName);
       expect(error).to.have.nested.property("innerError.message", `EntityClass TestSchema.testEntity2 already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
@@ -120,7 +121,7 @@ describe("ECClass tests", () => {
       };
       const enumResult = await testEditor.enumerations.createFromProps(testKey, enumJson);
       const enumeration = await testEditor.schemaContext.getSchemaItem(enumResult) as Enumeration;
-      await testEditor.entities.createEnumerationPropertyFromProps(entityKey, "TestProperty", enumeration,propertyJson);
+      await testEditor.entities.createEnumerationPropertyFromProps(entityKey, "TestProperty", enumeration, propertyJson);
       const property = await entity?.getProperty("TestProperty") as EnumerationProperty;
       expect(await property.enumeration).to.eql(enumeration);
     });
@@ -234,7 +235,7 @@ describe("ECClass tests", () => {
       testKey = testSchema.schemaKey;
       const relationshipResult = await testEditor.relationships.createFromProps(testKey, relClassProps);
       const relationship = await testEditor.schemaContext.getSchemaItem(relationshipResult) as RelationshipClass;
-      await testEditor.relationships.createNavigationProperty(relationship.key, "TestProperty", relationship,"Forward");
+      await testEditor.relationships.createNavigationProperty(relationship.key, "TestProperty", relationship, "Forward");
       const navProperty = await relationship.getProperty("TestProperty") as NavigationProperty;
       expect(navProperty.direction).to.eql(StrengthDirection.Forward);
       expect(await navProperty.relationshipClass).to.eql(relationship);
@@ -262,7 +263,7 @@ describe("ECClass tests", () => {
         maxOccurs: 55,
       };
 
-      await testEditor.entities.createPrimitiveArrayPropertyFromProps(entityKey, "TestProperty", PrimitiveType.Integer,propertyJson);
+      await testEditor.entities.createPrimitiveArrayPropertyFromProps(entityKey, "TestProperty", PrimitiveType.Integer, propertyJson);
       const property = await entity?.getProperty("TestProperty") as PrimitiveArrayProperty;
       expect(property.minOccurs).to.eql(42);
       expect(property.maxOccurs).to.eql(55);
@@ -505,9 +506,9 @@ describe("ECClass tests", () => {
       const badKey = new SchemaItemKey("BadClass", testSchema.schemaKey);
 
       await expect(testEditor.entities.addCustomAttribute(badKey, { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.AddCustomAttributeToClass);
         expect(error).to.have.nested.property("innerError.message", `EntityClass ValidSchema.BadClass could not be found in the schema ValidSchema.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNotFound);
       });
     });
 
@@ -534,9 +535,9 @@ describe("ECClass tests", () => {
       const testClass = await testSchema.getItem<UnitSystem>("testUnitSystem");
 
       await expect(testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.AddCustomAttributeToClass);
         expect(error).to.have.nested.property("innerError.message", `Expected ${testClass?.fullName} to be of type EntityClass.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidSchemaItemType);
       });
     });
   });

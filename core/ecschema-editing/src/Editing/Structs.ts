@@ -10,7 +10,9 @@ import { SchemaItemKey, SchemaItemType, SchemaKey, StructClass, StructClassProps
 import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableStructClass } from "./Mutable/MutableClass";
-import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
+import { SchemaEditingError } from "./Exception";
+import { ClassId } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 /**
  * @alpha A class extending ECClasses allowing you to create schema items of type StructClass.
@@ -29,7 +31,7 @@ export class Structs extends ECClasses {
 
       return newClass.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFailed, new ClassId(this.schemaItemType, name, schemaKey), e);
     }
   }
 
@@ -43,7 +45,7 @@ export class Structs extends ECClasses {
       const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createStructClass.bind(schema), structProps);
       return newClass.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, structProps.name!, schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, structProps.name!, schemaKey), e);
     }
   }
 }

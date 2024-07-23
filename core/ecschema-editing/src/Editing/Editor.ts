@@ -24,15 +24,20 @@ import { RelationshipClasses } from "./RelationshipClasses";
 import { Structs } from "./Structs";
 import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
-import { CustomAttributeId, ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
+import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
+import { ISchemaEditChangeInfo } from "./ChangeInfo/ChangeInfo";
+import { CustomAttributeId, SchemaId, SchemaItemId } from "./SchemaItemIdentifiers";
+import { SchemaEditType } from "./SchmaEditType";
 
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.
  * @alpha
  */
 export class SchemaContextEditor {
+  private _currentChanges: ISchemaEditChangeInfo[] = [];
   private _schemaContext: SchemaContext;
+
   public readonly entities = new Entities(this);
   public readonly mixins = new Mixins(this);
   public readonly structs = new Structs(this);
@@ -61,7 +66,35 @@ export class SchemaContextEditor {
   public get schemaContext(): SchemaContext { return this._schemaContext; }
 
   public async finish(): Promise<SchemaContext> {
+    this._currentChanges = [];
     return this._schemaContext;
+  }
+
+  public addEditInfo(changeInfo: ISchemaEditChangeInfo) {
+    const length = this._currentChanges.push(changeInfo);
+    changeInfo.sequence = length-1;
+  }
+
+  public async revertCurrentChanges(): Promise<void> {
+    for (const change of this._currentChanges) {
+      await this.revertChange(change);
+    }
+
+    this._currentChanges = [];
+  }
+
+  public async revertChange(change: ISchemaEditChangeInfo): Promise<void> {
+    await change.revert();
+    this.removeChange(change);
+  }
+
+  public changeCancelled(change: ISchemaEditChangeInfo) {
+    this.removeChange(change);
+  }
+
+  public removeChange(change: ISchemaEditChangeInfo) {
+    this._currentChanges = this._currentChanges.splice(change.sequence, 1);
+    change.sequence = -1;
   }
 
   /**
@@ -116,7 +149,7 @@ export class SchemaContextEditor {
         await this.schemaContext.addSchema(refSchema);
       }
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.AddSchemaReference, new SchemaId(schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.AddSchemaReference, new SchemaId(schemaKey), e);
     }
   }
 
@@ -140,7 +173,7 @@ export class SchemaContextEditor {
         throw new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, schema), undefined, diagnostics);
       }
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToClass, new SchemaId(schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.AddCustomAttributeToClass, new SchemaId(schemaKey), e);
     }
   }
 
@@ -159,7 +192,7 @@ export class SchemaContextEditor {
 
       return schema.schemaKey;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.SetSchemaVersion, new SchemaId(schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.SetSchemaVersion, new SchemaId(schemaKey), e);
     }
   }
 
@@ -175,7 +208,7 @@ export class SchemaContextEditor {
 
       return schema.schemaKey;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.IncrementSchemaMinorVersion, new SchemaId(schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.IncrementSchemaMinorVersion, new SchemaId(schemaKey), e);
     }
   }
 
@@ -237,7 +270,7 @@ export class SchemaContextEditor {
   public async setDescription(schemaKey: SchemaKey, description: string) {
     const schema = await this.lookupSchema(schemaKey)
       .catch((e: any) => {
-        throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaId(schemaKey), e);
+        throw new SchemaEditingError(SchemaEditType.SetDescription, new SchemaId(schemaKey), e);
       });
     schema.setDescription(description);
   }
@@ -250,7 +283,7 @@ export class SchemaContextEditor {
   public async setDisplayLabel(schemaKey: SchemaKey, label: string) {
     const schema = await this.lookupSchema(schemaKey)
       .catch((e: any) => {
-        throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaId(schemaKey), e);
+        throw new SchemaEditingError(SchemaEditType.SetLabel, new SchemaId(schemaKey), e);
       });
     schema.setDisplayLabel(label);
   }
