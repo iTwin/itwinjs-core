@@ -185,7 +185,7 @@ export class InsertAndRetriangulateContext {
         return false;
     }
     let trap = 0;
-    // double tol = vu_getMergeTol (pGraph);
+    // double tol = vu_getMergeTol(pGraph);
     const ray = Ray3d.createXAxis();
     for (; movingPosition.getITag() === 0 && trap < 2;) {
       if (announcer !== undefined) {

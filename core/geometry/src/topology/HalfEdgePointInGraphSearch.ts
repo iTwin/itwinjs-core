@@ -53,14 +53,13 @@ export class PointSearchContext {
     const sideA = -dataA.classifyV(0.0, this._tol);
     const sideB = -dataB.classifyV(0.0, this._tol);
     let result;
-    if (sideA * sideB < 0) {
-      // simple crossing; just aim into a face
+    if (sideA * sideB < 0) { // ray aims to the face
       if (sideA > 0) {
         result = edgeHit.resetAsFace(dataA.node);
       } else {
         result = edgeHit.resetAsFace(dataB.node);
       }
-    } else if (sideA === 0 || sideB === 0) {
+    } else if (sideA === 0 || sideB === 0) { // ray is along the edge
       // the usual case is both 0 i.e. ray is clearly along the edge.
       const alongA = dataA.classifyU(targetDistance, this._tol);
       const alongB = dataB.classifyU(targetDistance, this._tol);
@@ -97,8 +96,7 @@ export class PointSearchContext {
           result = this.panic();
         }
       }
-    } else {
-      // both vertices are to same side of the line; this can't happen for edge point between nodes
+    } else { // both vertices are to same side of the line; this can't happen for edge point between nodes
       edgeHit.resetAsUnknown();
       result = this.panic();
     }
@@ -119,14 +117,14 @@ export class PointSearchContext {
     let outboundEdge = vertexNode!;
     do {
       // DPoint3d xyzBase;
-      // vu_getDPoint3d(& xyzBase, outboundEdge);
+      // vu_getDPoint3d(&xyzBase, outboundEdge);
       const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
       const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray);
       const u0 = data0.u;
       // double u1 = data1.u;
       const v0 = data0.v;
       const v1 = data1.v;
-      if (Math.abs(v0) < this._tol) {
+      if (Math.abs(v0) < this._tol) { // if ray is parallel to outboundEdge.faceSuccessor
         if (Math.abs(u0 - targetDistance) < this._tol) {
           // direct hit at far end
           result = searchBase.resetAsVertex(data0.node);
@@ -155,12 +153,14 @@ export class PointSearchContext {
             return result;
           }
         }
-      } else if (v0 < -this._tol) {
+      } else if (v0 < -this._tol) { // if sweep from ray to outboundEdge.faceSuccessor is CCW
         if (v1 > this._tol) {
           // the usual simple entry into an angle < 180
           result = searchBase.resetAsFace(outboundEdge, outboundEdge);
           return result;
         }
+      } else { // if (v0 > this._tol) or if sweep from ray to outboundEdge.faceSuccessor is CW
+        // TODO
       }
       // NEEDS WORK: angle >= 180 cases
       outboundEdge = outboundEdge.vertexSuccessor;
@@ -198,6 +198,7 @@ export class PointSearchContext {
     const data0 = NodeXYZUV.createNodeAndRayOrigin(faceNode, ray);
     let data1;
     let node0 = faceNode;
+    // find the intersection of the ray with each edge of the face
     do {
       const node1 = node0.faceSuccessor;
       data1 = NodeXYZUV.createNodeAndRayOrigin(node1, ray, data1);
@@ -206,7 +207,7 @@ export class PointSearchContext {
       const v0 = data0.v;
       const v1 = data1.v;
       if (Math.abs(v1) < this._tol) {
-        // vertex hit
+        // ray hits a vertex of the face
         const vertexHit = HalfEdgePositionDetail.createVertex(node1);
         vertexHit.setDTag(u1);
         if (Math.abs(u1 - targetDistance) < this._tol) {
@@ -219,7 +220,7 @@ export class PointSearchContext {
         if (u1 < targetDistance && u1 > lastBefore.getDTag()!)
           lastBefore.setFrom(vertexHit);
       } else if (v0 * v1 < 0.0) {
-        // edge crossing
+        // ray crossing an edge of the face
         const edgeFraction = -v0 / (v1 - v0);
         const rayFraction = Geometry.interpolate(u0, edgeFraction, u1);
         const edgeHit = HalfEdgePositionDetail.createEdgeAtFraction(data0.node, edgeFraction);
@@ -238,6 +239,8 @@ export class PointSearchContext {
           lastBefore.setFrom(edgeHit);
           lastBefore.setDTag(rayFraction);
         }
+      } else {
+        // ray does not hit a vertex or edge of the face; do nothing
       }
       data0.setFrom(data1);
       node0 = node0.faceSuccessor;
