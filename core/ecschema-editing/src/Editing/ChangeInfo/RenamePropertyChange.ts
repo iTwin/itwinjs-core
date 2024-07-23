@@ -26,10 +26,11 @@ export class RenamePropertyChange extends SchemaEditChangeBase {
   public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
   public readonly baseProperties?: PropertyId[];
   public readonly derivedProperties?: PropertyId[];
-  protected override revertCallback?: (changeInfo: ISchemaEditChangeInfo) => Promise<void>;
 
+  constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, modifiedClass: ClassId, newPropertyName: string, oldPropertyName: string, revertCallback?: SchemaChangeRevertCallback);
+  constructor(contextEditor: SchemaContextEditor, changeOptions: ChangeOptions, modifiedClass: ClassId, newPropertyName: string, oldPropertyName: string, revertCallback?: SchemaChangeRevertCallback);
   constructor(contextEditor: SchemaContextEditor, selectedElementsOrOptions: ECElementSelection | ChangeOptions, modifiedClass: ClassId, newPropertyName: string, oldPropertyName: string, revertCallback?: SchemaChangeRevertCallback) {
-    super(contextEditor, getChangeOptions(selectedElementsOrOptions), modifiedClass.schemaItemType);
+    super(contextEditor, getChangeOptions(selectedElementsOrOptions), modifiedClass.schemaItemType, revertCallback);
     this.modifiedClass = modifiedClass;
     this.newPropertyName = newPropertyName;
     this.oldPropertyName = oldPropertyName;
@@ -37,14 +38,6 @@ export class RenamePropertyChange extends SchemaEditChangeBase {
       this.baseProperties = this.getPropertyIds(selectedElementsOrOptions.gatheredBaseProperties);
       this.derivedProperties = this.getPropertyIds(selectedElementsOrOptions.gatheredDerivedProperties);
     }
-    this.revertCallback = revertCallback;
-  }
-
-  public async revertChange(): Promise<void> {
-    if (!this.revertCallback)
-      return;
-
-    await this.revertCallback(this);
   }
 
   private getPropertyIds(properties: Property[]) {

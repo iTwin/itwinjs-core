@@ -31,14 +31,14 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
   public readonly changeOptions: ChangeOptions;
   public abstract readonly editType: SchemaEditType;
   public readonly schemaItemType: SchemaItemType;
-  public abstract revertChange(): Promise<void>;
-  protected abstract revertCallback?: SchemaChangeRevertCallback;
+  protected readonly revertCallback?: SchemaChangeRevertCallback;
   private _sequence: number = -1;
 
-  constructor(contextEditor: SchemaContextEditor, changeOptions: ChangeOptions, schemaItemType: SchemaItemType) {
+  constructor(contextEditor: SchemaContextEditor, changeOptions: ChangeOptions, schemaItemType: SchemaItemType, revertCallback?: SchemaChangeRevertCallback) {
     this.contextEditor = contextEditor;
     this.changeOptions = changeOptions;
     this.schemaItemType = schemaItemType;
+    this.revertCallback = revertCallback;
 
     this.contextEditor.addEditInfo(this);
   }
@@ -61,6 +61,13 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
 
   public get changeDerived(): boolean {
     return this.changeOptions.changeDerived;
+  }
+
+  public async revertChange(): Promise<void> {
+    if (!this.revertCallback)
+      return;
+
+    await this.revertCallback(this);
   }
 
   public toJson() {

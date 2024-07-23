@@ -84,7 +84,7 @@ export class SchemaContextEditor {
   }
 
   public async revertChange(change: ISchemaEditChangeInfo): Promise<void> {
-    await change.revert();
+    await change.revertChange();
     this.removeChange(change);
   }
 
