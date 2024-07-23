@@ -227,7 +227,7 @@ describe("CloudSqlite", () => {
     testContainer0.disconnect();
   });
 
-  it.only("Should user1 fail to upload changes if user2 holds write lock after user1's expiration time", async () => {
+  it("Should user1 fail to upload changes if user2 holds write lock after user1's expiration time", async () => {
     // simulate two users in two processes
     // test container 1 and test container 2 are actually the same cloud container
     const testContainer1 = testContainers[3];
@@ -249,16 +249,7 @@ describe("CloudSqlite", () => {
     testContainer2.connect(testCache2);
     testContainer2.acquireWriteLock(user2);
     // user1 tries to upload changes, it should fail because user1's write lock has expired and user2 is using it
-    // await expect(testContainer1.uploadChanges()).to.eventually.be.rejectedWith("container is currently locked by another user");
     expect( async () => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is currently locked by another user`);
-
-    // expect(testContainer1.uploadChanges()).throws("container is currently locked by another user");
-    // try {
-    //   await testContainer1.uploadChanges();
-    // } catch (error: any) {
-    //   console.log(error.message);
-    // }
-    // await BeDuration.wait(6000);
     testContainer1.disconnect();
     testContainer2.disconnect();
   });
