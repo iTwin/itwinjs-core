@@ -11,23 +11,22 @@ import { request } from "./request/Request";
 import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
-/** Provides an interface to the [Bing Maps location services](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/).
+/** Provides an interface to the [Azure Maps Geocoding services](https://learn.microsoft.com/en-us/rest/api/maps/search/get-geocoding).
  * @public
  * @extensions
- * @deprecated in 4.8. Use AzureLocationProvider instead.
  */
-export class BingLocationProvider {
+export class AzureLocationProvider {
   private _locationRequestTemplate: string;
 
   constructor() {
-    let bingKey = "";
-    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) {
-      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+    let azureMapKey = "";
+    if (IModelApp.mapLayerFormatRegistry.configOptions.AzureMaps) {
+      azureMapKey = IModelApp.mapLayerFormatRegistry.configOptions.AzureMaps.value;
     }
-    this._locationRequestTemplate = `https://dev.virtualearth.net/REST/v1/Locations?query={query}&key=${bingKey}`;
+    this._locationRequestTemplate = `https://atlas.microsoft.com/geocode?api-version=2023-06-01&query={query}&subscription-key=${azureMapKey}`;
   }
   /** Return the location of a query (or undefined if not found). The strings "Space Needle" (a landmark) and "1 Microsoft Way Redmond WA" (an address) are examples of query strings with location information.
-   * These strings can be specified as a structured URL parameter or as a query parameter value.  See [Bing Location Services documentation](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/find-a-location-by-query) for additional
+   * These strings can be specified as a structured URL parameter or as a query parameter value.  See [Azure Maps Search - Geocoding documentation](https://learn.microsoft.com/en-us/rest/api/maps/search/get-geocoding) for additional
    * information on queries.
    * @public
    */
@@ -35,14 +34,14 @@ export class BingLocationProvider {
     const requestUrl = this._locationRequestTemplate.replace("{query}", query);
     try {
       const locationResponse = await request(requestUrl, "json");
-      const point = locationResponse.resourceSets[0].resources[0].point;
-      const bbox = locationResponse.resourceSets[0].resources[0].bbox;
-      const southLatitude = bbox[0];
-      const westLongitude = bbox[1];
-      const northLatitude = bbox[2];
-      const eastLongitude = bbox[3];
+      const geometry = locationResponse.features[0].geometry;
+      const bbox = locationResponse.features[0].bbox;
+      const westLongitude = bbox[0];
+      const southLatitude = bbox[1];
+      const eastLongitude = bbox[2];
+      const northLatitude = bbox[3];
       return {
-        center: Cartographic.fromDegrees({ longitude: point.coordinates[1], latitude: point.coordinates[0] }),
+        center: Cartographic.fromDegrees({ longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] }),
         area: {
           southwest: Cartographic.fromDegrees({ longitude: westLongitude, latitude: southLatitude }),
           northeast: Cartographic.fromDegrees({ longitude: eastLongitude, latitude: northLatitude }),

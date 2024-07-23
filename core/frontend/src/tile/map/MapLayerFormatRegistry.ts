@@ -106,7 +106,9 @@ export interface MapLayerOptions {
   /** Access key for Mapbox in the format `{ key: "access_token", value: "your-mapbox-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   MapboxImagery?: MapLayerKey;
-  /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`. */
+  /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`.
+   * @deprecated in 4.8. Use AzureMaps instead.
+   */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
   /** Access keys for additional map layer formats. */

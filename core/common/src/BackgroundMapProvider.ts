@@ -23,7 +23,7 @@ export enum BackgroundMapType {
  * @public
  * @extensions
  */
-export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+export type BackgroundMapProviderName = "BingProvider" | "AzureProvider" | "MapBoxProvider";
 
 /** JSON representation of a [[BackgroundMapProvider]].
  * @see [[BaseMapLayerProps.provider]].
@@ -52,7 +52,7 @@ export class BackgroundMapProvider {
 
   /** Create a provider from its JSON representation. */
   public static fromJSON(props: BackgroundMapProviderProps): BackgroundMapProvider {
-    const name: BackgroundMapProviderName = props.name === "MapBoxProvider" ? props.name : "BingProvider";
+    const name: BackgroundMapProviderName = props.name === "MapBoxProvider" ? props.name : "BingProvider"; // Switch to 'AzureProvider' as default in 5.0.
     let type;
     switch (props.type) {
       case BackgroundMapType.Street:

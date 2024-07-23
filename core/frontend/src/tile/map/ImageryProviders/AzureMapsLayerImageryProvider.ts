@@ -18,7 +18,7 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   public async constructUrl(y: number, x: number, zoom: number): Promise<string> {
     if (!this._settings.accessKey)
       return "";
-    return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
+    return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2024-04-01&zoom=${zoom}&x=${x}&y=${y}`;
   }
 
   public override addLogoCards(cards: HTMLTableElement): void {

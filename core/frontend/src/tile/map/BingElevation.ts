@@ -19,6 +19,7 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
  * passed to [[IModelApp.startup]].
  * @public
  * @extensions
+ * @deprecated in 4.8. No replacement for this class is available in Azure Maps.
  */
 export class BingElevationProvider {
   private _heightRangeRequestTemplate: string;
