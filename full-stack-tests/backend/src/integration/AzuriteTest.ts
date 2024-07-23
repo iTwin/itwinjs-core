@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import * as crypto from "crypto";
+import * as fs from "fs";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
+import { open } from "sqlite";
+import * as sqlite3 from "sqlite3";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
+import { BlobContainer, CloudSqlite, IModelHost, KnownLocations, SettingsContainer } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import * as crypto from "crypto";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
 
@@ -51,6 +54,29 @@ export namespace AzuriteTest {
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       return blobClient.exists();
+    };
+
+    export const overwriteWriteLockValue = async (container: CloudSqlite.CloudContainer, blockName: string) => {
+      const azClient = createAzClient(container.containerId);
+      const blobClient = azClient.getBlockBlobClient(blockName);
+      const tempFilePath = join(KnownLocations.tmpdir, blockName);
+      await blobClient.downloadToFile(tempFilePath);
+
+      const bcv_kv = await open({
+        filename: tempFilePath,
+        driver: sqlite3.Database,
+      });
+      const row = await bcv_kv.get<{ v: string }>("SELECT v FROM kv WHERE k = 'writeLock'");
+      if (row) {
+        const writeLockData = JSON.parse(row.v);
+        const expiresDate = new Date(writeLockData.expires);
+        expiresDate.setMinutes(expiresDate.getMinutes() - 5);
+        writeLockData.expires = expiresDate.toISOString();
+        await bcv_kv.run("UPDATE kv SET v = ? WHERE k = 'writeLock'", JSON.stringify(writeLockData));
+      }
+      await bcv_kv.close();
+      await blobClient.uploadFile(tempFilePath);
+      fs.unlinkSync(tempFilePath);
     };
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {

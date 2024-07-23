@@ -195,36 +195,18 @@ describe("CloudSqlite", () => {
   });
 
   it("Should a single user upload changes successfully even if write lock expires", async () => {
-    const testContainer0 = testContainers[0];
-    // const testContainerArg ={
-    //   containerId: "test0",
-    //   logId: "logId-0",
-    //   writeable: true,
-    //   baseUri: "http://127.0.0.1:10000/devstoreaccount1",
-    //   storageType: "azure" as const,
-    // };
-    // await azSqlite.createAzContainer(testContainerArg);
-    // const accessToken = await CloudSqlite.requestToken(testContainerArg);
-    // const lockExpireSeconds = 5;
-    // const testContainer0 = CloudSqlite.createCloudContainer({ ...testContainerArg, accessToken, lockExpireSeconds});
+    const testContainer1 = testContainers[0];
     const testCache = azSqlite.makeCaches(["testCache"])[0];
-    testContainer0.connect(testCache);
-    testContainer0.acquireWriteLock(user1);
-    await testContainer0.copyDatabase("testBim", "testBimCopy");
-    const db = await BriefcaseDb.open({ fileName: "testBimCopy", container: testContainer0 });
+    testContainer1.connect(testCache);
+    testContainer1.acquireWriteLock(user1);
+    await testContainer1.copyDatabase("testBim", "testBimCopy");
+    const db = await BriefcaseDb.open({ fileName: "testBimCopy", container: testContainer1 });
     db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
     db.close();
-    await BeDuration.wait(10000);
-    // await testContainer0.uploadChanges();
-    await expect(testContainer0.uploadChanges()).to.eventually.be.fulfilled;
-    // testContainer0.releaseWriteLock();
-    // await CloudSqlite.withWriteLock({ user: user1, container: testContainer0 }, async () => {
-    //   await testContainer0.copyDatabase("testBim", "testBimCopy");
-    //   const db = await BriefcaseDb.open({ fileName: "testBimCopy", container: testContainer0 });
-    //   db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
-    //   db.close();
-    // });
-    testContainer0.disconnect();
+    // set the expires time to five mins later, which avoids waiting for 5 mins here.
+    await azSqlite.overwriteWriteLockValue(testContainer1, "bcv_kv.bcv");
+    await expect(testContainer1.uploadChanges()).to.eventually.be.fulfilled;
+    testContainer1.disconnect();
   });
 
   it("Should user1 fail to upload changes if user2 holds write lock after user1's expiration time", async () => {
@@ -244,12 +226,13 @@ describe("CloudSqlite", () => {
     const db1 = await BriefcaseDb.open({ fileName: "testBimCopy1", container: testContainer1 });
     db1.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
     db1.close();
-    await BeDuration.wait(6000);
+    // set the expires time to five mins later, which avoids waiting for 5 mins here.
+    await azSqlite.overwriteWriteLockValue(testContainer1, "bcv_kv.bcv");
     // user2 grabs the write lock
     testContainer2.connect(testCache2);
     testContainer2.acquireWriteLock(user2);
     // user1 tries to upload changes, it should fail because user1's write lock has expired and user2 is using it
-    expect( async () => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is currently locked by another user`);
+    expect(() => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is currently locked by another user`);
     testContainer1.disconnect();
     testContainer2.disconnect();
   });
