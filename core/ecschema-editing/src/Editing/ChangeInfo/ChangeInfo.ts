@@ -73,7 +73,6 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
     if (!this.changeOptions.beginChangeCallback)
       return true;
 
-    // const startEdit = await this.callBeginChange(this.changeOptions.beginChangeCallback);
     const startEdit = await this.changeOptions.beginChangeCallback(this);
     if (!startEdit) {
       this.contextEditor.changeCancelled(this);
