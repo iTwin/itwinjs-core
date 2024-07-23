@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Id64, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
@@ -444,7 +444,7 @@ function remapGraphicDescription(descr: GraphicDescriptionImpl, context: Graphic
 
   const data = batch.featureTable.data;
   const remapId = (offset: number) => {
-    let hi = data[offset + 1];
+    const hi = data[offset + 1];
     if (hi >= 0xffffff00) {
       const hi8 = hi & 0xff;
       const lo = data[offset];
@@ -455,7 +455,7 @@ function remapGraphicDescription(descr: GraphicDescriptionImpl, context: Graphic
       data[offset] = localId & 0xffffffff;
       data[offset + 1] = 0xffffff00 + hi8;
     }
-  }
+  };
 
   const subCatsOffset = 3 * batch.featureTable.numFeatures;
   for (let i = 0; i < subCatsOffset; i += 3) {

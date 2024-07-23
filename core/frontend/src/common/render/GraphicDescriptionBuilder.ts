@@ -123,7 +123,7 @@ export interface ComputeGraphicDescriptionChordToleranceArgs {
  * @beta
  */
 export type GraphicDescriptionBuilderOptions = {
-  /** The type of graphic to create. This influences the default values of some other options like [[generateEdges]] and 
+  /** The type of graphic to create. This influences the default values of some other options like [[generateEdges]] and
    * properties like [[GraphicDescriptionBuilder.wantNormals]].
    */
   type: GraphicType;
@@ -150,10 +150,10 @@ export type GraphicDescriptionBuilderOptions = {
   viewIndependentOrigin?: Point3d;
   /** @internal */
   instances?: never;
-}/*) | {
+}/* ) | {
   instances?: InstancedGraphicParams;
   viewIndependentOrigin?: never;
-}*/)
+}*/);
 
 /** An equivalent of a [[GraphicBuilder]] that is designed for use on a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker).
  * Unlike [[GraphicBuilder.finish]], which produces a [[RenderGraphic]], [[GraphicDescriptionBuilder.finish]] produces a [[GraphicDescription]].

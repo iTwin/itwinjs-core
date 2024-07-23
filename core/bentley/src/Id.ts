@@ -6,8 +6,6 @@
  * @module Ids
  */
 
-import { assert } from "./core-bentley";
-
 /** A string containing a well-formed string representation of an [Id64]($core-bentley).
  * See [Working with Ids]($docs/learning/common/Id64.md).
  * @public
@@ -766,7 +764,7 @@ export class TransientIdSequence {
    */
   public merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number {
     const { initialLocalId, currentLocalId } = source;
-    
+
     validateLocalId(initialLocalId);
     validateLocalId(currentLocalId);
 

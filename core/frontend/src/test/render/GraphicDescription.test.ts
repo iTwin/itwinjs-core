@@ -374,7 +374,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batch.featureTable.numFeatures).to.equal(3);
 
     expectRange(batch.range, 1, 1, 1, 3, 3, 3);
-    
+
     expectFeature(0, batch.featureTable, { elementId: "0xa1", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
     expectFeature(1, batch.featureTable, { elementId: "0xa2", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
     expectFeature(2, batch.featureTable, { elementId: "0xa3", subCategoryId: "0xc2", geometryClass: GeometryClass.Primary, modelId: "0xb1" });
@@ -411,7 +411,7 @@ describe("GraphicDescriptionBuilder", () => {
       worker.terminate();
 
       const d = result.description as GraphicDescriptionImpl;
-      
+
       expect(d.translation!.x).to.equal(5);
       expect(d.translation!.y).to.equal(10);
       expect(d.translation!.z).to.equal(-1);
@@ -420,7 +420,7 @@ describe("GraphicDescriptionBuilder", () => {
       expect(d.batch!.featureTable.numFeatures).to.equal(3);
       expectTransientId(d.batch!.modelId, 2);
       expectRange(Range3d.fromJSON(d.batch!.range), 0, 0, -4, 10, 20, 2);
-      
+
       expect(d.primitives.length).to.equal(3);
       expect(d.primitives[0].type).to.equal("mesh");
       expect(d.primitives[1].type).to.equal("polyline");
@@ -441,15 +441,15 @@ describe("GraphicDescriptionBuilder", () => {
       const iModel = { transientIds } as any;
       const worker = createWorker();
       const result = await worker.createGraphic(IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel));
-      worker.terminate;
-      
+      worker.terminate();
+
       expectTransientId(transientIds.getNext(), 2);
       expectTransientId(transientIds.getNext(), 3);
-      
-      const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(result.context, iModel);
-      const graphic = await IModelApp.renderSystem.createGraphicFromDescription({ context, description: result.description });
+
+      const resolvedContext = await IModelApp.renderSystem.resolveGraphicDescriptionContext(result.context, iModel);
+      const graphic = await IModelApp.renderSystem.createGraphicFromDescription({ context: resolvedContext, description: result.description });
       expect(graphic).not.to.be.undefined;
-      
+
       const branch = graphic as Branch;
       expect(branch.branch.entries.length).to.equal(1);
       const batch = branch.branch.entries[0] as Batch;

@@ -672,7 +672,7 @@ describe("TransientIdSequence", () => {
       const seq = new TransientIdSequence(3);
       expect(() => seq.merge({ initialLocalId: 2, currentLocalId: 1 })).to.throw("cannot be less");
     });
-    
+
     it("reserves space for the source sequence", () => {
       const seq = new TransientIdSequence();
       expect(seq.currentLocalId).to.equal(0);
@@ -690,7 +690,7 @@ describe("TransientIdSequence", () => {
       seq.merge({ initialLocalId: 3, currentLocalId: 5 });
       expect(seq.currentLocalId).to.equal(15);
     });
-    
+
     function expectLocalId(id: Id64String, expected: number): void {
       expect(Id64.getLocalId(id)).to.equal(expected);
     }
@@ -750,8 +750,7 @@ describe("TransientIdSequence", () => {
       const mapA = seq.merge(a);
       expect(seq.currentLocalId).to.equal(6);
       const mapB = seq.merge(b);
-      expect(seq.currentLocalId).to.equal(10)
-
+      expect(seq.currentLocalId).to.equal(10);
 
       // a: 2..4 + 4 => 4..6
       expect(mapA(1)).to.equal(1);

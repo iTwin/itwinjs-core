@@ -82,6 +82,6 @@ registerWorker<TestWorker>({
         context: context.toProps(transferables),
       },
       transfer: Array.from(transferables),
-    }
+    };
   },
 });
