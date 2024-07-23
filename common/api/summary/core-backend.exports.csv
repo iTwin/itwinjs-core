@@ -261,6 +261,7 @@ internal;LocalhostIpcHost
 internal;LocalhostIpcHostOpts
 internal;LocalHub
 beta;LockConflict 
+public;LockControl
 internal;LockMap = Map
 beta;LockProps
 public;LockState

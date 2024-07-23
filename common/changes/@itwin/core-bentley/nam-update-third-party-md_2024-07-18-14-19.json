@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Update ThirdPartyNotices.md",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
