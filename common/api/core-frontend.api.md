@@ -8472,7 +8472,7 @@ export class PlanarClipMaskState {
     // (undocumented)
     static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState;
     // (undocumented)
-    getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined;
+    getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
     // (undocumented)
     getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
     // (undocumented)
