@@ -8,6 +8,8 @@ Table of contents:
 
 - [Workspaces](#workspaces)
 - [Electron 31 support](#electron-31-support)
+- [Type-safe Worker APIs](#type-safe-worker-apis)
+- [Creating graphics in Workers](#creating-graphics-in-workers)
 - [Internal APIs](#internal-apis)
 - [ListenerType helper](#listenertype-helper)
 - [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
@@ -20,6 +22,16 @@ The `beta` [Workspace]($backend) and [Settings]($backend) APIs have been updated
 ## Electron 31 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 31](https://www.electronjs.org/blog/electron-31-0).
+
+## Type-safe Worker APIs
+
+The [WorkerProxy APIs]($docs/learning/frontend/WorkerProxy.md) provide an easy way to leverage [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker)s in a type-safe way to move processing out of the JavaScript main thread into a background thread.
+
+## Creating graphics in Workers
+
+Typically, you would use a [GraphicBuilder]($frontend) to create graphics. `GraphicBuilder` produces a [RenderGraphic]($frontend) containing WebGL resources like textures and vertex buffers, so it must execute on the main JavaScript thread. This is fine for simple decorations, but imagine you are streaming large data sets like GeoJSON or point clouds that must be processed into graphics - that would require far more processing which, if executed on the main thread, would utterly degrade the responsiveness of the application by blocking the event loop.
+
+[GraphicDescriptionBuilder]($frontend) has been introduced to address this problem. In conjunction with a [WorkerProxy](#type-safe-worker-apis), you can move the heavy processing into a background thread to produce a [GraphicDescription]($frontend), leaving to the main thread the fast and straighforward task of converting that description into a [RenderGraphic]($frontend) using [RenderSystem.createGraphicFromDescription]($frontend). See [this article]($docs/learning/frontend/WorkerProxy.md) for an example.
 
 ## Internal APIs
 
