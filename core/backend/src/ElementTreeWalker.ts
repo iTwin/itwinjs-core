@@ -447,13 +447,49 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
   }
 }
 
+/** Arguments supplied to [[deleteElementTree]].
+ * @beta
+ */
+export interface DeleteElementTreeArgs {
+  /** The iModel containing the elements to delete. */
+  iModel: IModelDb;
+  /** The Id of the root element of the tree to delete. */
+  topElement: Id64String;
+  /** The maximum number of passes to make when deleting definition elements.
+   * Default: 5
+   */
+  maxPasses?: number;
+}
+
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
  * @param iModel The iModel
  * @param topElement The parent of the sub-tree
  * @param maxPasses Maximum number of passes to make when deleting definitions
  * @beta
  */
-export function deleteElementTree(iModel: IModelDb, topElement: Id64String, maxPasses: number = 5): void {
+export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
+/** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
+ * @param iModel The iModel
+ * @param args Specifies the iModel and top element.
+ * @beta
+ */
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+/** @internal */
+export function deleteElementTree(arg0: DeleteElementTreeArgs | IModelDb, arg1?: Id64String): void {
+  let maxPasses;
+  let iModel: IModelDb;
+  let topElement: Id64String;
+  if (arg0 instanceof IModelDb) {
+    assert(typeof arg1 === "string");
+    iModel = arg0;
+    topElement = arg1;
+  } else {
+    iModel = arg0.iModel;
+    topElement = arg0.topElement;
+    maxPasses = arg0.maxPasses;
+  }
+
+  maxPasses = maxPasses ?? 5;
   let pass = 0;
   do {
     const del = new ElementTreeDeleter(iModel);
