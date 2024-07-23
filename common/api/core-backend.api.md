@@ -1446,6 +1446,16 @@ export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, 
 // @beta
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
 
+// @beta (undocumented)
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+
+// @beta
+export interface DeleteElementTreeArgs {
+    iModel: IModelDb;
+    maxPasses?: number;
+    topElement: Id64String;
+}
+
 // @public
 export class DetailCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
