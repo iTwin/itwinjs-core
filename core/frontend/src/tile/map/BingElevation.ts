@@ -29,8 +29,8 @@ export class BingElevationProvider {
   /** @public */
   constructor() {
     let bingKey = "";
-    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps)
-      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) // eslint-disable-line deprecation/deprecation
+      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value; // eslint-disable-line deprecation/deprecation
 
     this._heightRangeRequestTemplate =
       "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}"

@@ -678,7 +678,7 @@ export abstract class IModelConnection extends IModel {
    */
   public get geodeticToSeaLevel(): number | undefined {
     if (undefined === this._geodeticToSeaLevel) {
-      const elevationProvider = new BingElevationProvider();
+      const elevationProvider = new BingElevationProvider(); // eslint-disable-line deprecation/deprecation
       this._geodeticToSeaLevel = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
       this._geodeticToSeaLevel.then((geodeticToSeaLevel) => {
         this._geodeticToSeaLevel = geodeticToSeaLevel;
@@ -694,7 +694,7 @@ export abstract class IModelConnection extends IModel {
    */
   public get projectCenterAltitude(): number | undefined {
     if (undefined === this._projectCenterAltitude) {
-      const elevationProvider = new BingElevationProvider();
+      const elevationProvider = new BingElevationProvider(); // eslint-disable-line deprecation/deprecation
       this._projectCenterAltitude = elevationProvider.getHeightValue(this.projectExtents.center, this);
       this._projectCenterAltitude.then((projectCenterAltitude) => {
         this._projectCenterAltitude = projectCenterAltitude;

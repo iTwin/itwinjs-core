@@ -21,8 +21,8 @@ export class BingLocationProvider {
 
   constructor() {
     let bingKey = "";
-    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) {
-      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) { // eslint-disable-line deprecation/deprecation
+      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value; // eslint-disable-line deprecation/deprecation
     }
     this._locationRequestTemplate = `https://dev.virtualearth.net/REST/v1/Locations?query={query}&key=${bingKey}`;
   }
