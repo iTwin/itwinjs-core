@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "deleteElementTree handles case where GeometryStream refers to LineStyle",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
