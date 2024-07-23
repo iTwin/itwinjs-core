@@ -94,7 +94,7 @@ export namespace AzuriteTest {
       emptyDirSync(name);
     };
 
-    export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
+    export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean, lockExpireSeconds?: number}
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
       const containerProps = { ...arg, writeable: true, baseUri, storageType };
