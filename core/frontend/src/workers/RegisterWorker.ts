@@ -19,6 +19,7 @@ interface WorkerRequest {
 }
 
 /** Configure an implementation of the operations defined by `T` to execute on a worker thread.
+ * See [this article]($docs/learning/frontend/WorkerProxy.md) for more details and examples.
  * @beta
  */
 export function registerWorker<T>(impl: WorkerImplementation<T>): void {

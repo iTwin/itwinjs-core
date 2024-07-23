@@ -76,6 +76,7 @@ export type WorkerImplementation<T> = {
  * the methods of `T`.
  * To use a worker proxy, define a worker script that provides [[registerWorker]] with an implementation of `T`, and obtain a proxy
  * via [[createWorkerProxy]] on the main thread. The proxy can then be used to asynchronously invoke methods of `T` on the worker.
+ * See [this article]($docs/learning/frontend/WorkerProxy.md) for more details and examples.
  * @beta
  */
 export type WorkerProxy<T> = WorkerInterface<T> & {
@@ -86,6 +87,7 @@ export type WorkerProxy<T> = WorkerInterface<T> & {
 };
 
 /** Create a [[WorkerProxy]] implementing the methods of `T` using the specified worker script.
+ * See [this article]($docs/learning/frontend/WorkerProxy.md) for more details and examples.
  * @beta
  */
 export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
