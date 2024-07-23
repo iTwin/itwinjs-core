@@ -80,19 +80,6 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
     }
     return startEdit;
   }
-
-  protected getEditorClass(schemaItemType: SchemaItemType) {
-    switch (schemaItemType) {
-      case SchemaItemType.EntityClass:
-        return this.contextEditor.entities;
-      case SchemaItemType.Mixin:
-        return this.contextEditor.mixins;
-      case SchemaItemType.RelationshipClass:
-        return this.contextEditor.relationships;
-      default:
-        throw new Error("Invalid SchemaItemType.");
-    }
-  }
 }
 
 // export class SetBaseClassChangeInfo extends SchemaEditChange {
