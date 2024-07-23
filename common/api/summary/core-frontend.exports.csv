@@ -126,7 +126,8 @@ internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
 internal;createEmptyRenderPlan(): RenderPlan
-internal;createGraphicFromDescription(descr: GraphicDescription, system: RenderSystem): Promise
+internal;createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): Promise
+beta;CreateGraphicFromDescriptionArgs
 internal;createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined
 internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined
@@ -138,7 +139,7 @@ internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set
 public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
-internal;createWorkerProxy
+beta;createWorkerProxy
 internal;CurrentInputState
 public;CurrentState
 public;CustomFormatPropEditorSpec
@@ -209,7 +210,6 @@ alpha;Source
 internal;FeatureSymbologyRenderer
 internal;FetchCloudStorage 
 internal;FetchFunction = (url: URL, options?: RequestInit) => Promise
-beta;FinishGraphicDescriptionArgs =
 public;FitViewTool 
 internal;Flags
 public;FlashMode
@@ -278,7 +278,7 @@ public;GraphicalEditingScope
 public;GraphicArc
 public;GraphicArc2d
 public;class GraphicAssembler
-beta;GraphicAssemblerOptions =
+internal;GraphicAssemblerOptions
 public;GraphicBranch 
 internal;GraphicBranchFrustum
 public;GraphicBranchOptions
@@ -288,8 +288,10 @@ beta;GraphicDescription
 beta;GraphicDescription
 beta;GraphicDescriptionBuilder 
 beta;GraphicDescriptionBuilder
-beta;GraphicDescriptionBuilderOptions
+beta;GraphicDescriptionBuilderOptions =
 beta;GraphicDescriptionConstraints
+beta;GraphicDescriptionContext
+beta;GraphicDescriptionContextProps
 public;GraphicLineString
 public;GraphicLineString2d 
 public;GraphicList = RenderGraphic[]
@@ -588,6 +590,7 @@ internal;RealityTileRegion
 public;RealityTileTree 
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
+beta;registerWorker
 alpha;RemoteExtensionProvider 
 alpha;RemoteExtensionProviderProps
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
@@ -860,12 +863,12 @@ internal;WmtsCapabilities
 internal;WmtsCapability
 internal;WmtsConstants
 internal;WmtsMapLayerImageryProvider 
-internal;WorkerError
-internal;WorkerImplementation
-internal;WorkerInterface
-internal;WorkerProxy
-internal;WorkerResponse = WorkerResult | WorkerError
-internal;WorkerResult
-internal;WorkerReturnType
+beta;WorkerGraphicDescriptionContext
+beta;WorkerGraphicDescriptionContext
+beta;WorkerGraphicDescriptionContextProps
+beta;WorkerImplementation
+beta;WorkerInterface
+beta;WorkerProxy
+beta;WorkerReturnType
 public;ZoomToOptions
 public;ZoomViewTool 

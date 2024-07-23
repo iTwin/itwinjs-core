@@ -2109,11 +2109,9 @@ export interface ComputeDisplayTransformArgs {
     viewAttachmentId?: Id64String;
 }
 
-// @beta (undocumented)
+// @beta
 export interface ComputeGraphicDescriptionChordToleranceArgs {
-    // (undocumented)
     builder: GraphicDescriptionBuilder;
-    // (undocumented)
     computeRange: () => Range3d;
 }
 
@@ -2306,7 +2304,13 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
-export function createGraphicFromDescription(descr: GraphicDescription, system: RenderSystem): Promise<RenderGraphic | undefined>;
+export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined>;
+
+// @beta
+export interface CreateGraphicFromDescriptionArgs {
+    context: GraphicDescriptionContext;
+    description: GraphicDescription;
+}
 
 // @internal
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
@@ -2355,7 +2359,7 @@ export interface CreateTextureFromSourceArgs {
     type?: RenderTexture.Type;
 }
 
-// @internal
+// @beta
 export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T>;
 
 // @internal (undocumented)
@@ -3500,15 +3504,6 @@ export class FetchCloudStorage implements FrontendStorage {
 // @internal (undocumented)
 export type FetchFunction = (url: URL, options?: RequestInit) => Promise<Response>;
 
-// @beta (undocumented)
-export type FinishGraphicDescriptionArgs = {
-    viewIndependentOrigin?: Point3d;
-    instances?: never;
-} | {
-    instances?: InstancedGraphicParams;
-    viewIndependentOrigin?: never;
-};
-
 // @public
 export class FitViewTool extends ViewTool {
     constructor(viewport: ScreenViewport, oneShot: boolean, doAnimate?: boolean, isolatedOnly?: boolean);
@@ -4029,15 +4024,6 @@ export class GlobeAnimator implements Animator {
 }
 
 // @internal
-        EXT_instance_features?: {
-            featureIds: {
-                attribute?: number;
-                featureCount: number;
-                label?: string;
-                nullFeatureId?: number;
-                propertyTable: number;
-            }[];
-        };
 export class GltfBufferData {
     constructor(buffer: GltfDataBuffer, count: number);
     // (undocumented)
@@ -4328,9 +4314,6 @@ export interface GltfReaderResult extends TileContent {
     readStatus: TileReadStatus;
 }
 
-        classes?: Class[];
-            [classId: string]: Class | undefined;
-        };
 // @internal (undocumented)
 export interface GLTimerResult {
     children?: GLTimerResult[];
@@ -4396,12 +4379,14 @@ export interface GraphicArc2d {
     zDepth: number;
 }
 
-// @public (undocumented)
+// @public
 export abstract class GraphicAssembler {
+    // @internal (undocumented)
+    readonly [_accumulator]: GeometryAccumulator;
+    // @internal (undocumented)
+    abstract [_implementationProhibited]: unknown;
     // @internal
     protected constructor(options: GraphicAssemblerOptions);
-    // @internal (undocumented)
-    readonly accum: GeometryAccumulator;
     activateFeature(feature: Feature): void;
     activateGraphicParams(graphicParams: GraphicParams): void;
     activatePickableId(id: Id64String): void;
@@ -4433,34 +4418,36 @@ export abstract class GraphicAssembler {
     get isViewBackground(): boolean;
     get isViewCoordinates(): boolean;
     get isWorldCoordinates(): boolean;
-    // (undocumented)
     readonly pickable?: Readonly<PickableGraphicOptions>;
-    // (undocumented)
     readonly placement: Transform;
-    // (undocumented)
     readonly preserveOrder: boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected abstract resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined;
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
-    // (undocumented)
     readonly type: GraphicType;
-    // (undocumented)
     readonly wantEdges: boolean;
-    // (undocumented)
     readonly wantNormals: boolean;
 }
 
-// @beta (undocumented)
-export type GraphicAssemblerOptions = {
-    type: GraphicType;
-    placement: Transform;
-    pickable?: PickableGraphicOptions;
-    preserveOrder: boolean;
-    wantNormals: boolean;
-    wantEdges: boolean;
+// @internal
+export interface GraphicAssemblerOptions {
+    [_implementationProhibited]: unknown;
+    // (undocumented)
     analysisStyle?: AnalysisStyle;
-};
+    // (undocumented)
+    pickable?: PickableGraphicOptions;
+    // (undocumented)
+    placement: Transform;
+    // (undocumented)
+    preserveOrder: boolean;
+    // (undocumented)
+    type: GraphicType;
+    // (undocumented)
+    wantEdges: boolean;
+    // (undocumented)
+    wantNormals: boolean;
+}
 
 // @public
 export class GraphicBranch implements IDisposable {
@@ -4521,7 +4508,7 @@ export interface GraphicBranchOptions {
 export abstract class GraphicBuilder extends GraphicAssembler {
     // @internal
     protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions);
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
     abstract finish(): RenderGraphic;
     readonly iModel?: IModelConnection;
@@ -4540,48 +4527,59 @@ export interface GraphicBuilderOptions {
     wantNormals?: boolean;
 }
 
-// @beta (undocumented)
+// @beta
 export interface GraphicDescription {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
 }
 
 // @beta (undocumented)
 export namespace GraphicDescription {
-    // (undocumented)
-    export function collectTransferables(description: GraphicDescription): Transferable[];
+    export function collectTransferables(transferables: Set<Transferable>, description: GraphicDescription): void;
 }
 
-// @beta (undocumented)
+// @beta
 export interface GraphicDescriptionBuilder extends GraphicAssembler {
-    // (undocumented)
-    finish(args?: FinishGraphicDescriptionArgs): GraphicDescription;
+    finish(): GraphicDescription;
 }
 
 // @beta (undocumented)
 export namespace GraphicDescriptionBuilder {
-    // (undocumented)
     export function create(options: GraphicDescriptionBuilderOptions): GraphicDescriptionBuilder;
 }
 
-// @beta (undocumented)
-export interface GraphicDescriptionBuilderOptions {
-    // (undocumented)
-    computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-    // (undocumented)
-    constraints: GraphicDescriptionConstraints;
-    // (undocumented)
-    generateEdges?: boolean;
-    // (undocumented)
-    pickable?: PickableGraphicOptions;
-    // (undocumented)
-    placement?: Transform;
-    // (undocumented)
+// @beta
+export type GraphicDescriptionBuilderOptions = {
     type: GraphicType;
+    placement?: Transform;
+    pickable?: PickableGraphicOptions;
+    generateEdges?: boolean;
+    computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
+    constraints: GraphicDescriptionConstraints;
+} & ({
+    viewIndependentOrigin?: Point3d;
+    instances?: never;
+});
+
+// @beta
+export interface GraphicDescriptionConstraints {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    readonly maxTextureSize: number;
 }
 
-// @beta (undocumented)
-export interface GraphicDescriptionConstraints {
+// @beta
+export interface GraphicDescriptionContext {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
     // (undocumented)
-    readonly maxTextureSize: number;
+    remapTransientLocalId(sourceLocalId: number): number;
+}
+
+// @beta
+export interface GraphicDescriptionContextProps {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
 }
 
 // @public
@@ -9366,6 +9364,9 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     get treeOwner(): TileTreeOwner;
 }
 
+// @beta
+export function registerWorker<T>(impl: WorkerImplementation<T>): void;
+
 // @alpha
 export class RemoteExtensionProvider implements ExtensionProvider {
     constructor(_props: RemoteExtensionProviderProps);
@@ -9775,10 +9776,8 @@ export abstract class RenderSystem implements IDisposable {
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
-    // @beta (undocumented)
-    createGraphicFromDescription(args: {
-        description: GraphicDescription;
-    }): Promise<RenderGraphic | undefined>;
+    // @beta
+    createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): Promise<RenderGraphic | undefined>;
     // @internal
     createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic;
     // @internal
@@ -9841,6 +9840,8 @@ export abstract class RenderSystem implements IDisposable {
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     // @internal (undocumented)
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
+    // @beta (undocumented)
+    createWorkerGraphicDescriptionContextProps(iModel: IModelConnection): WorkerGraphicDescriptionContextProps;
     // @beta
     get debugControl(): RenderSystemDebugControl | undefined;
     // @internal (undocumented)
@@ -9854,8 +9855,6 @@ export abstract class RenderSystem implements IDisposable {
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined;
-    // @beta (undocumented)
-    getGraphicDescriptionConstraints(): GraphicDescriptionConstraints;
     // @internal (undocumented)
     get hasExternalTextureRequests(): boolean;
     // @internal (undocumented)
@@ -9872,6 +9871,8 @@ export abstract class RenderSystem implements IDisposable {
     onInitialized(): void;
     // @internal
     readonly options: RenderSystem.Options;
+    // @beta (undocumented)
+    resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): Promise<GraphicDescriptionContext>;
     // @internal (undocumented)
     get supportsCreateImageBitmap(): boolean;
     // @internal (undocumented)
@@ -15386,46 +15387,43 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     get useGeographicTilingScheme(): boolean;
 }
 
-// @internal
-export interface WorkerError {
-    // (undocumented)
-    error: Error;
-    // (undocumented)
-    msgId: number;
-    // (undocumented)
-    result?: never;
+// @beta
+export interface WorkerGraphicDescriptionContext {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    readonly constraints: GraphicDescriptionConstraints;
+    toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
+    readonly transientIds: TransientIdSequence;
 }
 
-// @internal
+// @beta (undocumented)
+export namespace WorkerGraphicDescriptionContext {
+    export function fromProps(props: WorkerGraphicDescriptionContextProps): WorkerGraphicDescriptionContext;
+}
+
+// @beta
+export interface WorkerGraphicDescriptionContextProps {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+}
+
+// @beta
 export type WorkerImplementation<T> = {
     [P in keyof T]: T[P] extends () => any ? () => WorkerReturnType<T[P]> : (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0]) => WorkerReturnType<T[P]> : (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>) => WorkerReturnType<T[P]> : never));
 };
 
-// @internal
+// @beta
 export type WorkerInterface<T> = {
     [P in keyof T]: T[P] extends () => any ? () => Promise<ReturnType<T[P]>> : (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0], transfer?: Transferable[]) => Promise<ReturnType<T[P]>> : (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>, transfer?: Transferable[]) => Promise<ReturnType<T[P]>> : never));
 };
 
-// @internal
+// @beta
 export type WorkerProxy<T> = WorkerInterface<T> & {
     terminate(): void;
     readonly isTerminated: boolean;
 };
 
-// @internal
-export type WorkerResponse = WorkerResult | WorkerError;
-
-// @internal
-export interface WorkerResult {
-    // (undocumented)
-    error?: never;
-    // (undocumented)
-    msgId: number;
-    // (undocumented)
-    result: any;
-}
-
-// @internal
+// @beta
 export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | {
     result: ReturnType<T>;
     transfer: Transferable[];

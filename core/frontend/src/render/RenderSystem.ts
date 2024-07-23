@@ -245,8 +245,13 @@ export interface RenderSkyCubeParams {
 /** @internal */
 export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
+/** Arguments supplied to [[RenderSystem.createGraphicFromDescription]].
+ * @beta
+ */
 export interface CreateGraphicFromDescriptionArgs {
+  /** A description of the [[RenderGraphic]] to create, obtained from a [[GraphicDescriptionBuilder]]. */
   description: GraphicDescription;
+  /** The context that was used to create the graphic description, obtained from [[RenderSystem.resolveGraphicDescriptionContext]]. */
   context: GraphicDescriptionContext;
 }
 
@@ -776,7 +781,7 @@ export abstract class RenderSystem implements IDisposable {
     return ToolAdmin.exceptionHandler(msg);
   }
 
-  /**
+  /** Convert a [[GraphicDescription]] produced by a [[GraphicDescriptionBuilder]] into a [[RenderGraphic]].
    * @beta
    */
   public async createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): Promise<RenderGraphic | undefined> {
