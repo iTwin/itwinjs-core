@@ -57,25 +57,16 @@ const insertSheet = async (iModel: IModelDb, sheetName: string): Promise<Id64Str
 describe("SheetIndex", () => {
   let iModel: SnapshotDb;
 
-  before(async () => {
-    // iModel = IModelTestUtils.createSnapshotFromSeed(
-    //   IModelTestUtils.prepareOutputFile("IModel", "test.bim"),
-    //   IModelTestUtils.resolveAssetFile("test.bim"),
-    // );
-    const iModelFile: string = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3.bim");
+  beforeEach(async () => {
+    const iModelFile: string = IModelTestUtils.prepareOutputFile("IModel", "TestSheetIndex.bim");
 
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "SheetIndex" } });
     await ExtensiveTestScenario.prepareDb(iModelDb);
     ExtensiveTestScenario.populateDb(iModelDb);
     iModel = iModelDb;
-    // iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), {
-    //   rootSubject: { name: "BindRange3d" },
-    // });
-    // eslint-disable-next-line no-console
-    console.log(iModel);
   });
 
-  after(() => {
+  afterEach(() => {
     iModel.abandonChanges();
     iModel.close();
   });
@@ -90,14 +81,9 @@ describe("SheetIndex", () => {
 
   it("SheetIndex Should insert", async () => {
     const subjectId = iModel.elements.getRootSubject().id;
-
-    await iModel.locks.acquireLocks({
-      shared: subjectId,
-    });
     const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
     iModel.codeSpecs.insert(spec);
 
-    // const modelId = SheetIndexModel.insert(iModel, subjectId, "testSheetIndex");
     const modelId = DictionaryModel.insert(iModel, subjectId, "TestSheetIndexModel");
     expect(Id64.isValidId64(modelId)).to.be.true;
 
@@ -111,7 +97,6 @@ describe("SheetIndex", () => {
     const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
     iModel.codeSpecs.insert(spec);
 
-    // const modelId = SheetIndexModel.insert(iModel, subjectId, "testSheetIndex");
     const modelId = DictionaryModel.insert(iModel, subjectId, "TestSheetIndexModel");
     expect(Id64.isValidId64(modelId)).to.be.true;
     const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
