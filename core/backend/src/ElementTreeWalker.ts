@@ -472,10 +472,7 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String, maxP
  * @beta
  */
 export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter, maxPasses: number = 5): void {
-  let pass = 0;
-  do {
-    const del = new ElementSubTreeDeleter(iModel, filter);
-    del.deleteNormalElementSubTrees(topElement);
-    del.deleteSpecialElementSubTrees();
-  } while ((iModel.elements.tryGetElement(topElement) !== undefined) && (++pass < maxPasses));
+  const del = new ElementSubTreeDeleter(iModel, filter);
+  del.deleteNormalElementSubTrees(topElement);
+  del.deleteSpecialElementSubTrees();
 }
