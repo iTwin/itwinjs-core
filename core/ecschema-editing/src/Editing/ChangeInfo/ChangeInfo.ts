@@ -27,12 +27,13 @@ export interface ISchemaEditChangeInfo {
 export type SchemaEditChange = RenamePropertyChange;
 
 export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
+  private _sequence: number = -1;
+
+  public abstract readonly editType: SchemaEditType;
   public readonly contextEditor: SchemaContextEditor;
   public readonly changeOptions: ChangeOptions;
-  public abstract readonly editType: SchemaEditType;
   public readonly schemaItemType: SchemaItemType;
   protected readonly revertCallback?: SchemaChangeRevertCallback;
-  private _sequence: number = -1;
 
   constructor(contextEditor: SchemaContextEditor, changeOptions: ChangeOptions, schemaItemType: SchemaItemType, revertCallback?: SchemaChangeRevertCallback) {
     this.contextEditor = contextEditor;
