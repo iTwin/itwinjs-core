@@ -125,10 +125,17 @@ describe("SheetIndex", () => {
     //   IModelTestUtils.prepareOutputFile("IModel", "test.bim"),
     //   IModelTestUtils.resolveAssetFile("test.bim"),
     // );
-    const iModelFile: string = IModelTestUtils.prepareOutputFile("SheetIndex", "SheetIndex.bim");
+    const iModelFile: string = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3.bim");
+
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "SheetIndex" } });
     await ExtensiveTestScenario.prepareDb(iModelDb);
     ExtensiveTestScenario.populateDb(iModelDb);
+    iModel = iModelDb;
+    // iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), {
+    //   rootSubject: { name: "BindRange3d" },
+    // });
+    // eslint-disable-next-line no-console
+    console.log(iModel);
   });
 
   after(() => {
