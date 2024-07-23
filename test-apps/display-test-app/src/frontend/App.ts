@@ -65,6 +65,7 @@ import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidge
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
+import { AddSeequentRealityModel } from "./RealityDataModel";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -346,6 +347,7 @@ export class DisplayTestApp {
       PullChangesTool,
       PushChangesTool,
       PurgeTileTreesTool,
+      AddSeequentRealityModel,
       RecordFpsTool,
       RecordTileSizesTool,
       RefreshTilesTool,

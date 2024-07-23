@@ -12,6 +12,11 @@ import { loggerCategory } from "../../LoggerCategory";
  */
 export interface BaseGeoscienceArgs {
   /**
+   * The endpoint URL for the geoscience service.
+   */
+  endpointUrl: string;
+
+  /**
    * The access token for authentication.
    */
   accessToken: string;
@@ -58,14 +63,20 @@ export async function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): P
     Authorization: args.accessToken,
   };
 
-  const baseUrl = "https://351mt.api.integration.seequent.com";
+  const baseUrl = args.endpointUrl;
   const url = `${baseUrl}/visualization/orgs/${args.organizationId}/workspaces/${args.workspaceId}/geoscience-object/${args.geoscienceObjectId}`;
   const response = await fetch(url, { headers });
+
+  if(!response.ok) {
+    Logger.logError(loggerCategory, `Received invalid response from ${baseUrl}, status: ${response.status}, text: ${response.statusText}`);
+    return undefined;
+  }
+
   const result = await response.json();
 
   const objUrl = URL.createObjectURL(new Blob([JSON.stringify(result)], { type: "application/json" }));
   if ((!result) || (!objUrl)) {
-    Logger.logInfo(loggerCategory, `No data available for Geoscience Object ${args.geoscienceObjectId}`);
+    Logger.logError(loggerCategory, `No data available for Geoscience Object ${args.geoscienceObjectId}`);
     return undefined;
   }
 
