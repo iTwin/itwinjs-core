@@ -115,7 +115,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
   viewport?: never;
 }
 
-/** Provides methods for constructing a [[RenderGraphic]] from geometric primitives.
+/** Provides methods for constructing a [[RenderGraphic]] from geometric primitives and symbology.
  * GraphicBuilder is primarily used for creating [[Decorations]] to be displayed inside a [[Viewport]].
  *
  * The typical process for constructing a [[RenderGraphic]] proceeds as follows:
@@ -134,6 +134,7 @@ export abstract class GraphicBuilder extends GraphicAssembler {
   /** The iModel associated with this builder, if any. */
   public readonly iModel?: IModelConnection;
 
+  /** @internal */
   protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
 
   /** @internal */
@@ -183,6 +184,7 @@ export abstract class GraphicBuilder extends GraphicAssembler {
   public get pickId(): Id64String | undefined {
     return this.pickable?.id;
   }
+
   /**
    * Processes the accumulated symbology and geometry to produce a renderable graphic.
    * This function can only be called once; after the [[RenderGraphic]] has been extracted the [[GraphicBuilder]] should no longer be used.

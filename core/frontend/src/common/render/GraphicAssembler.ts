@@ -22,7 +22,7 @@ import { Geometry } from "../internal/render/GeometryPrimitives";
 /** @internal Used by GraphicAssembler's internal constructor. Subclasses define their own constructor arguments. */
 export interface GraphicAssemblerOptions {
   /** The constructor is internal, but protected.
-   * Prevent anyone outside of itwinjs-core from being able to invoke it.
+   * Prevent anyone outside of itwinjs-core from being able to invoke it, thereby preventing them from creating their own subclasses of GraphicAssembler.
    */
   [_implementationProhibited]: unknown;
   type: GraphicType;
@@ -51,7 +51,6 @@ export interface GraphicAssemblerOptions {
 export abstract class GraphicAssembler {
   /** @internal */
   public abstract [_implementationProhibited]: unknown;
-
   /** @internal */
   public readonly [_accumulator]: GeometryAccumulator;
   private readonly _graphicParams = new GraphicParams();
@@ -446,11 +445,10 @@ export abstract class GraphicAssembler {
    */
   public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
 
-  // private getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this._graphicParams); }
   private getMeshDisplayParams(): DisplayParams { return DisplayParams.createForMesh(this._graphicParams, !this.wantNormals, (grad) => this.resolveGradient(grad)); }
   private getLinearDisplayParams(): DisplayParams { return DisplayParams.createForLinear(this._graphicParams); }
-  // private get textDisplayParams(): DisplayParams { return DisplayParams.createForText(this._graphicParams); }
 
+  /** @internal */
   protected abstract resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined;
 
   public add(geom: Geometry): void { this[_accumulator].addGeometry(geom); }
