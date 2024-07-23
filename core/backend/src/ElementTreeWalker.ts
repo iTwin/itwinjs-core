@@ -469,7 +469,6 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String, maxP
  * @param iModel The iModel
  * @param topElement Where to start the search.
  * @param filter Callback that selects sub-trees that should be deleted.
- * @param maxPasses Maximum number of passes to make when deleting definitions
  * @beta
  */
 export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void {
