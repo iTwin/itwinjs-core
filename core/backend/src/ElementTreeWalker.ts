@@ -450,12 +450,16 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
  * @param iModel The iModel
  * @param topElement The parent of the sub-tree
+ * @param maxPasses Maximum number of passes to make when deleting definitions
  * @beta
  */
-export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void {
-  const del = new ElementTreeDeleter(iModel);
-  del.deleteNormalElements(topElement);
-  del.deleteSpecialElements();
+export function deleteElementTree(iModel: IModelDb, topElement: Id64String, maxPasses: number = 5): void {
+  let pass = 0;
+  do {
+    const del = new ElementTreeDeleter(iModel);
+    del.deleteNormalElements(topElement);
+    del.deleteSpecialElements();
+  } while ((iModel.elements.tryGetElement(topElement) !== undefined) && (++pass < maxPasses));
 }
 
 /** Deletes all element sub-trees that are selected by the supplied filter. Uses ElementSubTreeDeleter.
@@ -464,10 +468,14 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String): voi
  * @param iModel The iModel
  * @param topElement Where to start the search.
  * @param filter Callback that selects sub-trees that should be deleted.
+ * @param maxPasses Maximum number of passes to make when deleting definitions
  * @beta
  */
-export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void {
-  const del = new ElementSubTreeDeleter(iModel, filter);
-  del.deleteNormalElementSubTrees(topElement);
-  del.deleteSpecialElementSubTrees();
+export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter, maxPasses: number = 5): void {
+  let pass = 0;
+  do {
+    const del = new ElementSubTreeDeleter(iModel, filter);
+    del.deleteNormalElementSubTrees(topElement);
+    del.deleteSpecialElementSubTrees();
+  } while ((iModel.elements.tryGetElement(topElement) !== undefined) && (++pass < maxPasses));
 }
