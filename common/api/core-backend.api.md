@@ -1446,7 +1446,7 @@ export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, 
 // @beta
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
 
-// @beta (undocumented)
+// @beta
 export function deleteElementTree(args: DeleteElementTreeArgs): void;
 
 // @beta
