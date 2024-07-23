@@ -1548,6 +1548,12 @@ export class AuxParamChannel extends AuxChannel {
     toJSON(): QuantizedAuxChannelProps;
 }
 
+// @public
+export class AzureLocationProvider {
+    constructor();
+    getLocation(query: string): Promise<GlobalLocation | undefined>;
+}
+
 // @internal (undocumented)
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
@@ -1822,7 +1828,7 @@ export interface BeWheelEventProps extends BeButtonEventProps {
     wheelDelta?: number;
 }
 
-// @public
+// @public @deprecated
 export class BingElevationProvider {
     constructor();
     // @internal (undocumented)
@@ -1835,7 +1841,7 @@ export class BingElevationProvider {
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
 }
 
-// @public
+// @public @deprecated
 export class BingLocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;
@@ -7505,7 +7511,7 @@ export abstract class InteractiveTool extends Tool {
 }
 
 // @internal (undocumented)
-export const internalMapLayerImageryFormats: (typeof BingMapsMapLayerFormat)[];
+export const internalMapLayerImageryFormats: (typeof AzureMapsMapLayerFormat)[];
 
 // @public (undocumented)
 export class IntersectDetail extends SnapDetail {
@@ -8157,6 +8163,7 @@ export interface MapLayerInfoFromTileTree {
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
     AzureMaps?: MapLayerKey;
+    // @deprecated
     BingMaps?: MapLayerKey;
     MapboxImagery?: MapLayerKey;
 }

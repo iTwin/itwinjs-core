@@ -38,7 +38,7 @@ deprecated;BackendWritable = Writable
 public;BackgroundFill
 public;BackgroundMapProps
 public;BackgroundMapProvider
-public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
+public;BackgroundMapProviderName = "BingProvider" | "AzureProvider" | "MapBoxProvider"
 public;BackgroundMapProviderProps
 public;BackgroundMapSettings
 public;BackgroundMapType

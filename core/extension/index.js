@@ -23,6 +23,7 @@ export const {
 	AuxCoordSystem3dState,
 	AuxCoordSystemSpatialState,
 	AuxCoordSystemState,
+	AzureLocationProvider,
 	BeButton,
 	BeButtonEvent,
 	BeButtonState,

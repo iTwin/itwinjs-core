@@ -514,7 +514,7 @@ export class BackgroundMapProvider {
 }
 
 // @public
-export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+export type BackgroundMapProviderName = "BingProvider" | "AzureProvider" | "MapBoxProvider";
 
 // @public
 export interface BackgroundMapProviderProps {
