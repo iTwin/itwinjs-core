@@ -464,7 +464,6 @@ export interface DeleteElementTreeArgs {
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
  * @param iModel The iModel
  * @param topElement The parent of the sub-tree
- * @param maxPasses Maximum number of passes to make when deleting definitions
  * @beta
  */
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
