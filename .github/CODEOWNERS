@@ -75,8 +75,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/linear-referencing-common/         @ColinKerr @diegoalexdiaz
 /common/**/core-orbitgt.*                     @iTwin/itwinjs-core-display
 /common/**/core-orbitgt/                      @iTwin/itwinjs-core-display
-/common/**/perf-tools.*                       @aruniverse @wgoehrig
-/common/**/perf-tools/                        @aruniverse @wgoehrig
+/common/**/perf-tools.*                       @aruniverse @wgoehrig @MichaelSwigerAtBentley
+/common/**/perf-tools/                        @aruniverse @wgoehrig @MichaelSwigerAtBentley
 /common/**/physical-material-backend.*        @bbastings @jchick-bentley
 /common/**/physical-material-backend/         @bbastings @jchick-bentley
 /common/**/presentation-*.*                   @iTwin/itwinjs-core-presentation
@@ -90,7 +90,7 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /common/config/azure-pipelines                @aruniverse @ben-polinsky @ColinKerr @wgoehrig
 /core/ecsql                                   @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
-/core/backend                                 @iTwin/itwinjs-core-admins
+/core/backend                                 @iTwin/itwinjs-core-admins @MichaelSwigerAtBentley
 /core/bentley                                 @iTwin/itwinjs-core-admins
 /core/common                                  @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
@@ -133,10 +133,10 @@ rush.json       @iTwin/itwinjs-core-admins
 /extensions/map-layers*                       @aruniverse @mdastous-bentley @eringram
 
 /full-stack-tests/core                        @iTwin/itwinjs-core-admins
-/full-stack-tests/ecschema-rpc-interface      @hl662 @ColinKerr @wgoehrig
+/full-stack-tests/ecschema-rpc-interface      @hl662 @ColinKerr @wgoehrig @MichaelSwigerAtBentley
 /full-stack-tests/presentation                @iTwin/itwinjs-core-presentation
-/full-stack-tests/rpc                         @GytisCepk @paulius-valiunas @wgoehrig @swbsi
-/full-stack-tests/rpc-interface               @aruniverse @paulius-valiunas @wgoehrig
+/full-stack-tests/rpc                         @GytisCepk @paulius-valiunas @wgoehrig @swbsi @MichaelSwigerAtBentley
+/full-stack-tests/rpc-interface               @aruniverse @paulius-valiunas @wgoehrig @MichaelSwigerAtBentley
 
 /presentation                                 @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
@@ -156,7 +156,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /tools/certa                                  @aruniverse @wgoehrig @GytisCepk
 /tools/ecschema2ts                            @hl662 @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
 /tools/internal                               @aruniverse @wgoehrig
-/tools/perf-tools                             @aruniverse @wgoehrig
+/tools/perf-tools                             @aruniverse @wgoehrig @MichaelSwigerAtBentley
 /tools/webpack-core                           @aruniverse @wgoehrig
 
 /ui                                           @iTwin/itwinjs-core-ui
