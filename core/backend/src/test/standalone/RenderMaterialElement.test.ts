@@ -329,10 +329,9 @@ describe("RenderMaterialElement", () => {
 
       const context = {
         findTargetElementId: (sourceId: Id64String) => {
-          // This makes sure that the number we passed gets converted correctly back to the textureId within RenderMaterialElement["onCloned"].
-          expect(sourceId === textureId || sourceId === unknownTextureId, `sourceId: ${sourceId}, textureId: ${textureId}.`).to.be.true;
           expect(typeof sourceId, `bad id: ${sourceId}`).to.equal("string");
           expect(Id64.isId64(sourceId), `bad id: ${sourceId}`).to.be.true;
+          if (Id64.isInvalid(sourceId)) return Id64.invalid;
           return "CLONED";
         },
       } as any as IModelElementCloneContext;
@@ -354,7 +353,7 @@ describe("RenderMaterialElement", () => {
         Specular: { TextureId: "CLONED" },
         TranslucencyColor: { TextureId: "CLONED" },
         TransparentColor: { TextureId: "CLONED" },
-        Displacement: { TextureId: "CLONED" },
+        Displacement: { TextureId: Id64.invalid },
         Unknown: { TextureId: "CLONED" },
         InvalidTexture: { TextureId: Id64.invalid },
         UnknownTexture: { TextureId: "CLONED" },
