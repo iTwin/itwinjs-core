@@ -14,7 +14,6 @@ import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
-import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 
 // spell:ignore localstore itwindb
 
@@ -230,6 +229,7 @@ describe("CloudSqlite", () => {
     testContainer2.connect(testCache2);
     testContainer2.acquireWriteLock(user2);
     // user1 tries to upload changes, it should fail because user1's write lock has expired and user2 is using it
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is currently locked by another user`);
     testContainer1.disconnect();
     testContainer2.disconnect();

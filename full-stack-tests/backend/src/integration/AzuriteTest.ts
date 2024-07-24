@@ -9,7 +9,7 @@ import * as fs from "fs";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, KnownLocations, SQLiteDb, SettingsContainer } from "@itwin/core-backend";
+import { BlobContainer, CloudSqlite, IModelHost, KnownLocations, SettingsContainer, SQLiteDb } from "@itwin/core-backend";
 import { AccessToken, Guid, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
@@ -60,25 +60,25 @@ export namespace AzuriteTest {
       const tempFilePath = join(KnownLocations.tmpdir, blockName);
       // download bcv_kv.bcv to local machine
       await blobClient.downloadToFile(tempFilePath);
-      const bcv_kv = new SQLiteDb();
-      bcv_kv.openDb(tempFilePath, {openMode: OpenMode.ReadWrite, rawSQLite: true});
+      const bcvDb = new SQLiteDb();
+      bcvDb.openDb(tempFilePath, {openMode: OpenMode.ReadWrite, rawSQLite: true});
       // read writeLock.expires and modify it
-      bcv_kv.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
+      bcvDb.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
         if (stmt.nextRow()) {
           const writeLockData = JSON.parse(stmt.getValueString(0));
           const expiresDate = new Date(writeLockData.expires);
           expiresDate.setMinutes(expiresDate.getMinutes() - 5);
           writeLockData.expires = expiresDate.toISOString();
-          bcv_kv.withSqliteStatement("UPDATE kv SET v = ? WHERE k = 'writeLock'", (stmt) => {
-            stmt.bindString(1, JSON.stringify(writeLockData));
-            stmt.step();
+          bcvDb.withSqliteStatement("UPDATE kv SET v = ? WHERE k = 'writeLock'", (stmt1) => {
+            stmt1.bindString(1, JSON.stringify(writeLockData));
+            stmt1.step();
           });
-          bcv_kv.saveChanges();
+          bcvDb.saveChanges();
         }
       });
       await blobClient.uploadFile(tempFilePath);
       // clean up
-      await bcv_kv.closeDb();
+      bcvDb.closeDb();
       fs.unlinkSync(tempFilePath);
     };
 
