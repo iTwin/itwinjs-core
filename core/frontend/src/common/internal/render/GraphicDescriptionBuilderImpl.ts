@@ -9,7 +9,7 @@
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
 import {
-  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, GraphicDescriptionContextProps,
+  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionContext, GraphicDescriptionContextProps,
   WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps,
 } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
@@ -24,6 +24,16 @@ import { createPolylineParams } from "./PolylineParams";
 import { createMeshParams } from "./VertexTableBuilder";
 import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
 import { _accumulator, _implementationProhibited } from "../Symbols";
+
+/** As part of a [[WorkerGraphicDescriptionContext]], describes constraints imposed by the [[RenderSystem]] that a [[GraphicDescriptionBuilder]] needs to know about
+ * when creating a [[GraphicDescription]].
+ */
+export interface GraphicDescriptionConstraints {
+  /** @internal */
+  readonly [_implementationProhibited]: unknown;
+  /** The maximum dimension (width or height) permitted for a single WebGL texture. */
+  readonly maxTextureSize: number;
+}
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
