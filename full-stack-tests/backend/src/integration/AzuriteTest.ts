@@ -11,8 +11,8 @@ import { join } from "path";
 import { open } from "sqlite";
 import * as sqlite3 from "sqlite3";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, KnownLocations, SettingsContainer } from "@itwin/core-backend";
-import { AccessToken, Guid } from "@itwin/core-bentley";
+import { BlobContainer, CloudSqlite, IModelHost, KnownLocations, SQLiteDb, SettingsContainer } from "@itwin/core-backend";
+import { AccessToken, Guid, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
@@ -56,26 +56,31 @@ export namespace AzuriteTest {
       return blobClient.exists();
     };
 
-    export const overwriteWriteLockValue = async (container: CloudSqlite.CloudContainer, blockName: string) => {
+    export const setWriteLockToExpired = async (container: CloudSqlite.CloudContainer, blockName: string) => {
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       const tempFilePath = join(KnownLocations.tmpdir, blockName);
+      // download bcv_kv.bcv to local machine
       await blobClient.downloadToFile(tempFilePath);
-
-      const bcv_kv = await open({
-        filename: tempFilePath,
-        driver: sqlite3.Database,
+      const bcv_kv = new SQLiteDb();
+      bcv_kv.openDb(tempFilePath, {openMode: OpenMode.ReadWrite, rawSQLite: true});
+      // read writeLock.expires and modify it
+      bcv_kv.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
+        if (stmt.nextRow()) {
+          const writeLockData = JSON.parse(stmt.getValueString(0));
+          const expiresDate = new Date(writeLockData.expires);
+          expiresDate.setMinutes(expiresDate.getMinutes() - 5);
+          writeLockData.expires = expiresDate.toISOString();
+          bcv_kv.withSqliteStatement("UPDATE kv SET v = ? WHERE k = 'writeLock'", (stmt) => {
+            stmt.bindString(1, JSON.stringify(writeLockData));
+            stmt.step();
+          });
+          bcv_kv.saveChanges();
+        }
       });
-      const row = await bcv_kv.get<{ v: string }>("SELECT v FROM kv WHERE k = 'writeLock'");
-      if (row) {
-        const writeLockData = JSON.parse(row.v);
-        const expiresDate = new Date(writeLockData.expires);
-        expiresDate.setMinutes(expiresDate.getMinutes() - 5);
-        writeLockData.expires = expiresDate.toISOString();
-        await bcv_kv.run("UPDATE kv SET v = ? WHERE k = 'writeLock'", JSON.stringify(writeLockData));
-      }
-      await bcv_kv.close();
       await blobClient.uploadFile(tempFilePath);
+      // clean up
+      await bcv_kv.closeDb();
       fs.unlinkSync(tempFilePath);
     };
 

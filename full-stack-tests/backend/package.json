@@ -57,8 +57,6 @@
     "azurite": "^3.29.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
     "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",

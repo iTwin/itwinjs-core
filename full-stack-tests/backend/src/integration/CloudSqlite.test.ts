@@ -201,8 +201,8 @@ describe("CloudSqlite", () => {
     const db = await BriefcaseDb.open({ fileName: "testBimCopy", container: testContainer1 });
     db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
     db.close();
-    // set the expires time to five mins later, which avoids waiting for 5 mins here.
-    await azSqlite.overwriteWriteLockValue(testContainer1, "bcv_kv.bcv");
+    // set the expires time to five mins earlier, which avoids waiting for 5 mins here.
+    await azSqlite.setWriteLockToExpired(testContainer1, "bcv_kv.bcv");
     await expect(testContainer1.uploadChanges()).to.eventually.be.fulfilled;
     testContainer1.disconnect();
   });
@@ -224,8 +224,8 @@ describe("CloudSqlite", () => {
     const db1 = await BriefcaseDb.open({ fileName: "testBimCopy1", container: testContainer1 });
     db1.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
     db1.close();
-    // set the expires time to five mins later, which avoids waiting for 5 mins here.
-    await azSqlite.overwriteWriteLockValue(testContainer1, "bcv_kv.bcv");
+    // set the expires time to five mins earlier, which avoids waiting for 5 mins here.
+    await azSqlite.setWriteLockToExpired(testContainer1, "bcv_kv.bcv");
     // user2 grabs the write lock
     testContainer2.connect(testCache2);
     testContainer2.acquireWriteLock(user2);
