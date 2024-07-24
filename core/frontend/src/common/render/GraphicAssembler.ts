@@ -226,7 +226,6 @@ export abstract class GraphicAssembler {
 
     if (filled && !isEllipse && !ellipse.sweep.isFullCircle) {
       const gapSegment: CurvePrimitive = LineSegment3d.create(ellipse.startPoint(), ellipse.endPoint());
-      (gapSegment as any).markerBits = 0x00010000; // Set the CURVE_PRIMITIVE_BIT_GapCurve marker bit
       curve.children.push(gapSegment);
     }
     const displayParams = curve.isAnyRegionType ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
