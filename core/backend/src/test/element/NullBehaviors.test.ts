@@ -70,7 +70,7 @@ describe("Various ECProperties null behavior handling cases test fixture", () =>
   });
 
   it("validates arrays to contain null values", async () => {
-    const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "struct_array_contain_nulls.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "array_contain_nulls.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
