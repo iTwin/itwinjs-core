@@ -25,20 +25,18 @@ export enum GraphicType {
    * @see [[Decorations.viewBackground]]
    */
   ViewBackground,
-  /** Used for the scene itself, dynamics, and 'normal' decorations. */
   /**
    * Renders as if it were part of the scene. All of the [[ViewFlags]] applied to the view's normal geometry also applies to these types of decorations.
    * Coordinates: [[CoordSystem.World]].
-   * Lighting and [[RenderMode]]: from view.
+   * Lighting and [RenderMode]($common): from view.
    * Depth-testing: enabled.
    * @see [[Decorations.normal]].
    */
   Scene,
-  /** Renders within the scene. Coordinates: world. RenderMode: smooth. Lighting: default. Z-testing: enabled */
   /** Renders within the scene, but ignores the view's [[ViewFlags]].
    * Coordinates: [[CoordSystem.World]].
    * Lighting: default.
-   * [[RenderMode]]: [[RenderMode.SmoothShade]].
+   * RenderMode: [RenderMode.SmoothShade]($common).
    * Depth-testing: enabled.
    * @see [[Decorations.world]].
    */
@@ -47,7 +45,7 @@ export enum GraphicType {
    * Renders as an overlay on top of the scene. These decorations differ from [[GraphicType.WorldDecoration]] only in that depth-testing is disabled.
    * For example, the ACS triad and [[WindowAreaTool]] decorations are of this type.
    * Coordinates: [[CoordSystem.World]].
-   * [[RenderMode]]: [[RenderMode.SmoothShade]]
+   * [RenderMode]: [RenderMode.SmoothShade]($common)
    * Lighting: default.
    * Depth-testing: disabled.
    * Renders atop the scene. Coordinates: world. RenderMode: smooth. Lighting: none. Z-testing: disabled
@@ -58,7 +56,7 @@ export enum GraphicType {
   /**
    * Renders as an overlay on top of the scene. These decorations differ from [[GraphicType.WorldOverlay]] only in that their geometry is defined in view coordinates rather than world.
    * Coordinates: [[CoordSystem.View]].
-   * [[RenderMode]]: [[RenderMode.SmoothShade]]
+   * RenderMode: [RenderMode.SmoothShade]($common)
    * Lighting: default.
    * Depth-testing: disabled.
    * @note For more flexibility in defining view overlay decorations, consider using a [[CanvasDecorationList]].
