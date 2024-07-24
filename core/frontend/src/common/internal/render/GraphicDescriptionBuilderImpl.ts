@@ -9,14 +9,13 @@
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
 import {
-  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionContext, GraphicDescriptionContextProps,
-  WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps,
+  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionContext,
 } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
 import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
 import { BatchOptions } from "../../render/BatchOptions";
-import { assert, Id64String, TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
+import { assert, Id64String, TransientIdSequence } from "@itwin/core-bentley";
 import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { createPointStringParams } from "./PointStringParams";
 import { VertexTable } from "./VertexTable";
@@ -24,16 +23,7 @@ import { createPolylineParams } from "./PolylineParams";
 import { createMeshParams } from "./VertexTableBuilder";
 import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
 import { _accumulator, _implementationProhibited } from "../Symbols";
-
-/** As part of a [[WorkerGraphicDescriptionContext]], describes constraints imposed by the [[RenderSystem]] that a [[GraphicDescriptionBuilder]] needs to know about
- * when creating a [[GraphicDescription]].
- */
-export interface GraphicDescriptionConstraints {
-  /** @internal */
-  readonly [_implementationProhibited]: unknown;
-  /** The maximum dimension (width or height) permitted for a single WebGL texture. */
-  readonly maxTextureSize: number;
-}
+import { WorkerGraphicDescriptionContextImpl } from "./GraphicDescriptionContextImpl";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
@@ -52,45 +42,6 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
    * Attempting to remap using a different context is an error.
    */
   remapContext?: GraphicDescriptionContext;
-}
-
-export interface WorkerGraphicDescriptionContextPropsImpl extends WorkerGraphicDescriptionContextProps {
-  readonly constraints: GraphicDescriptionConstraints;
-  readonly transientIds: TransientIdSequenceProps;
-}
-
-export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionContextProps {
-  readonly transientIds: TransientIdSequenceProps;
-  /** This is set to true the first time we use RenderSystem.createGraphicDescriptionContext on it.
-   * That prevents us from remapping transient Ids to different transient Ids, recreating duplicate textures+materials, etc if
-   * somebody tries to resolve the same props more than once.
-   * We will throw if somebody tries to re-resolve a GraphicDescriptionContextPropsImpl.
-   */
-  resolved?: boolean;
-}
-
-export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescriptionContext {
-  public readonly [_implementationProhibited] = undefined;
-  public readonly constraints: GraphicDescriptionConstraints;
-  public readonly transientIds: TransientIdSequence;
-
-  public constructor(props: WorkerGraphicDescriptionContextProps) {
-    const propsImpl = props as WorkerGraphicDescriptionContextPropsImpl;
-    if (typeof propsImpl.transientIds !== "object" || typeof propsImpl.constraints !== "object") {
-      throw new Error("Invalid WorkerGraphicDescriptionContextProps");
-    }
-
-    this.constraints = propsImpl.constraints;
-    this.transientIds = TransientIdSequence.fromJSON(propsImpl.transientIds);
-  }
-
-  public toProps(_transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
-    // We don't yet have any transferable objects. In the future we expect to support transferring texture image data for textures created on the worker thread.
-    return {
-      [_implementationProhibited]: undefined,
-      transientIds: this.transientIds.toJSON(),
-    };
-  }
 }
 
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {

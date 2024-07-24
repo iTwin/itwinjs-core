@@ -7,7 +7,8 @@
  */
 
 import { GraphicAssembler } from "./GraphicAssembler";
-import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl, WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
+import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionContextImpl";
+import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { GraphicType } from "./GraphicType";
 import { PickableGraphicOptions } from "./BatchOptions";
