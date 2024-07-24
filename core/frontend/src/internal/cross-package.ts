@@ -8,4 +8,4 @@
 
 export { _callIpcChannel } from "../common/internal/Symbols";
 export { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
-export { GltfDataType, GltfMeshPrimitive } from "../common/gltf/GltfSchema";
+export { GltfDataType, type GltfMeshPrimitive } from "../common/gltf/GltfSchema";
