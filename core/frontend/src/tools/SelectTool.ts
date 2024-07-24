@@ -7,8 +7,8 @@
  */
 
 import { Id64, Id64Arg } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ColorDef } from "@itwin/core-common";
+import { Arc3d, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
+import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
@@ -23,6 +23,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { GraphicType } from "../render/GraphicBuilder";
 
 // cSpell:ignore buttongroup
 
@@ -37,6 +38,8 @@ export enum SelectionMethod {
   Line,
   /** Identify elements by box selection (inside/overlap for box selection determined by point direction and shift key) */
   Box,
+  /** Identify elements by polygon selection */
+  Polygon,
 }
 
 /** The mode for choosing elements with the [[SelectionTool]]
@@ -93,6 +96,29 @@ export class SelectionTool extends PrimitiveTool {
   public get selectionMode(): SelectionMode { return this._selectionModeValue.value as SelectionMode; }
   public set selectionMode(mode: SelectionMode) { this._selectionModeValue.value = mode; }
 
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    if (args.length > 0) {
+      switch (args[0].toLowerCase()) {
+        case "box":
+          this.selectionMethod = SelectionMethod.Box;
+          break;
+        case "line":
+          this.selectionMethod = SelectionMethod.Line;
+          break;
+        case "pick":
+          this.selectionMethod = SelectionMethod.Pick;
+          break;
+        case "polygon":
+          this.selectionMethod = SelectionMethod.Polygon;
+          break;
+      }
+    }
+    return this.run();
+  }
+
   private static methodsMessage(str: string) { return CoreTools.translate(`ElementSet.SelectionMethods.${str}`); }
   private static _methodsName = "selectionMethods";
   /* The property descriptions used to generate ToolSettings UI. */
@@ -109,6 +135,7 @@ export class SelectionTool extends PrimitiveTool {
             { iconSpec: "icon-select-single" },
             { iconSpec: "icon-select-line" },
             { iconSpec: "icon-select-box" },
+            { iconSpec: "icon-shape" },
           ],
         } as ButtonGroupEditorParams, {
           type: PropertyEditorParamTypes.SuppressEditorLabel,
@@ -121,6 +148,7 @@ export class SelectionTool extends PrimitiveTool {
           { label: SelectionTool.methodsMessage("Pick"), value: SelectionMethod.Pick },
           { label: SelectionTool.methodsMessage("Line"), value: SelectionMethod.Line },
           { label: SelectionTool.methodsMessage("Box"), value: SelectionMethod.Box },
+          { label: SelectionTool.methodsMessage("Polygon"), value: SelectionMethod.Polygon },
         ],
       },
     };
@@ -177,6 +205,9 @@ export class SelectionTool extends PrimitiveTool {
       case SelectionMethod.Box:
         mainMsg += (0 === this._points.length ? "StartCorner" : "OppositeCorner");
         break;
+      case SelectionMethod.Polygon:
+        mainMsg += "ShapePoint";
+        break;
     }
 
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, CoreTools.translate(mainMsg));
@@ -222,6 +253,12 @@ export class SelectionTool extends PrimitiveTool {
         const touchBoxInstructions: ToolAssistanceInstruction[] = [];
         touchBoxInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
         sections.push(ToolAssistance.createSection(touchBoxInstructions, ToolAssistance.inputsLabel));
+        break;
+      case SelectionMethod.Polygon:
+        const mousePolygonInstructions: ToolAssistanceInstruction[] = [];
+        mousePolygonInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+        mousePolygonInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate("ElementSet.Inputs.UndoLastPoint"), false, ToolAssistanceInputMethod.Mouse));
+        sections.push(ToolAssistance.createSection(mousePolygonInstructions, ToolAssistance.inputsLabel));
         break;
     }
 
@@ -507,6 +544,8 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+    if (this.selectionMethod === SelectionMethod.Polygon)
+      return EventHandled.Yes;
     IModelApp.accuSnap.clear(); // Need to test hit at start drag location, not current AccuSnap...
     if (EventHandled.Yes === await this.selectDecoration(ev))
       return EventHandled.Yes;
@@ -522,6 +561,9 @@ export class SelectionTool extends PrimitiveTool {
   public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === ev.viewport)
       return EventHandled.No;
+
+    if (this.selectionMethod === SelectionMethod.Polygon)
+      return EventHandled.Yes;
 
     if (this.selectByPointsEnd(ev))
       return EventHandled.Yes;
@@ -550,6 +592,11 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    if (this.selectionMethod === SelectionMethod.Polygon) {
+      await this.polygonResetButtonUp(ev);
+      return EventHandled.Yes;
+    }
+
     if (this._isSelectByPoints) {
       if (undefined !== ev.viewport)
         ev.viewport.invalidateDecorations();
@@ -624,7 +671,12 @@ export class SelectionTool extends PrimitiveTool {
       return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
   }
 
-  public override decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
+  public override decorate(context: DecorateContext): void {
+    if (this.selectionMethod === SelectionMethod.Polygon)
+      this.polygonSelectDecorate(context);
+    else
+      this.selectByPointsDecorate(context);
+  }
 
   public override async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> {
     return (modifier === BeModifierKeys.Shift && this._isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
@@ -728,5 +780,263 @@ export class SelectionTool extends PrimitiveTool {
     if (changed)
       this.initSelectTool();
     return true; // return true if change is valid
+  }
+
+  private _polygonPoints: Point3d[] = [];
+
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (this.selectionMethod !== SelectionMethod.Polygon){
+      await super.onDataButtonDown(ev);
+      return EventHandled.Yes;
+    }
+
+    if (undefined === this.targetView)
+      return EventHandled.No;
+
+    const points = this.getFullShapePoints(ev);
+    if (points.length >= 3) {
+      // If we snap to the origin, finish the polygon
+      if (ev && this.isSnapToShapeOrigin(ev)) {
+        this._polygonPoints.push(this._polygonPoints[0]);
+        await this.finishPolygon(ev);
+        return EventHandled.Yes;
+      }
+    }
+
+    // Add the new point to the polygon
+    this._polygonPoints.push(ev.point);
+    return EventHandled.Yes;
+  }
+
+  /**
+   * Handle reset button up event for polygon selection: remove the last point from the polygon.
+   */
+  private async polygonResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    if (this._polygonPoints.length === 0) {
+      await this.exitTool();
+      return EventHandled.Yes;
+    }
+    if (this._polygonPoints.length < 2) {
+      if (undefined !== ev.viewport)
+        ev.viewport.invalidateDecorations();
+      await this.onReinitialize();
+      return EventHandled.Yes;
+    }
+
+    this._polygonPoints.pop();
+    return EventHandled.Yes;
+  }
+
+  /**
+   * Draw the polygon shape as points are selected.
+   */
+  private polygonSelectDecorate(context: DecorateContext): void {
+    if (!context.viewport.view.isSpatialView())
+      return;
+
+    const ev = new BeButtonEvent();
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    if (undefined === ev.viewport)
+      return;
+    const points = this.getFullShapePoints(ev);
+    if (points.length < 2)
+      return;
+
+    const color = context.viewport.getContrastToBackgroundColor();
+    const builderDecoration = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    const builderOverlay = context.createGraphicBuilder(GraphicType.WorldOverlay);
+    const colorAccOverlay = color.withAlpha(100);
+    const fillAccDecoration = color.withAlpha(50);
+
+    builderDecoration.setSymbology(color, fillAccDecoration, 2);
+    builderOverlay.setSymbology(colorAccOverlay, fillAccDecoration, 2, LinePixels.Code2);
+
+    // Display area shape
+    if (points.length > 2)
+      builderOverlay.addShape(points);
+
+    // Display line string of area shape which may include a dynamic points
+    builderDecoration.addLineString(points);
+    builderOverlay.addLineString(points);
+
+    // display opened/closed visual helper
+    const openedClosedDeco = context.createGraphicBuilder(GraphicType.ViewOverlay);
+    const firstPtView = context.viewport.worldToView(points[0]);
+    firstPtView.z = 0;
+    const isComplete = this.isSnapToShapeOrigin(ev);
+    openedClosedDeco.setSymbology(color, color, 3);
+    const originSnapRadius = context.viewport.pixelsFromInches(IModelApp.locateManager.apertureInches / 2) + 1.5;
+    openedClosedDeco.addArc(Arc3d.createXY(firstPtView, originSnapRadius), isComplete, isComplete);
+    context.addDecorationFromBuilder(openedClosedDeco);
+
+    context.addDecorationFromBuilder(builderDecoration);
+    context.addDecorationFromBuilder(builderOverlay);
+  }
+
+  private getFullShapePoints(ev: BeButtonEvent): Point3d[] {
+    if (undefined === this.targetView || this._polygonPoints.length < 1)
+      return [];
+
+    const points: Point3d[] = this._polygonPoints.slice();
+
+    // Add the new point if we didn't snap to the origin
+    if (ev && !this.isSnapToShapeOrigin(ev)) {
+      points.push(ev.point.clone());
+    }
+
+    // close the shape
+    if (points.length > 2)
+      points.push(points[0].clone());
+
+    return points;
+  }
+
+  /**
+   * Determine if point can be snapped to the origin of the shape.
+   */
+  private isSnapToShapeOrigin(ev: BeButtonEvent): boolean {
+    if (ev.viewport === undefined || this._polygonPoints.length < 3)
+      return false;
+
+    const firstPtView = ev.viewport.worldToView(this._polygonPoints[0]);
+    const snapDistanceView = ev.viewport.pixelsFromInches(InputSource.Touch === ev.inputSource ? IModelApp.locateManager.touchApertureInches : IModelApp.locateManager.apertureInches);
+    return firstPtView.distanceXY(ev.viewPoint) <= snapDistanceView;
+  }
+
+  /**
+   * Finalize the construction of the polygon, select elements within the polygon, and exit the tool.
+   * @returns true on success
+   */
+  private finishPolygon = async (ev: BeButtonEvent): Promise<boolean> => {
+    if (this._polygonPoints.length < 2) // Handle this event only if we have at least two points
+      return false;
+
+    const ecfPts: XYAndZ[] = [];
+    const ecfXYZPts: XYAndZ[] = [];
+    let minHeight = 0;
+    let maxHeight = 0;
+    let first = true;
+
+    for (const pt of this._polygonPoints) {
+      const ecfPt: Point3d = (this.iModel && this.iModel.isGeoLocated) ? this.iModel.spatialToEcef(pt) : pt;
+      ecfPts.push(ecfPt.toJSONXYZ() as XYAndZ);
+      ecfXYZPts.push(ecfPt.toJSONXYZ() as XYAndZ);
+
+      if (this.iModel.isGeoLocated) {
+        const cartographicPt: Cartographic = this.iModel.spatialToCartographicFromEcef(pt);
+        if (first) {
+          minHeight = maxHeight = cartographicPt.height;
+          first = false;
+        } else {
+          minHeight = Math.min(minHeight, cartographicPt.height);
+          maxHeight = Math.max(maxHeight, cartographicPt.height);
+        }
+      } else {
+        if (first) {
+          minHeight = maxHeight = pt.z;
+          first = false;
+        } else {
+          minHeight = Math.min(minHeight, pt.z);
+          maxHeight = Math.max(maxHeight, pt.z);
+        }
+      }
+    }
+
+    this.selectPolygonElements(ecfXYZPts, ev, true);
+    await this.exitTool();
+    await IModelApp.tools.run(SelectionTool.toolId, IModelApp.viewManager.selectedView); // Active the Selection tool again
+    return true;
+  };
+
+  /**
+   * Determine elements within the polygon for selection.
+   */
+  private selectPolygonElements(points: XYAndZ[], ev: BeButtonEvent, overlap: boolean) {
+    const vp = ev.viewport;
+    if (!vp)
+      return;
+
+    const points2d: Point2d[] = [];
+    points.forEach((p) => {
+      const point3d = vp.worldToView(p);
+      const point2d = new Point2d(Math.floor(point3d.x + 0.5), Math.floor(point3d.y + 0.5));
+      points2d.push(point2d);
+    });
+    const range = Range2d.createArray(points2d);
+
+    const rectangle = new ViewRect();
+    rectangle.initFromRange(range);
+
+    vp.readPixels(rectangle, Pixel.Selector.Feature, async (pixels) => {
+      if (undefined === pixels)
+        return;
+
+      const sRange = Range2d.createNull();
+      sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.low.x), vp.cssPixelsToDevicePixels(range.low.y)));
+      sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.high.x), vp.cssPixelsToDevicePixels(range.high.y)));
+
+      const devicePoints: Point2d[] = [];
+      points2d.forEach((p) => {
+        const devicePoint = new Point2d(vp.cssPixelsToDevicePixels(p.x), vp.cssPixelsToDevicePixels(p.y));
+        devicePoints.push(devicePoint);
+      });
+
+      let contents = new Set<string>();
+      const testPoint = Point2d.createZero();
+
+      const getPixelElementId = (pixel: Pixel.Data) => {
+        if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+          return undefined; // no geometry at this location...
+
+        if (!vp.isPixelSelectable(pixel))
+          return undefined; // reality model, terrain, etc - not selectable
+
+        return pixel.elementId;
+      };
+
+      const getIsInsidePolygon = (point: Point2d) => {
+        let count = 0;
+        for (let i = 0; i < points2d.length - 1; i++){
+          const edge = [points2d[i], points2d[i+1]];
+          // Ray casting algorithm
+          const yValue = (point.y < edge[0].y) !== (point.y < edge[1].y);
+          const xValue = point.x < (edge[0].x + ((point.y-edge[0].y)/(edge[1].y-edge[0].y)) * (edge[1].x-edge[0].x));
+          if (yValue && xValue)
+            count++;
+        }
+        return count % 2 === 1;
+      };
+
+      const outline = overlap ? undefined : new Set<string>();
+      const offset = sRange.clone();
+      offset.expandInPlace(-2);
+      for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+        for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
+          const isInsidePolygon = getIsInsidePolygon(testPoint);
+          if (!isInsidePolygon)
+            continue;
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          const elementId = getPixelElementId(pixel);
+          if (undefined === elementId)
+            continue;
+
+          if (undefined !== outline && !offset.containsPoint(testPoint))
+            outline.add(elementId.toString());
+          else
+            contents.add(elementId.toString());
+        }
+      }
+      if (undefined !== outline && 0 !== outline.size) {
+        const inside = new Set<string>();
+        contents.forEach((id) => {
+          if (!outline.has(id))
+            inside.add(id);
+        });
+
+        contents = inside;
+      }
+
+      await this.processSelection(contents, SelectionProcessing.AddElementToSelection);
+    }, true);
   }
 }
