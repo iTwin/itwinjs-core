@@ -788,7 +788,7 @@ export abstract class RenderSystem implements IDisposable {
     return createGraphicFromDescription(args.description, args.context, this);
   }
 
-  /**
+  /** Obtain the JSON representation of a [[WorkerGraphicDescriptionContext]] for the specified `iModel` that can be forwarded to a Worker for use with a [[GraphicDescriptionBuilder]].
    * @beta
    */
   public createWorkerGraphicDescriptionContextProps(iModel: IModelConnection): WorkerGraphicDescriptionContextProps {
@@ -804,7 +804,7 @@ export abstract class RenderSystem implements IDisposable {
     return props;
   }
 
-  /**
+  /** Synchronize changes made to a [[WorkerGraphicDescriptionContext]] on a Worker with the state of the `iModel` from which it was created.
    * @beta
    */
   public async resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): Promise<GraphicDescriptionContext> {
