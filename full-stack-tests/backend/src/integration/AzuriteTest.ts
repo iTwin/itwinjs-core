@@ -66,7 +66,7 @@ export namespace AzuriteTest {
       bcvDb.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
         if (stmt.nextRow()) {
           const writeLockData = JSON.parse(stmt.getValueString(0));
-          const expiresDate = new Date(writeLockData.expires);
+          const expiresDate = new Date();
           expiresDate.setMinutes(expiresDate.getMinutes() - 5);
           writeLockData.expires = expiresDate.toISOString();
           bcvDb.withSqliteStatement("UPDATE kv SET v = ? WHERE k = 'writeLock'", (stmt1) => {
