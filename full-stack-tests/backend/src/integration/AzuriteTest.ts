@@ -8,8 +8,6 @@ import * as crypto from "crypto";
 import * as fs from "fs";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
-import { open } from "sqlite";
-import * as sqlite3 from "sqlite3";
 import * as azureBlob from "@azure/storage-blob";
 import { BlobContainer, CloudSqlite, IModelHost, KnownLocations, SQLiteDb, SettingsContainer } from "@itwin/core-backend";
 import { AccessToken, Guid, OpenMode } from "@itwin/core-bentley";
