@@ -20,11 +20,11 @@ import { DrawingCategory } from "../../Category";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../../HubMock";
 import {
+  _nativeDb,
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
-  CodeService,
-  DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
+  CodeService, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
@@ -125,13 +125,13 @@ describe("IModelWriteTest", () => {
 
     // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
     // in the readonly briefcase until the file watcher fires.
-    expect(bc.nativeDb.getCurrentTxnId()).not.equal(roBC.nativeDb.getCurrentTxnId());
+    expect(bc[_nativeDb].getCurrentTxnId()).not.equal(roBC[_nativeDb].getCurrentTxnId());
 
     // trigger watcher via stub
     fsWatcher.callback();
 
     // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
-    expect(bc.nativeDb.getCurrentTxnId()).equal(roBC.nativeDb.getCurrentTxnId());
+    expect(bc[_nativeDb].getCurrentTxnId()).equal(roBC[_nativeDb].getCurrentTxnId());
 
     roBC.close();
     expect(nClosed).equal(1);
@@ -176,13 +176,13 @@ describe("IModelWriteTest", () => {
 
     // immediately after save changes the current txnId in the writeable briefcase changes, but it isn't reflected
     // in the readonly briefcase until the file watcher fires.
-    expect(bc.nativeDb.getCurrentTxnId()).not.equal(roBC.nativeDb.getCurrentTxnId());
+    expect(bc[_nativeDb].getCurrentTxnId()).not.equal(roBC[_nativeDb].getCurrentTxnId());
 
     // trigger watcher via stub
     fsWatcher.callback();
 
     // now they should match because restartDefaultTxn in the readonly briefcase reads the changes from the writeable connection
-    expect(bc.nativeDb.getCurrentTxnId()).equal(roBC.nativeDb.getCurrentTxnId());
+    expect(bc[_nativeDb].getCurrentTxnId()).equal(roBC[_nativeDb].getCurrentTxnId());
 
     // Push the changes to the hub
 
@@ -202,7 +202,7 @@ describe("IModelWriteTest", () => {
     fsWatcher.callback();
 
     expectEqualChangesets(roBC.changeset, postPushChangeset);
-    expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
+    expect(roBC[_nativeDb].getCurrentTxnId(), "txn should be updated").equal(bc[_nativeDb].getCurrentTxnId());
     expect(eventRaised).to.be.true;
 
     roBC.close();
@@ -271,7 +271,7 @@ describe("IModelWriteTest", () => {
     fsWatcher.callback();
 
     expectEqualChangesets(roBC.changeset, postPullChangeset);
-    expect(roBC.nativeDb.getCurrentTxnId(), "txn should be updated").equal(bc.nativeDb.getCurrentTxnId());
+    expect(roBC[_nativeDb].getCurrentTxnId(), "txn should be updated").equal(bc[_nativeDb].getCurrentTxnId());
     expect(eventRaised).to.be.true;
 
     roBC.close();
@@ -353,7 +353,7 @@ describe("IModelWriteTest", () => {
     let iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
     const beforeVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
-    assert.isFalse(iModel.nativeDb.hasPendingTxns());
+    assert.isFalse(iModel[_nativeDb].hasPendingTxns());
     iModel.close();
 
     // Validate that the BisCore schema is recognized as a recommended upgrade
@@ -367,9 +367,9 @@ describe("IModelWriteTest", () => {
     iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
-    assert.isFalse(iModel.nativeDb.hasPendingTxns());
+    assert.isFalse(iModel[_nativeDb].hasPendingTxns());
     assert.isFalse(iModel.holdsSchemaLock);
-    assert.isFalse(iModel.nativeDb.hasUnsavedChanges());
+    assert.isFalse(iModel[_nativeDb].hasUnsavedChanges());
     iModel.close();
 
     /* User "super" can get the upgrade "manager" made */
@@ -383,8 +383,8 @@ describe("IModelWriteTest", () => {
     (superBriefcaseProps.changeset as any) = await superIModel.pullChanges({ accessToken: superAccessToken });
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
-    assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
-    assert.isFalse(superIModel.nativeDb.hasPendingTxns()); // Validate no changes were made
+    assert.isFalse(superIModel[_nativeDb].hasUnsavedChanges()); // Validate no changes were made
+    assert.isFalse(superIModel[_nativeDb].hasPendingTxns()); // Validate no changes were made
     superIModel.close();
 
     // Validate that there are no upgrades required
@@ -402,7 +402,7 @@ describe("IModelWriteTest", () => {
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
-    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    assert.equal(rwIModel[_nativeDb].enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
@@ -463,10 +463,10 @@ describe("IModelWriteTest", () => {
     insertElements(rwIModel, "Test2dElement", 1024, () => {
       return { s: str };
     });
-    assert.equal(1357661, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(1357661, rwIModel[_nativeDb].getChangesetSize());
 
     rwIModel.saveChanges("user 1: data");
-    assert.equal(0, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
     rwIModel.close();
   });
@@ -536,8 +536,8 @@ describe("IModelWriteTest", () => {
     const rwIModel2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: userToken });
 
     // enable change tracking
-    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
-    assert.equal(rwIModel2.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    assert.equal(rwIModel[_nativeDb].enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    assert.equal(rwIModel2[_nativeDb].enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
 
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -602,7 +602,7 @@ describe("IModelWriteTest", () => {
       return { s: `s-${n}` };
     });
 
-    assert.equal(3902, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(3902, rwIModel[_nativeDb].getChangesetSize());
     rwIModel.saveChanges("user 1: data changeset");
 
     if ("push changes") {
@@ -651,7 +651,7 @@ describe("IModelWriteTest", () => {
       insertElements(rwIModel2, "Test2dElement", 10, (n: number) => {
         return { s: `s-${n}` };
       });
-      assert.equal(13, rwIModel.nativeDb.getChangesetSize());
+      assert.equal(13, rwIModel[_nativeDb].getChangesetSize());
       rwIModel2.saveChanges("user 2: data changeset");
 
       if ("push changes") {
@@ -682,7 +682,7 @@ describe("IModelWriteTest", () => {
         </ECEntityClass>
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schemaV2]);
-    assert.equal(0, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
     rwIModel.saveChanges("user 1: schema changeset2");
     if ("push changes") {
       // Push the changes to the hub
@@ -708,7 +708,7 @@ describe("IModelWriteTest", () => {
         t: `t-${n}`, r: `r-${n}`,
       };
     });
-    assert.equal(6279, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(6279, rwIModel[_nativeDb].getChangesetSize());
     rwIModel.saveChanges("user 1: data changeset");
 
     if ("push changes") {
@@ -953,7 +953,7 @@ describe("IModelWriteTest", () => {
     iModel.saveChanges();
     expect(iModel.locks.holdsExclusiveLock(drawingModelId)).true;
 
-    const fileName = iModel.nativeDb.getFilePath();
+    const fileName = iModel[_nativeDb].getFilePath();
     iModel.close(); // close rw
     iModel = await BriefcaseDb.open({ fileName, readonly: true }); // reopen readonly
     expect(iModel.locks.isServerBased).false; // readonly sessions should not have server based locks

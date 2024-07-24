@@ -192,6 +192,8 @@ export interface NestedContentValue {
   displayValues: ValuesDictionary<DisplayValue>;
   /** Names of fields whose values are merged */
   mergedFieldNames: string[];
+  /** Label of the ECInstance that this `NestedContentValue` is based on. */
+  labelDefinition?: LabelDefinition;
 }
 
 /**

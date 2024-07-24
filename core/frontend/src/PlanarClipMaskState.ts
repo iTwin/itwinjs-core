@@ -77,7 +77,7 @@ export class PlanarClipMaskState {
   }
 
   // Returns any potential FeatureSymbology overrides for drawing the planar clip mask.
-  public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined {
+  public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined {
     this._usingViewportOverrides = false;
     // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
     const overrideModels = view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
@@ -86,21 +86,22 @@ export class PlanarClipMaskState {
     if (noSubCategoryOrElementIds && !overrideModels)
       return undefined;
 
-    const overrides = new FeatureSymbology.Overrides();
+    const ovrBasedOnContext = PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds;
+    const viewport = overrideModels && ovrBasedOnContext ? context.viewport : undefined;
+    const overrides = FeatureSymbology.Overrides.withSource(featureSymbologySource, viewport);
 
     if (overrideModels) {
       // overrideModels is used for batched models.  For those, we need to create model overrides to turn off models that are
       // not wanted in the mask (using transparency) no matter what mask mode is being used.
       const appOff = FeatureAppearance.fromTransparency(1.0);
       // For Priority or Models mode, we need to start with the current overrides and modify them
-      if (PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds) {
+      if (ovrBasedOnContext) {
         this._usingViewportOverrides = true; // Set flag to use listener since context.viewport might change afterwards.
-        const curOverrides = new FeatureSymbology.Overrides(context.viewport);
-        curOverrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
+        overrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
         overrideModels.forEach((modelId: string) => {
-          curOverrides.override({ modelId, appearance: appOff, onConflict: "replace" });
+          overrides.override({ modelId, appearance: appOff, onConflict: "replace" });
         });
-        return curOverrides;
+        return overrides;
       }
       // Otherwise, we just start with a default overrides and modify it.
       overrideModels.forEach((modelId: string) => {

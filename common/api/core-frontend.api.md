@@ -1191,6 +1191,8 @@ export enum ArcGisErrorCode {
     // (undocumented)
     InvalidToken = 498,
     // (undocumented)
+    MissingPermissions = 403,
+    // (undocumented)
     NoTokenService = 1001,
     // (undocumented)
     TokenRequired = 499,
@@ -4682,6 +4684,15 @@ export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
                 SCALE?: GltfId;
             };
         };
+        EXT_instance_features?: {
+            featureIds: {
+                attribute?: number;
+                featureCount: number;
+                label?: string;
+                nullFeatureId?: number;
+                propertyTable: number;
+            }[];
+        };
     };
     mesh?: GltfId;
     // (undocumented)
@@ -4924,6 +4935,8 @@ export class GltfGraphicsReader extends GltfReader {
     // (undocumented)
     get scenes(): GltfDictionary<GltfScene>;
     // (undocumented)
+    get structuralMetadata(): StructuralMetadata | undefined;
+    // (undocumented)
     get textures(): GltfDictionary<GltfTexture>;
     // (undocumented)
     protected get viewFlagOverrides(): ViewFlagOverrides;
@@ -5103,11 +5116,17 @@ export abstract class GltfReader {
     // (undocumented)
     protected readonly _glTF: GltfDocument;
     // (undocumented)
+    protected readonly _idMap?: BatchedTileIdMap;
+    // (undocumented)
     protected get _images(): GltfDictionary<GltfImage & {
         resolvedImage?: TextureImageSource;
     }>;
     // (undocumented)
     protected readonly _iModel: IModelConnection;
+    // (undocumented)
+    protected _instanceElementIdToFeatureId: Map<string, number>;
+    // (undocumented)
+    protected _instanceFeatures: Feature[];
     // (undocumented)
     protected readonly _is3d: boolean;
     // (undocumented)
@@ -5182,6 +5201,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected readonly _sceneNodes: GltfId[];
     // (undocumented)
+    protected _structuralMetadata?: StructuralMetadata;
+    // (undocumented)
     protected readonly _system: RenderSystem;
     // (undocumented)
     protected get _textures(): GltfDictionary<GltfTexture>;
@@ -5202,6 +5223,7 @@ export abstract class GltfReader {
 // @internal
 export interface GltfReaderArgs {
     deduplicateVertices?: boolean;
+    idMap?: BatchedTileIdMap;
     iModel: IModelConnection;
     is2d?: boolean;
     props: GltfReaderProps;
@@ -5373,7 +5395,9 @@ export namespace GltfStructuralMetadata {
     // (undocumented)
     export interface Schema extends GltfProperty {
         // (undocumented)
-        classes?: Class[];
+        classes?: {
+            [classId: string]: Class | undefined;
+        };
         // (undocumented)
         description?: string;
         // (undocumented)
@@ -10589,7 +10613,7 @@ export class PlanarClipMaskState {
     // (undocumented)
     static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState;
     // (undocumented)
-    getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext): FeatureSymbology.Overrides | undefined;
+    getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
     // (undocumented)
     getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
     // (undocumented)
@@ -11047,6 +11071,8 @@ export interface ReadGltfGraphicsArgs {
     gltf: Uint8Array | Object;
     // @alpha (undocumented)
     hasChildren?: boolean;
+    // @internal (undocumented)
+    idMap?: BatchedTileIdMap;
     iModel: IModelConnection;
     pickableOptions?: PickableGraphicOptions;
     // @alpha (undocumented)
@@ -15180,6 +15206,7 @@ export class ToolAdmin {
     updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void;
     // (undocumented)
     get viewTool(): ViewTool | undefined;
+    wantToolTip(_hit: HitDetail): boolean;
 }
 
 // @public

@@ -62,9 +62,10 @@ import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
+import { AddSeequentRealityModel } from "./RealityDataModel";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -346,6 +347,7 @@ export class DisplayTestApp {
       PullChangesTool,
       PushChangesTool,
       PurgeTileTreesTool,
+      AddSeequentRealityModel,
       RecordFpsTool,
       RecordTileSizesTool,
       RefreshTilesTool,

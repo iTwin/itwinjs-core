@@ -106,6 +106,10 @@ export type StructClassProps = ClassProps;
  * @beta
  */
 export interface CustomAttributeClassProps extends ClassProps {
+  /**
+   * Can be any combination of the [CustomAttributeContainerType]$(docs/bis/ec/customattribute-container-types.md) string values
+   * separated by commas.
+   */
   readonly appliesTo: string;
 }
 
