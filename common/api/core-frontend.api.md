@@ -9840,7 +9840,7 @@ export abstract class RenderSystem implements IDisposable {
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     // @internal (undocumented)
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
-    // @beta (undocumented)
+    // @beta
     createWorkerGraphicDescriptionContextProps(iModel: IModelConnection): WorkerGraphicDescriptionContextProps;
     // @beta
     get debugControl(): RenderSystemDebugControl | undefined;
@@ -9871,7 +9871,7 @@ export abstract class RenderSystem implements IDisposable {
     onInitialized(): void;
     // @internal
     readonly options: RenderSystem.Options;
-    // @beta (undocumented)
+    // @beta
     resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): Promise<GraphicDescriptionContext>;
     // @internal (undocumented)
     get supportsCreateImageBitmap(): boolean;
