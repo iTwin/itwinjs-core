@@ -53,7 +53,7 @@ registerWorker<TestWorker>({
 
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.Scene,
-      constraints: context.constraints,
+      context,
       computeChordTolerance: () => 0,
       viewIndependentOrigin: new Point3d(0, 1, 2),
       pickable: {

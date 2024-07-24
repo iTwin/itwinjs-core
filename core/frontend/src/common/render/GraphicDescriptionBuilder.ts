@@ -139,8 +139,8 @@ export type GraphicDescriptionBuilderOptions = {
   generateEdges?: boolean;
   /** Computes the level of detail in meters for the graphics produced by the builder. */
   computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-  /** Limits defined by the [[RenderSystem]] on the main thread, obtained from [[WorkerGraphicDescriptionContext.constraints]]. */
-  constraints: GraphicDescriptionConstraints;
+  /** Context obtained from the [[RenderSystem]] on the main thread. */
+  context: WorkerGraphicDescriptionContext;
 } & ({
   /** If defined, specifies a point about which the graphic will rotate such that it always faces the viewer.
    * This can be particular useful for planar regions to create a billboarding effect - e.g., to implement [[Marker]]-like WebGL decorations.

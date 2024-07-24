@@ -86,7 +86,7 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
   public readonly [_implementationProhibited] = undefined;
   private readonly _computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-  private readonly _constraints: GraphicDescriptionConstraints;
+  private readonly _context: WorkerGraphicDescriptionContextImpl;
   private readonly _viewIndependentOrigin?: Point3d;
 
   public constructor(options: GraphicDescriptionBuilderOptions) {
@@ -107,8 +107,12 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     });
 
     this._computeChordTolerance = options.computeChordTolerance;
-    this._constraints = options.constraints;
     this._viewIndependentOrigin = options.viewIndependentOrigin?.clone();
+
+    this._context = options.context as WorkerGraphicDescriptionContextImpl;
+    if (!(this._context.transientIds instanceof TransientIdSequence)) {
+      throw new Error("Invalid WorkerGraphicDescriptionContext");
+    }
   }
 
   public finish(): GraphicDescriptionImpl {
@@ -237,7 +241,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   }
 
   private createMeshPrimitive(args: MeshArgs): ImdlModel.Primitive | undefined {
-    const params = createMeshParams(args, this._constraints.maxTextureSize, true);
+    const params = createMeshParams(args, this._context.constraints.maxTextureSize, true);
 
     return {
       type: "mesh",
@@ -258,7 +262,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   }
 
   private createPolylinePrimitive(args: PolylineArgs): ImdlModel.Primitive | undefined {
-    const params = createPolylineParams(args, this._constraints.maxTextureSize);
+    const params = createPolylineParams(args, this._context.constraints.maxTextureSize);
     if (!params) {
       return undefined;
     }
@@ -278,7 +282,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   }
 
   private createPointStringPrimitive(args: PolylineArgs): ImdlModel.Primitive | undefined {
-    const params = createPointStringParams(args, this._constraints.maxTextureSize);
+    const params = createPointStringParams(args, this._context.constraints.maxTextureSize);
     if (!params) {
       return undefined;
     }

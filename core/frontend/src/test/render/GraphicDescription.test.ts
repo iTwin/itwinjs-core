@@ -9,7 +9,7 @@ import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common";
+import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch, GraphicsArray } from "../../webgl";
@@ -32,8 +32,8 @@ function expectFeature(index: number, featureTable: RenderFeatureTable, expected
 }
 
 describe("GraphicDescriptionBuilder", () => {
-  let constraints: GraphicDescriptionConstraints;
-  let context: GraphicDescriptionContext;
+  let mainContext: GraphicDescriptionContext;
+  let workerContext: WorkerGraphicDescriptionContext;
 
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
@@ -42,9 +42,8 @@ describe("GraphicDescriptionBuilder", () => {
     // we're not allocating transient Ids.
     const iModel = { transientIds: new TransientIdSequence() } as any;
     const contextProps  = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
-    const workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
-    constraints = workerContext.constraints;
-    context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
+    workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
+    mainContext = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
   });
 
   after(async () => IModelApp.shutdown());
@@ -52,8 +51,8 @@ describe("GraphicDescriptionBuilder", () => {
   const computeChordTolerance = () => 0;
   const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
 
-  function expectOption(options: Omit<GraphicDescriptionBuilderOptions, "constraints" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
-    const builder = GraphicDescriptionBuilder.create({ ...options, constraints, computeChordTolerance });
+  function expectOption(options: Omit<GraphicDescriptionBuilderOptions, "context" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
+    const builder = GraphicDescriptionBuilder.create({ ...options, context: workerContext, computeChordTolerance });
     expect(builder[option]).to.equal(expected);
   }
 
@@ -89,7 +88,7 @@ describe("GraphicDescriptionBuilder", () => {
   }
 
   it("creates a graphic", async () => {
-    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, constraints, computeChordTolerance });
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, context: workerContext, computeChordTolerance });
     expect(builder.wantEdges).to.be.false;
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
     builder.addShape2d([
@@ -111,7 +110,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(meshParams.isPlanar).to.be.true;
     expect(meshParams.edges).to.be.undefined;
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
@@ -130,7 +129,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a graphic with edges", async () => {
-    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, constraints, computeChordTolerance });
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, context: workerContext, computeChordTolerance });
     expect(builder.wantEdges).to.be.true;
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
     builder.addShape2d([
@@ -157,7 +156,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(edgeParams.silhouettes).to.be.undefined;
     expect(edgeParams.indexed).not.to.be.undefined;
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
@@ -186,7 +185,7 @@ describe("GraphicDescriptionBuilder", () => {
   it("applies a placement transform to the graphics", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldDecoration,
-      constraints,
+      context: workerContext,
       computeChordTolerance,
       placement: Transform.createTranslationXYZ(6, 7, 8),
     });
@@ -201,7 +200,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(descr.translation!.y).to.equal(2.5 + 7);
     expect(descr.translation!.z).to.equal(2 + 8);
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     const mesh = branch.branch.entries[0] as MeshGraphic;
     expect(mesh.primitives.length).to.equal(1);
     expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
@@ -211,7 +210,7 @@ describe("GraphicDescriptionBuilder", () => {
     const viewIndependentOrigin = new Point3d(6, 7, 8);
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldDecoration,
-      constraints,
+      context: workerContext,
       computeChordTolerance,
       viewIndependentOrigin,
     });
@@ -228,7 +227,7 @@ describe("GraphicDescriptionBuilder", () => {
     const origin = Point3d.fromJSON(mod.origin);
     expect(origin.isExactEqual(viewIndependentOrigin)).to.be.true;
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     const mesh = branch.branch.entries[0] as MeshGraphic;
     const geom = mesh.primitives[0].cachedGeometry;
     expect(geom.viewIndependentOrigin!.isExactEqual(viewIndependentOrigin)).to.be.true;
@@ -237,7 +236,7 @@ describe("GraphicDescriptionBuilder", () => {
   it("creates a batch containing a single feature with only an Id", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
-      constraints,
+      context: workerContext,
       computeChordTolerance,
       pickable: {
         id: "0x123",
@@ -265,7 +264,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batchDescr.isVolumeClassifier).to.be.undefined;
     expectRange(Range3d.fromJSON(batchDescr.range), 0, 0, 2, 10, 5, 2);
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
@@ -292,7 +291,7 @@ describe("GraphicDescriptionBuilder", () => {
   it("creates a batch containing a single full feature with a model Id", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
-      constraints,
+      context: workerContext,
       computeChordTolerance,
       pickable: {
         id: "0x123",
@@ -315,7 +314,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batchDescr.modelId).to.equal("0x456");
     expectRange(Range3d.fromJSON(batchDescr.range), 0, 0, 2, 10, 5, 2);
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
@@ -336,7 +335,7 @@ describe("GraphicDescriptionBuilder", () => {
   it("creates a batch containing multiple features", async () => {
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
-      constraints,
+      context: workerContext,
       computeChordTolerance,
       pickable: {
         id: "0xa1",
@@ -363,7 +362,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batchDescr.modelId).to.equal("0xb1");
     expectRange(Range3d.fromJSON(batchDescr.range), 1, 1, 1, 3, 3, 3);
 
-    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context }) as Branch;
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     expect(branch instanceof Branch).to.be.true;
     expect(branch.branch.entries.length).to.equal(1);
 
