@@ -59,6 +59,10 @@
     - [Dealing with geometry](#dealing-with-geometry)
     - [Authentication](#authentication)
     - [Locks & Codes](#locks--codes)
+    - [Unmap](#unmap)
+    - [Shared Channels](#shared-channels)
+    - [Deletion Detection](#deletion-detection)
+    - [Changeset Groups](#changeset-groups)
     - [More information](#more-information)
 
 ### Porting a connector
@@ -584,6 +588,60 @@ A Connector is required to scope all of the subjects and definitions and their m
 By following the job-subject scoping rule, many connectors can write data to a single iModel without conflicts or confusion.
 
 Job-subject scoping also prevents problems with locks and codes. The codes used by a Connector are scoped by the job subject, and there should be no risk of conflicts and hence codes are not reserved.
+
+### Unmap
+
+Sometimes it becomes necessary to 'undo' a connector run and an extreme step of deleting an imodel and starting over is not practical because the imodel contains the content of multiple connectors for example and a more surgical approach is warranted.  **shouldUnmapSource** is an job argument (i.e. this.jobArgs.shouldUnmapSource) that can be passed to the Connector Runner and it will call the connectors **unmapSource** method.
+
+[ConnectorRunner calls the unmapSource method if argument is defined](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/ConnectorRunner.ts#L230)
+
+The testconnector demonstrates how to implement an unmapSource method.
+
+[unmapSource method in TestConnector](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/TestConnector/TestConnector.ts#L174)
+
+### Shared Channels
+
+New to iTwinjs 4.6 (connector-framework version 2.1) is the concept of shared channels.  The connector framework is updated to work with either shared channels or with channels requiring a channel key.  Shared channels will be the default.  The BaseConnector's getChannelKey method returns the shared channel.  Note: beginning in iTwinjs 5.0, this will likely reverse and the default will require a channel key and the connector will need to override this method to get the shared channel key.
+
+[BaseConnector's getChannelKey method](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/BaseConnector.ts#L115)
+
+To use a channel key the connector author should override the getChannelKey in their connector implementation.
+
+[Example of getChannelKey override](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/TestConnector/NonSharedChannelKeyTestConnector.ts#L5)
+
+### Deletion Detection
+
+Deletion detection is simply the synchronizers deletion of existing elements on subsequent connector runs based on the element(s) omission.  For example, if a connector publishes elements a,b and c in the first run and then b,c and d in a subsequent run, a is determined to be deleted and the syncronizer will delete it from the imodel.
+
+### Deletion Detection Params
+
+When detectecting deletions, it is necessary to locate child elements of deleted elements to in turn delete the children and search for their children and so on.  This location requires navigating from the top down through the hierarchy of elements.  Unfortunately, earlier versions of the TestConnector, demonstrated external source aspects relating elements to models rather than repository links which ultimately point back to files as our convention for model provinence requires.  Some connector teams in turn, followed this example and similarly created the external source aspect relating to models rather than repository links.  Therefore it became necessary to support both 'channel based' (navigating from the JobSubject down) to 'file based' (navigating from a repository link down associated with an external source file).  Thus, deletion detection params were introduced to allow a connector developer to steer the logic toward either file based (preferred) or channel based deletion detection.
+
+[DeletionDetectionParams interface](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/Synchronizer.ts#L195)
+
+[Default implementation of getDeletionDetectionParams](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/BaseConnector.ts#L95)
+
+[For an example of overriding getDeletionDetectionParams](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/TestConnector/TestConnector.ts#L57)
+
+The above example check and environment variable which is strictly intended for the test connector as it allows us to test BOTH file based AND legacy (channel based) deletion detection with the same connector.  Any new connector author/developer should choose file-based.
+
+The tests which run the test connector with file-based deletion detection is located at:
+[File based deletion detection test](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/standalone/ConnectorRunnerWithHubMock.test.ts#L31)
+
+Its channel based counterpart is located at ...
+[Channel based deletion detection test](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/standalone/LegacyDeletionDetection.test.ts#L31)
+
+### Changeset Groups
+
+Each connector run will create approximately five changesets for a given run.  Some find it preferable to see a single entry for the complete run rather than several granular, intermediate changes.  Changeset Groups were introduced to wrap these smaller changes under a single description.
+
+It is easy to implement Changeset Groups in your connector, simply override the shouldCreateChangeSetGroup method to return true.
+
+[Example of shouldCreateChangeSetGroup override](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/TestConnector/ChangeSetGroupTestConnector.ts#L5)
+
+To further customize the ChangeSetGroup's description, you can override the getChangeSetGroupDescription otherwise it will return the name of the connector indicating that the multiple changesets within the group were created by the connector of that name.
+
+[getChangeSetGroupDescription implementation in BaseConnector](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/BaseConnector.ts#L126)
 
 ### More information
 
