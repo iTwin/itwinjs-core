@@ -11,9 +11,9 @@ import {
   CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, PolyfaceQuery, Range3d, SolidPrimitive, StrokeOptions, SweepContour, Transform,
 } from "@itwin/core-geometry";
 import { Feature } from "@itwin/core-common";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../Polyface";
-import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../Strokes";
+import { DisplayParams } from "./DisplayParams";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "./Polyface";
+import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "./Strokes";
 
 /** @internal */
 export type PrimitiveGeometryType = Loop | Path | IndexedPolyface | SolidPrimitive;

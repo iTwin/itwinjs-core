@@ -6,14 +6,37 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
+import { LinePixels, PolylineIndices, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
+import { VertexIndices } from "./VertexIndices";
+import { VertexTable } from "./VertexTable";
+import { MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { PolylineIndices, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
-import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
+import { assert } from "@itwin/core-bentley";
 import { VertexTableBuilder } from "./VertexTableBuilder";
-import { PolylineParams, TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
-import { VertexIndices } from "../../common/render/primitives/VertexIndices";
-import { IModelApp } from "../../IModelApp";
+
+/** Represents a tesselated polyline.
+ * Given a polyline as a line string, each segment of the line string is triangulated into a quad.
+ * Based on the angle between two segments, additional joint triangles may be inserted in between to enable smoothly-rounded corners.
+ * @internal
+ */
+export interface TesselatedPolyline {
+  /** 24-bit index of each vertex. */
+  indices: VertexIndices;
+  /** 24-bit index of the previous vertex in the polyline. */
+  prevIndices: VertexIndices;
+  /** 24-bit index of the next vertex in the polyline, plus 8-bit parameter describing the semantics of this vertex. */
+  nextIndicesAndParams: Uint8Array;
+}
+
+/** @internal */
+export interface PolylineParams {
+  vertices: VertexTable;
+  polyline: TesselatedPolyline;
+  isPlanar: boolean;
+  type: PolylineTypeFlags;
+  weight: number;
+  linePixels: LinePixels;
+}
 
 /** Parameter associated with each vertex index of a tesselated polyline. */
 const enum PolylineParam { // eslint-disable-line no-restricted-syntax
@@ -214,9 +237,9 @@ export function tesselatePolyline(polylines: PolylineIndices[], points: QPoint3d
 }
 
 /** @internal */
-export function createPolylineParams(args: PolylineArgs): PolylineParams | undefined {
+export function createPolylineParams(args: PolylineArgs, maxDimension: number): PolylineParams | undefined {
   assert(!args.flags.isDisjoint);
-  const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);
+  const vertices = VertexTableBuilder.buildFromPolylines(args, maxDimension);
   if (undefined === vertices)
     return undefined;
 
