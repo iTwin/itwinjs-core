@@ -11,7 +11,6 @@ import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-ge
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
-import { AnimationNodeId } from "../../common/render/AnimationNodeId";
 import { ViewRect } from "../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
@@ -63,6 +62,7 @@ import { TargetGraphics } from "./TargetGraphics";
 import { VisibleTileFeatures } from "./VisibleTileFeatures";
 import { FrameStatsCollector } from "../FrameStats";
 import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
+import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];

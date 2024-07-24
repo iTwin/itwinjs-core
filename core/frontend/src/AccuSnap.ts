@@ -19,7 +19,7 @@ import { ToolSettings } from "./tools/ToolSettings";
 import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
-import { _requestSnap } from "./internal/Symbols";
+import { _requestSnap } from "./common/internal/Symbols";
 
 // cspell:ignore dont primitivetools
 

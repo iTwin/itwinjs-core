@@ -96,22 +96,32 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return request(url, "json");
   }
 
+  private isValidURL(url: string){
+    try {
+      new URL(url);
+    } catch (_) {
+      return false;
+    }
+    return true;
+  }
+
+  /** Returns the tile URL. If the tile path is a full URL, it is returned as is. Otherwise, the base URL is prepended to the tile path. */
+  private getTileUrl(tilePath: string){
+    return this.isValidURL(tilePath) ? tilePath : this._baseUrl + tilePath;
+  }
+
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<ArrayBuffer> {
-    const tileUrl = this._baseUrl + name;
-
-    return request(tileUrl, "arraybuffer");
+    return request(this.getTileUrl(name), "arraybuffer");
   }
 
   /**
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(name: string): Promise<any> {
-    const tileUrl = this._baseUrl + name;
-
-    return request(tileUrl, "json");
+    return request(this.getTileUrl(name), "json");
   }
 
   public getTileContentType(url: string): "tile" | "tileset" {
