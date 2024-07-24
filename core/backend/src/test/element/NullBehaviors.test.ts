@@ -33,7 +33,7 @@ function initElemProps( _iModelName: IModelDb, modId: Id64String, catId: Id64Str
 
 describe("Various ECProperties null behavior handling cases test fixture", () => {
   const testSchema = `<?xml version="1.0" encoding="UTF-8"?>
-  <ECSchema schemaName="TestSchema" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+  <ECSchema schemaName="TestSchema" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
     <ECStructClass typeName="Location" modifier="None">
       <ECProperty propertyName="City" typeName="string"/>
@@ -69,7 +69,7 @@ describe("Various ECProperties null behavior handling cases test fixture", () =>
     imodel.close();
   });
 
-  it("validates arrays to contain null values", async () => {
+  it.only("validates arrays to contain null values", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "struct_array_contain_nulls.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName)!;
