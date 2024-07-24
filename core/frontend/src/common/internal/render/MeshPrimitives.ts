@@ -13,14 +13,11 @@ import {
   OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineIndices, PolylineTypeFlags, QParams3d, QPoint3dList, RenderMaterial,
   RenderTexture, SilhouetteEdgeArgs,
 } from "@itwin/core-common";
-import { InstancedGraphicParams } from "../../InstancedGraphicParams";
-import { RenderGraphic } from "../../RenderGraphic";
-import { RenderSystem } from "../../RenderSystem";
-import { ColorMap } from "../ColorMap";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { MeshPointList, MeshPrimitiveType, Point3dList } from "../../../common/render/primitives/MeshPrimitive";
-import { Triangle, TriangleList } from "../Primitives";
-import { VertexKeyProps } from "../VertexKey";
+import { ColorMap } from "./ColorMap";
+import { DisplayParams } from "./DisplayParams";
+import { MeshPointList, MeshPrimitiveType, Point3dList } from "./MeshPrimitive";
+import { Triangle, TriangleList } from "./Primitives";
+import { VertexKeyProps } from "./VertexKey";
 
 /** Arguments supplied to [[RenderSystem.createIndexedPolylines]] describing a set of "polylines" (i.e., line strings or point strings).
  * Line strings consist of two or more points, connected by segments between them with a width specified in pixels.
@@ -312,15 +309,6 @@ export class Mesh {
 
   public toPolylineArgs(): PolylineArgs | undefined {
     return PolylineArgs.fromMesh(this);
-  }
-
-  public getGraphics(system: RenderSystem, instancesOrViewIndependentOrigin?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
-    const meshArgs = this.toMeshArgs();
-    if (meshArgs)
-      return system.createTriMesh(meshArgs, instancesOrViewIndependentOrigin);
-
-    const plArgs = this.toPolylineArgs();
-    return plArgs ? system.createIndexedPolylines(plArgs, instancesOrViewIndependentOrigin) : undefined;
   }
 
   public addPolyline(poly: MeshPolyline): void {

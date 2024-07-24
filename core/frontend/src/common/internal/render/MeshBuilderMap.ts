@@ -9,13 +9,13 @@
 import { compareBooleans, compareNumbers, Dictionary, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
-import { GeometryList } from "../geometry/GeometryList";
-import { Geometry } from "../geometry/GeometryPrimitives";
-import { PolyfacePrimitive } from "../Polyface";
-import { GeometryOptions, ToleranceRatio } from "../Primitives";
-import { StrokesPrimitive } from "../Strokes";
+import { DisplayParams } from "./DisplayParams";
+import { MeshPrimitiveType } from "./MeshPrimitive";
+import { GeometryList } from "./GeometryList";
+import { Geometry } from "./GeometryPrimitives";
+import { PolyfacePrimitive } from "./Polyface";
+import { GeometryOptions, ToleranceRatio } from "./Primitives";
+import { StrokesPrimitive } from "./Strokes";
 import { MeshBuilder, MeshEdgeCreationOptions } from "./MeshBuilder";
 import { Mesh, MeshList } from "./MeshPrimitives";
 
@@ -66,13 +66,10 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   /**
    * extract polyfaces and strokes from geometry into MeshBuilder stored in builderMap
    * @param geom Geometry instance to extract polyfaces and strokes from
-   * @param wantSurfacesOnly if true prevent strokes from being loaded into builders
    */
   public loadGeometry(geom: Geometry): void {
     this.loadPolyfacePrimitiveList(geom);
-
-    if (!this.options.wantSurfacesOnly)
-      this.loadStrokePrimitiveList(geom);
+    this.loadStrokePrimitiveList(geom);
   }
 
   /**
@@ -101,7 +98,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
       return;
 
     const builder = this.getBuilder(displayParams, MeshPrimitiveType.Mesh, normalCount > 0, isPlanar);
-    const edgeOptions = new MeshEdgeCreationOptions(polyface.displayEdges && this.options.edges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges);
+    const edgeOptions = new MeshEdgeCreationOptions(polyface.displayEdges && this.options.wantEdges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges);
     builder.addFromPolyface(indexedPolyface, { edgeOptions, includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping }, feature);
   }
 
