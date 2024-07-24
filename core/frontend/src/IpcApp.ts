@@ -12,7 +12,7 @@ import {
   iTwinChannel, RemoveFunction,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { _callIpcChannel } from "./internal/Symbols";
+import { _callIpcChannel } from "./common/internal/Symbols";
 
 /**
  * Options for [[IpcApp.startup]]

@@ -7,7 +7,7 @@
  */
 
 import { IndexedPolyface, Transform } from "@itwin/core-geometry";
-import { DisplayParams } from "../../common/render/primitives/DisplayParams";
+import { DisplayParams } from "./DisplayParams";
 
 /** @internal */
 export class PolyfacePrimitive {
