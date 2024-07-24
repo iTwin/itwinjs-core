@@ -2996,10 +2996,16 @@ export class BriefcaseDb extends IModelDb {
     if (this.briefcaseId === BriefcaseIdValue.Unassigned)
       return;
 
-    if (this[_nativeDb].hasUnsavedChanges())
+    if (this[_nativeDb].hasUnsavedChanges()) {
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push with unsaved changes");
-    if (!this[_nativeDb].hasPendingTxns())
-      return; // nothing to push
+    } else if (!this[_nativeDb].hasPendingTxns()) {
+      // Nothing to push.
+      if (!arg.retainLocks) {
+        await this.locks.releaseAllLocks();
+      }
+
+      return;
+    }
 
     // pushing changes requires a writeable briefcase
     await this.executeWritable(async () => {
