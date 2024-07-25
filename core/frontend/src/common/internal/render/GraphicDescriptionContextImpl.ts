@@ -10,7 +10,8 @@ import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentl
 import { _implementationProhibited } from "../Symbols";
 import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps, WorkerTextureParams } from "../../render/GraphicDescriptionContext";
 import { MaterialParams } from "../../render/MaterialParams";
-import { Gradient, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, ColorDefProps, Gradient, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, RgbColor, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
+import { ImdlModel } from "../../imdl/ImdlModel";
 
 /** As part of a [[WorkerGraphicDescriptionContext]], describes constraints imposed by the [[RenderSystem]] that a [[GraphicDescriptionBuilder]] needs to know about
  * when creating a [[GraphicDescription]].
@@ -70,7 +71,7 @@ export interface WorkerTextureProps {
   }
 }
 
-class WorkerTexture extends RenderTexture {
+export class WorkerTexture extends RenderTexture {
   public readonly index: number;
   public readonly params: WorkerTextureParams | Gradient.Symb;
 
@@ -127,7 +128,15 @@ class WorkerTexture extends RenderTexture {
   }
 }
 
-class WorkerMaterial extends RenderMaterial {
+function materialColorToImdl(color: ColorDef | RgbColorProps | undefined): ColorDefProps | undefined {
+  if (!(color instanceof ColorDef)) {
+    color = RgbColor.fromJSON(color).toColorDef();
+  }
+
+  return color?.toJSON();
+}
+
+export class WorkerMaterial extends RenderMaterial {
   public readonly params: MaterialParams;
 
   public constructor(params: MaterialParams) {
@@ -153,6 +162,34 @@ class WorkerMaterial extends RenderMaterial {
     super({ textureMapping });
 
     this.params = params;
+  }
+
+  public toImdl(): ImdlModel.SurfaceMaterial {
+    let diffuse;
+    if (this.params.diffuse) {
+      diffuse = {
+        weight: this.params.diffuse.weight,
+        color: materialColorToImdl(this.params.diffuse.color),
+      };
+    }
+
+    let specular;
+    if (this.params.specular) {
+      specular = {
+        weight: this.params.specular.weight,
+        exponent: this.params.specular.exponent,
+        color: materialColorToImdl(this.params.specular.color),
+      };
+    }
+
+    return {
+      isAtlas: false,
+      material: {
+        alpha: this.params.alpha,
+        diffuse,
+        specular,
+      },
+    }
   }
 }
 

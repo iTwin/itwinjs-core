@@ -13,7 +13,7 @@ import {
 } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
-import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
+import { Gradient, PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
 import { BatchOptions } from "../../render/BatchOptions";
 import { assert, Id64String, TransientIdSequence } from "@itwin/core-bentley";
 import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
@@ -23,7 +23,7 @@ import { createPolylineParams } from "./PolylineParams";
 import { createMeshParams } from "./VertexTableBuilder";
 import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
 import { _accumulator, _implementationProhibited } from "../Symbols";
-import { WorkerGraphicDescriptionContextImpl } from "./GraphicDescriptionContextImpl";
+import { WorkerGraphicDescriptionContextImpl, WorkerMaterial } from "./GraphicDescriptionContextImpl";
 import { GraphicDescriptionContext } from "../../render/GraphicDescriptionContext";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
@@ -205,6 +205,20 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   private createMeshPrimitive(args: MeshArgs): ImdlModel.Primitive | undefined {
     const params = createMeshParams(args, this._context.constraints.maxTextureSize, true);
 
+    // ###TODO support materials and textures.
+    let material;
+    const mat = params.surface.material;
+    if (mat) {
+      assert(mat.isAtlas === false && mat.material instanceof WorkerMaterial);
+      material = mat.material.toImdl();
+    }
+
+    let textureMapping;
+    const tex = params.surface.textureMapping;
+    if (tex) {
+      // ###TODO
+    }
+    
     return {
       type: "mesh",
       params: {
@@ -215,9 +229,8 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
         surface: {
           ...params.surface,
           indices: params.surface.indices.data,
-          // ###TODO support materials and textures.
-          material: undefined,
-          textureMapping: undefined,
+          material,
+          textureMapping,
         },
       },
     };
@@ -259,9 +272,8 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     };
   }
 
-  protected override resolveGradient() {
-    // ###TODO support textures and materials.
-    return undefined;
+  protected override resolveGradient(gradient: Gradient.Symb) {
+    return this._context.createGradientTexture(gradient);
   }
 }
 
@@ -275,21 +287,8 @@ function convertVertexTable(src: VertexTable): ImdlModel.VertexTable {
 }
 
 export function isGraphicDescription(description: GraphicDescription): description is GraphicDescriptionImpl {
-  const descr = description as any;
-  if ("object" !== typeof descr || !Array.isArray(descr.primitives)) {
-    return false;
-  }
-
-  switch (descr.type) {
-    case GraphicType.ViewBackground:
-    case GraphicType.Scene:
-    case GraphicType.WorldDecoration:
-    case GraphicType.WorldOverlay:
-    case GraphicType.ViewOverlay:
-      return true;
-    default:
-      return false;
-  }
+  const descr = description as GraphicDescriptionImpl;
+  return "object" === typeof descr && Array.isArray(descr.primitives) && "number" === typeof descr.type;
 }
 
 export function collectGraphicDescriptionTransferables(xfers: Set<Transferable>, description: GraphicDescription): void {
