@@ -16,6 +16,7 @@ export type AttachGeoscienceTilesetArgs = BaseGeoscienceArgs;
 // @alpha
 export interface BaseGeoscienceArgs {
     accessToken: string;
+    endpointUrl: string;
     geoscienceObjectId: string;
     organizationId: string;
     workspaceId: string;

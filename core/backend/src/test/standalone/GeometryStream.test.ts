@@ -20,7 +20,7 @@ import {
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { _nativeDb, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
+import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
 import { createBRepDataProps } from "../GeometryTestUtil";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Timer } from "../TestUtils";
@@ -29,20 +29,20 @@ function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);
 }
 
-function createGeometryPartProps(geom?: GeometryStreamProps): GeometryPartProps {
+function createGeometryPartProps(geom?: GeometryStreamProps, modelId?: Id64String): GeometryPartProps {
   const partProps: GeometryPartProps = {
     classFullName: GeometryPart.classFullName,
-    model: IModel.dictionaryId,
+    model: modelId ?? IModel.dictionaryId,
     code: Code.createEmpty(),
     geom,
   };
   return partProps;
 }
 
-function createPhysicalElementProps(seedElement: GeometricElement, placement?: Placement3dProps, geom?: GeometryStreamProps): PhysicalElementProps {
+function createPhysicalElementProps(seedElement: GeometricElement, placement?: Placement3dProps, geom?: GeometryStreamProps, modelId?: Id64String): PhysicalElementProps {
   const elementProps: PhysicalElementProps = {
     classFullName: PhysicalObject.classFullName,
-    model: seedElement.model,
+    model: modelId ?? seedElement.model,
     category: seedElement.category,
     code: Code.createEmpty(),
     geom,
@@ -469,11 +469,17 @@ describe("GeometryStream", () => {
     }
   });
 
-  it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
+  function createGeometricElem3dUsingArrowHeadNoStrokePattern(definitionModelId?: Id64String, physicalModelId?: Id64String) {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    if (definitionModelId === undefined)
+      definitionModelId = IModel.dictionaryId;
+
+    if (physicalModelId === undefined)
+      physicalModelId = seedElement.model;
 
     const partBuilder = new GeometryStreamBuilder();
     const partParams = new GeometryParams(Id64.invalid); // category won't be used
@@ -482,7 +488,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometryParamsChange(partParams);
     partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
 
-    const partProps = createGeometryPartProps(partBuilder.geometryStream);
+    const partProps = createGeometryPartProps(partBuilder.geometryStream, definitionModelId);
     const partId = imodel.elements.insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
@@ -496,7 +502,7 @@ describe("GeometryStream", () => {
     const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
     assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestArrowStyle", compoundData);
+    const styleId = LineStyleDefinition.Utils.createStyle(imodel, definitionModelId, "TestArrowStyle", compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();
@@ -506,7 +512,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
-    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream, physicalModelId);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
@@ -516,6 +522,32 @@ describe("GeometryStream", () => {
     assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
     assert.isTrue(usageInfo.usedIds!.includes(partId));
     assert.isTrue(usageInfo.usedIds!.includes(styleId));
+  }
+
+  it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
+    createGeometricElem3dUsingArrowHeadNoStrokePattern();
+  });
+
+  it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree fails", async () => {
+    const mySubject = Subject.insert(imodel, IModel.rootSubjectId, "My Subject - fails");
+    const myDefModel = DefinitionModel.insert(imodel, mySubject, "My Definitions - fails");
+    const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), false, mySubject)[0];
+
+    createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
+
+    deleteElementTree({ iModel: imodel, topElement: mySubject, maxPasses: 1 });
+    expect(imodel.elements.tryGetElement(mySubject)).not.undefined;
+  });
+
+  it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree succeeds with 2 passes", async () => {
+    const mySubject = Subject.insert(imodel, IModel.rootSubjectId, "My Subject - success");
+    const myDefModel = DefinitionModel.insert(imodel, mySubject, "My Definitions - success");
+    const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), false, mySubject)[0];
+
+    createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
+
+    deleteElementTree({ iModel: imodel, topElement: mySubject, maxPasses: 2 });
+    expect(imodel.elements.tryGetElement(mySubject)).undefined;
   });
 
   it("create GeometricElement3d using compound style with dash widths and symbol", async () => {
