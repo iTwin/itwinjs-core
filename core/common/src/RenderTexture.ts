@@ -62,7 +62,7 @@ export namespace RenderTexture { // eslint-disable-line no-redeclare
   }
 
   /** Parameters used to construct a [[RenderTexture]].
-   * @deprecated in 3.x. use RenderSystem.createTexture and TextureCreateArgs.
+   * @deprecated in 3.x. use RenderSystem.createTexture and CreateTextureArgs.
    * @public
    */
   export class Params {

@@ -9,6 +9,14 @@
 import { TransientIdSequence } from "@itwin/core-bentley";
 import { _implementationProhibited } from "../internal/Symbols"; 
 import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionContextImpl";
+import { Gradient, ImageBuffer, ImageSource, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { MaterialParams } from "./MaterialParams";
+
+export interface WorkerTextureParams {
+  type?: RenderTexture.Type;
+  source: ImageBuffer | ImageSource | URL;
+  transparency?: TextureTransparency;
+}
 
 /** An opaque representation of a [[WorkerGraphicDescriptionContext]] that can be passed from the main thread to a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker).
  * @see [[RenderSystem.createWorkerGraphicDescriptionContextProps]] to obtain an implementation of this type.
@@ -37,6 +45,10 @@ export interface WorkerGraphicDescriptionContext {
    * can be efficiently copied to the main thread.
    */
   toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
+
+  createMaterial(key: string, params: MaterialParams): RenderMaterial;
+  createTexture(key: string, params: WorkerTextureParams): RenderTexture;
+  createGradientTexture(gradient: Gradient.Symb): RenderTexture;
 }
 
 /** @beta */

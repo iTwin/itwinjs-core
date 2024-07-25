@@ -6,9 +6,11 @@
  * @module Rendering
  */
 
-import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
+import { TransientIdSequence, TransientIdSequenceProps, assert } from "@itwin/core-bentley";
 import { _implementationProhibited } from "../Symbols";
-import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../../render/GraphicDescriptionContext";
+import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps, WorkerTextureParams } from "../../render/GraphicDescriptionContext";
+import { MaterialParams } from "../../render/MaterialParams";
+import { Gradient, RenderMaterial, RenderTexture } from "@itwin/core-common";
 
 /** As part of a [[WorkerGraphicDescriptionContext]], describes constraints imposed by the [[RenderSystem]] that a [[GraphicDescriptionBuilder]] needs to know about
  * when creating a [[GraphicDescription]].
@@ -48,6 +50,19 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
 
     this.constraints = propsImpl.constraints;
     this.transientIds = TransientIdSequence.fromJSON(propsImpl.transientIds);
+  }
+
+  public createMaterial(key: string, params: MaterialParams): RenderMaterial {
+    assert(undefined !== key && undefined !== params);
+    throw new Error("###TODO");
+  }
+  public createTexture(key: string, params: WorkerTextureParams): RenderTexture {
+    assert(undefined !== key && undefined !== params);
+    throw new Error("###TODO");
+  }
+  public createGradientTexture(gradient: Gradient.Symb): RenderTexture {
+    assert(undefined !== gradient);
+    throw new Error("###TODO");
   }
 
   public toProps(_transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
