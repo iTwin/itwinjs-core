@@ -19,7 +19,7 @@ import { createGraphicFromDescription, MapTileTreeReference, TileTreeReference }
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { imageElementFromImageSource } from "../common/ImageUtil";
+import { imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
 import { MeshParams } from "../common/internal/render/MeshParams";
 import { createPointStringParams, PointStringParams } from "../common/internal/render/PointStringParams";
 import { createPolylineParams, PolylineParams } from "../common/internal/render/PolylineParams";
@@ -810,7 +810,7 @@ export abstract class RenderSystem implements IDisposable {
    */
   public async resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): Promise<GraphicDescriptionContext> {
     const impl = props as GraphicDescriptionContextPropsImpl;
-    if (typeof impl.transientIds !== "object") {
+    if (typeof impl.transientIds !== "object" || !Array.isArray(impl.textures)) {
       throw new Error("Invalid GraphicDescriptionContextProps");
     }
 
@@ -818,11 +818,60 @@ export abstract class RenderSystem implements IDisposable {
       throw new Error("resolveGraphicDescriptionContext can only be called once for a given GraphicDescriptionContextProps");
     }
 
+    const textures = new Map<string, RenderTexture>();
+
+    // ###TODO use Promise.all
+    for (let i = 0; i < impl.textures.length; i++) {
+      const tex = impl.textures[i];
+      let texture: RenderTexture | undefined;
+      switch (tex.source.type) {
+        case "Gradient":
+          texture = this.getGradientTexture(Gradient.Symb.fromJSON(tex.source.gradient));
+          break;
+        case "ImageSource":
+          texture = await this.createTextureFromSource({
+            source: new ImageSource(tex.source.data, tex.source.format),
+            type: tex.type,
+            transparency: tex.transparency,
+          });
+          break;
+        case "ImageBuffer":
+          texture = this.createTexture({
+            type: tex.type,
+            image: {
+              source: ImageBuffer.create(tex.source.data, tex.source.format, tex.source.width),
+              transparency: tex.transparency,
+            },
+          });
+          break;
+        case "URL": {
+          const image = await tryImageElementFromUrl(tex.source.url);
+          if (image) {
+            texture = this.createTexture({
+              type: tex.type,
+              image: {
+                source: image,
+                transparency: tex.transparency,
+              },
+            });
+          }
+
+          break;
+        }
+      }
+
+      if (texture) {
+        textures.set(i.toString(10), texture);
+      }
+    }
+    
     const remap = iModel.transientIds.merge(impl.transientIds);
     impl.resolved = true;
     return {
       [_implementationProhibited]: undefined,
       remapTransientLocalId: (source) => remap(source),
+      // ###TODO just use the map (forward to GraphicOptions) and it @internal (Symbol)
+      getTexture: (key: string) => textures.get(key),
     };
   }
 }

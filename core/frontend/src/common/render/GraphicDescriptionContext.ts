@@ -80,5 +80,6 @@ export interface GraphicDescriptionContext {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
   remapTransientLocalId(sourceLocalId: number): number;
+  getTexture(key: string): RenderTexture | undefined;
 }
 
