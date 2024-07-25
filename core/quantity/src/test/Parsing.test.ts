@@ -400,7 +400,11 @@ describe("Parsing tests:", () => {
     const testData = [
       { value: "-1-1/2FT", quantity: { magnitude: -1.5, unitName: "Units.FT" } },
       { value: "1-1/2 FT", quantity: { magnitude: 1.5, unitName: "Units.FT" } },
-      { value: "FT", quantity: { magnitude: 1.0, unitName: "Units.FT" } },
+      { value: "1-1/2 FT + 1-1/2 FT", quantity: { magnitude: 3, unitName: "Units.FT" } },
+      { value: "1-1/2 FT - 1-1/2 FT", quantity: { magnitude: 0, unitName: "Units.FT" } },
+      { value: "-1-1/2 FT - 1-1/2 FT", quantity: { magnitude: -3, unitName: "Units.FT" } },
+      { value: "-1-1/2 FT + 1-1/2 FT", quantity: { magnitude: 0, unitName: "Units.FT" } },
+      { value: "FT", quantity: { magnitude: 0.0, unitName: "Units.FT" } },
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -566,7 +570,6 @@ describe("Synchronous Parsing tests:", async () => {
     type: "Fractional",
     uomSeparator: "",
   };
-
   const format = new Format("test");
   await format.fromJSON(unitsProvider, formatData).catch(() => { });
 
@@ -644,6 +647,44 @@ describe("Synchronous Parsing tests:", async () => {
     }
   });
 
+  it("Parse taking the first unit if no unit specified in the Format.", async () => {
+    const formatDataUnitless = {
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: "",
+    };
+    const formatUnitless = new Format("test");
+    await formatUnitless.fromJSON(unitsProvider, formatDataUnitless).catch(() => { });
+
+    const testData = [
+      { value: "12,345.345 - 1", magnitude: 12345.345 - 1}, // unitless
+      { value: "1m + 1FT + 1", magnitude: 1 + 0.3048 + 1}, // default to meters
+      { value: "1FT + 1m + 1", magnitude: 0.3048 + 1 + 0.3048}, // default to feet
+      { value: "1 + 1 FT + 1m", magnitude: 0.3048 + 0.3048 + 1 }, // default to feet
+    ];
+
+    if (logTestOutput) {
+      for (const spec of meterConversionSpecs) {
+        // eslint-disable-next-line no-console
+        console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
+      }
+    }
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseToQuantityValue(testEntry.value, formatUnitless, meterConversionSpecs);
+      if (logTestOutput) {
+        if (Parser.isParsedQuantity(parseResult))
+          console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console
+        else if (Parser.isParseError(parseResult))
+          console.log(`input=${testEntry.value} error=${parseResult.error}`); // eslint-disable-line no-console
+      }
+      assert.isTrue(Parser.isParsedQuantity(parseResult));
+      if (Parser.isParsedQuantity(parseResult))
+        expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
+    }
+  });
+
   it("Parse into length values using custom parse labels", () => {
     const testData = [
       // if no quantity is provided then the format unit is used to determine unit
@@ -652,7 +693,7 @@ describe("Synchronous Parsing tests:", async () => {
       { value: "1 '", magnitude: 0.3048 },
       { value: "-1", magnitude: -0.3048 },
       { value: "1 FT", magnitude: 0.3048 },
-      { value: "FT", magnitude: 0.3048 },
+      { value: "FT", magnitude: 0 },
       { value: "-1 FT", magnitude: -0.3048 },
       { value: "1 F", magnitude: 0.3048 },
       { value: "1/2 F", magnitude: 0.3048 / 2 },

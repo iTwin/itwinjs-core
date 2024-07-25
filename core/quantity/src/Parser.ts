@@ -598,12 +598,12 @@ export class Parser {
         }
         mag = mag + value;
       } else {
-        // only the unit label was specified so assume magnitude of 1
+        // only the unit label was specified so assume magnitude of 0
         const conversion = Parser.tryFindUnitConversion(tokenPair[0].value as string, unitsConversions, defaultUnit);
-        if (undefined !== conversion)
-          mag = mag + conversion.factor + conversion.offset;
-        else
+        if (conversion === undefined){
+          // Unknown unit label
           return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+        }
       }
     }
     return { ok: true, value: mag };
