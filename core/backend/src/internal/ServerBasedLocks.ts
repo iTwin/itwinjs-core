@@ -97,6 +97,14 @@ export class ServerBasedLocks implements LockControl {
     this.clearAllLocks();
   }
 
+  public async releaseAllLocks(): Promise<void> {
+    if (this.briefcase.txns.hasLocalChanges) {
+      throw new Error("Locks cannot be released while the briefcase contains local changes");
+    }
+
+    return this[_releaseAllLocks]();
+  }
+
   private insertLock(id: Id64String, state: LockState, origin: LockOrigin): true {
     this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
       stmt.bindId(1, id);

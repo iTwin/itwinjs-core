@@ -18,7 +18,7 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
+import { GraphicBuilder, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
@@ -28,6 +28,7 @@ import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStat
 import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
+import { GraphicType } from "./common/render/GraphicType";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public

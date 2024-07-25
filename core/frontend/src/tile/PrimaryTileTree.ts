@@ -20,7 +20,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { formatAnimationBranchId } from "../render/GraphicBranch";
-import { AnimationNodeId } from "../common/render/AnimationNodeId";
+import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
