@@ -49,6 +49,9 @@ export interface WorkerGraphicDescriptionContext {
   createMaterial(key: string, params: MaterialParams): RenderMaterial;
   createTexture(key: string, params: WorkerTextureParams): RenderTexture;
   createGradientTexture(gradient: Gradient.Symb): RenderTexture;
+
+  findMaterial(key: string): RenderMaterial | undefined;
+  findTexture(key: string): RenderTexture | undefined;
 }
 
 /** @beta */

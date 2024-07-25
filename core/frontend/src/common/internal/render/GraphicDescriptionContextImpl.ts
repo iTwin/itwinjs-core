@@ -65,6 +65,9 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
     throw new Error("###TODO");
   }
 
+  public findMaterial() { return undefined; }
+  public findTexture() { return undefined; }
+  
   public toProps(_transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
     // We don't yet have any transferable objects. In the future we expect to support transferring texture image data for textures created on the worker thread.
     return {
