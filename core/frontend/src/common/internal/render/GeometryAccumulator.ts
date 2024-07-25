@@ -6,30 +6,23 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
-import { AnalysisStyleDisplacement, Feature, QPoint3dList } from "@itwin/core-common";
-import { GraphicBranch } from "../../GraphicBranch";
-import { RenderGraphic } from "../../RenderGraphic";
-import { RenderSystem } from "../../RenderSystem";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
-import { MeshList } from "../mesh/MeshPrimitives";
-import { GeometryOptions } from "../Primitives";
+import { AnalysisStyleDisplacement, Feature } from "@itwin/core-common";
+import { DisplayParams } from "./DisplayParams";
+import { MeshBuilderMap } from "./MeshBuilderMap";
+import { MeshList } from "./MeshPrimitives";
+import { GeometryOptions } from "./Primitives";
 import { GeometryList } from "./GeometryList";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
-import { IModelApp } from "../../../IModelApp";
 
 /** @internal */
 export class GeometryAccumulator {
   private _transform: Transform;
   private _surfacesOnly: boolean;
   private readonly _analysisDisplacement?: AnalysisStyleDisplacement;
-  private readonly _viewIndependentOrigin?: Point3d;
 
   public readonly tileRange: Range3d;
   public readonly geometries: GeometryList = new GeometryList();
-  public readonly system: RenderSystem;
   public currentFeature?: Feature;
 
   public get surfacesOnly(): boolean { return this._surfacesOnly; }
@@ -38,20 +31,16 @@ export class GeometryAccumulator {
   public get haveTransform(): boolean { return !this._transform.isIdentity; }
 
   public constructor(options?: {
-    system?: RenderSystem;
     surfacesOnly?: boolean;
     transform?: Transform;
     tileRange?: Range3d;
     analysisStyleDisplacement?: AnalysisStyleDisplacement;
-    viewIndependentOrigin?: Point3d;
     feature?: Feature;
   }) {
-    this.system = options?.system ?? IModelApp.renderSystem;
     this.tileRange = options?.tileRange ?? Range3d.createNull();
     this._surfacesOnly = true === options?.surfacesOnly;
     this._transform = options?.transform ?? Transform.createIdentity();
     this._analysisDisplacement = options?.analysisStyleDisplacement;
-    this._viewIndependentOrigin = options?.viewIndependentOrigin;
     this.currentFeature = options?.feature;
   }
 
@@ -170,70 +159,5 @@ export class GeometryAccumulator {
 
     const builderMap = this.toMeshBuilderMap(options, tolerance, pickable);
     return builderMap.toMeshes();
-  }
-
-  /**
-   * Populate a list of Graphic objects from the accumulated Geometry objects.
-   * removed ViewContext
-   */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): MeshList | undefined {
-    const meshes = this.toMeshes(options, tolerance, pickable);
-    if (0 === meshes.length)
-      return undefined;
-
-    // If the meshes contain quantized positions, they are all quantized to the same range. If that range is small relative to the distance
-    // from the origin, quantization errors can produce display artifacts. Remove the translation from the quantization parameters and apply
-    // it in the transform instead.
-    //
-    // If the positions are not quantized, they have already been transformed to be relative to the center of the meshes' range.
-    // Apply the inverse translation to put them back into model space.
-    const branch = new GraphicBranch(true);
-    let transformOrigin: Point3d | undefined;
-    let meshesRangeOffset = false;
-
-    for (const mesh of meshes) {
-      const verts = mesh.points;
-      if (branch.isEmpty) {
-        if (verts instanceof QPoint3dList) {
-          transformOrigin = verts.params.origin.clone();
-          verts.params.origin.setZero();
-        } else {
-          transformOrigin = verts.range.center;
-          // In this case we need to modify the qOrigin of the graphic that will get created later since we have translated the origin.
-          // We can't modify it directly, but if we temporarily modify the range of the mesh used to create it the qOrigin will get created properly.
-          // Range is shared (not cloned) by all meshes and the mesh list itself, so modifying the range of the meshlist will modify it for all meshes.
-          // We will then later add this offset back to the range once all of the graphics have been created because it is needed unmodified for locate.
-          if (!meshesRangeOffset) {
-            meshes.range?.low.subtractInPlace(transformOrigin);
-            meshes.range?.high.subtractInPlace(transformOrigin);
-            meshesRangeOffset = true;
-          }
-        }
-      } else {
-        assert(undefined !== transformOrigin);
-        if (verts instanceof QPoint3dList) {
-          assert(transformOrigin.isAlmostEqual(verts.params.origin));
-          verts.params.origin.setZero();
-        } else {
-          assert(verts.range.center.isAlmostZero);
-        }
-      }
-
-      const graphic = mesh.getGraphics(this.system, this._viewIndependentOrigin);
-      if (undefined !== graphic)
-        branch.add(graphic);
-    }
-
-    if (!branch.isEmpty) {
-      assert(undefined !== transformOrigin);
-      const transform = Transform.createTranslation(transformOrigin);
-      graphics.push(this.system.createBranch(branch, transform));
-      if (meshesRangeOffset) { // restore the meshes range that we modified earlier.
-        meshes.range?.low.addInPlace(transformOrigin);
-        meshes.range?.high.addInPlace(transformOrigin);
-      }
-    }
-
-    return meshes;
   }
 }

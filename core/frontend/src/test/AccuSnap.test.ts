@@ -13,7 +13,7 @@ import { ScreenViewport } from "../Viewport";
 import { AccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { testBlankViewportAsync } from "./openBlankViewport";
-import { _requestSnap } from "../internal/Symbols";
+import { _requestSnap } from "../common/internal/Symbols";
 
 interface HitDetailProps {
   hitPoint?: XYZProps; // defaults to [0, 0, 0]

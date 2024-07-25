@@ -16,7 +16,7 @@ import { TentativeOrAccuSnap } from "./AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder } from "./render/GraphicBuilder";
 import { StandardViewId } from "./StandardView";
 import { BeButton, BeButtonEvent, CoordinateLockOverrides, InputCollector, InputSource } from "./tools/Tool";
 import { ViewTool } from "./tools/ViewTool";
@@ -26,6 +26,7 @@ import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
 import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
+import { GraphicType } from "./common/render/GraphicType";
 
 // cspell:ignore dont primitivetools
 

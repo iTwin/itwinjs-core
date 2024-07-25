@@ -112,6 +112,7 @@ public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 alpha;RealityDataStatus
+public;RemapTransientLocalId = (sourceLocalId: number) => number
 internal;RepositoryStatus
 public;RequireAtLeastOne
 beta;RpcInterfaceStatus
@@ -127,6 +128,7 @@ alpha;class SuccessCategory
 public;Tracing
 deprecated;Tracing
 public;TransientIdSequence
+public;TransientIdSequenceProps
 public;TupleKeyedMap
 public;TypedArrayBuilder
 public;TypedArrayBuilderOptions
