@@ -56,26 +56,16 @@ describe.only("RenderMaterialElement", () => {
     const id = RenderMaterialElement.insert(imodel, IModel.dictionaryId, name, { ...params, paletteName });
     expect(Id64.isValidId64(id)).to.be.true;
 
-    // const pathName = imodel.pathName;
-    // imodel.saveChanges();
-    // imodel.close();
-
-    // imodel = SnapshotDb.openFile(pathName);
-
     const mat = imodel.elements.getElement<RenderMaterialElement>(id);
     const json = mat.toJSON();
     expect(json.jsonProperties?.materialAssets?.renderMaterial).not.to.be.undefined;
     const actual = removeUndefined(json.jsonProperties!.materialAssets!.renderMaterial!);
-    // Cool thing is that the textureID of 11111 actually persists. So this test will work well if i figure otu where to make some damn changes.
 
     if (expected !== undefined) {
       expected = defaultBooleans(expected);
       expect(actual).to.deep.equal(expected);
     }
-    /**
- * {"materialAssets":{"renderMaterial":{"HasBaseColor":false,"color":null,"HasSpecularColor":false,"specular_color":null,"HasFinish":false,"finish":null,"HasTransmit":false,"transmit":null,"HasDiffuse":false,"diffuse":null,"HasSpecular":false,"specular":null,"HasReflect":false,"reflect":null,"HasReflectColor":false,"reflect_color":null,
- * "Map":{"Pattern":{"TextureId":111111}},"pbr_normal":null}}}
- */
+
     return mat;
   }
 
@@ -408,7 +398,7 @@ describe.only("RenderMaterialElement", () => {
         Specular: { TextureId: "CLONED" },
         TranslucencyColor: { TextureId: "CLONED" },
         TransparentColor: { TextureId: "CLONED" },
-        Displacement: { TextureId: Id64.invalid },
+        Displacement: { TextureId: "CLONED" },
         Unknown: { TextureId: "CLONED" },
         InvalidTexture: { TextureId: Id64.invalid },
         UnknownTexture: { TextureId: "CLONED" },
