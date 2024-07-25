@@ -291,13 +291,13 @@ If an ExternalSource is not found, insert one using
 _Example:_
 
 ```ts
-[[include:Sychronizer-getOrCreateExternalSource.example-code]]
+[[include:Sychronizer-getOrCreateExternalSource.cf-code]]
 ```
 
 After calling Synchronizer.updateIModel, set the source property of the element's ExternalSourceAspect to point to the correct ExternalSource. Here is a code snippet:
 
 ```ts
-[[include:Synchronizer-updateIModel.example-code]]
+[[include:Synchronizer-updateIModel.cf-code]]
 ```
 
 At the start of the Connector's updateExistingData function, examine all existing elements to ensure their sources are set. The code shown above can be used to update an existing element's ExternalSourceAspect.
@@ -305,7 +305,7 @@ At the start of the Connector's updateExistingData function, examine all existin
 A Connector must also relate each physical model that it creates to the source document(s) that is used to make that model. Specifically, each Connector must create an ElementHasLinks ECRelationship from the InformationContentElement element representing the model to one or more RepositoryLink elements that describe the source document. When creating a physical partition model, link it to the RepositoryLink that corresponds to the source document. Synchronized.recordDocument in the Connector SDK provides the implementation for the above. Having a stable file identifier is critical to detect changes when the file is processed again by the connector. The connector provides this information in the SourceItem call.
 
 ```ts
-[[include:Synchronizer-recordDocument.example-code]]
+[[include:Synchronizer-recordDocument.cf-code]]
 ```
 
 Also refer to [Provenance in BIS](../bis/domains/Provenance-in-BIS.md) for more information about ExternalSource and related classes.
@@ -331,13 +331,13 @@ For each item found in the external source.
 Define a [[SourceItem]] object to capture the identifier, version, and checksum of the item.
 
 ```ts
-[[include:Synchronizer-recordDocument.example-code]]
+[[include:Synchronizer-recordDocument.cf-code]]
 ```
 
 Then, check use [Synchronizer](#synchronizer) to see if the item was previously converted.
 
 ```ts
-[[include:Synchronizer-detectChanges.example-code]]
+[[include:Synchronizer-detectChanges.cf-code]]
 ```
 
 If so, check to see if the item’s state is unchanged since the previous conversion. In that case, register the fact that the element in the iModel is still required and move on to the next item.
@@ -345,13 +345,13 @@ If so, check to see if the item’s state is unchanged since the previous conver
 Otherwise, the item is new or if its state has changed. The connector must generate the appropriate BIS element representation of it.
 
 ```ts
-[[include:Synchronizer-onElementsSeen.example-code]]
+[[include:Synchronizer-onElementsSeen.cf-code]]
 ```
 
 Then ask Synchronizer to write the BIS element to the briefcase. Synchronizer will update the existing element if it exists or insert a new one if not.
 
 ```ts
-[[include:Synchronizer-updateIModel.example-code]]
+[[include:Synchronizer-updateIModel.cf-code]]
 ```
 
 Note that Synchronizer.updateIModel automatically adds an [[ExternalSourceAspect]] to the element, to keep track of the mapping between it and the external item.
@@ -391,7 +391,7 @@ Constructor
 The ConnectorRunner has a constructor which takes JobArgs and HubArgs as parameters.
 
 ```ts
-[[include:ConnectorRunner-constructor.example-code]]
+[[include:ConnectorRunner-constructor.cf-code]]
 ```
 
 Methods
@@ -399,7 +399,7 @@ Methods
 The ConnectorRunner has a Run method that runs your connector module.
 
 ```ts
-[[include:ConnectorRunnerTest.run.example-code]]
+[[include:ConnectorRunnerTest.run.cf-code]]
 ```
 
 ### Synchronizer
@@ -411,7 +411,7 @@ An iTwin Connector has a private Synchronizer member which can be gotten or set 
 The connectorModule assigned to the JobArgs above must extend the BaseConnector class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
 ```ts
-[[include:TestConnector-extendsBaseConnector.example-code]]
+[[include:TestConnector-extendsBaseConnector.cf-code]]
 ```
 
 #### InitializeJob
@@ -419,7 +419,7 @@ The connectorModule assigned to the JobArgs above must extend the BaseConnector 
 Use this method to add any models (e.g., physical, definition, or group) required by your Connector upfront to ensure that the models exist when it is time to populate them with their respective elements.
 
 ```ts
-[[include:TestConnector-initializeJob.example-code]]
+[[include:TestConnector-initializeJob.cf-code]]
 ```
 
 See also:
@@ -432,7 +432,7 @@ See also:
 Use this method to read your native source data and assign it to a member property of your Connector to be accessed later on when it is time to convert your native object to their counterparts in the iModel.
 
 ```ts
-[[include:TestConnector-openSourceData.example-code]]
+[[include:TestConnector-openSourceData.cf-code]]
 ```
 
 #### ImportDefinitions
@@ -440,7 +440,7 @@ Use this method to read your native source data and assign it to a member proper
 Your source data may have non-graphical data best represented as definitions. Typically, this data requires a single instance for each definition, and the same instance is referenced multiple times. Therefore, it is best to import the definitions upfront all at once. Override the ImportDefinitions method for this purpose.
 
 ```ts
-[[include:TestConnector-importDefinitions.example-code]]
+[[include:TestConnector-importDefinitions.cf-code]]
 ```
 
 #### ImportDomainSchema
@@ -448,7 +448,7 @@ Your source data may have non-graphical data best represented as definitions. Ty
 Use this method to import any domain schema that is required to publish your data.
 
 ```ts
-[[include:TestConnector-importDomainSchema.example-code]]
+[[include:TestConnector-importDomainSchema.cf-code]]
 ```
 
 #### ImportDynamicSchema
@@ -462,7 +462,7 @@ For background on when to use a dynamic schema, please checkout [Dynamic Schemas
 This method is the main workhorse of your Connector. When UpdateExistingData is called, models and definitions should be created and available for insertion of elements (if that is the desired workflow). Note: In the example below, definition elements are being inserted into the definition model at this point as well. Physical elements and Group elements can now be converted.
 
 ```ts
-[[include:TestConnector-updateExistingData.example-code]]
+[[include:TestConnector-updateExistingData.cf-code]]
 ```
 
 ### Execution Sequence
@@ -593,21 +593,37 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 
 Sometimes it becomes necessary to 'undo' a connector run and an extreme step of deleting an imodel and starting over is not practical because the imodel contains the content of multiple connectors for example and a more surgical approach is warranted.  **shouldUnmapSource** is an job argument (i.e. this.jobArgs.shouldUnmapSource) that can be passed to the Connector Runner and it will call the connectors **unmapSource** method.
 
-[ConnectorRunner calls the unmapSource method if argument is defined](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/ConnectorRunner.ts#L230)
+ConnectorRunner calls the unmapSource method if argument is defined:
+
+```ts
+[[include:ConnectorRunner-shouldUnmapSource.cf-code]]
+```
 
 The testconnector demonstrates how to implement an unmapSource method.
 
-[unmapSource method in TestConnector](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/TestConnector/TestConnector.ts#L174)
+unmapSource method in TestConnector:
+
+```ts
+[[include:TestConnector-unmapSource]]
+```
 
 ### Shared Channels
 
 New to iTwinjs 4.6 (connector-framework version 2.1) is the concept of shared channels.  The connector framework is updated to work with either shared channels or with channels requiring a channel key.  Shared channels will be the default.  The BaseConnector's getChannelKey method returns the shared channel.  Note: beginning in iTwinjs 5.0, this will likely reverse and the default will require a channel key and the connector will need to override this method to get the shared channel key.
 
-[BaseConnector's getChannelKey method](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/BaseConnector.ts#L115)
+BaseConnector's getChannelKey method:
+
+```ts
+[[include:BaseConnector-DeletionDetectionParams.cf-code]]
+```
 
 To use a channel key the connector author should override the getChannelKey in their connector implementation.
 
-[Example of getChannelKey override](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/TestConnector/NonSharedChannelKeyTestConnector.ts#L5)
+Example of getChannelKey override
+
+```ts
+[[include:NSCKTestConnector-getChannelKey.cf-code]]
+```
 
 ### Deletion Detection
 
@@ -617,19 +633,35 @@ Deletion detection is simply the synchronizers deletion of existing elements on 
 
 When detectecting deletions, it is necessary to locate child elements of deleted elements to in turn delete the children and search for their children and so on.  This location requires navigating from the top down through the hierarchy of elements.  Unfortunately, earlier versions of the TestConnector, demonstrated external source aspects relating elements to models rather than repository links which ultimately point back to files as our convention for model provinence requires.  Some connector teams in turn, followed this example and similarly created the external source aspect relating to models rather than repository links.  Therefore it became necessary to support both 'channel based' (navigating from the JobSubject down) to 'file based' (navigating from a repository link down associated with an external source file).  Thus, deletion detection params were introduced to allow a connector developer to steer the logic toward either file based (preferred) or channel based deletion detection.
 
-[DeletionDetectionParams interface](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/Synchronizer.ts#L195)
+```ts
+[[include:Syncronizer-DeletionDetectionParams.cf-code]]
+```
 
-[Default implementation of getDeletionDetectionParams](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/BaseConnector.ts#L95)
+Default implementation of getDeletionDetectionParams:
 
-[For an example of overriding getDeletionDetectionParams](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/TestConnector/TestConnector.ts#L57)
+```ts
+[[include:BaseConnector-DeletionDetectionParams.cf-code]]
+```
+
+For an example of overriding getDeletionDetectionParams see:
+
+```ts
+[[include:TestConnector-getDeletionDetectionParams.cf-code]]
+```
 
 The above example check and environment variable which is strictly intended for the test connector as it allows us to test BOTH file based AND legacy (channel based) deletion detection with the same connector.  Any new connector author/developer should choose file-based.
 
 The tests which run the test connector with file-based deletion detection is located at:
-[File based deletion detection test](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/standalone/ConnectorRunnerWithHubMock.test.ts#L31)
 
-Its channel based counterpart is located at ...
-[Channel based deletion detection test](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/standalone/LegacyDeletionDetection.test.ts#L31)
+```ts
+[[include:CRWHMTest-FileBaseDeletionDetection.cf-code]]
+```
+
+Its channel based counterpart is located at:
+
+```ts
+[[include:CRWHMTest-LegacyChannelBasedDeletionDetection.cf-code]]
+```
 
 ### Changeset Groups
 
@@ -637,11 +669,15 @@ Each connector run will create approximately five changesets for a given run.  S
 
 It is easy to implement Changeset Groups in your connector, simply override the shouldCreateChangeSetGroup method to return true.
 
-[Example of shouldCreateChangeSetGroup override](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/test/TestConnector/ChangeSetGroupTestConnector.ts#L5)
+```ts
+[[include:CSGTestConnector-shouldCreateChangeSetGroup.cf-code]]
+```
 
 To further customize the ChangeSetGroup's description, you can override the getChangeSetGroupDescription otherwise it will return the name of the connector indicating that the multiple changesets within the group were created by the connector of that name.
 
-[getChangeSetGroupDescription implementation in BaseConnector](https://github.com/iTwin/connector-framework/blob/68b3dd2a4dc4e7c047ff86526d7d28720d726c40/src/BaseConnector.ts#L126)
+```ts
+[[BaseConnector-getChangeSetGroupDescription.cf-code]]
+```
 
 ### More information
 
