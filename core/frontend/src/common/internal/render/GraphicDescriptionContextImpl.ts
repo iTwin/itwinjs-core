@@ -10,7 +10,7 @@ import { SortedArray, TransientIdSequence, TransientIdSequenceProps, assert, com
 import { _implementationProhibited } from "../Symbols";
 import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps, WorkerTextureParams } from "../../render/GraphicDescriptionContext";
 import { MaterialParams } from "../../render/MaterialParams";
-import { Gradient, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { Gradient, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency } from "@itwin/core-common";
 
 /** As part of a [[WorkerGraphicDescriptionContext]], describes constraints imposed by the [[RenderSystem]] that a [[GraphicDescriptionBuilder]] needs to know about
  * when creating a [[GraphicDescription]].
@@ -111,6 +111,35 @@ class WorkerTexture extends RenderTexture {
   }
 }
 
+class WorkerMaterial extends RenderMaterial {
+  public readonly params: MaterialParams;
+
+  public constructor(params: MaterialParams) {
+    params = {
+      alpha: params.alpha,
+      diffuse: { ...params.diffuse },
+      specular: { ...params.specular },
+    };
+
+    let textureMapping;
+    if (params.textureMapping) {
+      textureMapping = new TextureMapping(params.textureMapping.texture, new TextureMapping.Params({
+        textureMat2x3: params.textureMapping.transform,
+        mapMode: params.textureMapping.mode,
+        textureWeight: params.textureMapping.weight,
+        worldMapping: params.textureMapping.worldMapping,
+        useConstantLod: params.textureMapping.useConstantLod,
+        constantLodProps: params.textureMapping.constantLodProps,
+      }));
+      textureMapping.normalMapParams = params.textureMapping.normalMapParams;
+    }
+
+    super({ textureMapping });
+
+    this.params = params;
+  }
+}
+
 function compareTextureKeys(a: string | Gradient.Symb, b: string | Gradient.Symb): number {
   const typeA = typeof a;
   const typeB = typeof b;
@@ -132,6 +161,7 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
   public readonly constraints: GraphicDescriptionConstraints;
   public readonly transientIds: TransientIdSequence;
   public readonly textures: SortedArray<WorkerTexture>;
+  public readonly materials = new Map<string, WorkerMaterial>();
 
   public constructor(props: WorkerGraphicDescriptionContextProps) {
     const propsImpl = props as WorkerGraphicDescriptionContextPropsImpl;
@@ -146,8 +176,13 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
   }
 
   public createMaterial(key: string, params: MaterialParams): RenderMaterial {
-    assert(undefined !== key && undefined !== params);
-    throw new Error("###TODO");
+    if (this.materials.has(key)) {
+      throw new Error(`Material with key "${key}" already exists`);
+    }
+
+    const material = new WorkerMaterial(params);
+    this.materials.set(key, material);
+    return material;
   }
 
   public createTexture(key: string, params: WorkerTextureParams): RenderTexture {

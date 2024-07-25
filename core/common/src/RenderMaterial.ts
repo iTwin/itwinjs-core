@@ -19,7 +19,7 @@ export abstract class RenderMaterial {
   public readonly textureMapping?: TextureMapping;
 
   // eslint-disable-next-line deprecation/deprecation
-  protected constructor(params: RenderMaterial.Params) {
+  protected constructor(params: Pick<RenderMaterial.Params, "key" | "textureMapping">) {
     this.key = params.key;
     this.textureMapping = params.textureMapping;
   }
