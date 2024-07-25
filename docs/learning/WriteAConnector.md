@@ -591,7 +591,7 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 
 ### Unmap
 
-Sometimes it becomes necessary to 'undo' a connector run and an extreme step of deleting an imodel and starting over is not practical because the imodel contains the content of multiple connectors for example and a more surgical approach is warranted.  **shouldUnmapSource** is an job argument (i.e. this.jobArgs.shouldUnmapSource) that can be passed to the Connector Runner and it will call the connectors **unmapSource** method.
+Sometimes it becomes necessary to 'undo' a connector run and an extreme step of deleting an imodel and starting over is not practical because, for example, the imodel contains the content of multiple connectors and a more surgical approach is warranted.  **shouldUnmapSource** is a job argument (i.e. this.jobArgs.shouldUnmapSource) that can be passed to the ConnectorRunner and it will call the connector's **unmapSource** method.
 
 ConnectorRunner calls the unmapSource method if argument is defined:
 
@@ -625,13 +625,15 @@ Example of getChannelKey override
 [[include:NSCKTestConnector-getChannelKey.cf-code]]
 ```
 
+For more information on channels see [Working with "Editing Channels" in iModels](./backend/Channel.md)
+
 ### Deletion Detection
 
-Deletion detection is simply the synchronizers deletion of existing elements on subsequent connector runs based on the element(s) omission.  For example, if a connector publishes elements a,b and c in the first run and then b,c and d in a subsequent run, a is determined to be deleted and the syncronizer will delete it from the imodel.
+Deletion detection is simply the synchronizer's deleting of an existing element on subsequent connector runs based on the element's omission.  For example, if a connector publishes elements a,b and c in the first run and then b,c and d in a subsequent run, a is determined to be deleted and the syncronizer will delete it along with any of a's children from the imodel.
 
 ### Deletion Detection Params
 
-When detectecting deletions, it is necessary to locate child elements of deleted elements to in turn delete the children and search for their children and so on.  This location requires navigating from the top down through the hierarchy of elements.  Unfortunately, earlier versions of the TestConnector, demonstrated external source aspects relating elements to models rather than repository links which ultimately point back to files as our convention for model provinence requires.  Some connector teams in turn, followed this example and similarly created the external source aspect relating to models rather than repository links.  Therefore it became necessary to support both 'channel based' (navigating from the JobSubject down) to 'file based' (navigating from a repository link down associated with an external source file).  Thus, deletion detection params were introduced to allow a connector developer to steer the logic toward either file based (preferred) or channel based deletion detection.
+When detectecting deletions, it is necessary to locate child elements of deleted elements to in turn delete the children and search for their children and so on.  This location requires navigating from the top down through the hierarchy of elements.  Unfortunately, earlier versions of the TestConnector, demonstrated external source aspects relating elements to partions rather than repository links which ultimately point back to files as the convention for model provinence requires.  Some connector developers in turn, followed this example and similarly created the external source aspect relating to partitions rather than repository links.  Therefore, it became necessary to support both 'channel based' (navigating from the JobSubject down) and 'file based' (navigating from a repository link down associated with an external source file).  Thus, deletion detection params were introduced to allow a connector developer to steer the logic toward either file based (preferred) or channel based deletion detection.
 
 ```ts
 [[include:Syncronizer-DeletionDetectionParams.cf-code]]
@@ -676,7 +678,7 @@ It is easy to implement Changeset Groups in your connector, simply override the 
 To further customize the ChangeSetGroup's description, you can override the getChangeSetGroupDescription otherwise it will return the name of the connector indicating that the multiple changesets within the group were created by the connector of that name.
 
 ```ts
-[[BaseConnector-getChangeSetGroupDescription.cf-code]]
+[[include:BaseConnector-getChangeSetGroupDescription.cf-code]]
 ```
 
 ### More information
