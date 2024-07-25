@@ -7,7 +7,6 @@
  */
 
 import { assert, SortedArray } from "@itwin/core-bentley";
-import { GraphicBuilder } from "../GraphicBuilder";
 
 /** @internal */
 export namespace ToleranceRatio {
@@ -15,46 +14,11 @@ export namespace ToleranceRatio {
   export const facetArea = 0.1;
 }
 
-/** Specifies under what circumstances a GeometryAccumulator should generate normals.
- * @internal
- */
-export enum NormalMode {
-  Never,              // Never generate normals
-  Always,             // Always generate normals
-  CurvedSurfacesOnly, // Generate normals only for curved surfaces
+/** @internal */
+export interface GeometryOptions {
+  wantEdges: boolean;
+  preserveOrder: boolean;
 }
-
-/** @internal */
-export enum SurfacesOnly { Yes = 1, No = 0 }  // Yes indicates polylines will not be generated, only meshes.
-
-/** @internal */
-export enum PreserveOrder { Yes = 1, No = 0 } // Yes indicates primitives will not be merged, and the order in which they were added to the GraphicBuilder will be preserved.
-
-/** @internal */
-export enum GenerateEdges { Yes = 1, No = 0 } // Yes indicates edges will be generated for surfaces
-
-/** @internal */
-export class GeometryOptions {
-  public readonly normals: NormalMode;
-  public readonly surfaces: SurfacesOnly;
-  public readonly preserveOrder: PreserveOrder;
-  public readonly edges: GenerateEdges;
-  constructor(edges: GenerateEdges, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No, preserveOrder: PreserveOrder = PreserveOrder.No) {
-    this.normals = normals;
-    this.surfaces = surfaces;
-    this.preserveOrder = preserveOrder;
-    this.edges = edges;
-  }
-
-  public get wantSurfacesOnly(): boolean { return this.surfaces === SurfacesOnly.Yes; }
-  public get wantPreserveOrder(): boolean { return this.preserveOrder === PreserveOrder.Yes; }
-  public get wantEdges(): boolean { return this.edges === GenerateEdges.Yes; }
-
-  public static createForGraphicBuilder(params: GraphicBuilder, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
-    return new GeometryOptions(params.wantEdges ? GenerateEdges.Yes : GenerateEdges.No, normals, surfaces, params.preserveOrder ? PreserveOrder.Yes : PreserveOrder.No);
-  }
-}
-
 /** @internal */
 export class Triangle {
   public readonly indices = new Uint32Array(3);
