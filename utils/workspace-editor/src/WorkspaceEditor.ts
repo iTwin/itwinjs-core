@@ -28,7 +28,6 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 /* eslint-disable id-blacklist,no-console */
 
 /** Currently executing an "@" script? */
-let inScript = false;
 let wsEditor: WorkspaceEditor;
 
 interface EditorProps {
@@ -156,7 +155,7 @@ function friendlyFileSize(size: number) {
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: CreateWorkspaceDbOpt) {
   const container: EditableWorkspaceContainer = getWriteContainer(args);
-  const wsDb = container.createDb({ ...args, dbName: args.dbFileName, manifest: { workspaceName: args.workspaceName } });
+  const wsDb = container.createDb({ ...args, dbName: args.dbName, manifest: { workspaceName: args.workspaceName } });
   showMessage(`created WorkspaceDb ${(await wsDb).dbName}`);
 }
 
@@ -230,9 +229,9 @@ async function listWorkspaceDb(args: ListOptions) {
 
     if (args.strings) {
       showMessage(" strings:");
-      file.sqliteDb.withSqliteStatement("SELECT id,LENGTH(value) FROM strings ORDER BY id COLLATE NOCASE", (stmt) => {
+      file.sqliteDb.withSqliteStatement("SELECT id,value FROM strings ORDER BY id COLLATE NOCASE", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
-          nameAndSize(stmt);
+          showMessage(`  name="${stmt.getValueString(0)}" value=${stmt.getValueString(1)}`);
       });
     }
 
@@ -547,7 +546,7 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
   }
 
   if (dbs.length === 0) {
-    showMessage("... there aren't any.");
+    showMessage("...there aren't any.");
   }
 }
 
@@ -556,9 +555,6 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>, read
   return async (args: T) => {
     if (readonly === "readonly")
       args.forReadOnly = true;
-
-    if (inScript)
-      return cmd(args);
 
     try {
       const workspace = {
@@ -737,7 +733,6 @@ Yargs.command<InitializeOpts>({
 
 /** execute an "@" script - a list of WorkspaceEditor commands */
 async function runScript(arg: EditorProps & { scriptName: string }) {
-  inScript = true;
   const val = fs.readFileSync(arg.scriptName, "utf-8");
   const lines = val.split(/\r?\n/);
   let i = 0;

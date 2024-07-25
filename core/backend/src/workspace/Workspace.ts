@@ -88,8 +88,6 @@ export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
   readonly includePrerelease?: boolean;
   /** If true, start a prefetch operation whenever this [[WorkspaceDb]] is opened, to begin downloading pages of the database before they are needed. */
   readonly prefetch?: boolean;
-  /** If true, skip the copy step for amending previously published [[WorkspaceDb]]s. This should be true when creating a new, empty db. */
-  readonly skipCopy?: boolean;
 }
 
 /** Properties describing a [[WorkspaceDb]] and the [[WorkspaceContainer]] containing it.
