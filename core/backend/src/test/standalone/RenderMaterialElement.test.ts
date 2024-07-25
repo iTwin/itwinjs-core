@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialAssetProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
-import { IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
+import { ChannelControl, IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
@@ -56,16 +56,26 @@ describe("RenderMaterialElement", () => {
     const id = RenderMaterialElement.insert(imodel, IModel.dictionaryId, name, { ...params, paletteName });
     expect(Id64.isValidId64(id)).to.be.true;
 
+    // const pathName = imodel.pathName;
+    // imodel.saveChanges();
+    // imodel.close();
+
+    // imodel = SnapshotDb.openFile(pathName);
+
     const mat = imodel.elements.getElement<RenderMaterialElement>(id);
     const json = mat.toJSON();
     expect(json.jsonProperties?.materialAssets?.renderMaterial).not.to.be.undefined;
     const actual = removeUndefined(json.jsonProperties!.materialAssets!.renderMaterial!);
+    // Cool thing is that the textureID of 11111 actually persists. So this test will work well if i figure otu where to make some damn changes.
 
     if (expected !== undefined) {
       expected = defaultBooleans(expected);
       expect(actual).to.deep.equal(expected);
     }
-
+    /**
+ * {"materialAssets":{"renderMaterial":{"HasBaseColor":false,"color":null,"HasSpecularColor":false,"specular_color":null,"HasFinish":false,"finish":null,"HasTransmit":false,"transmit":null,"HasDiffuse":false,"diffuse":null,"HasSpecular":false,"specular":null,"HasReflect":false,"reflect":null,"HasReflectColor":false,"reflect_color":null,
+ * "Map":{"Pattern":{"TextureId":111111}},"pbr_normal":null}}}
+ */
     return mat;
   }
 
@@ -89,6 +99,52 @@ describe("RenderMaterialElement", () => {
   describe("insert", () => {
     it("with default values", () => {
       test({}, {});
+    });
+
+    it("should convert TextureIds to hexadecimal string when loading element", () => {
+      /* eslint-disable @typescript-eslint/naming-convention */
+      const maps: RenderMaterialAssetMapsProps = {
+        Pattern: { TextureId: 1 },
+        Normal: { TextureId: 2 },
+        Bump: { TextureId: 3 },
+        Diffuse: { TextureId: 4 },
+        Finish: { TextureId: 5 },
+        GlowColor: { TextureId: 6 },
+        Reflect: { TextureId: 7 },
+        Specular: { TextureId: 8 },
+        TranslucencyColor: { TextureId: 9 },
+        TransparentColor: { TextureId: 10 },
+        Displacement: { TextureId: 11 },
+      } as any;
+      /* eslint-enable @typescript-eslint/naming-convention */
+      const material = test({});
+      const jsonProps = material.jsonProperties as RenderMaterialProps["jsonProperties"];
+      assert(jsonProps?.materialAssets?.renderMaterial && jsonProps.materialAssets.renderMaterial.Map === undefined);
+      jsonProps.materialAssets.renderMaterial.Map = maps;
+      material.update();
+
+      const pathName = imodel.pathName;
+      imodel.saveChanges();
+      imodel.close(); // Need to close so we can load the element back in with strings instead of numbers.
+
+      imodel = SnapshotDb.openForApplyChangesets(pathName);
+      imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      const mat = imodel.elements.getElement<RenderMaterialElement>(material.id);
+
+      const props = mat.toJSON();
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map).to.not.be.undefined;
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Pattern?.TextureId).to.equal("0x1");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Normal?.TextureId).to.equal("0x2");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Bump?.TextureId).to.equal("0x3");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Diffuse?.TextureId).to.equal("0x4");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Finish?.TextureId).to.equal("0x5");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.GlowColor?.TextureId).to.equal("0x6");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Reflect?.TextureId).to.equal("0x7");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Specular?.TextureId).to.equal("0x8");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TranslucencyColor?.TextureId).to.equal("0x9");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TransparentColor?.TextureId).to.equal("0xa");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Displacement?.TextureId).to.equal("0xb");
     });
 
     it("with custom values", () => {
@@ -331,7 +387,8 @@ describe("RenderMaterialElement", () => {
         findTargetElementId: (sourceId: Id64String) => {
           expect(typeof sourceId, `bad id: ${sourceId}`).to.equal("string");
           expect(Id64.isId64(sourceId), `bad id: ${sourceId}`).to.be.true;
-          if (Id64.isInvalid(sourceId)) return Id64.invalid;
+          if (Id64.isInvalid(sourceId))
+            return Id64.invalid;
           return "CLONED";
         },
       } as any as IModelElementCloneContext;

@@ -198,11 +198,6 @@ export class RenderMaterialElement extends DefinitionElement {
       }
       if (!Id64.isValid(sourceMap.TextureId) || sourceMap.TextureId === undefined)
         continue;
-      // textureId has a chance to be a base 10 number instead of a hexadecimal string. This was observed in an iModel created with the Revit Connector.
-      // If it is a number, set it to invalid id because JavaScript represents numbers as doubles which lack sufficient precision.
-      if (typeof sourceMap.TextureId === "number") {
-        sourceMap.TextureId = Id64.invalid;
-      }
       targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName].TextureId = context.findTargetElementId(sourceMap.TextureId ?? Id64.invalid);
     }
   }
