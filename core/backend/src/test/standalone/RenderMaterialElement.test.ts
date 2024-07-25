@@ -387,8 +387,6 @@ describe("RenderMaterialElement", () => {
         findTargetElementId: (sourceId: Id64String) => {
           expect(typeof sourceId, `bad id: ${sourceId}`).to.equal("string");
           expect(Id64.isId64(sourceId), `bad id: ${sourceId}`).to.be.true;
-          if (Id64.isInvalid(sourceId))
-            return Id64.invalid;
           return "CLONED";
         },
       } as any as IModelElementCloneContext;
