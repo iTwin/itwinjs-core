@@ -7,8 +7,8 @@
  */
 
 import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
-import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../../render/GraphicDescriptionBuilder";
 import { _implementationProhibited } from "../Symbols";
+import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../../render/GraphicDescriptionContext";
 
 /** As part of a [[WorkerGraphicDescriptionContext]], describes constraints imposed by the [[RenderSystem]] that a [[GraphicDescriptionBuilder]] needs to know about
  * when creating a [[GraphicDescription]].

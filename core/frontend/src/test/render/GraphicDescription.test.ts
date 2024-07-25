@@ -9,12 +9,13 @@ import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common";
+import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch, GraphicsArray } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
 import { Id64, Id64String, TransientIdSequence } from "@itwin/core-bentley";
+import { GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   expect(range.low.x).to.equal(lx);

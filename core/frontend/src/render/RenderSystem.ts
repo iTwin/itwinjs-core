@@ -43,9 +43,10 @@ import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./Scre
 import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
-import { GraphicDescription, GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
 import { _implementationProhibited } from "../common/internal/Symbols";
+import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

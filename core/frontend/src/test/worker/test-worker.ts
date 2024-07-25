@@ -5,10 +5,11 @@
 
 import { Feature, GeometryClass } from "@itwin/core-common";
 import {
-  GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionContextProps, GraphicType, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps,
+  GraphicDescription, GraphicDescriptionBuilder, GraphicType,
 } from "../../common";
 import { registerWorker } from "../../workers/RegisterWorker";
 import { Point2d, Point3d } from "@itwin/core-geometry";
+import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../../common/render/GraphicDescriptionContext";
 
 export interface WorkerGraphic {
   description: GraphicDescription;

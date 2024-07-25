@@ -22,8 +22,9 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { GraphicDescription, GraphicDescriptionContext } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
