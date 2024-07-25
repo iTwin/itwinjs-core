@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { TransientIdSequence, TransientIdSequenceProps, assert } from "@itwin/core-bentley";
+import { SortedArray, TransientIdSequence, TransientIdSequenceProps, assert, compareStrings } from "@itwin/core-bentley";
 import { _implementationProhibited } from "../Symbols";
 import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps, WorkerTextureParams } from "../../render/GraphicDescriptionContext";
 import { MaterialParams } from "../../render/MaterialParams";
@@ -111,10 +111,27 @@ class WorkerTexture extends RenderTexture {
   }
 }
 
+function compareTextureKeys(a: string | Gradient.Symb, b: string | Gradient.Symb): number {
+  const typeA = typeof a;
+  const typeB = typeof b;
+  if (typeA !== typeB) {
+    return compareStrings(typeA, typeB);
+  }
+
+  if (typeA === "string") {
+    assert(typeof a === "string" && typeof b === "string");
+    return typeB === "string" ? compareStrings(a, b) : -1;
+  }
+
+  assert(a instanceof Gradient.Symb && b instanceof Gradient.Symb);
+  return a.compare(b);
+}
+
 export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescriptionContext {
   public readonly [_implementationProhibited] = undefined;
   public readonly constraints: GraphicDescriptionConstraints;
   public readonly transientIds: TransientIdSequence;
+  public readonly textures: SortedArray<WorkerTexture>;
 
   public constructor(props: WorkerGraphicDescriptionContextProps) {
     const propsImpl = props as WorkerGraphicDescriptionContextPropsImpl;
@@ -124,6 +141,8 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
 
     this.constraints = propsImpl.constraints;
     this.transientIds = TransientIdSequence.fromJSON(propsImpl.transientIds);
+
+    this.textures = new SortedArray<WorkerTexture>((a, b) => compareTextureKeys(a.key, b.key));
   }
 
   public createMaterial(key: string, params: MaterialParams): RenderMaterial {
@@ -132,17 +151,48 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
   }
 
   public createTexture(key: string, params: WorkerTextureParams): RenderTexture {
-    // ###TODO cache it after verifying a texture with same key does not already exist.
-    return new WorkerTexture(key, params);
+    if (this._findTexture(key)) {
+      throw new Error(`Texture with key "${key}" already exists`);
+    }
+
+    const texture = new WorkerTexture(key, params);
+    this.textures.insert(texture);
+    return texture;
   }
 
   public createGradientTexture(gradient: Gradient.Symb): RenderTexture {
-    assert(undefined !== gradient);
-    throw new Error("###TODO");
+    let texture = this._findTexture(gradient);
+    if (!texture) {
+      let width = 0x100;
+      let height = 0x100;
+      if (gradient.mode === Gradient.Mode.Thematic) {
+        // Pixels in each row are identical, no point in having width > 1.
+        width = 1;
+        // We want maximum height to minimize bleeding of margin color.
+        height = this.constraints.maxTextureSize;
+      }
+
+      const source = gradient.produceImage({ width, height, includeThematicMargin: true });
+      texture = new WorkerTexture(gradient, {
+        source,
+        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
+      });
+
+      this.textures.insert(texture);
+    }
+
+    return texture;
   }
 
   public findMaterial() { return undefined; }
-  public findTexture() { return undefined; }
+
+  public findTexture(key: string) {
+    return this._findTexture(key);
+  }
+
+  private _findTexture(key: string | Gradient.Symb): WorkerTexture | undefined {
+    return this.textures.findEquivalent((tx) => compareTextureKeys(key, tx.key));
+  }
   
   public toProps(_transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
     // We don't yet have any transferable objects. In the future we expect to support transferring texture image data for textures created on the worker thread.
