@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { SortedArray, TransientIdSequence, TransientIdSequenceProps, assert, compareStrings } from "@itwin/core-bentley";
+import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
 import { _implementationProhibited } from "../Symbols";
 import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps, WorkerTextureParams } from "../../render/GraphicDescriptionContext";
 import { MaterialParams } from "../../render/MaterialParams";
@@ -29,6 +29,7 @@ export interface WorkerGraphicDescriptionContextPropsImpl extends WorkerGraphicD
 
 export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionContextProps {
   readonly transientIds: TransientIdSequenceProps;
+  readonly textures: WorkerTextureProps[];
   /** This is set to true the first time we use RenderSystem.createGraphicDescriptionContext on it.
    * That prevents us from remapping transient Ids to different transient Ids, recreating duplicate textures+materials, etc if
    * somebody tries to resolve the same props more than once.
@@ -38,7 +39,6 @@ export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionCo
 }
 
 export interface WorkerTextureProps {
-  key: string | Gradient.SymbProps;
   type: RenderTexture.Type;
   transparency?: TextureTransparency;
   source: {
@@ -46,67 +46,83 @@ export interface WorkerTextureProps {
     url: string;
     format?: never;
     width?: never;
+    gradient?: never;
   } | {
     type: "ImageBuffer";
     data: Uint8Array;
     format: ImageBufferFormat;
     width: number;
+    gradient?: never;
   } | {
     type: "ImageSource";
     data: Uint8Array | string;
     format: ImageSourceFormat;
     width?: never;
     url?: never;
+    gradient?: never;
+  } | {
+    type: "Gradient",
+    gradient: Gradient.SymbProps;
+    format?: never;
+    data?: never;
+    url?: never;
+    width?: never;
   }
 }
 
 class WorkerTexture extends RenderTexture {
-  public readonly key: string | Gradient.Symb;
-  public readonly params: WorkerTextureParams;
+  public readonly index: number;
+  public readonly params: WorkerTextureParams | Gradient.Symb;
 
-  public constructor(key: string | Gradient.Symb, params: WorkerTextureParams) {
-    super(params.type ?? RenderTexture.Type.Normal);
-    this.key = typeof key === "string" ? key : key.clone();
-    this.params = {
-      type: params.type,
-      source: params.source,
-      transparency: params.transparency,
-    };
+  public constructor(index: number, params: WorkerTextureParams | Gradient.Symb) {
+    let type = RenderTexture.Type.Normal;
+    if (!(params instanceof Gradient.Symb) && undefined !== params.type) {
+      type = params.type;
+    }
+
+    super(type);
+
+    this.params = params;
+    this.index = index;
   }
 
   public override dispose() { }
   public override get bytesUsed() { return 0; } // doesn't matter, nobody's calling this.
 
   public toProps(xfer: Set<Transferable>): WorkerTextureProps {
-    const key = typeof this.key === "string" ? this.key : this.key.toJSON();
     let source;
-    if (this.params.source instanceof URL) {
-      source = { type: "URL" as const, url: this.params.source.toString() };
-    } else if (this.params.source instanceof ImageSource) {
-      if (typeof this.params.source.data !== "string") {
-        xfer.add(this.params.source.data.buffer);
-      }
-      
-      source = {
-        type: "ImageSource" as const,
-        data: this.params.source.data,
-        format: this.params.source.format,
-      };
+    let transparency;
+    if (this.params instanceof Gradient.Symb) {
+      source = { type: "Gradient" as const, gradient: this.params.toJSON() };
     } else {
-      xfer.add(this.params.source.data);
-      source = {
-        type: "ImageBuffer" as const,
-        data: this.params.source.data,
-        format: this.params.source.format,
-        width: this.params.source.width,
-      };
+      transparency = this.params.transparency;
+      if (this.params.source instanceof URL) {
+        source = { type: "URL" as const, url: this.params.source.toString() };
+      } else if (this.params.source instanceof ImageSource) {
+        if (typeof this.params.source.data !== "string") {
+          xfer.add(this.params.source.data.buffer);
+        }
+      
+        source = {
+          type: "ImageSource" as const,
+          data: this.params.source.data,
+          format: this.params.source.format,
+        };
+      } else {
+        xfer.add(this.params.source.data);
+        source = {
+          type: "ImageBuffer" as const,
+          data: this.params.source.data,
+          format: this.params.source.format,
+          width: this.params.source.width,
+        };
+      }
     }
-
+    
     return {
       type: this.type,
-      key,
       source,
-      transparency: this.params.transparency,
+      transparency,
     }
   }
 }
@@ -140,28 +156,12 @@ class WorkerMaterial extends RenderMaterial {
   }
 }
 
-function compareTextureKeys(a: string | Gradient.Symb, b: string | Gradient.Symb): number {
-  const typeA = typeof a;
-  const typeB = typeof b;
-  if (typeA !== typeB) {
-    return compareStrings(typeA, typeB);
-  }
-
-  if (typeA === "string") {
-    assert(typeof a === "string" && typeof b === "string");
-    return typeB === "string" ? compareStrings(a, b) : -1;
-  }
-
-  assert(a instanceof Gradient.Symb && b instanceof Gradient.Symb);
-  return a.compare(b);
-}
-
 export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescriptionContext {
   public readonly [_implementationProhibited] = undefined;
   public readonly constraints: GraphicDescriptionConstraints;
   public readonly transientIds: TransientIdSequence;
-  public readonly textures: SortedArray<WorkerTexture>;
-  public readonly materials = new Map<string, WorkerMaterial>();
+  public readonly textures: WorkerTexture[] = [];
+  public readonly materials: WorkerMaterial[] = [];
 
   public constructor(props: WorkerGraphicDescriptionContextProps) {
     const propsImpl = props as WorkerGraphicDescriptionContextPropsImpl;
@@ -171,69 +171,37 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
 
     this.constraints = propsImpl.constraints;
     this.transientIds = TransientIdSequence.fromJSON(propsImpl.transientIds);
-
-    this.textures = new SortedArray<WorkerTexture>((a, b) => compareTextureKeys(a.key, b.key));
   }
 
-  public createMaterial(key: string, params: MaterialParams): RenderMaterial {
-    if (this.materials.has(key)) {
-      throw new Error(`Material with key "${key}" already exists`);
-    }
-
+  public createMaterial(params: MaterialParams): RenderMaterial {
     const material = new WorkerMaterial(params);
-    this.materials.set(key, material);
+    this.materials.push(material);
     return material;
   }
 
-  public createTexture(key: string, params: WorkerTextureParams): RenderTexture {
-    if (this._findTexture(key)) {
-      throw new Error(`Texture with key "${key}" already exists`);
-    }
-
-    const texture = new WorkerTexture(key, params);
-    this.textures.insert(texture);
+  public createTexture(params: WorkerTextureParams): RenderTexture {
+    const texture = new WorkerTexture(this.textures.length, params);
+    this.textures.push(texture);
     return texture;
   }
 
   public createGradientTexture(gradient: Gradient.Symb): RenderTexture {
-    let texture = this._findTexture(gradient);
-    if (!texture) {
-      let width = 0x100;
-      let height = 0x100;
-      if (gradient.mode === Gradient.Mode.Thematic) {
-        // Pixels in each row are identical, no point in having width > 1.
-        width = 1;
-        // We want maximum height to minimize bleeding of margin color.
-        height = this.constraints.maxTextureSize;
-      }
-
-      const source = gradient.produceImage({ width, height, includeThematicMargin: true });
-      texture = new WorkerTexture(gradient, {
-        source,
-        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
-      });
-
-      this.textures.insert(texture);
+    const existing = this.textures.find((tx) => tx.params instanceof Gradient.Symb && tx.params.equals(gradient));
+    if (existing) {
+      return existing;
     }
 
+    const texture = new WorkerTexture(this.textures.length, gradient);
+    this.textures.push(texture);
     return texture;
   }
 
-  public findMaterial() { return undefined; }
-
-  public findTexture(key: string) {
-    return this._findTexture(key);
-  }
-
-  private _findTexture(key: string | Gradient.Symb): WorkerTexture | undefined {
-    return this.textures.findEquivalent((tx) => compareTextureKeys(key, tx.key));
-  }
-  
-  public toProps(_transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
+  public toProps(transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
     // We don't yet have any transferable objects. In the future we expect to support transferring texture image data for textures created on the worker thread.
     return {
       [_implementationProhibited]: undefined,
       transientIds: this.transientIds.toJSON(),
+      textures: this.textures.map((tx) => tx.toProps(transferables)),
     };
   }
 }

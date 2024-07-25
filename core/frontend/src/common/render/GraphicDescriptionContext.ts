@@ -46,12 +46,9 @@ export interface WorkerGraphicDescriptionContext {
    */
   toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
 
-  createMaterial(key: string, params: MaterialParams): RenderMaterial;
-  createTexture(key: string, params: WorkerTextureParams): RenderTexture;
+  createMaterial(params: MaterialParams): RenderMaterial;
+  createTexture(params: WorkerTextureParams): RenderTexture;
   createGradientTexture(gradient: Gradient.Symb): RenderTexture;
-
-  findMaterial(key: string): RenderMaterial | undefined;
-  findTexture(key: string): RenderTexture | undefined;
 }
 
 /** @beta */
