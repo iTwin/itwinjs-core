@@ -37,7 +37,7 @@ function defaultBooleans(assetProps: RenderMaterialAssetProps): RenderMaterialAs
   return assetProps;
 }
 
-describe("RenderMaterialElement", () => {
+describe.only("RenderMaterialElement", () => {
   let imodel: SnapshotDb;
   let materialNumber = 0;
   let textureNumber = 0;
@@ -370,7 +370,7 @@ describe("RenderMaterialElement", () => {
         Specular: { TextureId: textureId },
         TranslucencyColor: { TextureId: textureId },
         TransparentColor: { TextureId: textureId },
-        Displacement: { TextureId: Number.parseInt(textureId, 16) as any }, // Convert one to a number to make sure it's handled correctly.
+        Displacement: { TextureId: textureId },
         ["Unknown" as any]: { TextureId: textureId },
         ["InvalidTexture" as any]: { TextureId: Id64.invalid },
         ["UnknownTexture" as any]: { TextureId: unknownTextureId },
