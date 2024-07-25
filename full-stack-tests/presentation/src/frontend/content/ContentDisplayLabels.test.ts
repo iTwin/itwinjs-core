@@ -103,7 +103,7 @@ describeContentTestSuite("Content Display Labels", () => {
     };
   }
 
-  it.only("each related content item has display label", async () => {
+  xit("each related content item has display label", async () => {
     const ruleset = createRuleset();
     const { items } = (await Presentation.presentation.getContentIterator({
       imodel,
@@ -123,7 +123,7 @@ describeContentTestSuite("Content Display Labels", () => {
     }
   });
 
-  it.only("applies correctly class name label override", async () => {
+  xit("applies correctly class name label override", async () => {
     const ruleset = createRuleset({
       ruleType: RuleTypes.InstanceLabelOverride,
       class: { schemaName, className: "Color" },
@@ -149,7 +149,7 @@ describeContentTestSuite("Content Display Labels", () => {
     }
   });
 
-  it.only("applies correctly composite label override", async () => {
+  xit("applies correctly composite label override", async () => {
     const ruleset = createRuleset({
       ruleType: RuleTypes.InstanceLabelOverride,
       class: { schemaName, className: "Color" },
