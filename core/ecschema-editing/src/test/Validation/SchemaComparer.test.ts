@@ -417,6 +417,8 @@ describe("Schema comparison tests", () => {
         TestClassA: {
           schemaItemType: "EntityClass",
           modifier: "None",
+          label: "EntityClassA",
+          description: "Entity Class A",
         },
       };
       const bItems = {
@@ -426,6 +428,8 @@ describe("Schema comparison tests", () => {
         TestClassA: {
           schemaItemType: "Mixin",
           modifier: "None",
+          label: "MixinA",
+          description: "Mixin A",
           appliesTo: "SchemaA.AppliesTo",
         },
       };
@@ -699,6 +703,85 @@ describe("Schema comparison tests", () => {
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
       expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.SchemaItemMissing && d.ecDefinition === classA)).to.not.be.undefined;
+    });
+
+    it("Different ECClass type, diagnostic reported", async () => {
+      const aItems = {
+        BaseClassA: {
+          schemaItemType: "EntityClass",
+        },
+        BaseClassB: {
+          schemaItemType: "EntityClass",
+        },
+        CustomAttributeA: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "AnyClass",
+        },
+        TestClassA: {
+          schemaItemType: "StructClass",
+          modifier: "Sealed",
+          baseClass: "SchemaA.BaseClassA",
+          label: "StructClassA",
+          description: "Struct Class A",
+          customAttributes: [
+            {
+              className: "SchemaA.CustomAttributeA",
+              ShowClasses: true,
+            },
+          ],
+          properties: [
+            {
+              name: "PropertyA",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },
+          ],
+        },
+      };
+      const bItems = {
+        BaseClassA: {
+          schemaItemType: "EntityClass",
+        },
+        BaseClassB: {
+          schemaItemType: "EntityClass",
+        },
+        CustomAttributeA: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "AnyClass",
+        },
+        TestClassA: {
+          schemaItemType: "EntityClass",
+          modifier: "Abstract",
+          baseClass: "SchemaA.BaseClassB",
+          label: "EntityClassA",
+          description: "Entity Class A",
+          customAttributes: [
+            {
+              className: "SchemaA.CustomAttributeA",
+              ShowClasses: false,
+            },
+          ],
+          properties: [
+            {
+              name: "PropertyB",
+              type: "PrimitiveProperty",
+              typeName: "int",
+            },
+          ],
+
+        },
+      };
+      const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+      const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+      const schemaA = await Schema.fromJson(aJson, contextA);
+      const schemaB = await Schema.fromJson(bJson, contextB);
+      const itemA = await schemaA.getItem("TestClassA") as ECClass;
+
+      const comparer = new SchemaComparer(reporter);
+      await comparer.compareSchemas(schemaA, schemaB);
+
+      expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, ["schemaItemType", "StructClass", "EntityClass"], itemA.schema);
     });
   });
 
@@ -1716,6 +1799,10 @@ describe("Schema comparison tests", () => {
               name: "PropertyA",
               type: "PrimitiveProperty",
               typeName: "string",
+              label: "PrimitivePropertyA",
+              description: "Primitive Property A",
+              isReadOnly: true,
+              priority: 1,
             },
           ],
         },
@@ -1727,7 +1814,11 @@ describe("Schema comparison tests", () => {
             {
               name: "PropertyA",
               type: "PrimitiveArrayProperty",
-              typeName: "string",
+              typeName: "int",
+              label: "PrimitiveArrayPropertyA",
+              description: "Primitive Array Property A",
+              isReadOnly: false,
+              priority: 5,
             },
           ],
         },

@@ -9,8 +9,8 @@
 import { assert } from "@itwin/core-bentley";
 import { ImdlEdgeVisibility } from "./ImdlSchema";
 import { ImdlModel } from "./ImdlModel";
-import { calculateEdgeTableParams } from "../render/primitives/EdgeParams";
-import { VertexIndices } from "../render/primitives/VertexIndices";
+import { calculateEdgeTableParams } from "../internal/render/EdgeParams";
+import { VertexIndices } from "../internal/render/VertexIndices";
 
 /** Parameters supplied to [[indexedEdgeParamsFromCompactEdges]].
  * @internal

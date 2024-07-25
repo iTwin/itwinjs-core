@@ -39,7 +39,6 @@ import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FrameStats, FrameStatsCollector } from "./render/FrameStats";
-import { GraphicType } from "./render/GraphicBuilder";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
@@ -65,6 +64,7 @@ import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
+import { GraphicType } from "./common/render/GraphicType";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 

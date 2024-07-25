@@ -13,18 +13,15 @@ import {
   IModelApp,
   MockRender,
 } from "../../../core-frontend";
-import { EdgeParams, SegmentEdgeParams } from "../../../common/render/primitives/EdgeParams";
-import { MeshParams } from "../../../common/render/primitives/MeshParams";
-import { PointStringParams } from "../../../common/render/primitives/PointStringParams";
-import { TesselatedPolyline } from "../../../common/render/primitives/PolylineParams";
-import { VertexTable } from "../../../common/render/primitives/VertexTable";
-import { SurfaceType } from "../../../common/render/primitives/SurfaceParams";
-import {
-  ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams,
-} from "../../../common/render/primitives/VertexTableSplitter";
-import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
-import { createPointStringParams } from "../../../render/primitives/PointStringParams";
-import { MeshArgs, PolylineArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { createPointStringParams, PointStringParams } from "../../../common/internal/render/PointStringParams";
+import { MeshArgs, PolylineArgs } from "../../../common/internal/render/MeshPrimitives";
+import { VertexTable } from "../../../common/internal/render/VertexTable";
+import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
+import { MeshParams } from "../../../common/internal/render/MeshParams";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams";
+import { ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams } from "../../../common/internal/render/VertexTableSplitter";
+import { EdgeParams, SegmentEdgeParams } from "../../../common/internal/render/EdgeParams";
 
 interface Point {
   x: number; // quantized or unquantized x coordinate - y will be x+1 and z will be x+5.
@@ -103,7 +100,7 @@ function makePointStringParams(pts: Point[], colors: ColorDef | ColorDef[], unqu
     polylines: [[...new Array<number>(points.length).keys()] ],
   };
 
-  const params = createPointStringParams(args)!;
+  const params = createPointStringParams(args, IModelApp.renderSystem.maxTextureSize)!;
   expect(params).not.to.be.undefined;
   expect(params.vertices.usesUnquantizedPositions).to.equal(unquantized);
   expectBaseVertices(params.vertices, pts);
@@ -277,7 +274,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
     features: makeFeatureIndex(mesh.points),
   };
 
-  return createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  return createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
 }
 
 function expectMesh(params: MeshParams, mesh: TriMesh): void {

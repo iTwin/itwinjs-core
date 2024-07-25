@@ -7,8 +7,8 @@
  */
 
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/render/primitives/SurfaceParams";
 import { FloatRgb } from "./FloatRGBA";
+import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/render/SurfaceParams";
 
 /** Parameters describing a single material. The parameters used are:
  *  - diffuse color rgb (vec3).
