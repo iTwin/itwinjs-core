@@ -23,7 +23,7 @@ import { createPolylineParams } from "./PolylineParams";
 import { createMeshParams } from "./VertexTableBuilder";
 import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
 import { _accumulator, _implementationProhibited } from "../Symbols";
-import { WorkerGraphicDescriptionContextImpl, WorkerMaterial } from "./GraphicDescriptionContextImpl";
+import { WorkerGraphicDescriptionContextImpl, WorkerMaterial, WorkerTexture } from "./GraphicDescriptionContextImpl";
 import { GraphicDescriptionContext } from "../../render/GraphicDescriptionContext";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
@@ -205,7 +205,6 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   private createMeshPrimitive(args: MeshArgs): ImdlModel.Primitive | undefined {
     const params = createMeshParams(args, this._context.constraints.maxTextureSize, true);
 
-    // ###TODO support materials and textures.
     let material;
     const mat = params.surface.material;
     if (mat) {
@@ -216,7 +215,8 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     let textureMapping;
     const tex = params.surface.textureMapping;
     if (tex) {
-      // ###TODO
+      assert(tex.texture instanceof WorkerTexture);
+      textureMapping = { alwaysDisplayed: false, texture: tex.texture.index.toString(10) };
     }
     
     return {
