@@ -160,6 +160,10 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   private handleEvent(evt: SelectionChangeEventArgs): void {
+    if (!this._knownIModels.has(evt.imodel.key)) {
+      this._knownIModels.set(evt.imodel.key, evt.imodel);
+    }
+
     switch (evt.changeType) {
       case SelectionChangeType.Add:
         this._selectionStorage.addToSelection({
