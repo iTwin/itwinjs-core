@@ -14,6 +14,7 @@ import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbPro
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
+import { _nativeDb } from "../../internal/Symbols";
 
 describe("WorkspaceFile", () => {
 
@@ -145,7 +146,7 @@ describe("WorkspaceFile", () => {
     expect(wsFile.getBlob(blobRscName)).to.be.undefined;
 
     wsFile.addFile(fileRscName, inFile);
-    const writeFile = sinon.spy(wsFile.sqliteDb.nativeDb, "extractEmbeddedFile");
+    const writeFile = sinon.spy(wsFile.sqliteDb[_nativeDb], "extractEmbeddedFile");
     expect(writeFile.callCount).eq(0);
     const outFile = wsFile.getFile(fileRscName)!;
     expect(writeFile.callCount).eq(1);

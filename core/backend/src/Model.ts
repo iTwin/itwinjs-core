@@ -18,7 +18,7 @@ import { DefinitionPartition, DocumentPartition, InformationRecordPartition, Phy
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
-import { _verifyChannel } from "./internal/Symbols";
+import { _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta
@@ -243,7 +243,7 @@ export class GeometricModel extends Model {
    * @note This function blocks the JavaScript event loop. Consider using [[queryRange]] instead.
    */
   public queryExtents(): AxisAlignedBox3d {
-    const extents = this.iModel.nativeDb.queryModelExtents({ id: this.id }).modelExtents;
+    const extents = this.iModel[_nativeDb].queryModelExtents({ id: this.id }).modelExtents;
     return Range3d.fromJSON(extents);
   }
 
