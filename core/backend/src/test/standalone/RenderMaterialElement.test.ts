@@ -37,7 +37,7 @@ function defaultBooleans(assetProps: RenderMaterialAssetProps): RenderMaterialAs
   return assetProps;
 }
 
-describe.only("RenderMaterialElement", () => {
+describe("RenderMaterialElement", () => {
   let imodel: SnapshotDb;
   let materialNumber = 0;
   let textureNumber = 0;
