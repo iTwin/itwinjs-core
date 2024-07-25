@@ -7,7 +7,7 @@
  */
 
 import { TransientIdSequence } from "@itwin/core-bentley";
-import { _implementationProhibited } from "../internal/Symbols"; 
+import { _implementationProhibited, _textures } from "../internal/Symbols"; 
 import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionContextImpl";
 import { Gradient, ImageBuffer, ImageSource, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { MaterialParams } from "./MaterialParams";
@@ -80,6 +80,7 @@ export interface GraphicDescriptionContext {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
   remapTransientLocalId(sourceLocalId: number): number;
-  getTexture(key: string): RenderTexture | undefined;
+  /** @internal */
+  [_textures]: Map<string, RenderTexture>;
 }
 

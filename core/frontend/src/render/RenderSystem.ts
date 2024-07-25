@@ -45,7 +45,7 @@ import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
-import { _implementationProhibited } from "../common/internal/Symbols";
+import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 
 /* eslint-disable no-restricted-syntax */
@@ -820,9 +820,7 @@ export abstract class RenderSystem implements IDisposable {
 
     const textures = new Map<string, RenderTexture>();
 
-    // ###TODO use Promise.all
-    for (let i = 0; i < impl.textures.length; i++) {
-      const tex = impl.textures[i];
+    await Promise.allSettled(impl.textures.map(async (tex, i) => {
       let texture: RenderTexture | undefined;
       switch (tex.source.type) {
         case "Gradient":
@@ -863,15 +861,14 @@ export abstract class RenderSystem implements IDisposable {
       if (texture) {
         textures.set(i.toString(10), texture);
       }
-    }
+    }));
     
     const remap = iModel.transientIds.merge(impl.transientIds);
     impl.resolved = true;
     return {
       [_implementationProhibited]: undefined,
       remapTransientLocalId: (source) => remap(source),
-      // ###TODO just use the map (forward to GraphicOptions) and it @internal (Symbol)
-      getTexture: (key: string) => textures.get(key),
+      [_textures]: textures,
     };
   }
 }
