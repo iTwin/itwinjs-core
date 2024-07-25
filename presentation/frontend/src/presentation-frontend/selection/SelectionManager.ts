@@ -374,6 +374,7 @@ export class SelectionManager implements ISelectionProvider {
           return this._currentSelection.computeSelection(args.iModelKey, args.level, currentSelectables, args.selectables).pipe(
             mergeMap(({ level, changedSelection }): Observable<SelectionChangeEventArgs> => {
               const imodel = this._knownIModels.get(args.iModelKey);
+              // istanbul ignore if
               if (!imodel) {
                 return EMPTY;
               }
