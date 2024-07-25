@@ -112,7 +112,8 @@ describe("Hierarchies", () => {
       expect(result).to.matchSnapshot();
     });
 
-    it("gets node paths based on instance key paths", async () => {
+    // TODO: enable after PR is merged: https://github.com/iTwin/imodel-native/pull/811
+    xit("gets node paths based on instance key paths", async () => {
       const ruleset: Ruleset = {
         id: "getNodePaths",
         rules: [
