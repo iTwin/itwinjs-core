@@ -54,7 +54,7 @@ export namespace AzuriteTest {
       return blobClient.exists();
     };
 
-    export const setWriteLockToExpired = async (container: CloudSqlite.CloudContainer, blockName: string) => {
+    export const resetWriteLockExpireTime = async (container: CloudSqlite.CloudContainer, blockName: string, numOfMin: number) => {
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       const tempFilePath = join(KnownLocations.tmpdir, blockName);
@@ -66,8 +66,8 @@ export namespace AzuriteTest {
       bcvDb.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
         if (stmt.nextRow()) {
           const writeLockData = JSON.parse(stmt.getValueString(0));
-          const expiresTime = new Date();
-          expiresTime.setMinutes(expiresTime.getMinutes() - 5);
+          const expiresTime = new Date(writeLockData.expires);
+          expiresTime.setMinutes(expiresTime.getMinutes() - numOfMin);
           writeLockData.expires = expiresTime.toISOString();
           bcvDb.withSqliteStatement("UPDATE kv SET v = ? WHERE k = 'writeLock'", (stmt1) => {
             stmt1.bindString(1, JSON.stringify(writeLockData));
@@ -82,7 +82,7 @@ export namespace AzuriteTest {
       fs.unlinkSync(tempFilePath);
     };
 
-    export const isWriteLockRefreshed = async (container: CloudSqlite.CloudContainer, blockName: string): Promise<boolean> => {
+    export const isWriteLockRefreshed = async (container: CloudSqlite.CloudContainer, blockName: string, currentTime: Date): Promise<boolean> => {
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       const tempFilePath = join(KnownLocations.tmpdir, blockName);
@@ -94,9 +94,10 @@ export namespace AzuriteTest {
         bcvDb.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
           if (stmt.nextRow()) {
             const writeLockData = JSON.parse(stmt.getValueString(0));
-            const expiresDate = new Date(writeLockData.expires);
-            const currentTime = new Date();
-            resolve(expiresDate > currentTime);
+            const expiresTime = new Date(writeLockData.expires);
+            // should be 5 min but let's use 4.5min to avoid time conflict
+            const writeLockTimeRemains = 4.5*60*1000;
+            resolve(expiresTime >= new Date(currentTime.getTime() + writeLockTimeRemains));
           } else {
             resolve(false);
           }
