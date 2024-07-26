@@ -5,11 +5,14 @@
 
 import { expect } from "chai";
 import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
-import { GraphicBuilder, GraphicType } from "../../render/GraphicBuilder";
-import { GraphicPrimitive } from "../../render/GraphicPrimitive";
+import { GraphicBuilder } from "../../render/GraphicBuilder";
+import { GraphicType } from "../../common/render/GraphicType";
+import { GraphicPrimitive } from "../../common/render/GraphicPrimitive";
+import { _implementationProhibited } from "../../common/internal/Symbols";
 
 describe("GraphicPrimitive", () => {
   class Builder extends GraphicBuilder {
+    public readonly [_implementationProhibited] = undefined;
     private _primitive?: GraphicPrimitive;
 
     protected set primitive(primitive: GraphicPrimitive) {
@@ -24,21 +27,22 @@ describe("GraphicPrimitive", () => {
       });
     }
 
-    public activateGraphicParams() { }
+    public override activateGraphicParams() { }
+    public override resolveGradient() { return undefined; }
     public finish() { return {} as any; }
 
-    public addLineString(points: Point3d[]) { this.primitive = { type: "linestring", points }; }
-    public addLineString2d(points: Point2d[], zDepth: number) { this.primitive = { type: "linestring2d", points, zDepth }; }
-    public addPointString(points: Point3d[]) { this.primitive = { type: "pointstring", points }; }
-    public addPointString2d(points: Point2d[], zDepth: number) { this.primitive = { type: "pointstring2d", points, zDepth }; }
-    public addShape(points: Point3d[]) { this.primitive = { type: "shape", points }; }
-    public addShape2d(points: Point2d[], zDepth: number) { this.primitive = { type: "shape2d", points, zDepth }; }
-    public addArc(arc: Arc3d, isEllipse: boolean, filled: boolean) { this.primitive = { type: "arc", arc, isEllipse, filled }; }
-    public addArc2d(arc: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number) { this.primitive = { type: "arc2d", arc, isEllipse, filled, zDepth }; }
-    public addPath(path: Path) { this.primitive = { type: "path", path }; }
-    public addLoop(loop: Loop) { this.primitive = { type: "loop", loop }; }
-    public addPolyface(polyface: Polyface, filled: boolean) { this.primitive = { type: "polyface", polyface, filled }; }
-    public addSolidPrimitive(solidPrimitive: SolidPrimitive) { this.primitive = { type: "solidPrimitive", solidPrimitive }; }
+    public override addLineString(points: Point3d[]) { this.primitive = { type: "linestring", points }; }
+    public override addLineString2d(points: Point2d[], zDepth: number) { this.primitive = { type: "linestring2d", points, zDepth }; }
+    public override addPointString(points: Point3d[]) { this.primitive = { type: "pointstring", points }; }
+    public override addPointString2d(points: Point2d[], zDepth: number) { this.primitive = { type: "pointstring2d", points, zDepth }; }
+    public override addShape(points: Point3d[]) { this.primitive = { type: "shape", points }; }
+    public override addShape2d(points: Point2d[], zDepth: number) { this.primitive = { type: "shape2d", points, zDepth }; }
+    public override addArc(arc: Arc3d, isEllipse: boolean, filled: boolean) { this.primitive = { type: "arc", arc, isEllipse, filled }; }
+    public override addArc2d(arc: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number) { this.primitive = { type: "arc2d", arc, isEllipse, filled, zDepth }; }
+    public override addPath(path: Path) { this.primitive = { type: "path", path }; }
+    public override addLoop(loop: Loop) { this.primitive = { type: "loop", loop }; }
+    public override addPolyface(polyface: Polyface, filled: boolean) { this.primitive = { type: "polyface", polyface, filled }; }
+    public override addSolidPrimitive(solidPrimitive: SolidPrimitive) { this.primitive = { type: "solidPrimitive", solidPrimitive }; }
 
     public expectPrimitive(expected: GraphicPrimitive) {
       expect(this._primitive).not.to.be.undefined;

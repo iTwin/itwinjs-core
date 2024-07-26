@@ -7,18 +7,26 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { PolylineArgs } from "./mesh/MeshPrimitives";
+import { PolylineArgs } from "./MeshPrimitives";
 import { VertexTableBuilder } from "./VertexTableBuilder";
-import { PointStringParams } from "../../common/render/primitives/PointStringParams";
-import { VertexIndices } from "../../common/render/primitives/VertexIndices";
-import { IModelApp } from "../../IModelApp";
+import { VertexIndices } from "./VertexIndices";
+import { VertexTable } from "./VertexTable";
+
+/** Describes point string geometry to be submitted to the rendering system.
+ * @internal
+ */
+export interface PointStringParams {
+  vertices: VertexTable;
+  indices: VertexIndices;
+  weight: number;
+}
 
 /** @internal */
-export function createPointStringParams(args: PolylineArgs): PointStringParams | undefined {
+export function createPointStringParams(args: PolylineArgs, maxTextureSize: number): PointStringParams | undefined {
   if (!args.flags.isDisjoint)
     return undefined;
 
-  const vertices = VertexTableBuilder.buildFromPolylines(args, IModelApp.renderSystem.maxTextureSize);
+  const vertices = VertexTableBuilder.buildFromPolylines(args, maxTextureSize);
   if (undefined === vertices)
     return undefined;
 
