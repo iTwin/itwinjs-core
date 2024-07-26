@@ -62,7 +62,7 @@ The formatter now supports parsing mathematical equations. Ex :
 
 Limitations
 Only plus and minus signs are supported for now (+, -).
-Other opertaors will end up in a parsing error or an invalid input result.
+Other opertaors will end up returning a parsing error or an invalid input result.
 
 The parsing of mathematical equations is disabled by default.
 To enable it, you can override the default QuantityFormatter. Ex :
