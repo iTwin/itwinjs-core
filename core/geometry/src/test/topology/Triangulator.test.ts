@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -1155,10 +1156,12 @@ describe("Triangulation", () => {
       Point3d.create(55.21859962987817, 29.55516271079307, 48.370060922134726),
       Point3d.create(50.334340847282135, -46.66476423327051, 48.33850061288565),
     ];
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pts, 0.2);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pts, 0.5);
     const mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
     ck.testDefined(mesh, "computed triangulation");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+    GeometryCoreTestIO.consoleLog(prettyPrint(mesh!));
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
     expect(ck.getNumErrors()).equals(0);
   });
 });
