@@ -23,6 +23,7 @@ export enum ParseError {
   UnknownUnit,
   UnableToConvertParseTokensToQuantity,
   InvalidParserSpec,
+  MathematicEquationFoundButIsNotAllowed,
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
@@ -363,6 +364,18 @@ export class Parser {
     return tokens;
   }
 
+  private static isMathematicEquation(tokens: ParseToken[]){
+    if(tokens.length > 1){
+      // The loop starts at one because the first token can be a operator without it being maths. Ex: "-5FT"
+      for(let i = 1; i < tokens.length; i++){
+        if(tokens[i].isOperator)
+          // Operator found, it's a math equation.
+          return true;
+      }
+    }
+    return false;
+  }
+
   private static async lookupUnitByLabel(unitLabel: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider) {
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
 
@@ -454,7 +467,7 @@ export class Parser {
    */
   public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
-    if (tokens.length === 0)
+    if (tokens.length === 0 || (!format.allowMathematicEquations && Parser.isMathematicEquation(tokens)))
       return new Quantity();
 
     return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
@@ -639,6 +652,10 @@ export class Parser {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
       return { ok: false, error: ParseError.UnableToGenerateParseTokens };
+
+    if(!format.allowMathematicEquations && Parser.isMathematicEquation(tokens)){
+      return { ok: false, error: ParseError.MathematicEquationFoundButIsNotAllowed };
+    }
 
     if (Parser._log) {
       // eslint-disable-next-line no-console

@@ -7,7 +7,7 @@ import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { UnitProps } from "../Interfaces";
-import { Parser } from "../Parser";
+import { ParseError, Parser } from "../Parser";
 import { ParserSpec } from "../ParserSpec";
 import { Quantity } from "../Quantity";
 import { BadUnit } from "../Unit";
@@ -279,6 +279,7 @@ describe("Parsing tests:", () => {
       precision: 4,
       type: "Decimal",
       uomSeparator: "*",
+      allowMathematicEquations: true,
     };
 
     const testData = [
@@ -323,6 +324,7 @@ describe("Parsing tests:", () => {
       precision: 2,
       stationOffsetSize: 2,
       type: "Station",
+      allowMathematicEquations: true,
     };
 
     const testData = [
@@ -368,6 +370,7 @@ describe("Parsing tests:", () => {
       precision: 4,
       type: "Decimal",
       uomSeparator: "",
+      allowMathematicEquations: true,
     };
 
     const testData = [
@@ -395,6 +398,7 @@ describe("Parsing tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: " ",
+      allowMathematicEquations: true,
     };
 
     const testData = [
@@ -429,6 +433,7 @@ describe("Parsing tests:", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
+      allowMathematicEquations: true,
     };
 
     const testData = [
@@ -471,6 +476,7 @@ describe("Parsing tests:", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
+      allowMathematicEquations: true,
     };
 
     const testData = [
@@ -512,6 +518,7 @@ describe("Parsing tests:", () => {
           },
         ],
       },
+      allowMathematicEquations: true,
     };
 
     const testData = [
@@ -544,6 +551,51 @@ describe("Parsing tests:", () => {
     }
   });
 
+  it("Parse mathematic equations into an invalid result when maths are not allowed async", async () => {
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+      composite: {
+        units: [
+          {
+            label: "m",
+            name: "Units.M",
+          },
+        ],
+      },
+      // allowMathematicEquations: false, <- Also test that, when not set, it default to false
+    };
+
+    const testData = [
+      "12,345.345 - 1",
+      "1yd + 2",
+      "1yd + 1m + 2",
+      "1 FT + 6IN",
+      "-1-1",
+      "1 ' + 1 FT",
+      "-1 FT + 1",
+      "1 F + 1.5",
+      "-2FT 6IN + 6IN",
+      "1 1/2FT + 1/2IN",
+      "2' 6\"-0.5",
+      "1 yd + 1FT 6IN",
+      "1 m -1FT +6IN",
+      "-1m 1CM 1mm - 1 FT + 6IN + 1yd",
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    for (const testEntry of testData) {
+      const quantityProps = await Parser.parseIntoQuantity(testEntry, format, unitsProvider);
+      expect(quantityProps.isValid).to.eql(false);
+      expect(quantityProps.magnitude).to.eql(0);
+    }
+  });
+
 });
 
 describe("Synchronous Parsing tests:", async () => {
@@ -569,6 +621,7 @@ describe("Synchronous Parsing tests:", async () => {
     precision: 8,
     type: "Fractional",
     uomSeparator: "",
+    allowMathematicEquations: true,
   };
   const format = new Format("test");
   await format.fromJSON(unitsProvider, formatData).catch(() => { });
@@ -599,6 +652,7 @@ describe("Synchronous Parsing tests:", async () => {
     precision: 2,
     type: "Decimal",
     uomSeparator: "",
+    allowMathematicEquations: true,
   };
 
   const angleFormat = new Format("testAngle");
@@ -647,12 +701,62 @@ describe("Synchronous Parsing tests:", async () => {
     }
   });
 
+  it("Parse mathematic equations into an ParserError when maths are not allowed synchronously", async () => {
+    const formatDataMathNotAllowed = {
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: "",
+      allowMathematicEquations: false,
+    };
+    const formatMathNotAllowed = new Format("test");
+    await formatMathNotAllowed.fromJSON(unitsProvider, formatDataMathNotAllowed).catch(() => { });
+
+    const testData = [
+      "12,345.345 - 1",
+      "1yd + 2",
+      "1yd + 1m + 2",
+      "1 FT + 6IN",
+      "-1-1",
+      "1 ' + 1 FT",
+      "-1 FT + 1",
+      "1 F + 1.5",
+      "-2FT 6IN + 6IN",
+      "1 1/2FT + 1/2IN",
+      "2' 6\"-0.5",
+      "1 yd + 1FT 6IN",
+      "1 m -1FT +6IN",
+      "-1m 1CM 1mm - 1 FT + 6IN + 1yd",
+    ];
+
+    if (logTestOutput) {
+      for (const spec of meterConversionSpecs) {
+        // eslint-disable-next-line no-console
+        console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
+      }
+    }
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseToQuantityValue(testEntry, formatMathNotAllowed, meterConversionSpecs);
+      if (logTestOutput) {
+        if (Parser.isParsedQuantity(parseResult))
+          console.log(`input=${testEntry} output=${parseResult.value}`); // eslint-disable-line no-console
+        else if (Parser.isParseError(parseResult))
+          console.log(`input=${testEntry} error=${parseResult.error}`); // eslint-disable-line no-console
+      }
+      assert.isTrue(Parser.isParseError(parseResult));
+      if (Parser.isParseError(parseResult))
+        expect(parseResult.error).to.eql(ParseError.MathematicEquationFoundButIsNotAllowed);
+    }
+  });
+
   it("Parse taking the first unit if no unit specified in the Format.", async () => {
     const formatDataUnitless = {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
+      allowMathematicEquations: true,
     };
     const formatUnitless = new Format("test");
     await formatUnitless.fromJSON(unitsProvider, formatDataUnitless).catch(() => { });
