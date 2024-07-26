@@ -3,19 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, GeometryClass, LinePixels, ModelFeature, RenderFeatureTable } from "@itwin/core-common";
+import { Angle, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, EmptyLocalization, Feature, GeometryClass, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions } from "../../common";
+import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, imageBufferToPngDataUrl } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { Batch, Branch, GraphicsArray } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
 import { Id64, Id64String, TransientIdSequence } from "@itwin/core-bentley";
-import { GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
+import { GraphicDescriptionContext, WorkerGraphicDescriptionContext, WorkerTextureParams } from "../../common/render/GraphicDescriptionContext";
+import { WorkerTexture } from "../../common/internal/render/GraphicDescriptionContextImpl";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   expect(range.low.x).to.equal(lx);
@@ -32,7 +33,7 @@ function expectFeature(index: number, featureTable: RenderFeatureTable, expected
   expect(actual).to.deep.equal(expected);
 }
 
-describe("GraphicDescriptionBuilder", () => {
+describe.only("GraphicDescriptionBuilder", () => {
   let mainContext: GraphicDescriptionContext;
   let workerContext: WorkerGraphicDescriptionContext;
 
@@ -380,6 +381,68 @@ describe("GraphicDescriptionBuilder", () => {
     expectFeature(2, batch.featureTable, { elementId: "0xa3", subCategoryId: "0xc2", geometryClass: GeometryClass.Primary, modelId: "0xb1" });
   });
 
+  // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
+  // bottom right pixel.  The rest of the square is red.
+  const pngData: Uint8Array = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
+
+  it("creates and resolves textures", async () => {
+    function expectTextureParams(texture: WorkerTexture, type: RenderTexture.Type | undefined, source: typeof ImageBuffer | typeof ImageSource | typeof URL, transparency: TextureTransparency | undefined): void {
+      const params = texture.params as WorkerTextureParams;
+      expect(params.source instanceof source).to.be.true;
+      expect(params.type).to.equal(type);
+      expect(params.transparency).to.equal(transparency);
+    }
+
+    const wkGrad = workerContext.createGradientTexture(Gradient.Symb.fromJSON({
+      mode: 3,
+      flags: 1,
+      tint: 0.042133128966509004,
+      shift: 3.45912515864202,
+      angle: Angle.createDegrees(92.94598821201656),
+      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+    })) as WorkerTexture;
+
+    expect(wkGrad instanceof WorkerTexture).to.be.true;
+    expect(wkGrad.index).to.equal(0);
+    expect(wkGrad.type).to.equal(RenderTexture.Type.Normal);
+    expect(wkGrad.params instanceof Gradient.Symb).to.be.true;
+
+    const imgBuf = ImageBuffer.create(
+      new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]),
+      ImageBufferFormat.Rgba,
+      2
+    );
+
+    const wkBuf = workerContext.createTexture({
+      type: RenderTexture.Type.TileSection,
+      transparency: TextureTransparency.Translucent,
+      source: imgBuf,
+    }) as WorkerTexture;
+    expectTextureParams(wkBuf, RenderTexture.Type.TileSection, ImageBuffer, TextureTransparency.Translucent);
+
+    const wkSrc = workerContext.createTexture({
+      type: RenderTexture.Type.SkyBox,
+      transparency: TextureTransparency.Opaque,
+      source: new ImageSource(pngData, ImageSourceFormat.Png),
+    }) as WorkerTexture;
+    expectTextureParams(wkSrc, RenderTexture.Type.SkyBox, ImageSource, TextureTransparency.Opaque);
+
+    const pngUrl = imageBufferToPngDataUrl(imgBuf, true)!;
+    expect(pngUrl).not.to.be.undefined;
+    const wkUrl = workerContext.createTexture({
+      source: new URL(pngUrl),
+    }) as WorkerTexture;
+    expectTextureParams(wkUrl, undefined, URL, undefined);
+    expect(wkUrl.type).to.equal(RenderTexture.Type.Normal);
+  });
+
+  it("ignores textures that can't be resolved", async () => {
+    
+  });
+  
+  it("creates a graphic containing materials and textures", async () => {
+  });
+
   describe("Worker", () => {
     const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");
 
@@ -474,5 +537,14 @@ describe("GraphicDescriptionBuilder", () => {
       expect(list.graphics.length).to.equal(3);
       expect(list.graphics[0] instanceof MeshGraphic).to.be.true;
     });
+
+    it("creates textures", async () => {
+      
+    });
+    
+    it("resolves textures and creates a RenderGraphic", async () => {
+      
+    });
+
   });
 });
