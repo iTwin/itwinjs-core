@@ -614,7 +614,7 @@ New to iTwinjs 4.6 (connector-framework version 2.1) is the concept of shared ch
 BaseConnector's getChannelKey method:
 
 ```ts
-[[include:BaseConnector-DeletionDetectionParams.cf-code]]
+[[include:BaseConnector-getChannelKey.cf-code]]
 ```
 
 To use a channel key the connector author should override the getChannelKey in their connector implementation.
@@ -651,7 +651,7 @@ For an example of overriding getDeletionDetectionParams see:
 [[include:TestConnector-getDeletionDetectionParams.cf-code]]
 ```
 
-The above example check and environment variable which is strictly intended for the test connector as it allows us to test BOTH file based AND legacy (channel based) deletion detection with the same connector.  Any new connector author/developer should choose file-based.
+The above example checks an environment variable which is strictly intended for the test connector as it allows us to test BOTH file based AND legacy (channel based) deletion detection with the same connector.  Any new connector author/developer should choose file-based.
 
 The tests which run the test connector with file-based deletion detection is located at:
 
