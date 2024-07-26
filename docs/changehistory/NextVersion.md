@@ -73,7 +73,7 @@ To enable it, you can override the default QuantityFormatter. Ex :
   // Default props for the desired quantityType
   const props = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
 
-  // Override the Format and Enable mathematics operations.
+  // Override the formatter and enable mathematical operations.
   await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicEquations: true });
 ```
 
