@@ -15,23 +15,23 @@ import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Ve
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { createGraphicFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource } from "../common/ImageUtil";
-import { MeshParams } from "../common/render/primitives/MeshParams";
-import { PointStringParams } from "../common/render/primitives/PointStringParams";
-import { PolylineParams } from "../common/render/primitives/PolylineParams";
+import { MeshParams } from "../common/internal/render/MeshParams";
+import { createPointStringParams, PointStringParams } from "../common/internal/render/PointStringParams";
+import { createPolylineParams, PolylineParams } from "../common/internal/render/PolylineParams";
 import { TextureCacheKey } from "../common/render/TextureParams";
 import { ViewRect } from "../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
-import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
-import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
+import { InstancedGraphicParams, PatternGraphicParams } from "../common/render/InstancedGraphicParams";
+import { Mesh, MeshArgs, PolylineArgs } from "../common/internal/render/MeshPrimitives";
 import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { CreateRenderMaterialArgs } from "./CreateRenderMaterialArgs";
@@ -40,9 +40,12 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { createMeshParams } from "./primitives/VertexTableBuilder";
-import { createPointStringParams } from "./primitives/PointStringParams";
-import { createPolylineParams } from "./primitives/PolylineParams";
+import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
+import { GraphicType } from "../common/render/GraphicType";
+import { BatchOptions } from "../common/render/BatchOptions";
+import { GraphicDescription, GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { _implementationProhibited } from "../common/internal/Symbols";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -242,6 +245,16 @@ export interface RenderSkyCubeParams {
 /** @internal */
 export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
+/** Arguments supplied to [[RenderSystem.createGraphicFromDescription]].
+ * @beta
+ */
+export interface CreateGraphicFromDescriptionArgs {
+  /** A description of the [[RenderGraphic]] to create, obtained from a [[GraphicDescriptionBuilder]]. */
+  description: GraphicDescription;
+  /** The context that was used to create the graphic description, obtained from [[RenderSystem.resolveGraphicDescriptionContext]]. */
+  context: GraphicDescriptionContext;
+}
+
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -365,8 +378,19 @@ export abstract class RenderSystem implements IDisposable {
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined; // eslint-disable-line @typescript-eslint/unified-signatures
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
-    const params = createMeshParams(args, this.maxTextureSize);
+    const params = createMeshParams(args, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
     return this.createMesh(params, instances);
+  }
+
+  /** @internal */
+  public createMeshGraphics(mesh: Mesh, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+    const meshArgs = mesh.toMeshArgs();
+    if (meshArgs) {
+      return this.createTriMesh(meshArgs, instances);
+    }
+
+    const polylineArgs = mesh.toPolylineArgs();
+    return polylineArgs ? this.createIndexedPolylines(polylineArgs, instances) : undefined;
   }
 
   /** Create a graphic from a low-level representation of a set of line strings.
@@ -379,10 +403,10 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
-      const pointStringParams = createPointStringParams(args);
+      const pointStringParams = createPointStringParams(args, IModelApp.renderSystem.maxTextureSize);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
-      const polylineParams = createPolylineParams(args);
+      const polylineParams = createPolylineParams(args, this.maxTextureSize);
       return undefined !== polylineParams ? this.createPolyline(polylineParams, instances) : undefined;
     }
   }
@@ -755,6 +779,50 @@ export abstract class RenderSystem implements IDisposable {
   public static async contextLossHandler(): Promise<any> {
     const msg = IModelApp.localization.getLocalizedString("iModelJs:Errors.WebGLContextLost");
     return ToolAdmin.exceptionHandler(msg);
+  }
+
+  /** Convert a [[GraphicDescription]] produced by a [[GraphicDescriptionBuilder]] into a [[RenderGraphic]].
+   * @beta
+   */
+  public async createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): Promise<RenderGraphic | undefined> {
+    return createGraphicFromDescription(args.description, args.context, this);
+  }
+
+  /** Obtain the JSON representation of a [[WorkerGraphicDescriptionContext]] for the specified `iModel` that can be forwarded to a Worker for use with a [[GraphicDescriptionBuilder]].
+   * @beta
+   */
+  public createWorkerGraphicDescriptionContextProps(iModel: IModelConnection): WorkerGraphicDescriptionContextProps {
+    const props: WorkerGraphicDescriptionContextPropsImpl = {
+      [_implementationProhibited]: undefined,
+      transientIds: iModel.transientIds.fork(),
+      constraints: {
+        [_implementationProhibited]: undefined,
+        maxTextureSize: this.maxTextureSize,
+      },
+    };
+
+    return props;
+  }
+
+  /** Synchronize changes made to a [[WorkerGraphicDescriptionContext]] on a Worker with the state of the `iModel` from which it was created.
+   * @beta
+   */
+  public async resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): Promise<GraphicDescriptionContext> {
+    const impl = props as GraphicDescriptionContextPropsImpl;
+    if (typeof impl.transientIds !== "object") {
+      throw new Error("Invalid GraphicDescriptionContextProps");
+    }
+
+    if (impl.resolved) {
+      throw new Error("resolveGraphicDescriptionContext can only be called once for a given GraphicDescriptionContextProps");
+    }
+
+    const remap = iModel.transientIds.merge(impl.transientIds);
+    impl.resolved = true;
+    return {
+      [_implementationProhibited]: undefined,
+      remapTransientLocalId: (source) => remap(source),
+    };
   }
 }
 

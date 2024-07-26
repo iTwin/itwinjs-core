@@ -449,13 +449,15 @@ export abstract class ElementSetTool extends PrimitiveTool {
     return true;
   }
 
-  /** If the supplied element is a member of an assembly, return all member ids. */
+  /** If the supplied element is part of an assembly, return all member ids. */
   protected async getGroupIds(id: Id64String): Promise<Id64Arg> {
     const ids = new Set<Id64String>();
     ids.add(id);
 
     try {
-      const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (${id}))`;
+      // When assembly parent is selected, pick all geometric elements with it as the parent.
+      // When assembly member is selected, pick the parent as well as all the other members.
+      const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE (parent.Id IS NOT NULL AND ECInstanceId IN (${id})) OR parent.Id IN (${id}))`;
       for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         ids.add(row.parentId as Id64String);
         ids.add(row.id as Id64String);

@@ -19,13 +19,14 @@ import { CoordSystem } from "../CoordSystem";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
+import { GraphicBuilder } from "../render/GraphicBuilder";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { GraphicType } from "../common/render/GraphicType";
 
 // cSpell:ignore geti
 
