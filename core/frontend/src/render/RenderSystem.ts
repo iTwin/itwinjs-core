@@ -822,39 +822,32 @@ export abstract class RenderSystem implements IDisposable {
 
     await Promise.allSettled(impl.textures.map(async (tex, i) => {
       let texture: RenderTexture | undefined;
-      switch (tex.source.type) {
-        case "Gradient":
-          texture = this.getGradientTexture(Gradient.Symb.fromJSON(tex.source.gradient));
-          break;
-        case "ImageSource":
-          texture = await this.createTextureFromSource({
-            source: new ImageSource(tex.source.data, tex.source.format),
-            type: tex.type,
+      if (tex.source.gradient) {
+        texture = this.getGradientTexture(Gradient.Symb.fromJSON(tex.source.gradient));
+      } else if (tex.source.imageSource) {
+        texture = await this.createTextureFromSource({
+          source: new ImageSource(tex.source.imageSource, tex.source.format),
+          type: tex.type,
+          transparency: tex.transparency,
+        });
+      } else if (tex.source.imageBuffer) {
+        texture = this.createTexture({
+          type: tex.type,
+          image: {
+            source: ImageBuffer.create(tex.source.imageBuffer, tex.source.format, tex.source.width),
             transparency: tex.transparency,
-          });
-          break;
-        case "ImageBuffer":
+          },
+        });
+      } else if (tex.source.url) {
+        const image = await tryImageElementFromUrl(tex.source.url);
+        if (image) {
           texture = this.createTexture({
             type: tex.type,
             image: {
-              source: ImageBuffer.create(tex.source.data, tex.source.format, tex.source.width),
+              source: image,
               transparency: tex.transparency,
             },
           });
-          break;
-        case "URL": {
-          const image = await tryImageElementFromUrl(tex.source.url);
-          if (image) {
-            texture = this.createTexture({
-              type: tex.type,
-              image: {
-                source: image,
-                transparency: tex.transparency,
-              },
-            });
-          }
-
-          break;
         }
       }
 

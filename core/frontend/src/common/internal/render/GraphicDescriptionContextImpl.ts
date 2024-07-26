@@ -39,41 +39,59 @@ export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionCo
   resolved?: boolean;
 }
 
+export interface TextureUrlProps {
+  url: string;
+  transparency?: TextureTransparency;
+  gradient?: never;
+  imageBuffer?: never;
+  imageSource?: never;
+  width?: never;
+  format?: never;
+}
+
+export interface TextureImageBufferProps {
+  imageBuffer: Uint8Array;
+  format: ImageBufferFormat;
+  transparency?: TextureTransparency;
+  width: number;
+  gradient?: never;
+  imageSource?: never;
+  url?: never;
+}
+
+export interface TextureImageSourceProps {
+  imageSource: Uint8Array | string;
+  format: ImageSourceFormat;
+  transparency?: TextureTransparency;
+  width?: never;
+  url?: never;
+  imageBuffer?: never;
+  gradient?: never;
+}
+
+export interface TextureGradientSource {
+  gradient: Gradient.Symb;
+  transparency?: never;
+  format?: never;
+  imageBuffer?: never;
+  imageSource?: never;
+  url?: never;
+  width?: never;
+}
+
+export type TextureGradientSourceProps = Omit<TextureGradientSource, "gradient"> & { gradient: Gradient.SymbProps };
+export type TextureSource = TextureUrlProps | TextureImageBufferProps | TextureImageSourceProps | TextureGradientSource;
+export type TextureSourceProps = TextureUrlProps | TextureImageBufferProps | TextureImageSourceProps | TextureGradientSourceProps;
+
 export interface WorkerTextureProps {
   type: RenderTexture.Type;
   transparency?: TextureTransparency;
-  source: {
-    type: "URL";
-    url: string;
-    format?: never;
-    width?: never;
-    gradient?: never;
-  } | {
-    type: "ImageBuffer";
-    data: Uint8Array;
-    format: ImageBufferFormat;
-    width: number;
-    gradient?: never;
-  } | {
-    type: "ImageSource";
-    data: Uint8Array | string;
-    format: ImageSourceFormat;
-    width?: never;
-    url?: never;
-    gradient?: never;
-  } | {
-    type: "Gradient",
-    gradient: Gradient.SymbProps;
-    format?: never;
-    data?: never;
-    url?: never;
-    width?: never;
-  }
+  source: TextureSourceProps
 }
 
 export class WorkerTexture extends RenderTexture {
   public readonly index: number;
-  public readonly params: WorkerTextureParams | Gradient.Symb;
+  public readonly source: TextureSource;
 
   public constructor(index: number, params: WorkerTextureParams | Gradient.Symb) {
     let type = RenderTexture.Type.Normal;
@@ -83,47 +101,34 @@ export class WorkerTexture extends RenderTexture {
 
     super(type);
 
-    this.params = params;
     this.index = index;
+    if (params instanceof Gradient.Symb) {
+      this.source = { gradient: params };
+    } else {
+      const transparency = params.transparency;
+      if (params.source instanceof URL) {
+        this.source = { transparency, url: params.source.toString() };
+      } else if (params.source instanceof ImageSource) {
+        this.source = { transparency, imageSource: params.source.data, format: params.source.format };
+      } else {
+        this.source = { transparency, imageBuffer: params.source.data, format: params.source.format, width: params.source.width };
+      }
+    }
   }
 
   public override dispose() { }
   public override get bytesUsed() { return 0; } // doesn't matter, nobody's calling this.
 
   public toProps(xfer: Set<Transferable>): WorkerTextureProps {
-    let source;
-    let transparency;
-    if (this.params instanceof Gradient.Symb) {
-      source = { type: "Gradient" as const, gradient: this.params.toJSON() };
-    } else {
-      transparency = this.params.transparency;
-      if (this.params.source instanceof URL) {
-        source = { type: "URL" as const, url: this.params.source.toString() };
-      } else if (this.params.source instanceof ImageSource) {
-        if (typeof this.params.source.data !== "string") {
-          xfer.add(this.params.source.data.buffer);
-        }
-      
-        source = {
-          type: "ImageSource" as const,
-          data: this.params.source.data,
-          format: this.params.source.format,
-        };
-      } else {
-        xfer.add(this.params.source.data);
-        source = {
-          type: "ImageBuffer" as const,
-          data: this.params.source.data,
-          format: this.params.source.format,
-          width: this.params.source.width,
-        };
-      }
+    const source = this.source.gradient ? { ...this.source, gradient: this.source.gradient.toJSON() } : this.source;
+    const buffer = source.imageBuffer ?? source.imageSource;
+    if (buffer instanceof Uint8Array) {
+      xfer.add(buffer.buffer);
     }
-    
+
     return {
       type: this.type,
       source,
-      transparency,
     }
   }
 }
@@ -223,7 +228,7 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
   }
 
   public createGradientTexture(gradient: Gradient.Symb): RenderTexture {
-    const existing = this.textures.find((tx) => tx.params instanceof Gradient.Symb && tx.params.equals(gradient));
+    const existing = this.textures.find((tx) => tx.source.gradient && tx.source.gradient.equals(gradient));
     if (existing) {
       return existing;
     }

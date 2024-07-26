@@ -386,26 +386,34 @@ describe.only("GraphicDescriptionBuilder", () => {
   const pngData: Uint8Array = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
 
   it("creates and resolves textures", async () => {
-    function expectTextureParams(texture: WorkerTexture, type: RenderTexture.Type | undefined, source: typeof ImageBuffer | typeof ImageSource | typeof URL, transparency: TextureTransparency | undefined): void {
-      const params = texture.params as WorkerTextureParams;
-      expect(params.source instanceof source).to.be.true;
-      expect(params.type).to.equal(type);
-      expect(params.transparency).to.equal(transparency);
+    function expectTexture(texture: WorkerTexture, type: RenderTexture.Type, source: ImageSource | ImageBuffer | URL | Gradient.Symb, transparency: TextureTransparency | undefined): void {
+      expect(texture.type).to.equal(type);
+      expect(texture.source.transparency).to.equal(transparency);
+      if (source instanceof ImageSource) {
+        expect(texture.source.imageSource).to.equal(source.data);
+        expect(texture.source.format).to.equal(source.format);
+      } else if (source instanceof ImageBuffer) {
+        expect(texture.source.imageBuffer).to.equal(source.data);
+        expect(texture.source.format).to.equal(source.format);
+        expect(texture.source.width).to.equal(source.width);
+      } else if (source instanceof URL) {
+        expect(texture.source.url).to.equal(source.toString());
+      } else {
+        expect(source instanceof Gradient.Symb).to.be.true;
+        expect(texture.source.gradient).to.equal(source);
+      }
     }
 
-    const wkGrad = workerContext.createGradientTexture(Gradient.Symb.fromJSON({
+    const gradient = Gradient.Symb.fromJSON({
       mode: 3,
       flags: 1,
       tint: 0.042133128966509004,
       shift: 3.45912515864202,
       angle: Angle.createDegrees(92.94598821201656),
       keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
-    })) as WorkerTexture;
-
-    expect(wkGrad instanceof WorkerTexture).to.be.true;
-    expect(wkGrad.index).to.equal(0);
-    expect(wkGrad.type).to.equal(RenderTexture.Type.Normal);
-    expect(wkGrad.params instanceof Gradient.Symb).to.be.true;
+    });
+    const wkGrad = workerContext.createGradientTexture(gradient) as WorkerTexture;
+    expectTexture(wkGrad, RenderTexture.Type.Normal, gradient, undefined);
 
     const imgBuf = ImageBuffer.create(
       new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]),
@@ -418,22 +426,23 @@ describe.only("GraphicDescriptionBuilder", () => {
       transparency: TextureTransparency.Translucent,
       source: imgBuf,
     }) as WorkerTexture;
-    expectTextureParams(wkBuf, RenderTexture.Type.TileSection, ImageBuffer, TextureTransparency.Translucent);
+    expectTexture(wkBuf, RenderTexture.Type.TileSection, imgBuf, TextureTransparency.Translucent);
 
+    const imgSrc = new ImageSource(pngData, ImageSourceFormat.Png);
     const wkSrc = workerContext.createTexture({
       type: RenderTexture.Type.SkyBox,
       transparency: TextureTransparency.Opaque,
-      source: new ImageSource(pngData, ImageSourceFormat.Png),
+      source: imgSrc,
     }) as WorkerTexture;
-    expectTextureParams(wkSrc, RenderTexture.Type.SkyBox, ImageSource, TextureTransparency.Opaque);
+    expectTexture(wkSrc, RenderTexture.Type.SkyBox, imgSrc, TextureTransparency.Opaque);
 
     const pngUrl = imageBufferToPngDataUrl(imgBuf, true)!;
     expect(pngUrl).not.to.be.undefined;
+    const url = new URL(pngUrl);
     const wkUrl = workerContext.createTexture({
-      source: new URL(pngUrl),
+      source: url,
     }) as WorkerTexture;
-    expectTextureParams(wkUrl, undefined, URL, undefined);
-    expect(wkUrl.type).to.equal(RenderTexture.Type.Normal);
+    expectTexture(wkUrl, RenderTexture.Type.Normal, url, undefined);
   });
 
   it("ignores textures that can't be resolved", async () => {
