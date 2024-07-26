@@ -52,7 +52,7 @@ The Xml and JSON representations of a custom attribute (and related TypeScript i
 
 Improve the performance of the ECSchemaRpcLocater by making all of the underlying ECSchemaRpcInterface methods GET by default so responses are cached by default. Previously each client had to set the methods to be GET or they would default to POST and were not cached.
 
-## Mathematic equations formatting
+## Mathematical equations formatting
 
 The formatter now supports parsing mathematical equations. Ex :
 ```Typescript
