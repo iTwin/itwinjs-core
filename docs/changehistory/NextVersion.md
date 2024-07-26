@@ -64,7 +64,7 @@ Limitations
 Only plus and minus signs are supported for now (+, -).
 Other opertaors will end up in a parsing error or an invalid input result.
 
-The parsing of math equation is disabled by default.
+The parsing of mathematical equations is disabled by default.
 To enable it you can override the default QuantityFormatter. Ex :
 ```Typescript
   // App specific
