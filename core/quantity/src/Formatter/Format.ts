@@ -36,7 +36,7 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
-  protected _allowMathematicEquations: boolean = false; // optional enables doing maths like addition and subtractions; default is false.
+  protected _allowMathematicEquations: boolean = false; // optional; enables doing maths like addition and subtraction; default is false.
 
   constructor(name: string) {
     this._name = name;
