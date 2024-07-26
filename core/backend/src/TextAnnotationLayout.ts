@@ -386,6 +386,7 @@ export class RunLayout {
       const rangeForText = layoutContext.computeRangeForText(processedText, style, baselineShift);
       graphemeOffsets.push({
         charOffset: grapheme.index,
+        charCount: grapheme.segment.length,
         leadingGraphemeOffset: prevGraphemeOffset,
         trailingGraphemeOffset: rangeForText.layout.high.x,
       });

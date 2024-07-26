@@ -17,6 +17,8 @@ import { TextStyleSettingsProps } from "./TextStyle";
 export interface GraphemeOffset {
   /** The character index that the grapheme starts at */
   charOffset: number;
+  /** The number of characters in the grapheme */
+  charCount: number;
   /** The offset from the start of the run to the start of the grapheme */
   leadingGraphemeOffset: number;
   /** The offset from the start of the run to the end of the grapheme */
