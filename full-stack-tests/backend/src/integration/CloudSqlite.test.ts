@@ -221,7 +221,7 @@ describe("CloudSqlite", () => {
     testContainer1.acquireWriteLock(user1);
     await testContainer1.copyDatabase("testBim", "testBimCopy1");
     const db1 = await BriefcaseDb.open({ fileName: "testBimCopy1", container: testContainer1 });
-    db1.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
+    db1.saveFileProperty({ name: "upload", namespace: "uploadTest", id: 1, subId: 1 }, "this is a test");
     db1.close();
     // set the expires time to five mins earlier, which avoids waiting for 5 mins here.
     await azSqlite.setWriteLockToExpired(testContainer1, "bcv_kv.bcv");
@@ -233,6 +233,22 @@ describe("CloudSqlite", () => {
     expect(() => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is currently locked by another user`);
     testContainer1.disconnect();
     testContainer2.disconnect();
+  });
+
+  it("Should refresh write lock for the current user when uploading changes", async () => {
+    const testContainer1 = testContainers[3];
+    const testCache1 = azSqlite.makeCaches(["testCache1"])[0];
+    testContainer1.connect(testCache1);
+    testContainer1.acquireWriteLock(user1);
+    await testContainer1.copyDatabase("testBim", "testBimCopy1");
+    const db1 = await BriefcaseDb.open({ fileName: "testBimCopy1", container: testContainer1 });
+    db1.saveFileProperty({ name: "refresh", namespace: "refreshTest", id: 1, subId: 1 }, "this is a test");
+    db1.close();
+    await azSqlite.setWriteLockToExpired(testContainer1, "bcv_kv.bcv");
+    // there are no other users, uploadChanges should refresh the write lock for the current user.
+    await testContainer1.uploadChanges();
+    expect (await azSqlite.isWriteLockRefreshed(testContainer1, "bcv_kv.bcv")).to.be.true;
+    testContainer1.disconnect();
   });
 
   it("should query bcv stat table", async () => {

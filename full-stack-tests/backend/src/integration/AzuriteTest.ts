@@ -66,9 +66,9 @@ export namespace AzuriteTest {
       bcvDb.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
         if (stmt.nextRow()) {
           const writeLockData = JSON.parse(stmt.getValueString(0));
-          const expiresDate = new Date();
-          expiresDate.setMinutes(expiresDate.getMinutes() - 5);
-          writeLockData.expires = expiresDate.toISOString();
+          const expiresTime = new Date();
+          expiresTime.setMinutes(expiresTime.getMinutes() - 5);
+          writeLockData.expires = expiresTime.toISOString();
           bcvDb.withSqliteStatement("UPDATE kv SET v = ? WHERE k = 'writeLock'", (stmt1) => {
             stmt1.bindString(1, JSON.stringify(writeLockData));
             stmt1.step();
@@ -80,6 +80,31 @@ export namespace AzuriteTest {
       // clean up
       bcvDb.closeDb();
       fs.unlinkSync(tempFilePath);
+    };
+
+    export const isWriteLockRefreshed = async (container: CloudSqlite.CloudContainer, blockName: string): Promise<boolean> => {
+      const azClient = createAzClient(container.containerId);
+      const blobClient = azClient.getBlockBlobClient(blockName);
+      const tempFilePath = join(KnownLocations.tmpdir, blockName);
+      // download bcv_kv.bcv to local machine
+      await blobClient.downloadToFile(tempFilePath);
+      const bcvDb = new SQLiteDb();
+      bcvDb.openDb(tempFilePath, {openMode: OpenMode.ReadWrite, rawSQLite: true});
+      const result =  new Promise<boolean>((resolve) => {
+        bcvDb.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
+          if (stmt.nextRow()) {
+            const writeLockData = JSON.parse(stmt.getValueString(0));
+            const expiresDate = new Date(writeLockData.expires);
+            const currentTime = new Date();
+            resolve(expiresDate > currentTime);
+          } else {
+            resolve(false);
+          }
+        });
+      });
+      bcvDb.closeDb();
+      fs.unlinkSync(tempFilePath);
+      return result;
     };
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {
