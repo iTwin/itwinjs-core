@@ -12,7 +12,6 @@ import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
-import { BatchOptions } from "../GraphicBuilder";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { ClipVolume } from "./ClipVolume";
@@ -27,6 +26,7 @@ import { Target } from "./Target";
 import { TextureDrape } from "./TextureDrape";
 import { ThematicSensors } from "./ThematicSensors";
 import { BranchState } from "./BranchState";
+import { BatchOptions } from "../../common/render/BatchOptions";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
