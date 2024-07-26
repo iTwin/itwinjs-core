@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, GeometryClass, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
@@ -386,6 +386,15 @@ describe.only("GraphicDescriptionBuilder", () => {
   // bottom right pixel.  The rest of the square is red.
   const pngData: Uint8Array = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
 
+  const gradient = Gradient.Symb.fromJSON({
+    mode: 3,
+    flags: 1,
+    tint: 0.042133128966509004,
+    shift: 3.45912515864202,
+    angle: Angle.createDegrees(92.94598821201656),
+    keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
+  });
+
   it("creates and resolves textures", async () => {
     function expectWorkerTexture(texture: WorkerTexture, type: RenderTexture.Type, source: ImageSource | ImageBuffer | URL | Gradient.Symb, transparency: TextureTransparency | undefined): void {
       expect(texture.type).to.equal(type);
@@ -405,14 +414,6 @@ describe.only("GraphicDescriptionBuilder", () => {
       }
     }
 
-    const gradient = Gradient.Symb.fromJSON({
-      mode: 3,
-      flags: 1,
-      tint: 0.042133128966509004,
-      shift: 3.45912515864202,
-      angle: Angle.createDegrees(92.94598821201656),
-      keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
-    });
     const wkGrad = workerContext.createGradientTexture(gradient) as WorkerTexture;
     expectWorkerTexture(wkGrad, RenderTexture.Type.Normal, gradient, undefined);
 
@@ -460,6 +461,56 @@ describe.only("GraphicDescriptionBuilder", () => {
   });
   
   it("creates a graphic containing materials and textures", async () => {
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, context: workerContext, computeChordTolerance });
+    const addShape = () => {
+      builder.addShape2d([
+        new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      ], 2);
+    };
+
+    const addShapeWithMaterial = (material: RenderMaterial) => {
+      const params = new GraphicParams();
+      params.material = material;
+      builder.activateGraphicParams(params);
+      addShape();
+    };
+
+    const gfParams = new GraphicParams();
+    gfParams.gradient = gradient;
+    builder.activateGraphicParams(gfParams);
+    addShape();
+
+    const blueMaterial = workerContext.createMaterial({ diffuse: { color: ColorDef.blue } });
+    addShapeWithMaterial(blueMaterial);
+
+    const gradTx = workerContext.createGradientTexture(gradient);
+    const gradMaterial = workerContext.createMaterial({ textureMapping: { texture: gradTx } });
+    addShapeWithMaterial(gradMaterial);
+    
+    const pngTx = workerContext.createTexture({ source: new ImageSource(pngData, ImageSourceFormat.Png) });
+    const pngMaterial = workerContext.createMaterial({ textureMapping: { texture: pngTx } });
+    addShapeWithMaterial(pngMaterial);
+
+    const imgBuf = ImageBuffer.create(
+      new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]),
+      ImageBufferFormat.Rgba,
+      2
+    );
+    const imgTx = workerContext.createTexture({ source: imgBuf });
+    const imgMaterial = workerContext.createMaterial({ textureMapping: { texture: imgTx } });
+    addShapeWithMaterial(imgMaterial);
+
+    const urlTx = workerContext.createTexture({ source: new URL(imageBufferToPngDataUrl(imgBuf, true)!) });
+    const urlMaterial = workerContext.createMaterial({ textureMapping: { texture: urlTx } });
+    addShapeWithMaterial(urlMaterial);
+    
+    // ###TODO test normal maps
+
+    const description = builder.finish();
+    const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), { transientIds: new TransientIdSequence() } as any);
+    const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description, context }) as Branch;
+    expect(branch).not.to.be.undefined;
+    expect(branch instanceof Branch).to.be.true;
   });
 
   describe("Worker", () => {
