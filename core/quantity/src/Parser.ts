@@ -446,7 +446,7 @@ export class Parser {
   }
 
   /**
-   * Get the units information asynchronously, then convert the tokens into quantity using the synchronuous tokens -> value.
+   * Get the units information asynchronously, then convert the tokens into quantity using the synchronous tokens -> value.
    */
   private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const unitConversionInfos = await this.getRequiredUnitsConversionsToParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
