@@ -54,7 +54,7 @@ Improve the performance of the ECSchemaRpcLocater by making all of the underlyin
 
 ## Mathematic equations formatting
 
-The Formatter now support parsing mathematic equations. Ex :
+The formatter now supports parsing mathematical equations. Ex :
 ```Typescript
 "5 ft + 12 in + 1 yd -1 ft 6 in" => 7.5 (feet)
 (5 + 1 + 3 - 1.5) => 7.5
