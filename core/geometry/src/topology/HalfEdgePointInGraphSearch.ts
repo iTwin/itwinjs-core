@@ -60,7 +60,7 @@ export class PointSearchContext {
         result = edgeHit.resetAsFace(dataB.node);
       }
     } else if (sideA === 0 || sideB === 0) { // ray is along the edge
-      // the usual case is both 0 i.e. ray is clearly along the edge.
+      // the usual case is both 0, i.e., ray is clearly along the edge
       const alongA = dataA.classifyU(targetDistance, this._tol);
       const alongB = dataB.classifyU(targetDistance, this._tol);
       if (alongA === 0 && sideA === 0) {
@@ -76,7 +76,7 @@ export class PointSearchContext {
         result = edgeHit.resetAtEdgeAndFraction(dataA.node, edgeFraction);
         result.setITag(1);
       } else if (alongA < 0 && alongB < 0) {
-        // target is beyond the edge -- move towards it.
+        // target is beyond the edge; move towards it.
         if (dataA.u > dataB.u)
           result = edgeHit.resetAsVertex(dataA.node);
         else
@@ -116,51 +116,43 @@ export class PointSearchContext {
     let result;
     let outboundEdge = vertexNode!;
     do {
-      // DPoint3d xyzBase;
-      // vu_getDPoint3d(&xyzBase, outboundEdge);
       const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
       const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray);
+      // u0 is the length of projection of faceSuccessor to the ray and v0 is the length of projection of
+      // faceSuccessor to the ray perp line (90 degrees CCW). Similarly for u1 and v1 with facePredecessor.
       const u0 = data0.u;
-      // double u1 = data1.u;
       const v0 = data0.v;
+      // double u1 = data1.u;
       const v1 = data1.v;
       if (Math.abs(v0) < this._tol) { // if ray is parallel to outboundEdge.faceSuccessor
-        if (Math.abs(u0 - targetDistance) < this._tol) {
-          // direct hit at far end
+        if (Math.abs(u0 - targetDistance) < this._tol) { // target point at far end of edge; direct hit at far end
           result = searchBase.resetAsVertex(data0.node);
           result.setITag(1);
           return result;
-        } else if (u0 > targetDistance) {
-          // direct hit within edge
+        } else if (u0 > targetDistance) { // target point somewhere within edge; direct hit within edge
           const edgeFraction = targetDistance / u0;
           result = searchBase.resetAtEdgeAndFraction(outboundEdge, edgeFraction);
           return result;
-        } else if (Math.abs(u0) <= this._tol) {
-          // unexpected direct hit on the base of the search, but call it a hit
+        } else if (Math.abs(u0) <= this._tol) { // target point at near end of edge (on the base of the search); direct hit at near end
           result = searchBase.resetAsVertex(outboundEdge);
           result.setITag(1);
           return result;
-        } else if (u0 > this._tol) {
-          // advance to vertex
-          // double edgeFraction = targetDistance / u0;
+        } else if (u0 > this._tol) { // target point beyond the far end of the edge; advance to vertex at faceSuccessor node
           result = searchBase.resetAsVertex(data0.node);
           return result;
-        } else {
-          // search direction is exactly opposite this edge
-          // see if the other side of the sector is turned even beyond that
-          if (v1 > this._tol) {
+        } else { // ray direction is exactly opposite of the edge
+          if (v1 > this._tol) { // if the face is concave, then there is a face hit
             result = searchBase.resetAsFace(outboundEdge, outboundEdge);
             return result;
           }
         }
-      } else if (v0 < -this._tol) { // if sweep from ray to outboundEdge.faceSuccessor is CCW
-        if (v1 > this._tol) {
-          // the usual simple entry into an angle < 180
+      } else if (v0 < -this._tol) { // if sweep from ray to outboundEdge.faceSuccessor is CW
+        if (v1 > this._tol) { // the usual simple entry into an angle < 180
           result = searchBase.resetAsFace(outboundEdge, outboundEdge);
           return result;
         }
-      } else { // if (v0 > this._tol) or if sweep from ray to outboundEdge.faceSuccessor is CW
-        // TODO
+      } else { // if (v0 > this._tol) or if sweep from ray to outboundEdge.faceSuccessor is CCW
+        // no ray hit; do nothing
       }
       // NEEDS WORK: angle >= 180 cases
       outboundEdge = outboundEdge.vertexSuccessor;
@@ -198,7 +190,7 @@ export class PointSearchContext {
     const data0 = NodeXYZUV.createNodeAndRayOrigin(faceNode, ray);
     let data1;
     let node0 = faceNode;
-    // find the intersection of the ray with each edge of the face
+    // find the intersection of the ray with each edge of the face to classify the ray hit
     do {
       const node1 = node0.faceSuccessor;
       data1 = NodeXYZUV.createNodeAndRayOrigin(node1, ray, data1);
