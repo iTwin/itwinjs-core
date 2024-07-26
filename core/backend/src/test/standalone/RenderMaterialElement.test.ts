@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialAssetProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
-import { ChannelControl, IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
+import { ChannelControl, IModelDb, IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
@@ -91,20 +91,39 @@ describe("RenderMaterialElement", () => {
       test({}, {});
     });
 
+    it("should be able to convert TextureId to hexadecimal string outside javascript's double precision range of 2^53", async () => {
+      // LargeNumericRenderMaterialTextureId is a database with a single RenderMaterial whose jsonProperties look something like:
+      // {"materialAssets":{"renderMaterial":{"Map":{"Diffuse":{"TextureId":9223372036854775808}}}}}
+      // 9223372036854775808 is equivalent to 2^63 which is equivalent to the hexadecimal string 0x8000000000000000.
+      const seedFileName = IModelTestUtils.resolveAssetFile("LargeNumericRenderMaterialTextureId.bim");
+
+      const db = SnapshotDb.openFile(seedFileName);
+      let id: Id64String;
+      db.withStatement(`SELECT ECInstanceId from Bis.RenderMaterial`, (stmt) => {
+        expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+        id = stmt.getRow().id;
+        expect(stmt.step()).to.equal(DbResult.BE_SQLITE_DONE);
+      });
+      const renderMatElement = db.elements.getElement<RenderMaterialElement>(id!).toJSON();
+      expect(renderMatElement.jsonProperties?.materialAssets?.renderMaterial?.Map?.Diffuse?.TextureId).to.equal("0x8000000000000000");
+      db.close();
+    });
+
     it("should convert TextureIds to hexadecimal string when loading element", () => {
       /* eslint-disable @typescript-eslint/naming-convention */
       const maps: RenderMaterialAssetMapsProps = {
         Pattern: { TextureId: 1 },
-        Normal: { TextureId: 2 },
-        Bump: { TextureId: 3 },
-        Diffuse: { TextureId: 4 },
+        Normal: { TextureId: 0x0000bc0000001234 }, // TextureId has a non-zero briefcase Id
+        Bump: { TextureId: 0x000000123456789a }, // TextureId has non-zero digits in the upper 32 bits
+        Diffuse: { TextureId: 0x0000bc123456789a }, // TextureId has a non-zero briefcase Id and non-zero digits in the upper 32 bits.
         Finish: { TextureId: 5 },
         GlowColor: { TextureId: 6 },
         Reflect: { TextureId: 7 },
         Specular: { TextureId: 8 },
-        TranslucencyColor: { TextureId: 9 },
-        TransparentColor: { TextureId: 10 },
-        Displacement: { TextureId: 11 },
+        TranslucencyColor: { OtherProp2: "test"}, // Should be unchanged, still present.
+        TransparentColor: { TextureId: 10, OtherProp: 1 }, // OtherProp should be unchanged, still present.
+        Displacement: { TextureId: "0x1"},
+        OtherProperty: { OtherProperty: "test"}, // Should be unchanged.
       } as any;
       /* eslint-enable @typescript-eslint/naming-convention */
       const material = test({});
@@ -125,16 +144,19 @@ describe("RenderMaterialElement", () => {
       const props = mat.toJSON();
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map).to.not.be.undefined;
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Pattern?.TextureId).to.equal("0x1");
-      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Normal?.TextureId).to.equal("0x2");
-      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Bump?.TextureId).to.equal("0x3");
-      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Diffuse?.TextureId).to.equal("0x4");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Normal?.TextureId).to.equal("0xbc0000001234");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Bump?.TextureId).to.equal("0x123456789a");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Diffuse?.TextureId).to.equal("0xbc123456789a");
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Finish?.TextureId).to.equal("0x5");
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.GlowColor?.TextureId).to.equal("0x6");
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Reflect?.TextureId).to.equal("0x7");
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Specular?.TextureId).to.equal("0x8");
-      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TranslucencyColor?.TextureId).to.equal("0x9");
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TranslucencyColor?.TextureId).to.be.undefined;
+      expect((props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TranslucencyColor as any).OtherProp2).to.equal("test");
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TransparentColor?.TextureId).to.equal("0xa");
-      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Displacement?.TextureId).to.equal("0xb");
+      expect((props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TransparentColor as any).OtherProp).to.equal(1);
+      expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Displacement?.TextureId).to.equal("0x1");
+      expect(((props.jsonProperties?.materialAssets?.renderMaterial?.Map as any).OtherProperty).OtherProperty).to.equal("test");
     });
 
     it("with custom values", () => {
