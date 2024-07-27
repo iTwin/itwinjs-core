@@ -520,16 +520,22 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(array instanceof GraphicsArray).to.be.true;
     expect(array.graphics.length).to.equal(6);
     
-    for (let i = 0; i < 6; i++) {
-      console.log(i);
-      const mesh = array.graphics[i] as MeshGraphic;
-      expect(mesh instanceof MeshGraphic).to.be.true;
+    const meshes = array.graphics as MeshGraphic[];
+    expect(meshes.every((x) => x instanceof MeshGraphic));
 
-      // The last mesh has no material, only a gradient texture.
-      expect(mesh.meshData.materialInfo === undefined).to.equal(i === 5);
-
-      // The first material has no texture, only diffuse color.
-      expect(mesh.meshData.texture === undefined).to.equal(i === 0);
+    // The ordering of the primitives is based on the ordering of their DisplayParams, which can change from run to run because
+    // materials and textures are assigned GUIDs for ordered comparisons.
+    // One mesh just has a material with blue diffuse color - no texture.
+    const blueIndex = meshes.findIndex((x) => x.meshData.texture === undefined);
+    expect(blueIndex).least(0);
+    // One mesh has a gradient - no material.
+    const gradIndex = meshes.findIndex((x) => x.meshData.materialInfo === undefined);
+    expect(gradIndex).least(0);
+    
+    for (let i = 0; i < meshes.length; i++) {
+      const mesh = meshes[i];
+      expect(mesh.meshData.materialInfo === undefined).to.equal(i === gradIndex);
+      expect(mesh.meshData.texture === undefined).to.equal(i === blueIndex);
     }
   });
 
