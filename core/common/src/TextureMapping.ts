@@ -8,6 +8,7 @@
 
 import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { RenderTexture } from "./RenderTexture";
+import { compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, comparePossiblyUndefined } from "@itwin/core-bentley";
 
 /** Defines normal map parameters.
  * @beta
@@ -23,6 +24,12 @@ export interface NormalMapParams {
   scale?: number;
   /** True if want to use constant LOD texture mapping for the normal map texture. */
   useConstantLod?: boolean;
+}
+
+function compareNormalMapParams(lhs: NormalMapParams, rhs: NormalMapParams): number {
+  return comparePossiblyUndefined((lh, rh) => lh.compare(rh), lhs.normalMap, rhs.normalMap)
+    || compareBooleansOrUndefined(lhs.greenUp, rhs.greenUp) || compareNumbersOrUndefined(lhs.scale, rhs.scale)
+    || compareBooleansOrUndefined(lhs.useConstantLod, rhs.useConstantLod);
 }
 
 /** Describes how to map a [[RenderTexture]]'s image onto a surface as part of a [[RenderMaterial]].
@@ -46,6 +53,15 @@ export class TextureMapping {
   /** @internal */
   public computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
     return this.params.computeUVParams(visitor as IndexedPolyfaceVisitor, transformToImodel);
+  }
+
+  public compare(other: TextureMapping): number {
+    if (this === other) {
+      return 0;
+    }
+
+    return this.texture.compare(other.texture) || this.params.compare(other.params)
+      || comparePossiblyUndefined((lh, rh) => compareNormalMapParams(lh, rh), this.normalMapParams, other.normalMapParams);
   }
 }
 
@@ -96,6 +112,26 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
 
     /** An immutable 2x3 identity matrix. */
     public static readonly identity = new Trans2x3();
+
+    public compare(other: Trans2x3): number {
+      if (this === other) {
+        return 0;
+      }
+
+      const originDiff = compareNumbers(this.transform.origin.x, other.transform.origin.x) || compareNumbers(this.transform.origin.y, other.transform.origin.y);
+      if (originDiff !== 0) {
+        return originDiff;
+      }
+
+      for (const i of [0, 1, 3, 4]) {
+        const matDiff = compareNumbers(this.transform.matrix.coffs[i], other.transform.matrix.coffs[i]);
+        if (matDiff !== 0) {
+          return matDiff;
+        }
+      }
+
+      return 0;
+    }
   }
 
   /** Properties used to construct a [[TextureMapping.ConstantLodParams]]. */
@@ -121,6 +157,11 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     minDistClamp: number;
     /** The maximum distance (from the eye to the surface) at which to clamp the texture. */
     maxDistClamp: number;
+  }
+
+  function compareConstantLodParams(lhs: ConstantLodParams, rhs: ConstantLodParams): number {
+    return compareNumbers(lhs.repetitions, rhs.repetitions) || compareNumbers(lhs.offset.x, rhs.offset.x) || compareNumbers(lhs.offset.y, rhs.offset.y)
+      || compareNumbers(lhs.minDistClamp, rhs.minDistClamp) || compareNumbers(lhs.maxDistClamp, rhs.maxDistClamp);
   }
 
   /** Properties used to construct a [[TextureMapping.Params]]. */
@@ -174,6 +215,16 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
         minDistClamp: props?.constantLodProps?.minDistClamp ?? 1,
         maxDistClamp: props?.constantLodProps?.maxDistClamp ?? 4096 * 1024 * 1024,
       };
+    }
+
+    public compare(other: Params): number {
+      if (this === other) {
+        return 0;
+      }
+
+      return compareNumbers(this.weight, other.weight) || compareNumbers(this.mode, other.mode) || compareBooleans(this.worldMapping, other.worldMapping)
+        || compareBooleans(this.useConstantLod, other.useConstantLod) || this.textureMatrix.compare(other.textureMatrix)
+        || compareConstantLodParams(this.constantLodParams, other.constantLodParams);
     }
 
     /**

@@ -18,6 +18,7 @@ import { Id64, Id64String, TransientIdSequence } from "@itwin/core-bentley";
 import { GraphicDescriptionContext, WorkerGraphicDescriptionContext, WorkerTextureParams } from "../../common/render/GraphicDescriptionContext";
 import { WorkerTexture } from "../../common/internal/render/GraphicDescriptionContextImpl";
 import { _textures } from "../../common/internal/Symbols";
+import { Material } from "../../render/webgl/Material";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   expect(range.low.x).to.equal(lx);
@@ -461,7 +462,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   });
   
   it("creates a graphic containing materials and textures", async () => {
-    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, context: workerContext, computeChordTolerance });
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.WorldDecoration, context: workerContext, computeChordTolerance });
     const addShape = () => {
       builder.addShape2d([
         new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
@@ -511,6 +512,16 @@ describe.only("GraphicDescriptionBuilder", () => {
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description, context }) as Branch;
     expect(branch).not.to.be.undefined;
     expect(branch instanceof Branch).to.be.true;
+    expect(branch.branch.entries.length).to.equal(6);
+    for (let i = 0; i < 6; i++) {
+      const mesh = branch.branch.entries[i] as MeshGraphic;
+      expect(mesh instanceof MeshGraphic).to.be.true;
+      expect(mesh.meshData.materialInfo).not.to.be.undefined;
+      const mat = mesh.meshData.materialInfo as Material;
+      expect(mat instanceof Material).to.be.true;
+      expect(mat.textureMapping).not.to.be.undefined;
+      expect(mat.textureMapping!.texture).not.to.be.undefined;
+    }
   });
 
   describe("Worker", () => {

@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@itwin/core-bentley";
+import { compareStrings, Guid, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
 
 /** Identifies an image to be used to produce a [[RenderTexture]] for a given purpose - for example,
  * as part of a [[SkyBox]]. If the string is a valid `Id64String`, it refers to a persistent [Texture]($backend) element stored in an iModel.
@@ -25,6 +25,8 @@ export type TextureImageSpec = Id64String | string;
 export abstract class RenderTexture implements IDisposable {
   /** Indicates the type of texture. */
   public readonly type: RenderTexture.Type;
+  /** Used for ordered comparisons, e.g. in DisplayParams.compareForMerge */
+  private readonly _guid: GuidString;
 
   public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
   public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
@@ -33,6 +35,7 @@ export abstract class RenderTexture implements IDisposable {
 
   protected constructor(type: RenderTexture.Type) {
     this.type = type;
+    this._guid = Guid.createValue();
   }
 
   /** Releases any WebGL resources owned by this texture.
@@ -41,6 +44,10 @@ export abstract class RenderTexture implements IDisposable {
    * its disposal.
    */
   public abstract dispose(): void;
+
+  public compare(other: RenderTexture): number {
+    return compareStrings(this._guid, other._guid);
+  }
 }
 
 /** @public */
