@@ -145,12 +145,6 @@ export class WorkerMaterial extends RenderMaterial {
   public readonly params: MaterialParams;
 
   public constructor(params: MaterialParams) {
-    params = {
-      alpha: params.alpha,
-      diffuse: { ...params.diffuse },
-      specular: { ...params.specular },
-    };
-
     let textureMapping;
     if (params.textureMapping) {
       textureMapping = new TextureMapping(params.textureMapping.texture, new TextureMapping.Params({

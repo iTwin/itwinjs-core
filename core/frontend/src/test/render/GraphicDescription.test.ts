@@ -476,12 +476,6 @@ describe.only("GraphicDescriptionBuilder", () => {
       addShape();
     };
 
-    const gfParams = new GraphicParams();
-    gfParams.gradient = gradient;
-    gfParams.fillFlags = FillFlags.Always; // prevent it from producing an outline for the gradient (polyline geometry).
-    builder.activateGraphicParams(gfParams);
-    addShape();
-
     const blueMaterial = workerContext.createMaterial({ diffuse: { color: ColorDef.blue } });
     addShapeWithMaterial(blueMaterial);
 
@@ -506,6 +500,13 @@ describe.only("GraphicDescriptionBuilder", () => {
     const urlMaterial = workerContext.createMaterial({ textureMapping: { texture: urlTx } });
     addShapeWithMaterial(urlMaterial);
     
+    // No material - just a gradient that produces a texture mapping.
+    const gfParams = new GraphicParams();
+    gfParams.gradient = gradient;
+    gfParams.fillFlags = FillFlags.Always; // prevent it from producing an outline for the gradient (polyline geometry).
+    builder.activateGraphicParams(gfParams);
+    addShape();
+
     // ###TODO test normal maps
 
     const description = builder.finish();
@@ -520,13 +521,15 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(array.graphics.length).to.equal(6);
     
     for (let i = 0; i < 6; i++) {
+      console.log(i);
       const mesh = array.graphics[i] as MeshGraphic;
       expect(mesh instanceof MeshGraphic).to.be.true;
-      expect(mesh.meshData.materialInfo).not.to.be.undefined;
-      const mat = mesh.meshData.materialInfo as Material;
-      expect(mat instanceof Material).to.be.true;
-      expect(mat.textureMapping).not.to.be.undefined;
-      expect(mat.textureMapping!.texture).not.to.be.undefined;
+
+      // The last mesh has no material, only a gradient texture.
+      expect(mesh.meshData.materialInfo === undefined).to.equal(i === 5);
+
+      // The first material has no texture, only diffuse color.
+      expect(mesh.meshData.texture === undefined).to.equal(i === 0);
     }
   });
 
