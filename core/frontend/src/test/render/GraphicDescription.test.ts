@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
@@ -478,6 +478,7 @@ describe.only("GraphicDescriptionBuilder", () => {
 
     const gfParams = new GraphicParams();
     gfParams.gradient = gradient;
+    gfParams.fillFlags = FillFlags.Always; // prevent it from producing an outline for the gradient (polyline geometry).
     builder.activateGraphicParams(gfParams);
     addShape();
 
@@ -512,9 +513,14 @@ describe.only("GraphicDescriptionBuilder", () => {
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description, context }) as Branch;
     expect(branch).not.to.be.undefined;
     expect(branch instanceof Branch).to.be.true;
-    expect(branch.branch.entries.length).to.equal(6);
+    expect(branch.branch.entries.length).to.equal(1);
+
+    const array = branch.branch.entries[0] as GraphicsArray;
+    expect(array instanceof GraphicsArray).to.be.true;
+    expect(array.graphics.length).to.equal(6);
+    
     for (let i = 0; i < 6; i++) {
-      const mesh = branch.branch.entries[i] as MeshGraphic;
+      const mesh = array.graphics[i] as MeshGraphic;
       expect(mesh instanceof MeshGraphic).to.be.true;
       expect(mesh.meshData.materialInfo).not.to.be.undefined;
       const mat = mesh.meshData.materialInfo as Material;
