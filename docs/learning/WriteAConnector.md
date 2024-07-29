@@ -591,7 +591,7 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 
 ### Unmap
 
-Sometimes it becomes necessary to 'undo' a connector run and an extreme step of deleting an imodel and starting over is not practical because, for example, the imodel contains the content of multiple connectors and a more surgical approach is warranted.  **shouldUnmapSource** is a job argument (i.e. this.jobArgs.shouldUnmapSource) that can be passed to the ConnectorRunner and it will call the connector's **unmapSource** method.
+The Unmap mode allows removing all data from a given input source from the iModel. This is important because iModels contain data from many sources and users may need to selectively remove data (e.g. maybe it moved, maybe there's now a better Connector, or maybe it was added by mistake).  **shouldUnmapSource** is a job argument (i.e. this.jobArgs.shouldUnmapSource) that can be passed to the ConnectorRunner and it will call the connector's **unmapSource** method.
 
 ConnectorRunner calls the unmapSource method if argument is defined:
 
