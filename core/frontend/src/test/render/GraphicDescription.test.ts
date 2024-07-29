@@ -40,20 +40,10 @@ function createIModel(): IModelConnection {
   return { transientIds: new TransientIdSequence() } as unknown as IModelConnection;
 }
 
-describe("GraphicDescriptionBuilder", () => {
-  let mainContext: GraphicDescriptionContext;
-  let workerContext: WorkerGraphicDescriptionContext;
-
+describe.only("GraphicDescriptionBuilder", () => {
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     Material.preserveParams = true;
-
-    // The context stuff is not really relevant to these tests because we're not passing data to worker threads and
-    // we're not allocating transient Ids.
-    const iModel = createIModel();
-    const contextProps  = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
-    workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
-    mainContext = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
   });
 
   after(async () => {
@@ -61,33 +51,44 @@ describe("GraphicDescriptionBuilder", () => {
     await IModelApp.shutdown();
   });
 
+  async function createContexts(): Promise<{ iModel: IModelConnection, workerContext: WorkerGraphicDescriptionContext, mainContext: GraphicDescriptionContext }> {
+    const iModel = createIModel();
+    const contextProps  = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
+    const workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
+    const mainContext = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
+    return { iModel, workerContext, mainContext };
+  }
+
   const computeChordTolerance = () => 0;
   const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
 
-  function expectOption(options: Omit<GraphicDescriptionBuilderOptions, "context" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
+  function expectOption(workerContext: WorkerGraphicDescriptionContext, options: Omit<GraphicDescriptionBuilderOptions, "context" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
     const builder = GraphicDescriptionBuilder.create({ ...options, context: workerContext, computeChordTolerance });
     expect(builder[option]).to.equal(expected);
   }
 
-  it("preserves order for overlay and background graphics", () => {
+  it("preserves order for overlay and background graphics", async () => {
+    const { workerContext } = await createContexts();
     for (const type of graphicTypes) {
-      expectOption({ type }, "preserveOrder", type === GraphicType.ViewOverlay || type === GraphicType.WorldOverlay || type === GraphicType.ViewBackground);
+      expectOption(workerContext, { type }, "preserveOrder", type === GraphicType.ViewOverlay || type === GraphicType.WorldOverlay || type === GraphicType.ViewBackground);
     }
   });
 
-  it("wants edges for scene graphics or if explicitly requested", () => {
+  it("wants edges for scene graphics or if explicitly requested", async () => {
+    const { workerContext } = await createContexts();
     for (const type of graphicTypes) {
-      expectOption({ type, generateEdges: true }, "wantEdges", true);
-      expectOption({ type, generateEdges: false }, "wantEdges", false);
-      expectOption({ type }, "wantEdges", GraphicType.Scene === type);
+      expectOption(workerContext, { type, generateEdges: true }, "wantEdges", true);
+      expectOption(workerContext, { type, generateEdges: false }, "wantEdges", false);
+      expectOption(workerContext, { type }, "wantEdges", GraphicType.Scene === type);
     }
   });
 
-  it("wants normals for scene graphics or if edges are requested", () => {
+  it("wants normals for scene graphics or if edges are requested", async () => {
+    const { workerContext } = await createContexts();
     for (const type of graphicTypes) {
-      expectOption({ type, generateEdges: true }, "wantNormals", true);
-      expectOption({ type }, "wantNormals", GraphicType.Scene === type);
-      expectOption({ type, generateEdges: false }, "wantNormals", GraphicType.Scene === type);
+      expectOption(workerContext, { type, generateEdges: true }, "wantNormals", true);
+      expectOption(workerContext, { type }, "wantNormals", GraphicType.Scene === type);
+      expectOption(workerContext, { type, generateEdges: false }, "wantNormals", GraphicType.Scene === type);
     }
   });
 
@@ -101,6 +102,7 @@ describe("GraphicDescriptionBuilder", () => {
   }
 
   it("creates a graphic", async () => {
+    const { workerContext, mainContext } = await createContexts();
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, context: workerContext, computeChordTolerance });
     expect(builder.wantEdges).to.be.false;
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
@@ -142,6 +144,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a graphic with edges", async () => {
+    const { workerContext, mainContext } = await createContexts();
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, context: workerContext, computeChordTolerance });
     expect(builder.wantEdges).to.be.true;
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
@@ -196,6 +199,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
   it("applies a placement transform to the graphics", async () => {
+    const { workerContext, mainContext } = await createContexts();
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldDecoration,
       context: workerContext,
@@ -220,6 +224,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a view-independent graphic", async () => {
+    const { workerContext, mainContext } = await createContexts();
     const viewIndependentOrigin = new Point3d(6, 7, 8);
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldDecoration,
@@ -247,6 +252,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a batch containing a single feature with only an Id", async () => {
+    const { workerContext, mainContext } = await createContexts();
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
       context: workerContext,
@@ -302,6 +308,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a batch containing a single full feature with a model Id", async () => {
+    const { workerContext, mainContext } = await createContexts();
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
       context: workerContext,
@@ -346,6 +353,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
   it("creates a batch containing multiple features", async () => {
+    const { workerContext, mainContext } = await createContexts();
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.WorldOverlay,
       context: workerContext,
@@ -406,6 +414,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
   it("creates and resolves textures", async () => {
+    const { workerContext, mainContext } = await createContexts();
     function expectWorkerTexture(texture: WorkerTexture, type: RenderTexture.Type, source: ImageSource | ImageBuffer | URL | Gradient.Symb, transparency: TextureTransparency | undefined): void {
       expect(texture.type).to.equal(type);
       expect(texture.source.transparency).to.equal(transparency);
@@ -491,6 +500,7 @@ describe("GraphicDescriptionBuilder", () => {
   }
 
   it("creates a graphic containing materials and textures", async () => {
+    const { workerContext } = await createContexts();
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.WorldDecoration, context: workerContext, computeChordTolerance });
     const addShape = () => {
       builder.addShape2d([
