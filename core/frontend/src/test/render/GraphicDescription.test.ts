@@ -40,7 +40,7 @@ function createIModel(): IModelConnection {
   return { transientIds: new TransientIdSequence() } as unknown as IModelConnection;
 }
 
-describe.only("GraphicDescriptionBuilder", () => {
+describe("GraphicDescriptionBuilder", () => {
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     Material.preserveParams = true;
@@ -414,7 +414,7 @@ describe.only("GraphicDescriptionBuilder", () => {
   });
 
   it("creates and resolves textures", async () => {
-    const { workerContext, mainContext } = await createContexts();
+    const { workerContext } = await createContexts();
     function expectWorkerTexture(texture: WorkerTexture, type: RenderTexture.Type, source: ImageSource | ImageBuffer | URL | Gradient.Symb, transparency: TextureTransparency | undefined): void {
       expect(texture.type).to.equal(type);
       expect(texture.source.transparency).to.equal(transparency);
@@ -701,10 +701,10 @@ describe.only("GraphicDescriptionBuilder", () => {
     });
 
     it("remaps transient Ids and creates a RenderGraphic", async () => {
-      const transientIds = new TransientIdSequence();
+      const iModel = createIModel();
+      const transientIds = iModel.transientIds;
       expectTransientId(transientIds.getNext(), 1);
 
-      const iModel = createIModel();
       const worker = createWorker();
       const result = await worker.createGraphic(IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel));
       worker.terminate();
