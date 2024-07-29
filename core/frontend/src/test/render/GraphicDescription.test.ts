@@ -15,10 +15,11 @@ import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/inter
 import { Batch, Branch, GraphicsArray } from "../../webgl";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
 import { Id64, Id64String, TransientIdSequence } from "@itwin/core-bentley";
-import { GraphicDescriptionContext, WorkerGraphicDescriptionContext, WorkerTextureParams } from "../../common/render/GraphicDescriptionContext";
+import { GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
 import { WorkerTexture } from "../../common/internal/render/GraphicDescriptionContextImpl";
 import { _textures } from "../../common/internal/Symbols";
 import { Material } from "../../render/webgl/Material";
+import { IModelConnection } from "../../IModelConnection";
 
 function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   expect(range.low.x).to.equal(lx);
@@ -35,6 +36,10 @@ function expectFeature(index: number, featureTable: RenderFeatureTable, expected
   expect(actual).to.deep.equal(expected);
 }
 
+function createIModel(): IModelConnection {
+  return { transientIds: new TransientIdSequence() } as unknown as IModelConnection;
+}
+
 describe.only("GraphicDescriptionBuilder", () => {
   let mainContext: GraphicDescriptionContext;
   let workerContext: WorkerGraphicDescriptionContext;
@@ -44,7 +49,7 @@ describe.only("GraphicDescriptionBuilder", () => {
 
     // The context stuff is not really relevant to these tests because we're not passing data to worker threads and
     // we're not allocating transient Ids.
-    const iModel = { transientIds: new TransientIdSequence() } as any;
+    const iModel = createIModel();
     const contextProps  = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
     workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
     mainContext = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
@@ -452,7 +457,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     expect(xfers.size).to.equal(2);
     expect(Array.from(xfers).every((x) => x instanceof ArrayBuffer)).to.be.true;
 
-    const iModel = { transientIds: new TransientIdSequence() } as any;
+    const iModel = createIModel();
     const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(contextProps, iModel);
     expect(context[_textures].size).to.equal(4);
   });
@@ -476,15 +481,30 @@ describe.only("GraphicDescriptionBuilder", () => {
       addShape();
     };
 
-    const blueMaterial = workerContext.createMaterial({ diffuse: { color: ColorDef.blue } });
+    const blueMaterial = workerContext.createMaterial({
+      diffuse: {
+        color: ColorDef.blue,
+        weight: 0.5,
+      },
+    });
     addShapeWithMaterial(blueMaterial);
 
     const gradTx = workerContext.createGradientTexture(gradient);
-    const gradMaterial = workerContext.createMaterial({ textureMapping: { texture: gradTx } });
+    const gradMaterial = workerContext.createMaterial({
+      textureMapping: { texture: gradTx },
+      specular: {
+        color: ColorDef.red,
+        weight: 0.25,
+        exponent: 10,
+      },
+    });
     addShapeWithMaterial(gradMaterial);
     
     const pngTx = workerContext.createTexture({ source: new ImageSource(pngData, ImageSourceFormat.Png) });
-    const pngMaterial = workerContext.createMaterial({ textureMapping: { texture: pngTx } });
+    const pngMaterial = workerContext.createMaterial({
+      textureMapping: { texture: pngTx },
+      alpha: 0.75,
+    });
     addShapeWithMaterial(pngMaterial);
 
     const imgBuf = ImageBuffer.create(
@@ -507,10 +527,8 @@ describe.only("GraphicDescriptionBuilder", () => {
     builder.activateGraphicParams(gfParams);
     addShape();
 
-    // ###TODO test normal maps
-
     const description = builder.finish();
-    const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), { transientIds: new TransientIdSequence() } as any);
+    const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), createIModel());
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description, context }) as Branch;
     expect(branch).not.to.be.undefined;
     expect(branch instanceof Branch).to.be.true;
@@ -523,8 +541,12 @@ describe.only("GraphicDescriptionBuilder", () => {
     const meshes = array.graphics as MeshGraphic[];
     expect(meshes.every((x) => x instanceof MeshGraphic));
 
-    // The ordering of the primitives is based on the ordering of their DisplayParams, which can change from run to run because
+    // NOTE: The ordering of the primitives is based on the ordering of their DisplayParams, which can change from run to run because
     // materials and textures are assigned GUIDs for ordered comparisons.
+    // So we need to detect each material of interest based on its properties.
+
+
+    
     // One mesh just has a material with blue diffuse color - no texture.
     const blueIndex = meshes.findIndex((x) => x.meshData.texture === undefined);
     expect(blueIndex).least(0);
@@ -537,6 +559,10 @@ describe.only("GraphicDescriptionBuilder", () => {
       expect(mesh.meshData.materialInfo === undefined).to.equal(i === gradIndex);
       expect(mesh.meshData.texture === undefined).to.equal(i === blueIndex);
     }
+
+    it("creates graphics containing normal maps", async () => {
+      // ###TODO
+    });
   });
 
   describe("Worker", () => {
@@ -561,7 +587,7 @@ describe.only("GraphicDescriptionBuilder", () => {
     it("creates a graphic description", async () => {
       const worker = createWorker();
 
-      const iModel = { transientIds: new TransientIdSequence() } as any;
+      const iModel = createIModel();
       const workerContext = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
       const result = await worker.createGraphic(workerContext);
       expect(result.description).not.to.be.undefined;
@@ -597,7 +623,7 @@ describe.only("GraphicDescriptionBuilder", () => {
       const transientIds = new TransientIdSequence();
       expectTransientId(transientIds.getNext(), 1);
 
-      const iModel = { transientIds } as any;
+      const iModel = createIModel();
       const worker = createWorker();
       const result = await worker.createGraphic(IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel));
       worker.terminate();
