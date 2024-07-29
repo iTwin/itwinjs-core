@@ -19,8 +19,6 @@ import {
 import { expect } from "chai";
 import { collect } from "../../Utils";
 
-// TODO: Enable tests after PR is merged: https://github.com/iTwin/imodel-native/pull/811
-
 describeContentTestSuite("Content Display Labels", () => {
   const EMPTY_LABEL = LabelDefinition.fromLabelString("@Presentation:label.notSpecified@");
 
@@ -103,7 +101,7 @@ describeContentTestSuite("Content Display Labels", () => {
     };
   }
 
-  xit("each related content item has display label", async () => {
+  it("each related content item has display label", async () => {
     const ruleset = createRuleset();
     const { items } = (await Presentation.presentation.getContentIterator({
       imodel,
@@ -123,7 +121,7 @@ describeContentTestSuite("Content Display Labels", () => {
     }
   });
 
-  xit("applies correctly class name label override", async () => {
+  it("applies correctly class name label override", async () => {
     const ruleset = createRuleset({
       ruleType: RuleTypes.InstanceLabelOverride,
       class: { schemaName, className: "Color" },
@@ -149,7 +147,7 @@ describeContentTestSuite("Content Display Labels", () => {
     }
   });
 
-  xit("applies correctly composite label override", async () => {
+  it("applies correctly composite label override", async () => {
     const ruleset = createRuleset({
       ruleType: RuleTypes.InstanceLabelOverride,
       class: { schemaName, className: "Color" },
