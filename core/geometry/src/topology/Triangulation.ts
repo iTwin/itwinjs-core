@@ -31,7 +31,7 @@ export class Triangulator {
   /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them
    * * The shared edge mates are c and e.
    * * (abc) are a triangle in CCW order
-   * * (dfe) are a triangle in CCW order. (!! node dfe instead of def.)
+   * * (dfe) are a triangle in CCW order. (Note: dfe instead of def!!)
    */
   private static flipEdgeBetweenTriangles(a: HalfEdge, b: HalfEdge, c: HalfEdge, d: HalfEdge, e: HalfEdge, f: HalfEdge) {
     // Reassign all of the pointers
