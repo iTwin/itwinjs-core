@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "extract-api: Add option to extract indirect (unexported) APIs. extract-api-summary: Fix API regex, add improved output option.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}
