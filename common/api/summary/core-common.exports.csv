@@ -132,6 +132,7 @@ public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
+internal;computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadata): Array
 alpha;ComputeNodeId = (feature: PackedFeatureWithIndex) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ConcreteEntityTypes

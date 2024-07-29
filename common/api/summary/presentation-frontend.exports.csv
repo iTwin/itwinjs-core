@@ -29,6 +29,7 @@ public;IModelContentChangeEventArgs
 public;IModelHierarchyChangeEventArgs
 internal;IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation"
 public;ISelectionProvider
+public;MultipleValuesRequestOptions = Paged
 internal;NoopFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorageProps

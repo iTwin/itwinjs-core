@@ -245,6 +245,7 @@ public;GeometryTileTreeReference
 public;GeoServices
 internal;GeoServicesOptions = Omit
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
+internal;getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string | undefined
 internal;getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise
@@ -559,6 +560,7 @@ public;ReadImageBufferArgs
 internal;readImdlContent(args: ImdlReaderCreateArgs &
 public;ReadMeshArgs
 internal;ReadonlyTileUserSet 
+internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise
 alpha;RealityDataError 
 beta;RealityDataSource
 beta;RealityDataSource
@@ -736,6 +738,7 @@ public;TileRequest
 public;TileRequestChannel
 public;TileRequestChannels
 public;TileRequestChannelStatistics
+public;Tiles 
 beta;TileStorage
 public;class TileTree
 public;TileTreeDiscloser

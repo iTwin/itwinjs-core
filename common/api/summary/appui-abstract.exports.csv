@@ -185,6 +185,8 @@ deprecated;UiEvent
 public;UiEventDispatcher
 deprecated;UiEventDispatcher
 public;UiFlags
+public;UiItemProviderOverrides = MarkRequired
+deprecated;UiItemProviderOverrides = MarkRequired
 public;UiItemProviderRegisteredEventArgs
 deprecated;UiItemProviderRegisteredEventArgs
 public;UiItemsApplicationAction
