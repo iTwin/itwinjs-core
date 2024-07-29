@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, MeshArgs, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
@@ -203,7 +203,7 @@ describe("Disposal of WebGL Resources", () => {
     for (const point of points)
       qpoints.add(point);
 
-    const args: MeshArgs = {
+    const args = {
       points: qpoints,
       vertIndices: [0, 1, 2],
       colors,

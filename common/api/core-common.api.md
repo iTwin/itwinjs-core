@@ -6437,6 +6437,8 @@ export class PackedFeatureTable implements RenderFeatureTable {
     readonly batchModelIdPair: Id64.Uint32Pair;
     // (undocumented)
     get byteLength(): number;
+    // (undocumented)
+    readonly data: Uint32Array;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)

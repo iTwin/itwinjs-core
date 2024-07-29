@@ -1446,6 +1446,16 @@ export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, 
 // @beta
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
 
+// @beta
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+
+// @beta
+export interface DeleteElementTreeArgs {
+    iModel: IModelDb;
+    maxPasses?: number;
+    topElement: Id64String;
+}
+
 // @public
 export class DetailCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
@@ -3967,6 +3977,28 @@ export class LockConflict extends IModelError {
     briefcaseAlias: string, msg: "shared lock is held" | "exclusive lock is already held");
     readonly briefcaseAlias: string;
     readonly briefcaseId: BriefcaseId;
+}
+
+// @public
+export interface LockControl {
+    // @internal
+    [_close]: () => void;
+    // @internal
+    [_elementWasCreated]: (id: Id64String) => void;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    [_releaseAllLocks]: () => Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
+    checkExclusiveLock(id: Id64String, type: string, operation: string): void;
+    checkSharedLock(id: Id64String, type: string, operation: string): void;
+    holdsExclusiveLock(id: Id64String): boolean;
+    holdsSharedLock(id: Id64String): boolean;
+    readonly isServerBased: boolean;
+    releaseAllLocks(): Promise<void>;
 }
 
 // @internal (undocumented)

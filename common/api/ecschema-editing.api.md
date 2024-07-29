@@ -1223,35 +1223,35 @@ export interface ISchemaChanges {
 // @alpha
 export interface ISchemaComparer {
     // (undocumented)
-    compareClasses(classA: AnyClass, classB: AnyClass | undefined): void;
+    compareClasses(classA: AnyClass, classB: AnyClass): void;
     // (undocumented)
-    compareConstants(constantA: Constant, constantB: Constant | undefined): void;
+    compareConstants(constantA: Constant, constantB: Constant): void;
     // (undocumented)
-    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): void;
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass): void;
     // (undocumented)
-    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): void;
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): void;
     // (undocumented)
-    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): void;
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass): void;
     // (undocumented)
-    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): void;
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration): void;
     // (undocumented)
-    compareFormats(formatA: Format, formatB: Format | undefined): void;
+    compareFormats(formatA: Format, formatB: Format): void;
     // (undocumented)
-    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): void;
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): void;
     // (undocumented)
-    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): void;
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity): void;
     // (undocumented)
-    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): void;
+    compareMixins(mixinA: Mixin, mixinB: Mixin): void;
     // (undocumented)
-    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): void;
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): void;
     // (undocumented)
     compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): void;
     // (undocumented)
-    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): void;
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory): void;
     // (undocumented)
-    compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass | undefined): void;
+    compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass): void;
     // (undocumented)
-    compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint | undefined): void;
+    compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint): void;
     // (undocumented)
     compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): void;
     // (undocumented)
@@ -1259,7 +1259,7 @@ export interface ISchemaComparer {
     // (undocumented)
     compareSchemas(schemaA: Schema, schemaB: Schema): void;
     // (undocumented)
-    compareUnits(unitA: Unit, unitB: Unit | undefined): void;
+    compareUnits(unitA: Unit, unitB: Unit): void;
 }
 
 // @alpha
@@ -2001,25 +2001,25 @@ export enum SchemaCompareDirection {
 // @alpha
 export class SchemaComparer {
     constructor(...reporters: ISchemaCompareReporter[]);
-    compareClasses(classA: AnyClass, classB: AnyClass | undefined): Promise<void>;
-    compareConstants(constantA: Constant, constantB: Constant | undefined): Promise<void>;
-    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): Promise<void>;
-    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): Promise<void>;
-    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void>;
-    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): Promise<void>;
-    compareFormats(formatA: Format, formatB: Format | undefined): Promise<void>;
-    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): Promise<void>;
-    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): Promise<void>;
-    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): Promise<void>;
-    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): Promise<void>;
+    compareClasses(classA: AnyClass, classB: AnyClass): Promise<void>;
+    compareConstants(constantA: Constant, constantB: Constant): Promise<void>;
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass): Promise<void>;
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): Promise<void>;
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass): Promise<void>;
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration): Promise<void>;
+    compareFormats(formatA: Format, formatB: Format): Promise<void>;
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): Promise<void>;
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity): Promise<void>;
+    compareMixins(mixinA: Mixin, mixinB: Mixin): Promise<void>;
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): Promise<void>;
     compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): Promise<void>;
-    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): Promise<void>;
-    compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass | undefined): Promise<void>;
-    compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint | undefined): Promise<void>;
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory): Promise<void>;
+    compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass): Promise<void>;
+    compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint): Promise<void>;
     compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): Promise<void>;
     compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
     compareSchemas(schemaA: Schema, schemaB: Schema): Promise<void>;
-    compareUnits(unitA: Unit, unitB: Unit | undefined): Promise<void>;
+    compareUnits(unitA: Unit, unitB: Unit): Promise<void>;
 }
 
 // @alpha

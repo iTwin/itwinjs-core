@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Provide WorkerProxy to simplify use of Worker scripts, and enable creation of graphics on Workers using GraphicDescriptionBuilder.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
