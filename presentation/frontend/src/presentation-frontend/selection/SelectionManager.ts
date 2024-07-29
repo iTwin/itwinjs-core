@@ -160,6 +160,10 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   private handleEvent(evt: SelectionChangeEventArgs): void {
+    if (!this._knownIModels.has(evt.imodel.key)) {
+      this._knownIModels.set(evt.imodel.key, evt.imodel);
+    }
+
     switch (evt.changeType) {
       case SelectionChangeType.Add:
         this._selectionStorage.addToSelection({
@@ -370,6 +374,7 @@ export class SelectionManager implements ISelectionProvider {
           return this._currentSelection.computeSelection(args.iModelKey, args.level, currentSelectables, args.selectables).pipe(
             mergeMap(({ level, changedSelection }): Observable<SelectionChangeEventArgs> => {
               const imodel = this._knownIModels.get(args.iModelKey);
+              // istanbul ignore if
               if (!imodel) {
                 return EMPTY;
               }
