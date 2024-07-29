@@ -267,18 +267,6 @@ describe("CloudSqlite", () => {
     testContainer1.disconnect();
   });
 
-  // it("Should refresh write lock for the current user when uploading changes", async () => {
-  //   const testContainer1 = testContainers[3];
-  //   const testContainer2 = testContainers[4];
-  //   const testCache1 = azSqlite.makeCaches(["testCache1"])[0];
-  //   const testCache2 = azSqlite.makeCaches(["testCache2"])[0];
-  //   testContainer1.connect(testCache1);
-  //   testContainer1.acquireWriteLock(user1);
-  //   testContainer1.disconnect();
-  //   testContainer2.connect(testCache2);
-  //   testContainer2.acquireWriteLock(user2);
-  // });
-
   it("should query bcv stat table", async () => {
     const cache = azSqlite.makeCache("bcv-stat-cache");
     const container = testContainers[0];
