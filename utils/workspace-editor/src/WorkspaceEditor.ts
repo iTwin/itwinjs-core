@@ -11,7 +11,7 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  _nativeDb, CloudSqlite, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
+  _nativeDb, CloudSqlite, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import {
   constructWorkspaceDb,
@@ -64,7 +64,8 @@ interface WorkspaceDbOpt extends EditorOpts {
   glob?: string;
 }
 
-interface CreateWorkspaceDbOpt extends WorkspaceDbOpt {
+interface CreateWorkspaceDbOpt extends Omit<WorkspaceDbOpt, "dbName"> {
+  dbName: WorkspaceDbName;
   workspaceName: string;
 }
 

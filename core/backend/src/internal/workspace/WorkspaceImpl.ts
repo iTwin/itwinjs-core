@@ -585,7 +585,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
     }
   }
 
-  public async createDb(args: { dbName?: string, version?: string, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb> {
+  public async createDb(args: { dbName?: string, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb> {
     if (!this.cloudContainer) {
       WorkspaceEditor.createEmptyDb({ localFileName: this.resolveDbFileName(args), manifest: args.manifest });
     } else {
@@ -595,7 +595,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
         IModelJsFs.removeSync(tempDbFile);
 
       WorkspaceEditor.createEmptyDb({ localFileName: tempDbFile, manifest: args.manifest });
-      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName), args.version) });
+      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName)) });
       IModelJsFs.removeSync(tempDbFile);
     }
 
