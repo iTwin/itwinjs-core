@@ -64,7 +64,7 @@ interface WorkspaceDbOpt extends EditorOpts {
   glob?: string;
 }
 
-interface CreateWorkspaceDbOpt extends Omit<WorkspaceDbOpt, "dbName"> {
+interface CreateWorkspaceDbOpt extends Omit<WorkspaceDbOpt, "dbName" | "version"> {
   dbName: WorkspaceDbName;
   workspaceName: string;
 }
