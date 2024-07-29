@@ -398,8 +398,8 @@ export class AccuDraw {
     protected _compassSizeInches: number;
     // (undocumented)
     contextSensitive: boolean;
-    // (undocumented)
-    currentState: CurrentState;
+    get currentState(): CurrentState;
+    set currentState(state: CurrentState);
     // @internal (undocumented)
     currentView?: ScreenViewport;
     // @internal (undocumented)
@@ -541,7 +541,6 @@ export class AccuDraw {
     setContext(flags: AccuDrawFlags, originP?: Point3d, orientationP?: Matrix3d | Vector3d, deltaP?: Vector3d, distanceP?: number, angleP?: number, transP?: Transform): BentleyStatus;
     // @internal (undocumented)
     setContextRotation(rMatrix: Matrix3d, locked: boolean, animate: boolean): void;
-    setCurrentState(state: CurrentState): void;
     setFieldLock(index: ItemField, locked: boolean): void;
     setFocusItem(_index: ItemField): void;
     // @internal (undocumented)

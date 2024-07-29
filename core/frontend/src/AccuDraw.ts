@@ -253,7 +253,21 @@ export class ThreeAxes {
  * @public
  */
 export class AccuDraw {
-  public currentState = CurrentState.NotEnabled; // Compass state
+  private _currentState = CurrentState.NotEnabled;
+
+  /** Current AccuDraw state */
+  public get currentState(): CurrentState { return this._currentState; }
+  public set currentState(state: CurrentState) {
+    if (state === this._currentState)
+      return;
+
+    const wasActive = this.isActive;
+    this._currentState = state;
+
+    if (wasActive !== this.isActive)
+      this.onCompassDisplayChange(wasActive ? "hide" : "show");
+  }
+
   public compassMode = CompassMode.Rectangular; // Compass mode
   public rotationMode = RotationMode.View; // Compass rotation
   /** @internal */
@@ -374,7 +388,7 @@ export class AccuDraw {
   public activate(): void {
     // Upgrade state to inactive so upgradeToActiveState knows it is ok to move to active...
     if (CurrentState.Deactivated === this.currentState)
-      this.setCurrentState(CurrentState.Inactive);
+      this.currentState = CurrentState.Inactive;
     this.upgradeToActiveState();
   }
 
@@ -383,19 +397,7 @@ export class AccuDraw {
     this.downgradeInactiveState();
     // Don't allow compass to come back until user re-enables it...
     if (CurrentState.Inactive === this.currentState)
-      this.setCurrentState(CurrentState.Deactivated);
-  }
-
-  /** Change current AccuDraw state */
-  public setCurrentState(state: CurrentState): void {
-    if (state === this.currentState)
-      return;
-
-    const wasActive = this.isActive;
-    this.currentState = state;
-
-    if (wasActive !== this.isActive)
-      this.onCompassDisplayChange(wasActive ? "hide" : "show");
+      this.currentState = CurrentState.Deactivated;
   }
 
   /** Change current compass input mode to either polar or rectangular */
@@ -873,12 +875,12 @@ export class AccuDraw {
   /** @internal */
   public enableForSession(): void {
     if (CurrentState.NotEnabled === this.currentState)
-      this.setCurrentState(CurrentState.Inactive);
+      this.currentState = CurrentState.Inactive;
   }
 
   /** @internal */
   public disableForSession(): void {
-    this.setCurrentState(CurrentState.NotEnabled);
+    this.currentState = CurrentState.NotEnabled;
     this.flags.redrawCompass = true; // Make sure decorators are called so we don't draw (i.e. erase AccuDraw compass)
   }
 
@@ -1684,7 +1686,7 @@ export class AccuDraw {
     this.onEventCommon();
     this.saveLockedCoords();
     // Setup default starting tool state...
-    this.setCurrentState(CurrentState.Inactive);
+    this.currentState = CurrentState.Inactive;
     this.clearContext();
     if (this.alwaysShowCompass)
       this.activate();
@@ -1703,7 +1705,7 @@ export class AccuDraw {
     if (tool && !(tool instanceof ViewTool))
       this.saveState(this.savedStateViewTool); // Save AccuDraw state of tool being suspended...
 
-    this.setCurrentState(CurrentState.Deactivated); // Default to disabled for view tools.
+    this.currentState = CurrentState.Deactivated; // Default to disabled for view tools.
     return false;
   }
 
@@ -1728,7 +1730,7 @@ export class AccuDraw {
     if (tool && !(tool instanceof InputCollector))
       this.saveState(this.savedStateInputCollector); // Save AccuDraw state of tool being suspended...
 
-    this.setCurrentState(CurrentState.Inactive); // Default to inactive for input collectors.
+    this.currentState = CurrentState.Inactive; // Default to inactive for input collectors.
     return false;
   }
 
@@ -1759,7 +1761,7 @@ export class AccuDraw {
   /** @internal */
   public restoreState(stateBuffer: SavedState): void {
     if (0 === (stateBuffer.ignoreFlags & AccuDrawFlags.Disable)) {
-      this.setCurrentState(stateBuffer.state);
+      this.currentState = stateBuffer.state;
     }
 
     if (0 === (stateBuffer.ignoreFlags & AccuDrawFlags.SetOrigin)) {
@@ -2794,7 +2796,7 @@ export class AccuDraw {
     this._rawPointOnPlane.setFrom(this.point);
 
     // Upgrade state to enabled...want compass to display...
-    this.setCurrentState(CurrentState.Active);
+    this.currentState = CurrentState.Active;
 
     return false;
   }
@@ -2807,7 +2809,7 @@ export class AccuDraw {
     if (!this.isActive)
       return false;
     // Downgrade state back to inactive...
-    this.setCurrentState(CurrentState.Inactive);
+    this.currentState = CurrentState.Inactive;
     return false;
   }
 
@@ -3132,7 +3134,7 @@ export class AccuDraw {
 
     if (this.published.flags & AccuDrawFlags.Disable) {
       this.published.flags = 0;
-      this.setCurrentState(CurrentState.Deactivated);
+      this.currentState = CurrentState.Deactivated;
       return;
     }
     const setFocus: boolean = !!(this.published.flags & AccuDrawFlags.SetFocus);
