@@ -45,6 +45,7 @@ export abstract class RenderTexture implements IDisposable {
    */
   public abstract dispose(): void;
 
+  /** An [OrderedComparator]($bentley) that compares this texture against `other`. */
   public compare(other: RenderTexture): number {
     return compareStrings(this._guid, other._guid);
   }

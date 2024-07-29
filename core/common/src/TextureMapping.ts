@@ -55,6 +55,7 @@ export class TextureMapping {
     return this.params.computeUVParams(visitor as IndexedPolyfaceVisitor, transformToImodel);
   }
 
+  /** An [OrderedComparator]($bentley) that compares this mapping against `other`. */
   public compare(other: TextureMapping): number {
     if (this === other) {
       return 0;
@@ -113,6 +114,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     /** An immutable 2x3 identity matrix. */
     public static readonly identity = new Trans2x3();
 
+    /** An [OrderedComparator]($bentley) that compares this Trans2x3 against `other`. */
     public compare(other: Trans2x3): number {
       if (this === other) {
         return 0;
@@ -217,6 +219,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
       };
     }
 
+    /** An [OrderedComparator]($bentley) that compares these Params against `other`. */
     public compare(other: Params): number {
       if (this === other) {
         return 0;

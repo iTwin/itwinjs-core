@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Guid, GuidString, compareStrings } from "@itwin/core-bentley";
+import { compareStrings, Guid, GuidString } from "@itwin/core-bentley";
 import { ColorDef } from "./ColorDef";
 import { TextureMapping } from "./TextureMapping";
 
@@ -32,6 +32,7 @@ export abstract class RenderMaterial {
     return undefined !== this.textureMapping?.texture;
   }
 
+  /** An [OrderedComparator]($bentley) that compares this material against `other`. */
   public compare(other: RenderMaterial): number {
     return compareStrings(this._guid, other._guid);
   }
