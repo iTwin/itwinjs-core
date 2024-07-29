@@ -51,9 +51,18 @@ export class Material extends RenderMaterial {
   public get overridesAlpha() { return this.rgba[3] >= 0; }
   public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
 
+  /** Strictly for testing. */
+  public static preserveParams = false;
+  /** Strictly for testing. */
+  public params?: RenderMaterial.Params;
+  
   // eslint-disable-next-line deprecation/deprecation
   public constructor(params: RenderMaterial.Params) {
     super(params);
+
+    if (Material.preserveParams) {
+      this.params = params;
+    }
 
     if (undefined !== params.diffuseColor) {
       const rgb = FloatRgb.fromColorDef(params.diffuseColor);
