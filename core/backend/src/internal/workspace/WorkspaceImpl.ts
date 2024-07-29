@@ -229,6 +229,9 @@ class WorkspaceDbImpl implements WorkspaceDb {
     }
   }
   public get version() {
+    const cloudContainer = this.container.cloudContainer;
+    if (undefined === cloudContainer)
+      return "1.0.0"; // local file, no versioning. return default
     return parseWorkspaceDbFileName(this.dbFileName).version;
   }
 
