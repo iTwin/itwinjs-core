@@ -339,12 +339,12 @@ class WorkspaceImpl implements Workspace {
   public readonly settings: Settings;
   protected _cloudCache?: WorkspaceCloudCache;
   public getCloudCache(): WorkspaceCloudCache {
-    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: workspaceEditorName, cacheSize: "20G" });
+    return this._cloudCache ??= makeWorkspaceCloudCache({ cacheName: "Workspace", cacheSize: "20G" });
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
     this.settings = settings;
-    this.containerDir = opts?.containerDir ?? join(IModelHost.cacheDir, workspaceEditorName);
+    this.containerDir = opts?.containerDir ?? join(IModelHost.cacheDir, "Workspace");
     let settingsFiles = opts?.settingsFiles;
     if (settingsFiles) {
       if (typeof settingsFiles === "string")
