@@ -604,9 +604,10 @@ export class CreateWebGPUWindowTool extends Tool {
       iModel: newIModel,
       defaultViewName: "default",
       disableEdges: false,
+      useWebGPU: true,
     };
     const viewer = await DisplayTestApp.surface.createViewer(viewerProps);
-    window.container.appendChild(viewer.wgViewport.canvas);
+    // window.container.appendChild(viewer.wgViewport.canvas);
 
     return true;
   }

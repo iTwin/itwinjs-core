@@ -158,6 +158,7 @@ export interface ViewerProps {
   iModel: IModelConnection;
   defaultViewName?: string;
   disableEdges?: boolean;
+  useWebGPU?: boolean;
 }
 
 export class Viewer extends Window {
@@ -217,8 +218,10 @@ export class Viewer extends Window {
 
     this.disableEdges = true === props.disableEdges;
     this._imodel = props.iModel;
-    this.viewport = ScreenViewport.create(this.contentDiv, view);
-    this.wgViewport = ScreenViewport.wgCreate(this.contentDiv, view);
+    if (props.useWebGPU)
+      this.wgViewport = ScreenViewport.wgCreate(this.contentDiv, view);
+    else
+      this.viewport = ScreenViewport.create(this.contentDiv, view);
     this.views = views;
 
     this._maybeDisableEdges();
