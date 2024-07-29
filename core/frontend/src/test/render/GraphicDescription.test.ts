@@ -470,10 +470,23 @@ describe("GraphicDescriptionBuilder", () => {
     
   });
   
-  function expectMaterial(mat: Material, expected: Omit<RenderMaterial.Params, "textureMapping">): void {
-    const actual = { ...mat.params };
-    expect(actual).not.to.be.undefined;
-    delete actual.textureMapping;
+  function expectMaterial(mat: Material, expected: Partial<RenderMaterial.Params>): void {
+    expect(mat.params).not.to.be.undefined;
+    const actual = {
+      ...mat.params,
+      textureMapping: undefined,
+      alpha: mat.params!.alpha,
+      _alpha: undefined, // stupid class instead of interface
+    };
+    delete actual._alpha;
+
+    expected = {
+      ...RenderMaterial.Params.defaults,
+      alpha: undefined,
+      ...expected,
+      textureMapping: undefined,
+    };
+    
     expect(actual).to.deep.equal(expected);
   }
 
@@ -583,22 +596,35 @@ describe("GraphicDescriptionBuilder", () => {
     const meshes = array.graphics as MeshGraphic[];
     expect(meshes.every((x) => x instanceof MeshGraphic));
 
-    // One mesh just has a material with blue diffuse color - no texture.
-    const blueIndex = meshIndices.indexOf(0);
-    expect(blueIndex).least(0);
-    // One mesh has a gradient - no material.
-    const gradIndex = meshIndices.indexOf(5);
-    expect(gradIndex).least(0);
-    
     for (let i = 0; i < meshes.length; i++) {
-      const mesh = meshes[i];
-      expect(mesh.meshData.materialInfo === undefined).to.equal(i === gradIndex);
-      expect(mesh.meshData.texture === undefined).to.equal(i === blueIndex);
-    }
+      const index = meshIndices.indexOf(i);
+      console.log(`${i} => ${index}`);
+      expect(index).least(0);
+      const mesh = meshes[index];
+      expect(mesh.meshData.texture === undefined).to.equal(i === 0);
 
-    it("creates graphics containing normal maps", async () => {
-      // ###TODO
-    });
+      if (i === 5) {
+        expect(mesh.meshData.materialInfo).to.be.undefined;
+        continue;
+      }
+
+      expect(mesh.meshData.materialInfo?.isAtlas).to.be.false;
+      const mat = mesh.meshData.materialInfo as Material;
+      expect(mat instanceof Material).to.be.true;
+      
+      switch (i) {
+        case 0:
+          expectMaterial(mat, {
+            diffuseColor: ColorDef.blue,
+            diffuse: 0.5,
+          });
+          break;
+      }
+    }
+  });
+
+  it("creates graphics containing normal maps", async () => {
+    // ###TODO
   });
 
   describe("Worker", () => {
