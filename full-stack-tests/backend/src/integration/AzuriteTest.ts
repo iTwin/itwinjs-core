@@ -54,7 +54,7 @@ export namespace AzuriteTest {
       return blobClient.exists();
     };
 
-    export const resetWriteLockExpireTime = async (container: CloudSqlite.CloudContainer, blockName: string, numOfMin: number) => {
+    export const subtractFromCurrentWriteLockExpiryTime = async (container: CloudSqlite.CloudContainer, blockName: string, numOfMin: number) => {
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       const tempFilePath = join(KnownLocations.tmpdir, blockName);
@@ -82,7 +82,7 @@ export namespace AzuriteTest {
       fs.unlinkSync(tempFilePath);
     };
 
-    export const isWriteLockRefreshed = async (container: CloudSqlite.CloudContainer, blockName: string, currentTime: Date): Promise<boolean> => {
+    export const isWriteLockValidForAtLeast = async (container: CloudSqlite.CloudContainer, blockName: string, currentTime: Date, writeLockTimeRemainsMs: number): Promise<boolean> => {
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       const tempFilePath = join(KnownLocations.tmpdir, blockName);
@@ -95,9 +95,7 @@ export namespace AzuriteTest {
           if (stmt.nextRow()) {
             const writeLockData = JSON.parse(stmt.getValueString(0));
             const expiresTime = new Date(writeLockData.expires);
-            // should be 5 min but let's use 4.5min to avoid time conflict
-            const writeLockTimeRemains = 4.5*60*1000;
-            resolve(expiresTime >= new Date(currentTime.getTime() + writeLockTimeRemains));
+            resolve(expiresTime >= new Date(currentTime.getTime() + writeLockTimeRemainsMs));
           } else {
             resolve(false);
           }

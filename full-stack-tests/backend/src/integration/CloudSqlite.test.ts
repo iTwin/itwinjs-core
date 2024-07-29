@@ -201,7 +201,7 @@ describe("CloudSqlite", () => {
     db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
     db.close();
     // set the expires time to five mins earlier, which avoids waiting for 5 mins here.
-    await azSqlite.resetWriteLockExpireTime(testContainer1, "bcv_kv.bcv", 5);
+    await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, "bcv_kv.bcv", 5);
     await expect(testContainer1.uploadChanges()).to.eventually.be.fulfilled;
     testContainer1.disconnect();
   });
@@ -224,7 +224,7 @@ describe("CloudSqlite", () => {
     db1.saveFileProperty({ name: "upload", namespace: "uploadTest", id: 1, subId: 1 }, "this is a test");
     db1.close();
     // set the expires time to five mins earlier, which avoids waiting for 5 mins here.
-    await azSqlite.resetWriteLockExpireTime(testContainer1, "bcv_kv.bcv", 5);
+    await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, "bcv_kv.bcv", 5);
     // user2 grabs the write lock
     testContainer2.connect(testCache2);
     testContainer2.acquireWriteLock(user2);
@@ -248,21 +248,36 @@ describe("CloudSqlite", () => {
     // case 1: current write lock has expired
     // mock 5 min operation time by user1
     // write lock is expired after 5 min
-    await azSqlite.resetWriteLockExpireTime(testContainer1, "bcv_kv.bcv", 5);
+    await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, "bcv_kv.bcv", 5);
     // there are no other users, uploadChanges should refresh the write lock for the current user
     await testContainer1.uploadChanges();
-    expect (await azSqlite.isWriteLockRefreshed(testContainer1, "bcv_kv.bcv", currentTime)).to.be.true;
+    // should be 5 min but let's use 4.5 min to avoid time conflict
+    expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, "bcv_kv.bcv", currentTime, 4.5*60*1000)).to.be.true;
     // case 2: current write lock has not expired
     currentTime = new Date();
     // the write lock is refreshed to 5 minutes later
     // mock 4 min operation time by user1
-    await azSqlite.resetWriteLockExpireTime(testContainer1, "bcv_kv.bcv", 4);
+    await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, "bcv_kv.bcv", 4);
     // now user1 only has 1 min to perform further actions
     // uploadChanges does nothing this time but to refresh write lock
     await testContainer1.uploadChanges();
-    expect (await azSqlite.isWriteLockRefreshed(testContainer1, "bcv_kv.bcv", currentTime)).to.be.true;
+    // should be 5 min but let's use 4.5 min to avoid time conflict
+    expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, "bcv_kv.bcv", currentTime, 4.5*60*1000)).to.be.true;
+    expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, "bcv_kv.bcv", currentTime, 6*60*1000)).to.be.false;
     testContainer1.disconnect();
   });
+
+  // it("Should refresh write lock for the current user when uploading changes", async () => {
+  //   const testContainer1 = testContainers[3];
+  //   const testContainer2 = testContainers[4];
+  //   const testCache1 = azSqlite.makeCaches(["testCache1"])[0];
+  //   const testCache2 = azSqlite.makeCaches(["testCache2"])[0];
+  //   testContainer1.connect(testCache1);
+  //   testContainer1.acquireWriteLock(user1);
+  //   testContainer1.disconnect();
+  //   testContainer2.connect(testCache2);
+  //   testContainer2.acquireWriteLock(user2);
+  // });
 
   it("should query bcv stat table", async () => {
     const cache = azSqlite.makeCache("bcv-stat-cache");
