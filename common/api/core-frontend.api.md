@@ -4555,23 +4555,18 @@ export type GraphicDescriptionBuilderOptions = {
     pickable?: PickableGraphicOptions;
     generateEdges?: boolean;
     computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-    constraints: GraphicDescriptionConstraints;
+    context: WorkerGraphicDescriptionContext;
 } & ({
     viewIndependentOrigin?: Point3d;
     instances?: never;
 });
 
 // @beta
-export interface GraphicDescriptionConstraints {
-    // @internal (undocumented)
-    readonly [_implementationProhibited]: unknown;
-    readonly maxTextureSize: number;
-}
-
-// @beta
 export interface GraphicDescriptionContext {
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
+    // @internal (undocumented)
+    [_textures]: Map<string, RenderTexture>;
     // (undocumented)
     remapTransientLocalId(sourceLocalId: number): number;
 }
@@ -15391,7 +15386,12 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 export interface WorkerGraphicDescriptionContext {
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
-    readonly constraints: GraphicDescriptionConstraints;
+    // (undocumented)
+    createGradientTexture(gradient: Gradient.Symb): RenderTexture;
+    // (undocumented)
+    createMaterial(params: MaterialParams): RenderMaterial;
+    // (undocumented)
+    createTexture(params: WorkerTextureParams): RenderTexture;
     toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
     readonly transientIds: TransientIdSequence;
 }
@@ -15428,6 +15428,16 @@ export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | 
     result: ReturnType<T>;
     transfer: Transferable[];
 };
+
+// @beta (undocumented)
+export interface WorkerTextureParams {
+    // (undocumented)
+    source: ImageBuffer | ImageSource | URL;
+    // (undocumented)
+    transparency?: TextureTransparency;
+    // (undocumented)
+    type?: RenderTexture.Type;
+}
 
 // @public
 export interface ZoomToOptions {

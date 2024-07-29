@@ -466,10 +466,6 @@ describe("GraphicDescriptionBuilder", () => {
     expect(context[_textures].size).to.equal(4);
   });
 
-  it("ignores textures that can't be resolved", async () => {
-    
-  });
-  
   function expectMaterial(mat: Material, expected: Partial<RenderMaterial.Params>): void {
     expect(mat.params).not.to.be.undefined;
     const actual = {
@@ -491,7 +487,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(actual).to.deep.equal(expected);
   }
 
-  it.only("creates a graphic containing materials and textures", async () => {
+  it("creates a graphic containing materials and textures", async () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.WorldDecoration, context: workerContext, computeChordTolerance });
     const addShape = () => {
       builder.addShape2d([
@@ -638,10 +634,6 @@ describe("GraphicDescriptionBuilder", () => {
     }
   });
 
-  it("creates graphics containing normal maps", async () => {
-    // ###TODO
-  });
-
   describe("Worker", () => {
     const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");
 
@@ -736,14 +728,5 @@ describe("GraphicDescriptionBuilder", () => {
       expect(list.graphics.length).to.equal(3);
       expect(list.graphics[0] instanceof MeshGraphic).to.be.true;
     });
-
-    it("creates textures", async () => {
-      
-    });
-    
-    it("resolves textures and creates a RenderGraphic", async () => {
-      
-    });
-
   });
 });

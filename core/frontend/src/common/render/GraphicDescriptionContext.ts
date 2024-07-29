@@ -12,6 +12,9 @@ import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicD
 import { Gradient, ImageBuffer, ImageSource, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { MaterialParams } from "./MaterialParams";
 
+/**
+ * @beta
+ */
 export interface WorkerTextureParams {
   type?: RenderTexture.Type;
   source: ImageBuffer | ImageSource | URL;
