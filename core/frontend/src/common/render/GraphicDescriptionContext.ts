@@ -7,17 +7,22 @@
  */
 
 import { TransientIdSequence } from "@itwin/core-bentley";
-import { _implementationProhibited, _textures } from "../internal/Symbols"; 
+import { _implementationProhibited, _textures } from "../internal/Symbols";
 import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionContextImpl";
 import { Gradient, ImageBuffer, ImageSource, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { MaterialParams } from "./MaterialParams";
 
-/**
+/** Parameters describing a [[RenderTexture]] to be created on a Worker by [[WorkerGraphicDescriptionContext.createTexture]].
  * @beta
  */
 export interface WorkerTextureParams {
+  /** The type of texture to create. */
   type?: RenderTexture.Type;
+  /** Describes the image used by the texture. */
   source: ImageBuffer | ImageSource | URL;
+  /** Describes the transparency of the image. If this information can be supplied, it can improve performance. Otherwise,
+   * an attempt will be made to infer it.
+   */
   transparency?: TextureTransparency;
 }
 
@@ -49,8 +54,11 @@ export interface WorkerGraphicDescriptionContext {
    */
   toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
 
+  /** Create a RenderMaterial. */
   createMaterial(params: MaterialParams): RenderMaterial;
+  /** Create a texture. */
   createTexture(params: WorkerTextureParams): RenderTexture;
+  /** Create a texture from a gradient. If a texture was previously created using the same gradient settings, it will be reused. */
   createGradientTexture(gradient: Gradient.Symb): RenderTexture;
 }
 
@@ -82,6 +90,9 @@ export interface GraphicDescriptionContextProps {
 export interface GraphicDescriptionContext {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
+  /** A function that remaps the local Id portion of an [Id64String]($bentley) allocated by [[WorkerGraphicDescriptionContext.transientIds]], to that of the corresponding
+   * Id allocated by [[IModelConnection.transientIds]].
+   */
   remapTransientLocalId(sourceLocalId: number): number;
   /** @internal */
   [_textures]: Map<string, RenderTexture>;

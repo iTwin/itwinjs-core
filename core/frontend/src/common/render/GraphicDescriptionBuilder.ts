@@ -66,7 +66,7 @@ export type GraphicDescriptionBuilderOptions = {
   generateEdges?: boolean;
   /** Computes the level of detail in meters for the graphics produced by the builder. */
   computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-  /** Context obtained from the [[RenderSystem]] on the main thread. */
+  /** Context in which the graphic description will be created, obtained from the [[RenderSystem]] on the main thread. */
   context: WorkerGraphicDescriptionContext;
 } & ({
   /** If defined, specifies a point about which the graphic will rotate such that it always faces the viewer.

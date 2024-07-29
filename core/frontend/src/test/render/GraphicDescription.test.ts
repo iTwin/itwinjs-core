@@ -430,7 +430,7 @@ describe("GraphicDescriptionBuilder", () => {
     const imgBuf = ImageBuffer.create(
       new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]),
       ImageBufferFormat.Rgba,
-      2
+      2,
     );
 
     const wkBuf = workerContext.createTexture({
@@ -466,24 +466,27 @@ describe("GraphicDescriptionBuilder", () => {
     expect(context[_textures].size).to.equal(4);
   });
 
+  // eslint-disable-next-line deprecation/deprecation
   function expectMaterial(mat: Material, expected: Partial<RenderMaterial.Params>): void {
     expect(mat.params).not.to.be.undefined;
     const actual = {
       ...mat.params,
       textureMapping: undefined,
       alpha: mat.params!.alpha,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       _alpha: undefined, // stupid class instead of interface
     };
     delete actual._alpha;
 
     expected = {
+      // eslint-disable-next-line deprecation/deprecation
       ...RenderMaterial.Params.defaults,
       diffuseColor: undefined,
       alpha: undefined,
       ...expected,
       textureMapping: undefined,
     };
-    
+
     expect(actual).to.deep.equal(expected);
   }
 
@@ -522,7 +525,7 @@ describe("GraphicDescriptionBuilder", () => {
       },
     });
     addShapeWithMaterial(gradMaterial);
-    
+
     // 2: material with texture from PNG and alpha.
     const pngTx = workerContext.createTexture({ source: new ImageSource(pngData, ImageSourceFormat.Png) });
     const pngMaterial = workerContext.createMaterial({
@@ -535,7 +538,7 @@ describe("GraphicDescriptionBuilder", () => {
     const imgBuf = ImageBuffer.create(
       new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]),
       ImageBufferFormat.Rgba,
-      2
+      2,
     );
     const imgTx = workerContext.createTexture({ source: imgBuf });
     const imgMaterial = workerContext.createMaterial({ textureMapping: { texture: imgTx } });
@@ -545,7 +548,7 @@ describe("GraphicDescriptionBuilder", () => {
     const urlTx = workerContext.createTexture({ source: new URL(imageBufferToPngDataUrl(imgBuf, true)!) });
     const urlMaterial = workerContext.createMaterial({ textureMapping: { texture: urlTx } });
     addShapeWithMaterial(urlMaterial);
-    
+
     // 5: no material - just a gradient texture.
     const gfParams = new GraphicParams();
     gfParams.gradient = gradient;
@@ -579,7 +582,7 @@ describe("GraphicDescriptionBuilder", () => {
         return txIndex + 1;
       }
     });
-    
+
     const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), createIModel());
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description, context }) as Branch;
     expect(branch).not.to.be.undefined;
@@ -589,13 +592,12 @@ describe("GraphicDescriptionBuilder", () => {
     const array = branch.branch.entries[0] as GraphicsArray;
     expect(array instanceof GraphicsArray).to.be.true;
     expect(array.graphics.length).to.equal(6);
-    
+
     const meshes = array.graphics as MeshGraphic[];
     expect(meshes.every((x) => x instanceof MeshGraphic));
 
     for (let i = 0; i < meshes.length; i++) {
       const index = meshIndices.indexOf(i);
-      console.log(`${i} => ${index}`);
       expect(index).least(0);
       const mesh = meshes[index];
       expect(mesh.meshData.texture === undefined).to.equal(i === 0);
@@ -608,7 +610,7 @@ describe("GraphicDescriptionBuilder", () => {
       expect(mesh.meshData.materialInfo?.isAtlas).to.be.false;
       const mat = mesh.meshData.materialInfo as Material;
       expect(mat instanceof Material).to.be.true;
-      
+
       switch (i) {
         case 0:
           expectMaterial(mat, {
@@ -624,7 +626,7 @@ describe("GraphicDescriptionBuilder", () => {
           });
           break;
         case 2:
-          expectMaterial(mat, { alpha: 0.75, });
+          expectMaterial(mat, { alpha: 0.75 });
           break;
         case 3:
         case 4:
@@ -657,8 +659,8 @@ describe("GraphicDescriptionBuilder", () => {
       const worker = createWorker();
 
       const iModel = createIModel();
-      const workerContext = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
-      const result = await worker.createGraphic(workerContext);
+      const wkCtxt = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
+      const result = await worker.createGraphic(wkCtxt);
       expect(result.description).not.to.be.undefined;
       expect(result.context).not.to.be.undefined;
 

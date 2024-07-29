@@ -54,8 +54,9 @@ export class Material extends RenderMaterial {
   /** Strictly for testing. */
   public static preserveParams = false;
   /** Strictly for testing. */
+  // eslint-disable-next-line deprecation/deprecation
   public params?: RenderMaterial.Params;
-  
+
   // eslint-disable-next-line deprecation/deprecation
   public constructor(params: RenderMaterial.Params) {
     super(params);

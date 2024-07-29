@@ -855,7 +855,7 @@ export abstract class RenderSystem implements IDisposable {
         textures.set(i.toString(10), texture);
       }
     }));
-    
+
     const remap = iModel.transientIds.merge(impl.transientIds);
     impl.resolved = true;
     return {

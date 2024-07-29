@@ -4567,7 +4567,6 @@ export interface GraphicDescriptionContext {
     readonly [_implementationProhibited]: unknown;
     // @internal (undocumented)
     [_textures]: Map<string, RenderTexture>;
-    // (undocumented)
     remapTransientLocalId(sourceLocalId: number): number;
 }
 
@@ -15386,11 +15385,8 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 export interface WorkerGraphicDescriptionContext {
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
-    // (undocumented)
     createGradientTexture(gradient: Gradient.Symb): RenderTexture;
-    // (undocumented)
     createMaterial(params: MaterialParams): RenderMaterial;
-    // (undocumented)
     createTexture(params: WorkerTextureParams): RenderTexture;
     toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
     readonly transientIds: TransientIdSequence;
@@ -15429,13 +15425,10 @@ export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | 
     transfer: Transferable[];
 };
 
-// @beta (undocumented)
+// @beta
 export interface WorkerTextureParams {
-    // (undocumented)
     source: ImageBuffer | ImageSource | URL;
-    // (undocumented)
     transparency?: TextureTransparency;
-    // (undocumented)
     type?: RenderTexture.Type;
 }
 

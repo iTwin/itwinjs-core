@@ -218,7 +218,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
       assert(tex.texture instanceof WorkerTexture);
       textureMapping = { alwaysDisplayed: false, texture: tex.texture.index.toString(10) };
     }
-    
+
     return {
       type: "mesh",
       params: {

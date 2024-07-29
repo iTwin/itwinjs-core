@@ -86,7 +86,7 @@ export type TextureSourceProps = TextureUrlProps | TextureImageBufferProps | Tex
 export interface WorkerTextureProps {
   type: RenderTexture.Type;
   transparency?: TextureTransparency;
-  source: TextureSourceProps
+  source: TextureSourceProps;
 }
 
 export class WorkerTexture extends RenderTexture {
@@ -129,7 +129,7 @@ export class WorkerTexture extends RenderTexture {
     return {
       type: this.type,
       source,
-    }
+    };
   }
 }
 
@@ -188,7 +188,7 @@ export class WorkerMaterial extends RenderMaterial {
         diffuse,
         specular,
       },
-    }
+    };
   }
 }
 
