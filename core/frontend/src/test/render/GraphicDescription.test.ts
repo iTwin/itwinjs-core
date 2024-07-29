@@ -40,7 +40,7 @@ function createIModel(): IModelConnection {
   return { transientIds: new TransientIdSequence() } as unknown as IModelConnection;
 }
 
-describe.only("GraphicDescriptionBuilder", () => {
+describe("GraphicDescriptionBuilder", () => {
   let mainContext: GraphicDescriptionContext;
   let workerContext: WorkerGraphicDescriptionContext;
 
@@ -466,7 +466,30 @@ describe.only("GraphicDescriptionBuilder", () => {
     
   });
   
-  it("creates a graphic containing materials and textures", async () => {
+  function expectSurfaceMaterial(prim: ImdlModel.Primitive, material?: ImdlModel.SurfaceMaterialParams, texture?: string | Gradient.Symb): void {
+    expect(prim.type).to.equal("mesh");
+    const params = (prim.params as ImdlModel.MeshParams).surface;
+    expect(params.textureMapping === undefined).to.equal(texture === undefined);
+    if (undefined !== texture) {
+      expect(typeof params.textureMapping!.texture).to.equal(typeof texture);
+      if (typeof texture === "string") {
+        expect(params.textureMapping!.texture).to.equal(texture);
+      } else {
+        expect(params.textureMapping!.texture).to.deep.equal(texture.toJSON());
+      }
+    }
+
+    expect(undefined === params.material).to.equal(undefined === material);
+    if (!material) {
+      return;
+    }
+
+    expect(params.material!.isAtlas).to.be.false;
+    const mat = (params.material as ImdlModel.SurfaceRenderMaterial).material;
+    expect(mat).to.deep.equal(material);
+  }
+
+  it.only("creates a graphic containing materials and textures", async () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.WorldDecoration, context: workerContext, computeChordTolerance });
     const addShape = () => {
       builder.addShape2d([
@@ -527,7 +550,11 @@ describe.only("GraphicDescriptionBuilder", () => {
     builder.activateGraphicParams(gfParams);
     addShape();
 
-    const description = builder.finish();
+    const description = builder.finish() as GraphicDescriptionImpl;
+    expect(description.primitives.length).to.equal(6);
+
+    expectSurfaceMaterial(description.primitives[0], { diffuse: { color: ColorDef.blue.toJSON(), weight: 0.5 } }, undefined);
+    
     const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), createIModel());
     const branch = await IModelApp.renderSystem.createGraphicFromDescription({ description, context }) as Branch;
     expect(branch).not.to.be.undefined;
@@ -544,8 +571,6 @@ describe.only("GraphicDescriptionBuilder", () => {
     // NOTE: The ordering of the primitives is based on the ordering of their DisplayParams, which can change from run to run because
     // materials and textures are assigned GUIDs for ordered comparisons.
     // So we need to detect each material of interest based on its properties.
-
-
     
     // One mesh just has a material with blue diffuse color - no texture.
     const blueIndex = meshes.findIndex((x) => x.meshData.texture === undefined);
