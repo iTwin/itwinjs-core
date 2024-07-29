@@ -482,6 +482,7 @@ describe("GraphicDescriptionBuilder", () => {
 
     expected = {
       ...RenderMaterial.Params.defaults,
+      diffuseColor: undefined,
       alpha: undefined,
       ...expected,
       textureMapping: undefined,
@@ -618,6 +619,20 @@ describe("GraphicDescriptionBuilder", () => {
             diffuseColor: ColorDef.blue,
             diffuse: 0.5,
           });
+          break;
+        case 1:
+          expectMaterial(mat, {
+            specularColor: ColorDef.red,
+            specular: 0.25,
+            specularExponent: 10,
+          });
+          break;
+        case 2:
+          expectMaterial(mat, { alpha: 0.75, });
+          break;
+        case 3:
+        case 4:
+          expectMaterial(mat, { });
           break;
       }
     }
