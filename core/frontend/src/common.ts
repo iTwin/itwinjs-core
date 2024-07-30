@@ -10,6 +10,7 @@ export * from "./common/ImageUtil";
 export * from "./common/render/BatchOptions";
 export * from "./common/render/GraphicAssembler";
 export * from "./common/render/GraphicDescriptionBuilder";
+export * from "./common/render/GraphicDescriptionContext";
 export * from "./common/render/GraphicPrimitive";
 export * from "./common/render/GraphicType";
 export * from "./common/render/InstancedGraphicParams";
