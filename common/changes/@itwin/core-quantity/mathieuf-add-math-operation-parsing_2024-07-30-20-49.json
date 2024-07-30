@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Added parsing of addition and subtraction.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
