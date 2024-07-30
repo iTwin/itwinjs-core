@@ -554,8 +554,9 @@ describe("Difference Conflict Reporting", () => {
         schemaType: "EntityClass",
         itemName: "TestItem",
         source: "EntityClass",
-        target: "StructClass",
+        target: "StructClass",        
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: sourceSchema.items.TestItem,
       });
     });
   });
