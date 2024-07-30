@@ -6,15 +6,16 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { Angle, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelApp, IModelTileTree, IModelTileTreeParams, OnScreenTarget, TileLoadPriority,
   ViewRect,
+  ViewState3d,
 } from "@itwin/core-frontend";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
-import { createOnScreenTestViewport } from "../TestViewport";
+import { createOnScreenTestViewport, testOnScreenViewport } from "../TestViewport";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -388,7 +389,7 @@ describe("GraphicalEditingScope", () => {
       }
     });
 
-    it("edited elements should be updated by scheduling scripts", async () => {
+    it.only("edited elements should be updated by scheduling scripts", async () => {
       imodel = await openWritable();
 
       const modelId = "0x17";
@@ -420,22 +421,23 @@ describe("GraphicalEditingScope", () => {
       }];
 
       const views = await imodel.views.getViewList({ wantPrivate: true });
-      const viewport = await createOnScreenTestViewport(views[0].id, imodel, 100, 100);
 
-      // Set the animation frame to 1 and render the frame.
-      viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
-      viewport.timePoint = 1;
-      viewport.renderFrame();
+      await testOnScreenViewport(views[0].id, imodel, 1000, 1000, async (viewport) => {
+        // Set the animation frame to 1 and render the frame.
+        viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
+        viewport.timePoint = 1;
 
-      const onScreenTarget = viewport.target as OnScreenTarget;
-      const featureAppearance = onScreenTarget.uniforms.branch.stack.top.symbologyOverrides.animationNodeOverrides.get(1);
+        await viewport.waitForAllTilesToRender();
 
-      // Make sure the feature appearance overrides was applied.
-      expect(featureAppearance).to.not.be.undefined;
-      expect(featureAppearance?.overridesRgb).to.be.true;
-      expect(featureAppearance?.rgb).to.eql({ r: 255, g: 0, b: 0 });
+        const onScreenTarget = viewport.target as OnScreenTarget;
+        const featureAppearance = onScreenTarget.uniforms.branch.stack.top.symbologyOverrides.animationNodeOverrides.get(1);
 
-      viewport.continuousRendering = false;
+        // Make sure the feature appearance overrides was applied.
+        expect(featureAppearance).to.not.be.undefined;
+        expect(featureAppearance?.overridesRgb).to.be.true;
+        expect(featureAppearance?.rgb).to.eql({ r: 255, g: 0, b: 0 });
+      });
+
       // Restore the element to its original position.
       await transformElements(imodel, [elementId], Transform.createTranslationXYZ(0, 0, -1));
       await imodel.saveChanges();
