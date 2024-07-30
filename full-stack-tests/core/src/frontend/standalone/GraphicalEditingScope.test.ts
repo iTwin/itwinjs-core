@@ -389,7 +389,7 @@ describe("GraphicalEditingScope", () => {
       }
     });
 
-    it.only("edited elements should be updated by scheduling scripts", async () => {
+    it("edited elements should be updated by scheduling scripts", async () => {
       imodel = await openWritable();
 
       const modelId = "0x17";
