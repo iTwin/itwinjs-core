@@ -139,7 +139,7 @@ registerWorker<GraphicCreator>({
     const builder = GraphicDescriptionBuilder.create({
       type: GraphicType.Scene,
       computeChordTolerance: () => args.chordTolerance,
-      constraints: context.constraints,
+      context,
       pickable: {
         id: modelId,
         modelId,
