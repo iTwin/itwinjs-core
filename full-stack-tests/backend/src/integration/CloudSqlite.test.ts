@@ -231,6 +231,14 @@ describe("CloudSqlite", () => {
     // user1 tries to upload changes, it should fail because user1's write lock has expired and user2 is using it
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is currently locked by another user`);
+    // user 2 make some changes and release the write lock
+    await testContainer2.copyDatabase("testBim", "testBimCopy1");
+    const db2 = await BriefcaseDb.open({ fileName: "testBimCopy1", container: testContainer2 });
+    db2.saveFileProperty({ name: "upload", namespace: "uploadTest", id: 1, subId: 1 }, "this is a test");
+    db2.close();
+    testContainer2.releaseWriteLock();
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    expect(() => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is currently locked by another user`);
     testContainer1.disconnect();
     testContainer2.disconnect();
   });
