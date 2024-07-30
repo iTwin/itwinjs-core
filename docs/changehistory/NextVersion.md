@@ -60,7 +60,7 @@ The quantity formatter now supports parsing mathematical operations. Ex :
 (5 + 1 + 3 - 1.5) => 7.5
 ```
 
-Limitations
+### Limitations
 Only plus and minus signs are supported for now (+, -).
 Other opertaors will end up returning a parsing error or an invalid input result.
 
