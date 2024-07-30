@@ -398,8 +398,8 @@ export class AccuDraw {
     protected _compassSizeInches: number;
     // (undocumented)
     contextSensitive: boolean;
-    // (undocumented)
-    currentState: CurrentState;
+    get currentState(): CurrentState;
+    set currentState(state: CurrentState);
     // @internal (undocumented)
     currentView?: ScreenViewport;
     // @internal (undocumented)
@@ -480,6 +480,7 @@ export class AccuDraw {
     newFocus: ItemField;
     // @internal (undocumented)
     onBeginDynamics(): boolean;
+    onCompassDisplayChange(_state: "show" | "hide"): void;
     onCompassModeChange(): void;
     // @internal (undocumented)
     onEndDynamics(): boolean;
