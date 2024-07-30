@@ -340,10 +340,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     }
 
     const toRowOptions = {
-      abbreviateBlobs: false,
-      convertClassIdsToClassNames: true,
+      classIdsToClassNames: true,
       rowFormat: args.rowFormat,
-      includeMetaData: this._props.length === 0,
     };
     const resp = this._stmt!.toRow(toRowOptions); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     return this.formatCurrentRow(resp, args.rowFormat);
@@ -353,8 +351,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @internal
    */
   public formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
-    if (this._props.length === 0 && currentResp.meta.length > 0) {
-      this._props = new PropertyMetaDataMap(currentResp.meta);
+    if (this._props.length === 0) {
+      const resp = this._stmt!.getMetadata(); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      this._props = new PropertyMetaDataMap(resp.meta);
     }
     const formattedRow = {};
     const uniqueNames = new Map<string, number>();
