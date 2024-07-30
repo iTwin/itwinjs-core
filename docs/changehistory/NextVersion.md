@@ -14,6 +14,7 @@ Table of contents:
 - [ListenerType helper](#listenertype-helper)
 - [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
 - [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
+- [Mathematical equations formatting](#Mathematical-equations-formatting)
 
 ## Workspaces
 
@@ -50,3 +51,29 @@ The Xml and JSON representations of a custom attribute (and related TypeScript i
 ## Improve the performance of the ECSchemaRpcLocater
 
 Improve the performance of the ECSchemaRpcLocater by making all of the underlying ECSchemaRpcInterface methods GET by default so responses are cached by default. Previously each client had to set the methods to be GET or they would default to POST and were not cached.
+
+## Mathematical operation parsing
+
+The quantity formatter now supports parsing mathematical operations. Ex :
+```Typescript
+"5 ft + 12 in + 1 yd -1 ft 6 in" => 7.5 (feet)
+(5 + 1 + 3 - 1.5) => 7.5
+```
+
+### Limitations
+Only plus(`+`) and minus(`-`) signs are supported for now.
+Other opertaors will end up returning a parsing error or an invalid input result.
+
+The parsing of mathematical equations is disabled by default.
+To enable it, you can override the default QuantityFormatter. Ex :
+```Typescript
+  // App specific
+  const quantityType = QuantityType.LengthEngineering;
+
+  // Default props for the desired quantityType
+  const props = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+
+  // Override the formatter and enable mathematical operations.
+  await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicEquations: true });
+```
+

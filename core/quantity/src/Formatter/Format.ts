@@ -36,6 +36,7 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
+  protected _allowMathematicEquations: boolean = false; // optional; enables calculating mathematic operations like addition and subtraction; default is false.
 
   constructor(name: string) {
     this._name = name;
@@ -75,6 +76,9 @@ export class BaseFormat {
 
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
   public set stationOffsetSize(stationOffsetSize: number | undefined) {stationOffsetSize =  this._stationOffsetSize = stationOffsetSize; }
+
+  public get allowMathematicEquations(): boolean { return this._allowMathematicEquations; }
+  public set allowMathematicEquations(allowMathematicEquations: boolean) { this._allowMathematicEquations = allowMathematicEquations; }
 
   public get formatTraits(): FormatTraits { return this._formatTraits; }
   public set formatTraits(formatTraits: FormatTraits) { this._formatTraits = formatTraits; }
@@ -175,6 +179,12 @@ export class BaseFormat {
       if (formatProps.stationSeparator.length > 1)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
       this._stationSeparator = formatProps.stationSeparator;
+    }
+
+    if (undefined !== formatProps.allowMathematicEquations) { // optional; default is false
+      if (typeof (formatProps.allowMathematicEquations) !== "boolean")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'allowMathematicEquations' attribute. It should be of type 'boolean'.`);
+      this._allowMathematicEquations = formatProps.allowMathematicEquations;
     }
   }
 }
