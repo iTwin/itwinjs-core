@@ -22,8 +22,10 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { GraphicDescription, GraphicDescriptionContext } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
+import { _textures } from "../common/internal/Symbols";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -485,7 +487,7 @@ export async function createGraphicFromDescription(descr: GraphicDescription, co
   const graphics: RenderGraphic[] = [];
   const graphicsOptions: GraphicsOptions = {
     system,
-    textures: new Map(),
+    textures: context[_textures],
     patterns: new Map(),
   };
 
