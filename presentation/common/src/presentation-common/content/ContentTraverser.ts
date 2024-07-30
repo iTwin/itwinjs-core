@@ -22,11 +22,12 @@ import {
   ValuesArray as PresentationValuesArray,
   ValuesMap as PresentationValuesMap,
 } from "./Value";
+import { LabelDefinition } from "../LabelDefinition";
 
-const NESTED_CONTENT_DESCRIPTION_SYMBOL = Symbol();
+const NESTED_CONTENT_LABEL_SYMBOL = Symbol();
 
 type ValuesMap = PresentationValuesMap & {
-  [NESTED_CONTENT_DESCRIPTION_SYMBOL]?: string;
+  [NESTED_CONTENT_LABEL_SYMBOL]?: LabelDefinition;
 };
 
 type Value = Exclude<PresentationValue, PresentationValuesMap> | ValuesMap;
@@ -107,8 +108,8 @@ export interface StartStructProps {
   rawValues: PresentationValuesMap;
   /** Member display values. */
   displayValues: DisplayValuesMap;
-  /** Struct description. */
-  description?: string;
+  /** Label definition of the ECInstance that the struct represents. */
+  label?: LabelDefinition;
 }
 
 /**
@@ -490,8 +491,8 @@ function traverseContentItemStructFieldValue(
   displayValues: DisplayValuesMap,
 ) {
   assert(valueType.valueFormat === PropertyValueFormat.Struct);
-  const description = rawValues[NESTED_CONTENT_DESCRIPTION_SYMBOL];
-  if (!visitor.startStruct({ hierarchy: fieldHierarchy, valueType, parentFieldName, rawValues, displayValues, description })) {
+  const label = rawValues[NESTED_CONTENT_LABEL_SYMBOL];
+  if (!visitor.startStruct({ hierarchy: fieldHierarchy, valueType, parentFieldName, rawValues, displayValues, label })) {
     return;
   }
 
@@ -783,7 +784,7 @@ function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: 
     const values: ValuesMap = { ...ncv.values };
     const displayValues: DisplayValuesMap = { ...ncv.displayValues };
     const mergedFieldNames: string[] = [...ncv.mergedFieldNames];
-    values[NESTED_CONTENT_DESCRIPTION_SYMBOL] = ncv.label;
+    values[NESTED_CONTENT_LABEL_SYMBOL] = ncv.labelDefinition;
 
     fieldHierarchy.childFields.forEach((childFieldHierarchy) => {
       const childFieldName = childFieldHierarchy.field.name;

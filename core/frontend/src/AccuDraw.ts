@@ -16,7 +16,7 @@ import { TentativeOrAccuSnap } from "./AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder } from "./render/GraphicBuilder";
 import { StandardViewId } from "./StandardView";
 import { BeButton, BeButtonEvent, CoordinateLockOverrides, InputCollector, InputSource } from "./tools/Tool";
 import { ViewTool } from "./tools/ViewTool";
@@ -26,6 +26,7 @@ import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
 import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
+import { GraphicType } from "./common/render/GraphicType";
 
 // cspell:ignore dont primitivetools
 
@@ -252,7 +253,21 @@ export class ThreeAxes {
  * @public
  */
 export class AccuDraw {
-  public currentState = CurrentState.NotEnabled; // Compass state
+  private _currentState = CurrentState.NotEnabled;
+
+  /** Current AccuDraw state */
+  public get currentState(): CurrentState { return this._currentState; }
+  public set currentState(state: CurrentState) {
+    if (state === this._currentState)
+      return;
+
+    const wasActive = this.isActive;
+    this._currentState = state;
+
+    if (wasActive !== this.isActive)
+      this.onCompassDisplayChange(wasActive ? "hide" : "show");
+  }
+
   public compassMode = CompassMode.Rectangular; // Compass mode
   public rotationMode = RotationMode.View; // Compass rotation
   /** @internal */
@@ -2160,6 +2175,8 @@ export class AccuDraw {
     }
   }
 
+  /** Called after compass state is changed between the active state and one of the disabled states */
+  public onCompassDisplayChange(_state: "show" | "hide"): void { }
   /** Called after compass mode is changed between polar and rectangular */
   public onCompassModeChange(): void { }
   /** Called after compass rotation is changed */
