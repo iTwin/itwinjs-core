@@ -34,7 +34,7 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
-import { _requestSnap } from "./internal/Symbols";
+import { _requestSnap } from "./common/internal/Symbols";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 

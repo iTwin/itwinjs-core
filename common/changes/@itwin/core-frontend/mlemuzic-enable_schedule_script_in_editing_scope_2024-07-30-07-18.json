@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Allow elements in edit scope to be updated by schedule scripts.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

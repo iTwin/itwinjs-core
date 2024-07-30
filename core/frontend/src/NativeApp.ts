@@ -17,7 +17,7 @@ import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 import { OnDownloadProgress } from "./BriefcaseConnection";
-import { _callIpcChannel } from "./internal/Symbols";
+import { _callIpcChannel } from "./common/internal/Symbols";
 
 /** Properties for specifying the BriefcaseId for downloading. May either specify a BriefcaseId directly (preferable) or, for
  * backwards compatibility, a [SyncMode]($common). If [SyncMode.PullAndPush]($common) is supplied, a new briefcaseId will be acquired.

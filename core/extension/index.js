@@ -66,6 +66,7 @@ export const {
 	GeometricModel3dState,
 	GeometricModelState,
 	GlobeAnimator,
+	GraphicAssembler,
 	GraphicBranch,
 	GraphicBuilder,
 	GraphicType,
