@@ -21,8 +21,7 @@ export abstract class RenderMaterial {
   /** Used for ordered comparisons, e.g. in DisplayParams.compareForMerge */
   private readonly _guid: GuidString;
 
-  // eslint-disable-next-line deprecation/deprecation
-  protected constructor(params: Pick<RenderMaterial.Params, "key" | "textureMapping">) {
+  protected constructor(params: { key?: string, textureMapping?: TextureMapping }) {
     this.key = params.key;
     this.textureMapping = params.textureMapping;
     this._guid = Guid.createValue();

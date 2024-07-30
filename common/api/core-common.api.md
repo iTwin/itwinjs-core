@@ -7519,7 +7519,10 @@ export interface RenderFeatureTable {
 
 // @public
 export abstract class RenderMaterial {
-    protected constructor(params: Pick<RenderMaterial.Params, "key" | "textureMapping">);
+    protected constructor(params: {
+        key?: string;
+        textureMapping?: TextureMapping;
+    });
     compare(other: RenderMaterial): number;
     // (undocumented)
     get hasTexture(): boolean;
