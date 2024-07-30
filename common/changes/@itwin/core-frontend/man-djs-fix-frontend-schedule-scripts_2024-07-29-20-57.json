@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "fixed material issues with frontend schedule scripts",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
