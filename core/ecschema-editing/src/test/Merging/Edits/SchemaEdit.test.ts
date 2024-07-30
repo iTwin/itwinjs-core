@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
-import { ConflictCode, getSchemaDifferences, SchemaChangeSet, SchemaMerger } from "../../../ecschema-editing";
+import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -91,32 +91,32 @@ describe("Difference Conflict Resolving", () => {
     ];
 
     // For all runs the class ClassToBeSkipped shall be skipped.
-    const initialSchemaChanges = new SchemaChangeSet();
+    const initialSchemaChanges = new SchemaEdits();
     initialSchemaChanges.items.skip("ClassToBeSkipped");
     initialSchemaChanges.properties.skip("SameNameOtherItemType", "PropertyToSkip");
 
-    let storedSchemaChanges = initialSchemaChanges.toJSON();
+    let storedSchemaEdits = initialSchemaChanges.toJSON();
 
     // Iterate over the different source schemas to simulate several merging runs
     for (const sourceSchema of sourceSchemas) {
       const differences = await getSchemaDifferences(targetSchema, sourceSchema);
-      const schemaChanges = new SchemaChangeSet(storedSchemaChanges);
+      const schemaEdits = new SchemaEdits(storedSchemaEdits);
 
       if (differences.conflicts) {
         for (const conflict of differences.conflicts) {
           if (conflict.code === ConflictCode.ConflictingItemName && conflict.itemName === "SameNameOtherItemType") {
-            schemaChanges.items.rename(conflict.itemName, `${conflict.itemName}_1`);
+            schemaEdits.items.rename(conflict.itemName, `${conflict.itemName}_1`);
           }
           if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.path === "MyProperty") {
-            schemaChanges.properties.rename(conflict.itemName!, conflict.path, `${conflict.path}_1`);
+            schemaEdits.properties.rename(conflict.itemName!, conflict.path, `${conflict.path}_1`);
           }
         }
       }
 
       const merger = new SchemaMerger(targetSchema.context);
-      await expect(merger.merge(differences, schemaChanges)).to.be.eventually.fulfilled;
+      await expect(merger.merge(differences, schemaEdits)).to.be.eventually.fulfilled;
 
-      storedSchemaChanges = schemaChanges.toJSON();
+      storedSchemaEdits = schemaEdits.toJSON();
     }
 
     await expect(targetSchema.getItem("ClassToBeSkipped")).to.be.eventually.undefined;

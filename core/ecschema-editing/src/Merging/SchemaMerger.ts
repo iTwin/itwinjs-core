@@ -10,7 +10,7 @@ import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata"
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
 import { type AnySchemaDifference, getSchemaDifferences, type SchemaDifference, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
-import { type SchemaChangeSet } from "./Changes/SchemaChanges";
+import { type SchemaEdits } from "./Edits/SchemaEdits";
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
@@ -48,28 +48,28 @@ export class SchemaMerger {
    * Copy the SchemaItems of the source schemas to the target schema.
    * @param targetSchema  The schema the SchemaItems gets merged to.
    * @param sourceSchema  The schema the SchemaItems gets copied from.
-   * @param changes       An optional instance of schema changes that shall be applied before the schemas get merged.
+   * @param edits         An optional instance of schema edits that shall be applied before the schemas get merged.
    * @returns             The merged target schema.
    * @alpha
    */
-  public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema, changes?: SchemaChangeSet): Promise<Schema> {
-    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema), changes);
+  public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema> {
+    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema), edits);
   }
 
   /**
    * Merges the schema differences into the target schema context.
    * @param differenceResult  The differences that shall be applied to the target schema.
-   * @param changes           An optional instance of schema changes that shall be applied before the schemas get merged.
+   * @param edits             An optional instance of schema edits that shall be applied before the schemas get merged.
    * @alpha
    */
-  public async merge(differenceResult: SchemaDifferenceResult, changes?: SchemaChangeSet): Promise<Schema> {
+  public async merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<Schema> {
     const targetSchemaKey = SchemaKey.parseString(differenceResult.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differenceResult.sourceSchemaName);
 
     // If schema changes were provided, they'll get applied and a new SchemaDifferenceResult is returned
     // to prevent altering the differenceResult the caller passed in.
-    if (changes) {
-      await changes.applyTo(differenceResult = { ...differenceResult });
+    if (edits) {
+      await edits.applyTo(differenceResult = { ...differenceResult });
     }
 
     if (differenceResult.conflicts && differenceResult.conflicts.length > 0) {

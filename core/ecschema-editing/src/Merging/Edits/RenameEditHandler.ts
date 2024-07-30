@@ -6,7 +6,7 @@
  * @module Merging
  */
 
-import type { RenamePropertyChange, RenameSchemaItemChange } from "./SchemaChanges";
+import type { RenamePropertyEdit, RenameSchemaItemEdit } from "./SchemaEdits";
 import { AnySchemaItemDifference, ClassItemDifference, ClassPropertyDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, SchemaDifferenceResult, SchemaOtherTypes, SchemaType } from "../../Differencing/SchemaDifference";
 import { NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, RelationshipConstraintProps, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps, StructPropertyProps } from "@itwin/ecschema-metadata";
 import * as Utils from "../../Differencing/Utils";
@@ -18,8 +18,8 @@ type Editable<T extends object> = {
 /**
  * @internal
  */
-export function applyRenamePropertyChange(result: SchemaDifferenceResult, change: RenamePropertyChange) {
-  const [itemName, path] = change.key.split(".") as [string, string];
+export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: RenamePropertyEdit) {
+  const [itemName, path] = edit.key.split(".") as [string, string];
 
   let entryIndex = result.differences.findIndex((entry) => {
     return Utils.isClassPropertyDifference(entry) && entry.changeType === "add" && entry.itemName === itemName && entry.path === path;
@@ -46,26 +46,26 @@ export function applyRenamePropertyChange(result: SchemaDifferenceResult, change
 
   const propertyEntry = result.differences[entryIndex] as Editable<ClassPropertyDifference>;
   if (propertyEntry) {
-    propertyEntry.path = change.value;
+    propertyEntry.path = edit.value;
   }
 }
 
 /**
  * @internal
  */
-export function applyRenameSchemaItemChange(result: SchemaDifferenceResult, change: RenameSchemaItemChange, postProcessing: (cb: () => void) => void) {
+export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: RenameSchemaItemEdit, postProcessing: (cb: () => void) => void) {
   let difference = result.differences.find((entry) => {
-    return Utils.isSchemaItemDifference(entry) && entry.changeType === "add" && entry.itemName === change.key;
+    return Utils.isSchemaItemDifference(entry) && entry.changeType === "add" && entry.itemName === edit.key;
   });
 
   if (difference === undefined && result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === change.key && entry.path === undefined);
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === edit.key && entry.path === undefined);
     if (conflictIndex > -1) {
       const conflictEntry = result.conflicts[conflictIndex];
       result.differences.push(difference = {
         changeType: "add",
         schemaType: conflictEntry.schemaType,
-        itemName: change.value,
+        itemName: edit.value,
         difference: conflictEntry.difference,
       } as AnySchemaItemDifference) - 1;
 
@@ -74,7 +74,7 @@ export function applyRenameSchemaItemChange(result: SchemaDifferenceResult, chan
       // If item gets added, remove the modify references to this item
       const relatedModifications: number[] = [];
       result.differences.forEach((entry, index) => {
-        if (Utils.isSchemaItemDifference(entry) && entry.itemName === change.key) {
+        if (Utils.isSchemaItemDifference(entry) && entry.itemName === edit.key) {
           relatedModifications.push(index);
         }
       });
@@ -90,17 +90,17 @@ export function applyRenameSchemaItemChange(result: SchemaDifferenceResult, chan
     return;
   }
 
-  renameName(itemDifference, change.key, change.value);
+  renameName(itemDifference, edit.key, edit.value);
 
   postProcessing(() => {
-    renameSchemaItem(result, change, itemDifference.schemaType);
+    renameSchemaItem(result, edit, itemDifference.schemaType);
   });
 }
 
-function renameSchemaItem(result: SchemaDifferenceResult, change: RenameSchemaItemChange, schemaType: SchemaType) {
+function renameSchemaItem(result: SchemaDifferenceResult, edit: RenameSchemaItemEdit, schemaType: SchemaType) {
   const schemaKey = SchemaKey.parseString(result.sourceSchemaName);
-  const oldKey = new SchemaItemKey(change.key, schemaKey);
-  const newKey = new SchemaItemKey(change.value, schemaKey);
+  const oldKey = new SchemaItemKey(edit.key, schemaKey);
+  const newKey = new SchemaItemKey(edit.value, schemaKey);
 
   switch (schemaType) {
     case SchemaItemType.CustomAttributeClass:
