@@ -289,7 +289,6 @@ beta;GraphicDescription
 beta;GraphicDescriptionBuilder 
 beta;GraphicDescriptionBuilder
 beta;GraphicDescriptionBuilderOptions =
-beta;GraphicDescriptionConstraints
 beta;GraphicDescriptionContext
 beta;GraphicDescriptionContextProps
 public;GraphicLineString
@@ -870,5 +869,6 @@ beta;WorkerImplementation
 beta;WorkerInterface
 beta;WorkerProxy
 beta;WorkerReturnType
+beta;WorkerTextureParams
 public;ZoomToOptions
 public;ZoomViewTool 

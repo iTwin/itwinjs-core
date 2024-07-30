@@ -4556,24 +4556,18 @@ export type GraphicDescriptionBuilderOptions = {
     pickable?: PickableGraphicOptions;
     generateEdges?: boolean;
     computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-    constraints: GraphicDescriptionConstraints;
+    context: WorkerGraphicDescriptionContext;
 } & ({
     viewIndependentOrigin?: Point3d;
     instances?: never;
 });
 
 // @beta
-export interface GraphicDescriptionConstraints {
-    // @internal (undocumented)
-    readonly [_implementationProhibited]: unknown;
-    readonly maxTextureSize: number;
-}
-
-// @beta
 export interface GraphicDescriptionContext {
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
-    // (undocumented)
+    // @internal (undocumented)
+    [_textures]: Map<string, RenderTexture>;
     remapTransientLocalId(sourceLocalId: number): number;
 }
 
@@ -15392,7 +15386,9 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 export interface WorkerGraphicDescriptionContext {
     // @internal (undocumented)
     readonly [_implementationProhibited]: unknown;
-    readonly constraints: GraphicDescriptionConstraints;
+    createGradientTexture(gradient: Gradient.Symb): RenderTexture;
+    createMaterial(params: MaterialParams): RenderMaterial;
+    createTexture(params: WorkerTextureParams): RenderTexture;
     toProps(transferables: Set<Transferable>): GraphicDescriptionContextProps;
     readonly transientIds: TransientIdSequence;
 }
@@ -15429,6 +15425,13 @@ export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | 
     result: ReturnType<T>;
     transfer: Transferable[];
 };
+
+// @beta
+export interface WorkerTextureParams {
+    source: ImageBuffer | ImageSource | URL;
+    transparency?: TextureTransparency;
+    type?: RenderTexture.Type;
+}
 
 // @public
 export interface ZoomToOptions {
