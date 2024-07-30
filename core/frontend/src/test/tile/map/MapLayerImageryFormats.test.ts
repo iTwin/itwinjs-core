@@ -9,6 +9,7 @@ import { assert, expect } from "chai";
 import {
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
+  AzureMapsLayerImageryProvider,
   BingMapsImageryLayerProvider,
   internalMapLayerImageryFormats,
   MapBoxLayerImageryProvider,
@@ -68,6 +69,10 @@ describe("MapLayerImageryFormats", () => {
 
         case "BingMaps":
           expect(provider instanceof BingMapsImageryLayerProvider).to.true;
+          break;
+
+        case "AzureMaps":
+          expect(provider instanceof AzureMapsLayerImageryProvider).to.true;
           break;
 
         case "MapboxImagery":
