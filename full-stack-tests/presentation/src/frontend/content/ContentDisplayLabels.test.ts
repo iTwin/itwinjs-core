@@ -117,6 +117,7 @@ describeContentTestSuite("Content Display Labels", () => {
         }
         expect(value.length).to.eq(2);
         expect(value[0].labelDefinition).to.deep.eq(EMPTY_LABEL);
+        expect(value[1].labelDefinition).to.deep.eq(EMPTY_LABEL);
       }
     }
   });
