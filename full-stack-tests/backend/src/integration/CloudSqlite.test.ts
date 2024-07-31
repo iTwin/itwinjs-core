@@ -233,7 +233,6 @@ describe("CloudSqlite", () => {
     logTrace.resetHistory();
     logInfo.resetHistory();
     Logger.initializeToConsole();
-    Logger.setLevel("CloudSqlite", LogLevel.None);
   });
 
   it("should query bcv stat table", async () => {
