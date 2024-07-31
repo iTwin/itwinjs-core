@@ -604,7 +604,7 @@ The testconnector demonstrates how to implement an unmapSource method.
 unmapSource method in TestConnector:
 
 ```ts
-[[include:TestConnector-unmapSource]]
+[[include:TestConnector-unmapSource.cf-code]]
 ```
 
 ### Shared Channels
