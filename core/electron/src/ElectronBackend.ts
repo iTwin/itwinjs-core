@@ -4,3 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./backend/ElectronHost";
+export * from "./backend/ElectronIModelReadHandler";

@@ -35,6 +35,7 @@ export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./IModelApp";
 export * from "./IModelConnection";
+export * from "./IModelRead";
 export * from "./IModelRoutingContext";
 export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
