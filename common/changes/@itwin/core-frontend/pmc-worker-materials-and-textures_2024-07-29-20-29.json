@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for creating textures and materials in a Worker.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
