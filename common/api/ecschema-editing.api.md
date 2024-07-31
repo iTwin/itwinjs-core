@@ -88,6 +88,9 @@ export type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassId
 export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference;
 
 // @alpha
+export type AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit;
+
+// @alpha
 export type AnySchemaItemDifference = ClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference;
 
 // @alpha
@@ -1292,6 +1295,9 @@ export interface ISchemaTypeIdentifier {
 }
 
 // @alpha
+export function isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference;
+
+// @alpha
 export function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference;
 
 // @alpha
@@ -1338,6 +1344,9 @@ export function isRelationshipConstraintDifference(difference: AnySchemaDifferen
 
 // @alpha
 export function isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference;
+
+// @alpha
+export function isSchemaItemDifference(difference: AnySchemaDifference): difference is AnySchemaItemDifference;
 
 // @alpha
 export function isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference;
@@ -1533,6 +1542,26 @@ export class RelationshipConstraintId implements IRelationshipConstraintIdentifi
     readonly schemaKey: SchemaKey;
     // (undocumented)
     readonly typeIdentifier = SchemaTypeIdentifiers.RelationshipConstraintIdentifier;
+}
+
+// @alpha
+export interface RenamePropertyEdit {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaEditType.RenameProperty;
+    // (undocumented)
+    value: string;
+}
+
+// @alpha
+export interface RenameSchemaItemEdit {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaEditType.RenameSchemaItem;
+    // (undocumented)
+    value: string;
 }
 
 // @alpha
@@ -2053,6 +2082,7 @@ export interface SchemaDifference {
 export interface SchemaDifferenceConflict {
     readonly code: ConflictCode;
     readonly description: string;
+    readonly difference?: unknown;
     readonly itemName?: string;
     readonly path?: string;
     readonly schemaType: SchemaType;
@@ -2079,6 +2109,29 @@ export class SchemaEditingError extends Error {
     readonly innerError?: AnyEditingError | undefined;
     get ruleViolations(): AnyDiagnostic[] | undefined;
     toDebugString(): string;
+}
+
+// @alpha
+export class SchemaEdits {
+    constructor(initialize?: ReadonlyArray<AnySchemaEdits>);
+    // @internal (undocumented)
+    applyTo(differenceResult: SchemaDifferenceResult): Promise<void>;
+    // (undocumented)
+    readonly items: ItemEditor;
+    // (undocumented)
+    readonly properties: PropertyEditor;
+    // (undocumented)
+    toJSON(): ReadonlyArray<AnySchemaEdits>;
+}
+
+// @alpha
+export enum SchemaEditType {
+    // (undocumented)
+    RenameProperty = "RenameProperty",
+    // (undocumented)
+    RenameSchemaItem = "RenameSchemaItem",
+    // (undocumented)
+    Skip = "Skip"
 }
 
 // @alpha
@@ -2142,8 +2195,9 @@ export class SchemaItemMissing extends SchemaItemChange {
 export class SchemaMerger {
     constructor(editingContext: SchemaContext);
     // @alpha
-    merge(differenceResult: SchemaDifferenceResult): Promise<Schema>;
-    mergeSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
+    merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<Schema>;
+    // @alpha
+    mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema>;
 }
 
 // @alpha
@@ -2293,6 +2347,14 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 export class SchemaWalker {
     constructor(visitor: ISchemaPartVisitor);
     traverseSchema<T extends Schema>(schema: T): Promise<T>;
+}
+
+// @alpha
+export interface SkipEdit {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaEditType.Skip;
 }
 
 // @alpha

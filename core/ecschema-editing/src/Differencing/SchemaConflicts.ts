@@ -91,4 +91,7 @@ export interface SchemaDifferenceConflict {
 
   /** The value in the target schema. */
   readonly target: unknown;
+
+  /** The conflicting difference */
+  readonly difference?: unknown;
 }
