@@ -203,7 +203,7 @@ class ModelChangeMonitor {
  * Specialized tools are free to ignore these settings.
  * @see [[BriefcaseConnection.editorToolSettings]] to query or modify the current settings for a briefcase.
  * @see [CreateElementTool]($editor-frontend) for an example of a tool that uses these settings.
- * @beta
+ * @public
  */
 export class BriefcaseEditorToolSettings {
   private _category?: Id64String;
@@ -255,9 +255,7 @@ export class BriefcaseEditorToolSettings {
 export class BriefcaseConnection extends IModelConnection {
   protected _isClosed?: boolean;
   private readonly _modelsMonitor: ModelChangeMonitor;
-  /** Default settings that can be used to control the behavior of [[Tool]]s that modify this briefcase.
-   * @beta
-   */
+  /** Default settings that can be used to control the behavior of [[Tool]]s that modify this briefcase. */
   public readonly editorToolSettings = new BriefcaseEditorToolSettings();
 
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
