@@ -192,7 +192,7 @@ Array [
                       "query": "SELECT ? AS [/ECClassId/], ? AS [/ECInstanceId/]",
                     },
                     "pathFromRoot": Array [
-                      "629562ce01bb406f1fa25d2e03cc5239",
+                      "528e1df542291a3ac06651b6cdbccfae",
                       "bf6434c763c07bfe533914bfaa316e9f",
                       "8384337fc6996c24d642e0104685b044",
                       "f7356481e260e191b8e54498a094bafe",
@@ -236,7 +236,7 @@ Array [
                   "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Element] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[GeometricElement]))) [this] INNER JOIN [bis].[Subject] [related] ON [related].[ECInstanceId] = [this].[Parent].[Id] WHERE ([related].[ECInstanceId] IN (?)) UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[GeometricElement] [this] INNER JOIN [bis].[Subject] [related] ON [related].[ECInstanceId] = [this].[Parent].[Id] WHERE ([related].[ECInstanceId] IN (?))) WHERE ([/ECClassId/] IS (ONLY [BisCore].[DefinitionPartition]))",
                 },
                 "pathFromRoot": Array [
-                  "629562ce01bb406f1fa25d2e03cc5239",
+                  "528e1df542291a3ac06651b6cdbccfae",
                   "bf6434c763c07bfe533914bfaa316e9f",
                   "8384337fc6996c24d642e0104685b044",
                   "f7356481e260e191b8e54498a094bafe",
@@ -284,7 +284,7 @@ Array [
                       "query": "SELECT ? AS [/ECClassId/], ? AS [/ECInstanceId/]",
                     },
                     "pathFromRoot": Array [
-                      "629562ce01bb406f1fa25d2e03cc5239",
+                      "528e1df542291a3ac06651b6cdbccfae",
                       "bf6434c763c07bfe533914bfaa316e9f",
                       "8384337fc6996c24d642e0104685b044",
                       "82b256383b3d18e4145edba541109359",
@@ -328,7 +328,7 @@ Array [
                   "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM (SELECT * FROM [bis].[Element] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[GeometricElement]))) [this] INNER JOIN [bis].[Subject] [related] ON [related].[ECInstanceId] = [this].[Parent].[Id] WHERE ([related].[ECInstanceId] IN (?)) UNION ALL SELECT [this].[ECClassId] AS [/ECClassId/], [this].[ECInstanceId] AS [/ECInstanceId/] FROM [bis].[GeometricElement] [this] INNER JOIN [bis].[Subject] [related] ON [related].[ECInstanceId] = [this].[Parent].[Id] WHERE ([related].[ECInstanceId] IN (?))) WHERE ([/ECClassId/] IS (ONLY [BisCore].[LinkPartition]))",
                 },
                 "pathFromRoot": Array [
-                  "629562ce01bb406f1fa25d2e03cc5239",
+                  "528e1df542291a3ac06651b6cdbccfae",
                   "bf6434c763c07bfe533914bfaa316e9f",
                   "8384337fc6996c24d642e0104685b044",
                   "82b256383b3d18e4145edba541109359",
@@ -374,7 +374,7 @@ Array [
               "query": "SELECT ? AS [/ECClassId/], ? AS [/ECInstanceId/]",
             },
             "pathFromRoot": Array [
-              "629562ce01bb406f1fa25d2e03cc5239",
+              "528e1df542291a3ac06651b6cdbccfae",
               "bf6434c763c07bfe533914bfaa316e9f",
               "8384337fc6996c24d642e0104685b044",
             ],
@@ -419,7 +419,7 @@ Array [
           "query": "SELECT ? AS [/ECClassId/], ? AS [/ECInstanceId/]",
         },
         "pathFromRoot": Array [
-          "629562ce01bb406f1fa25d2e03cc5239",
+          "528e1df542291a3ac06651b6cdbccfae",
           "bf6434c763c07bfe533914bfaa316e9f",
         ],
         "type": "ECInstancesNode",
