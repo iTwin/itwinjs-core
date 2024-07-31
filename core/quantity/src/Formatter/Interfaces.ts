@@ -25,7 +25,7 @@ export interface FormatProps {
   readonly scientificType?: string; // conditionally required
   readonly stationOffsetSize?: number; // conditionally required
   readonly stationSeparator?: string;
-  readonly allowMathematicEquations?: boolean;
+  readonly allowMathematicOperations?: boolean;
   readonly composite?: {
     readonly spacer?: string;
     readonly includeZero?: boolean; // not currently used in Native formatter

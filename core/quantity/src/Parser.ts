@@ -23,7 +23,7 @@ export enum ParseError {
   UnknownUnit,
   UnableToConvertParseTokensToQuantity,
   InvalidParserSpec,
-  MathematicEquationFoundButIsNotAllowed,
+  MathematicOperationFoundButIsNotAllowed,
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
@@ -364,12 +364,12 @@ export class Parser {
     return tokens;
   }
 
-  private static isMathematicEquation(tokens: ParseToken[]){
+  private static isMathematicOperation(tokens: ParseToken[]){
     if(tokens.length > 1){
       // The loop starts at one because the first token can be a operator without it being maths. Ex: "-5FT"
       for(let i = 1; i < tokens.length; i++){
         if(tokens[i].isOperator)
-          // Operator found, it's a math equation.
+          // Operator found, it's a math operation.
           return true;
       }
     }
@@ -467,7 +467,7 @@ export class Parser {
    */
   public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
-    if (tokens.length === 0 || (!format.allowMathematicEquations && Parser.isMathematicEquation(tokens)))
+    if (tokens.length === 0 || (!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)))
       return new Quantity();
 
     return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
@@ -653,8 +653,8 @@ export class Parser {
     if (tokens.length === 0)
       return { ok: false, error: ParseError.UnableToGenerateParseTokens };
 
-    if(!format.allowMathematicEquations && Parser.isMathematicEquation(tokens)){
-      return { ok: false, error: ParseError.MathematicEquationFoundButIsNotAllowed };
+    if(!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)){
+      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
     }
 
     if (Parser._log) {

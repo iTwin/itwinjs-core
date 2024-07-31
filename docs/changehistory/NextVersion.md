@@ -14,7 +14,7 @@ Table of contents:
 - [ListenerType helper](#listenertype-helper)
 - [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
 - [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
-- [Mathematical equations formatting](#Mathematical-equations-formatting)
+- [Mathematical operations formatting](#Mathematical-operations-formatting)
 
 ## Workspaces
 
@@ -56,15 +56,24 @@ Improve the performance of the ECSchemaRpcLocater by making all of the underlyin
 
 The quantity formatter now supports parsing mathematical operations. Ex :
 ```Typescript
-"5 ft + 12 in + 1 yd -1 ft 6 in" => 7.5 (feet)
-(5 + 1 + 3 - 1.5) => 7.5
+// Simplified example :
+// "5 ft + 12 in + 1 yd -1 ft 6 in" => 7.5 (feet)
+// (5 + 1 + 3 - 1.5) => 7.5
+
+// Asynchronous implementation
+const quantityProps = await Parser.parseIntoQuantity("5 ft + 12 in + 1 yd -1 ft 6 in", format, unitsProvider);
+quantityProps.magnitude // 7.5 (feet)
+
+// Synchronous implementation
+const parseResult = Parser.parseToQuantityValue("5 ft + 12 in + 1 yd -1 ft 6 in", format, feetConversionSpecs);
+parseResult.value // 7.5 (feet)
 ```
 
 ### Limitations
 Only plus(`+`) and minus(`-`) signs are supported for now.
 Other opertaors will end up returning a parsing error or an invalid input result.
 
-The parsing of mathematical equations is disabled by default.
+The parsing of mathematical operations is disabled by default.
 To enable it, you can override the default QuantityFormatter. Ex :
 ```Typescript
   // App specific
@@ -74,6 +83,6 @@ To enable it, you can override the default QuantityFormatter. Ex :
   const props = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
 
   // Override the formatter and enable mathematical operations.
-  await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicEquations: true });
+  await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicOperations: true });
 ```
 

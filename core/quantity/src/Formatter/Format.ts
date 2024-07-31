@@ -36,7 +36,7 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
-  protected _allowMathematicEquations: boolean = false; // optional; enables calculating mathematic operations like addition and subtraction; default is false.
+  protected _allowMathematicOperations: boolean = false; // optional; enables calculating mathematic operations like addition and subtraction; default is false.
 
   constructor(name: string) {
     this._name = name;
@@ -77,8 +77,8 @@ export class BaseFormat {
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
   public set stationOffsetSize(stationOffsetSize: number | undefined) {stationOffsetSize =  this._stationOffsetSize = stationOffsetSize; }
 
-  public get allowMathematicEquations(): boolean { return this._allowMathematicEquations; }
-  public set allowMathematicEquations(allowMathematicEquations: boolean) { this._allowMathematicEquations = allowMathematicEquations; }
+  public get allowMathematicOperations(): boolean { return this._allowMathematicOperations; }
+  public set allowMathematicOperations(allowMathematicOperations: boolean) { this._allowMathematicOperations = allowMathematicOperations; }
 
   public get formatTraits(): FormatTraits { return this._formatTraits; }
   public set formatTraits(formatTraits: FormatTraits) { this._formatTraits = formatTraits; }
@@ -181,10 +181,10 @@ export class BaseFormat {
       this._stationSeparator = formatProps.stationSeparator;
     }
 
-    if (undefined !== formatProps.allowMathematicEquations) { // optional; default is false
-      if (typeof (formatProps.allowMathematicEquations) !== "boolean")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'allowMathematicEquations' attribute. It should be of type 'boolean'.`);
-      this._allowMathematicEquations = formatProps.allowMathematicEquations;
+    if (undefined !== formatProps.allowMathematicOperations) { // optional; default is false
+      if (typeof (formatProps.allowMathematicOperations) !== "boolean")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'allowMathematicOperations' attribute. It should be of type 'boolean'.`);
+      this._allowMathematicOperations = formatProps.allowMathematicOperations;
     }
   }
 }

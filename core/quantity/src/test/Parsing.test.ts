@@ -279,7 +279,7 @@ describe("Parsing tests:", () => {
       precision: 4,
       type: "Decimal",
       uomSeparator: "*",
-      allowMathematicEquations: true,
+      allowMathematicOperations: true,
     };
 
     const testData = [
@@ -324,7 +324,7 @@ describe("Parsing tests:", () => {
       precision: 2,
       stationOffsetSize: 2,
       type: "Station",
-      allowMathematicEquations: true,
+      allowMathematicOperations: true,
     };
 
     const testData = [
@@ -370,7 +370,7 @@ describe("Parsing tests:", () => {
       precision: 4,
       type: "Decimal",
       uomSeparator: "",
-      allowMathematicEquations: true,
+      allowMathematicOperations: true,
     };
 
     const testData = [
@@ -398,7 +398,7 @@ describe("Parsing tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: " ",
-      allowMathematicEquations: true,
+      allowMathematicOperations: true,
     };
 
     const testData = [
@@ -433,7 +433,7 @@ describe("Parsing tests:", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
-      allowMathematicEquations: true,
+      allowMathematicOperations: true,
     };
 
     const testData = [
@@ -476,7 +476,7 @@ describe("Parsing tests:", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
       type: "Decimal",
-      allowMathematicEquations: true,
+      allowMathematicOperations: true,
     };
 
     const testData = [
@@ -504,7 +504,7 @@ describe("Parsing tests:", () => {
     }
   });
 
-  it("Parse mathematic equations into quantity async", async () => {
+  it("Parse mathematic operations into quantity async", async () => {
     const formatData = {
       formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
       precision: 4,
@@ -518,7 +518,7 @@ describe("Parsing tests:", () => {
           },
         ],
       },
-      allowMathematicEquations: true,
+      allowMathematicOperations: true,
     };
 
     const testData = [
@@ -551,7 +551,7 @@ describe("Parsing tests:", () => {
     }
   });
 
-  it("Parse mathematic equations into an invalid result when maths are not allowed async", async () => {
+  it("Parse mathematic operations into an invalid result when maths are not allowed async", async () => {
     const formatData = {
       formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
       precision: 4,
@@ -565,7 +565,7 @@ describe("Parsing tests:", () => {
           },
         ],
       },
-      // allowMathematicEquations: false, <- Also test that, when not set, it default to false
+      // allowMathematicOperations: false, <- Also test that, when not set, it default to false
     };
 
     const testData = [
@@ -621,7 +621,7 @@ describe("Synchronous Parsing tests:", async () => {
     precision: 8,
     type: "Fractional",
     uomSeparator: "",
-    allowMathematicEquations: true,
+    allowMathematicOperations: true,
   };
   const format = new Format("test");
   await format.fromJSON(unitsProvider, formatData).catch(() => { });
@@ -652,7 +652,7 @@ describe("Synchronous Parsing tests:", async () => {
     precision: 2,
     type: "Decimal",
     uomSeparator: "",
-    allowMathematicEquations: true,
+    allowMathematicOperations: true,
   };
 
   const angleFormat = new Format("testAngle");
@@ -661,7 +661,7 @@ describe("Synchronous Parsing tests:", async () => {
   const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit, unitsProvider);
   const angleFormatSpec = await FormatterSpec.create("test", angleFormat, unitsProvider, outAngleUnit);
 
-  it("Parse mathematic equations into quantity synchronously", () => {
+  it("Parse mathematic operations into quantity synchronously", () => {
     const testData = [
       // When unitless, the format unit is used to determine unit.
       { value: "12,345.345 - 1", magnitude: 3762.861156 - 0.3048},
@@ -701,13 +701,13 @@ describe("Synchronous Parsing tests:", async () => {
     }
   });
 
-  it("Parse mathematic equations into an ParserError when maths are not allowed synchronously", async () => {
+  it("Parse mathematic operations into an ParserError when maths are not allowed synchronously", async () => {
     const formatDataMathNotAllowed = {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-      allowMathematicEquations: false,
+      allowMathematicOperations: false,
     };
     const formatMathNotAllowed = new Format("test");
     await formatMathNotAllowed.fromJSON(unitsProvider, formatDataMathNotAllowed).catch(() => { });
@@ -746,7 +746,7 @@ describe("Synchronous Parsing tests:", async () => {
       }
       assert.isTrue(Parser.isParseError(parseResult));
       if (Parser.isParseError(parseResult))
-        expect(parseResult.error).to.eql(ParseError.MathematicEquationFoundButIsNotAllowed);
+        expect(parseResult.error).to.eql(ParseError.MathematicOperationFoundButIsNotAllowed);
     }
   });
 
@@ -756,7 +756,7 @@ describe("Synchronous Parsing tests:", async () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-      allowMathematicEquations: true,
+      allowMathematicOperations: true,
     };
     const formatUnitless = new Format("test");
     await formatUnitless.fromJSON(unitsProvider, formatDataUnitless).catch(() => { });

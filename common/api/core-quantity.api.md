@@ -30,10 +30,10 @@ export class BadUnit implements UnitProps {
 export class BaseFormat {
     constructor(name: string);
     // (undocumented)
-    get allowMathematicEquations(): boolean;
-    set allowMathematicEquations(allowMathematicEquations: boolean);
+    get allowMathematicOperations(): boolean;
+    set allowMathematicOperations(allowMathematicOperations: boolean);
     // (undocumented)
-    protected _allowMathematicEquations: boolean;
+    protected _allowMathematicOperations: boolean;
     // (undocumented)
     get decimalSeparator(): string;
     set decimalSeparator(decimalSeparator: string);
@@ -204,7 +204,7 @@ export class Format extends BaseFormat {
 // @beta
 export interface FormatProps {
     // (undocumented)
-    readonly allowMathematicEquations?: boolean;
+    readonly allowMathematicOperations?: boolean;
     // (undocumented)
     readonly composite?: {
         readonly spacer?: string;
@@ -346,7 +346,7 @@ export enum ParseError {
     // (undocumented)
     InvalidParserSpec = 6,
     // (undocumented)
-    MathematicEquationFoundButIsNotAllowed = 7,
+    MathematicOperationFoundButIsNotAllowed = 7,
     // (undocumented)
     NoValueOrUnitFoundInString = 2,
     // (undocumented)
