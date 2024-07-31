@@ -9,6 +9,8 @@
 import { SchemaItemType } from "@itwin/ecschema-metadata";
 import {
   type AnySchemaDifference,
+  type AnySchemaItemDifference,
+  type ClassItemDifference,
   type ClassPropertyDifference,
   type ConstantDifference,
   type CustomAttributeClassDifference,
@@ -181,4 +183,24 @@ export function isRelationshipConstraintDifference(difference: AnySchemaDifferen
  */
 export function isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference {
   return difference.schemaType === SchemaOtherTypes.RelationshipConstraintClass;
+}
+
+/**
+ * Indicates whether the given difference is type of AnySchemaItemDifference.
+ * @alpha
+ */
+export function isSchemaItemDifference(difference: AnySchemaDifference): difference is AnySchemaItemDifference {
+  return difference.schemaType in SchemaItemType;
+}
+
+/**
+ * Indicates whether the given difference is type of ClassItemDifference.
+ * @alpha
+ */
+export function isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference {
+  return isStructClassDifference(difference)
+    || isCustomAttributeClassDifference(difference)
+    || isEntityClassDifference(difference)
+    || isMixinClassDifference(difference)
+    || isRelationshipClassDifference(difference);
 }
