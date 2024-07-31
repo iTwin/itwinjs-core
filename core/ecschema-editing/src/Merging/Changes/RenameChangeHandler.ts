@@ -308,7 +308,8 @@ function renameCustomAttributeClassName({ differences }: SchemaDifferenceResult,
         }
       }
     }
-    if (change.schemaType === SchemaItemType.RelationshipClass) {
+    // https://github.com/iTwin/itwinjs-core/issues/7020
+    /* if (change.schemaType === SchemaItemType.RelationshipClass) {
       const constraintProps = [change.difference.source, change.difference.target] as Editable<RelationshipConstraintProps>[];
       for (const props of constraintProps) {
         if (props.customAttributes !== undefined) {
@@ -318,7 +319,7 @@ function renameCustomAttributeClassName({ differences }: SchemaDifferenceResult,
           }
         }
       }
-    }
+    } */
   }
 }
 
