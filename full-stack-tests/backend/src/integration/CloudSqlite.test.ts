@@ -205,6 +205,7 @@ describe("CloudSqlite", () => {
         const db = await BriefcaseDb.open({ fileName, container: testContainer0 });
         db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
         db.close();
+        await testContainer0.deleteDatabase(fileName);
       });
       testContainer0.disconnect();
     };
@@ -232,6 +233,7 @@ describe("CloudSqlite", () => {
     logTrace.resetHistory();
     logInfo.resetHistory();
     Logger.initializeToConsole();
+    Logger.setLevel("CloudSqlite", LogLevel.None);
   });
 
   it("should query bcv stat table", async () => {
