@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as crypto from "crypto";
+import * as crypto from "node:crypto";
 import * as fs from "fs";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";

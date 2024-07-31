@@ -191,7 +191,7 @@ describe("CloudSqlite", () => {
     container.disconnect({detach: true});
   });
 
-  it("Should a single user upload changes successfully even if write lock expires", async () => {
+  it("Should upload a single user's changes successfully when a write lock is expired", async () => {
     const testContainer1 = testContainers[0];
     const testCache = azSqlite.makeCaches(["testCache"])[0];
     testContainer1.connect(testCache);
