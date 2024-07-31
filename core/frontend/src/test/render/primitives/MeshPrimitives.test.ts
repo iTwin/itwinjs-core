@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, MeshPolyline, OctEncodedNormal } from "@itwin/core-common";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
-import { Triangle } from "../../../render/primitives/Primitives";
-import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
-import { VertexKey } from "../../../render/primitives/VertexKey";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive";
+import { Mesh } from "../../../common/internal/render/MeshPrimitives";
+import { Triangle } from "../../../common/internal/render/Primitives";
+import { VertexKey } from "../../../common/internal/render/VertexKey";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }

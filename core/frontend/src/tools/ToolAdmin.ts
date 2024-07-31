@@ -687,8 +687,10 @@ export class ToolAdmin {
         if (undefined === current.touchTapTimer) {
           current.touchTapTimer = Date.now();
           current.touchTapCount = 1;
+          // NOTE: We cannot await the executeAfter call below, because that prevents any other
+          // taps from being processed, which makes it impossible for double tap to happen.
           // eslint-disable-next-line @typescript-eslint/unbound-method
-          await ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
+          void ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
         } else if (undefined !== current.touchTapCount) {
           current.touchTapCount++;
         }

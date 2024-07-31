@@ -6,22 +6,26 @@
  * @module Tiles
  */
 
-import { JsonUtils } from "@itwin/core-bentley";
+import { Id64, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
-import { AuxChannelTable } from "../common/render/primitives/AuxChannelTable";
-import { createSurfaceMaterial } from "../common//render/primitives/SurfaceParams";
+import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
+import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
 import { ImdlModel as Imdl } from "../common/imdl/ImdlModel";
 import { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../common/imdl/ImdlSchema";
-import { edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../common/imdl/ParseImdlDocument";
-import { VertexIndices } from "../common/render/primitives/VertexIndices";
+import { convertFeatureTable, edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../common/imdl/ParseImdlDocument";
+import { VertexIndices } from "../common/internal/render/VertexIndices";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
-import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
+import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
+import { _textures } from "../common/internal/Symbols";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -106,7 +110,11 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
   return result;
 }
 
-interface GraphicsOptions extends ImdlDecodeOptions {
+interface GraphicsOptions {
+  document?: Imdl.Document;
+  iModel?: IModelConnection;
+  system: RenderSystem;
+  isCanceled?: () => boolean;
   textures: Map<string, RenderTexture>;
   patterns: Map<string, RenderGeometry[]>;
 }
@@ -169,8 +177,12 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     return options.system.createRenderMaterial(args);
   }
 
+  if (!options.iModel) {
+    return undefined;
+  }
+
   const material = options.system.findMaterial(mat, options.iModel);
-  if (material || !options.document.json.renderMaterials)
+  if (material || !options.document?.json.renderMaterials)
     return material;
 
   const json = options.document.json.renderMaterials[mat];
@@ -410,4 +422,98 @@ export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<Re
     case 1: return graphics[0];
     default: return system.createGraphicList(graphics);
   }
+}
+
+function remapGraphicDescription(descr: GraphicDescriptionImpl, context: GraphicDescriptionContext): void {
+  if (descr.remapContext === context) {
+    // Already remapped.
+    return;
+  } else if (descr.remapContext) {
+    throw new Error("You cannot create a graphic from a GraphicDescription using two different contexts");
+  }
+
+  descr.remapContext = context;
+
+  const batch = descr.batch;
+  if (!batch) {
+    return;
+  }
+
+  if (Id64.isTransient(batch.modelId)) {
+    const modelLocalId = context.remapTransientLocalId(Id64.getLocalId(batch.modelId));
+    batch.modelId = Id64.fromLocalAndBriefcaseIds(modelLocalId, 0xffffff);
+  }
+
+  const data = batch.featureTable.data;
+  const remapId = (offset: number) => {
+    const hi = data[offset + 1];
+    if (hi >= 0xffffff00) {
+      const hi8 = hi & 0xff;
+      const lo = data[offset];
+
+      // Avoid bitwise operators because they truncate at 32 bits (we need 40) and are stupid about the sign bit.
+      const sourceLocalId = lo + (hi8 * 0xffffffff);
+      const localId = context.remapTransientLocalId(sourceLocalId);
+      data[offset] = localId & 0xffffffff;
+      data[offset + 1] = 0xffffff00 + hi8;
+    }
+  };
+
+  const subCatsOffset = 3 * batch.featureTable.numFeatures;
+  for (let i = 0; i < subCatsOffset; i += 3) {
+    remapId(i);
+  }
+
+  const subCatsEnd = undefined !== batch.featureTable.numSubCategories ? subCatsOffset + 2 * batch.featureTable.numSubCategories : data.length;
+  for (let i = subCatsOffset; i < subCatsEnd; i++) {
+    remapId(i);
+  }
+
+  if (undefined !== batch.featureTable.numSubCategories) {
+    for (let i = subCatsEnd; i < data.length; i++) {
+      remapId(i + 1);
+    }
+  }
+}
+
+/** @internal */
+export async function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined> {
+  if (!isGraphicDescription(descr)) {
+    throw new Error("Invalid GraphicDescription");
+  }
+
+  remapGraphicDescription(descr, context);
+
+  const graphics: RenderGraphic[] = [];
+  const graphicsOptions: GraphicsOptions = {
+    system,
+    textures: context[_textures],
+    patterns: new Map(),
+  };
+
+  for (const primitive of descr.primitives) {
+    const gf = createPrimitiveGraphic(primitive, graphicsOptions);
+    if (gf) {
+      graphics.push(gf);
+    }
+  }
+
+  if (graphics.length === 0) {
+    return undefined;
+  }
+
+  let graphic = graphics.length === 1 ? graphics[0] : system.createGraphicList(graphics);
+
+  if (descr.batch) {
+    const featureTable = convertFeatureTable(descr.batch.featureTable, descr.batch.modelId);
+    graphic = system.createBatch(graphic, featureTable, Range3d.fromJSON(descr.batch.range), descr.batch);
+  }
+
+  if (descr.translation) {
+    const branch = new GraphicBranch(true);
+    branch.add(graphic);
+    graphic = system.createBranch(branch, Transform.createTranslation(Point3d.fromJSON(descr.translation)));
+  }
+
+  return graphic;
 }
