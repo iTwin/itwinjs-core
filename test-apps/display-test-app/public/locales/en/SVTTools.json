@@ -169,6 +169,9 @@
     "RecordTileSizes": {
       "keyin": "dta record tilesize"
     },
+    "AddSeequentRealityModel": {
+      "keyin": "dta add seequent reality model"
+    },
     "TerrainDrape": {
       "keyin": "dta drape terrain",
       "Prompts": {
