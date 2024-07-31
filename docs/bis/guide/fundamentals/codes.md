@@ -45,7 +45,7 @@ When the identified entity is pure information in nature, it will often have its
 
 A `CodeSpec` (aka **Code Specification**) names and specifies a new *classification* for Codes.
 A `CodeSpec` also captures the rules for encoding and decoding significant business information into and from a Code.
-For example, the Codes for software artifacts, like ViewDefinitions, and the Codes for Equipment, such as Piping Components, have different *encoding* rules and uniqueness constraints, so would each have a separate `CodeSpec`.
+For example, the Codes for software artifacts, like ViewDefinitions, and the Codes for Equipment, such as Piping Components, have different *encoding* rules and uniqueness constraints, so each would have a separate `CodeSpec`.
 
 For instance, an Industrial Process Plant-focused implementation may require Codes for Piping Components to follow a Specification such as: [plant area code]-[equipment-type code]-[equipment number] (e.g. OIL-AAV-001, which *encodes* a Valve of a particular type "AAV" in an area known as "OIL" at a specific Industrial Plant).
 
