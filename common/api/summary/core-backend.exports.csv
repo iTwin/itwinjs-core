@@ -77,6 +77,8 @@ public;DefinitionPartition
 public;class DefinitionSet 
 beta;deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void
 beta;deleteElementTree(iModel: IModelDb, topElement: Id64String): void
+beta;deleteElementTree(args: DeleteElementTreeArgs): void
+beta;DeleteElementTreeArgs
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools

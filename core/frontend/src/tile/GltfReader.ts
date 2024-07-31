@@ -20,26 +20,26 @@ import {
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { PickableGraphicOptions } from "../render/GraphicBuilder";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { Triangle } from "../render/primitives/Primitives";
+import { Mesh } from "../common/internal/render/MeshPrimitives";
+import { Triangle } from "../common/internal/render/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
-import { DisplayParams } from "../common/render/primitives/DisplayParams";
+import { DisplayParams } from "../common/internal/render/DisplayParams";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
-import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
-import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
+import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
+import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { TextureImageSource } from "../common/render/TextureParams";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, Gltf2Node, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
+import { PickableGraphicOptions } from "../common/render/BatchOptions";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -600,7 +600,7 @@ export abstract class GltfReader {
       return this._system.createPointCloud(gltfMesh, this._iModel);
 
     if (!gltfMesh.points || !gltfMesh.pointRange)
-      return gltfMesh.primitive.getGraphics(this._system, instances);
+      return this._system.createMeshGraphics(gltfMesh.primitive, instances);
 
     const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
@@ -626,7 +626,7 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return mesh.getGraphics(this._system, instances);
+    return this._system.createMeshGraphics(mesh, instances);
   }
 
   private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {

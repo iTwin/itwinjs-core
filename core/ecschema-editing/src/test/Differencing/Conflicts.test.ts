@@ -17,6 +17,10 @@ describe("Difference Conflict Reporting", () => {
     });
   }
 
+  function findDifferenceEntries({ differences }: SchemaDifferenceResult, itemName: string) {
+    return differences.filter((difference) => "itemName" in difference && difference.itemName === itemName);
+  }
+
   async function runDifferences(sourceSchemaJson: SchemaProps, targetSchemaJson: SchemaProps) {
     const sourceContext = new SchemaContext();
     const sourceSchema = await Schema.fromJson(sourceSchemaJson, sourceContext);
@@ -91,6 +95,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingItemName,
         schemaType: "EntityClass",
@@ -98,6 +103,23 @@ describe("Difference Conflict Reporting", () => {
         source: "EntityClass",
         target: "KindOfQuantity",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          customAttributes: [
+            {
+              className: "ConflictSchema.TestCustomAttributeClass",
+            },
+          ],
+          modifier: "Sealed",
+          properties: [{
+            description: "name of item",
+            label: "Name",
+            name: "Name",
+            priority: 0,
+            type: "PrimitiveProperty",
+            typeName: "string",
+          }],
+          schemaItemType: "EntityClass",
+        },
       });
     });
 
@@ -188,6 +210,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingItemName,
         schemaType: "RelationshipClass",
@@ -195,6 +218,44 @@ describe("Difference Conflict Reporting", () => {
         source: "RelationshipClass",
         target: "Mixin",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          customAttributes: [
+            {
+              className: "ConflictSchema.TestCustomAttributeClass",
+            },
+          ],
+          description: "Description of TestRelationship",
+          modifier: "None",
+          schemaItemType: "RelationshipClass",
+          source: {
+            constraintClasses: [
+              "ConflictSchema.TestEntityClass",
+            ],
+            customAttributes: [
+              {
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
+            ],
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "refers to",
+          },
+          strength: "Referencing",
+          strengthDirection: "Forward",
+          target: {
+            constraintClasses: [
+              "ConflictSchema.TestEntityClass",
+            ],
+            customAttributes: [
+              {
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
+            ],
+            multiplicity: "(0..*)",
+            polymorphic: true,
+            roleLabel: "is referenced by",
+          },
+        },
       });
     });
 
@@ -250,6 +311,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingItemName,
         schemaType: "Enumeration",
@@ -257,6 +319,17 @@ describe("Difference Conflict Reporting", () => {
         source: "Enumeration",
         target: "CustomAttributeClass",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          enumerators: [
+            {
+              name: "EnumeratorOne",
+              value: 1,
+            },
+          ],
+          isStrict: undefined,
+          schemaItemType: "Enumeration",
+          type: "int",
+        },
       });
     });
 
@@ -282,6 +355,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingItemName,
         schemaType: "Phenomenon",
@@ -289,6 +363,10 @@ describe("Difference Conflict Reporting", () => {
         source: "Phenomenon",
         target: "PropertyCategory",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          definition: "TestPhenomenon",
+          schemaItemType: "Phenomenon",
+        },
       });
     });
 
@@ -369,6 +447,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingItemName,
         schemaType: "Format",
@@ -376,6 +455,108 @@ describe("Difference Conflict Reporting", () => {
         source: "Format",
         target: "StructClass",
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: {
+          composite: {
+            spacer: "",
+            units: [
+              {
+                label: "'",
+                name: "ConflictSchema.TestUnit",
+              },
+            ],
+          },
+          decimalSeparator: ",",
+          formatTraits: [
+            "KeepSingleZero",
+            "KeepDecimalPoint",
+            "ShowUnitLabel",
+          ],
+          precision: 8,
+          schemaItemType: "Format",
+          thousandSeparator: ".",
+          type: "Fractional",
+          uomSeparator: "",
+        },
+      });
+    });
+
+    it("should find a conflict between EntityClass and StructClass types", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+          },
+          TestCustomAttributeClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          TestItem: {
+            schemaItemType: "EntityClass",
+            label: "TestItem",
+            modifier: "Sealed",
+            baseClass: "ConflictSchema.TestEntity",
+            customAttributes: [
+              {
+                className: "ConflictSchema.TestCustomAttributeClass",
+              },
+            ],
+            properties: [
+              {
+                name: "Name",
+                type: "PrimitiveProperty",
+                description: "name of item",
+                label: "Name",
+                priority: 0,
+                typeName: "string",
+              },
+              {
+                name: "Type",
+                type: "PrimitiveProperty",
+                description: "type of item",
+                label: "Type",
+                priority: 0,
+                typeName: "int",
+                customAttributes: [
+                  {
+                    className: "ConflictSchema.TestCustomAttributeClass",
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestItem: {
+            schemaItemType: "StructClass",
+            properties: [
+              {
+                name: "Type",
+                type: "PrimitiveProperty",
+                description: "type of item",
+                label: "Type",
+                priority: 0,
+                typeName: "int",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
+      expect(findConflictItem(differences, "TestItem")).deep.equals({
+        code: ConflictCode.ConflictingItemName,
+        schemaType: "EntityClass",
+        itemName: "TestItem",
+        source: "EntityClass",
+        target: "StructClass",
+        description: "Target schema already contains a schema item with the name but different type.",
+        difference: sourceSchema.items.TestItem,
       });
     });
   });
@@ -415,6 +596,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingPropertyName,
         schemaType: "EntityClass",
@@ -423,6 +605,11 @@ describe("Difference Conflict Reporting", () => {
         source: "string",
         target: "double",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          name: "TestProperty",
+          type: "PrimitiveProperty",
+          typeName: "string",
+        },
       });
     });
 
@@ -460,7 +647,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(differences.conflicts).has.lengthOf(1);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingPropertyName,
         schemaType: "EntityClass",
@@ -469,6 +656,13 @@ describe("Difference Conflict Reporting", () => {
         source: "PrimitiveArrayProperty",
         target: "PrimitiveProperty",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          maxOccurs: 2147483647,
+          minOccurs: 0,
+          name: "TestProperty",
+          type: "PrimitiveArrayProperty",
+          typeName: "int",
+        },
       });
     });
 
@@ -518,6 +712,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingPropertyName,
         schemaType: "EntityClass",
@@ -526,6 +721,11 @@ describe("Difference Conflict Reporting", () => {
         source: "ConflictSchema.TestEnum",
         target: undefined,
         description: "Target class already contains a property with a different type.",
+        difference: {
+          name: "TestProperty",
+          type: "PrimitiveProperty",
+          typeName: "ConflictSchema.TestEnum",
+        },
       });
     });
 
@@ -578,7 +778,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(differences.conflicts).has.lengthOf(1);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingPropertyName,
         schemaType: "EntityClass",
@@ -587,6 +787,11 @@ describe("Difference Conflict Reporting", () => {
         source: "PrimitiveProperty",
         target: "StructArrayProperty",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          name: "TestProperty",
+          type: "PrimitiveProperty",
+          typeName: "ConflictSchema.TestEnum",
+        },
       });
     });
 
@@ -653,6 +858,7 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
       expect(findConflictItem(differences, "TestItem")).deep.equals({
         code: ConflictCode.ConflictingPropertyName,
         schemaType: "EntityClass",
@@ -661,6 +867,12 @@ describe("Difference Conflict Reporting", () => {
         source: "NavigationProperty",
         target: "StructProperty",
         description: "Target class already contains a property with a different type.",
+        difference: {
+          direction: "Backward",
+          name: "TestProperty",
+          relationshipName: "ConflictSchema.TestRelationship",
+          type: "NavigationProperty",
+        },
       });
     });
   });

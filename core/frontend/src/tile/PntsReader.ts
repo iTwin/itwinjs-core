@@ -11,7 +11,7 @@ import { Point3d, Range3d } from "@itwin/core-geometry";
 import { BatchType, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelConnection } from "../IModelConnection";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { Mesh } from "../common/internal/render/MeshPrimitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTile } from "./internal";
