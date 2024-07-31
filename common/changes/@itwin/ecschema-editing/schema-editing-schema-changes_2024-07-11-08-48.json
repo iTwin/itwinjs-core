@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-editing",
+      "comment": "Introduced Schema Merging Changes API",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-editing"
+}
