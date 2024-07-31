@@ -4,6 +4,7 @@ beta;AnyDiagnostic = IDiagnostic
 alpha;AnyEditingError = SchemaEditingError | Error
 alpha;AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier
 alpha;AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference
+alpha;AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit
 alpha;AnySchemaItemDifference = ClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference
 alpha;AnySchemaItemPathDifference = RelationshipConstraintDifference | RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference
 alpha;AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier
@@ -82,6 +83,7 @@ alpha;ISchemaCompareReporter
 alpha;ISchemaIdentifier 
 alpha;ISchemaItemIdentifier 
 alpha;ISchemaTypeIdentifier
+alpha;isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference
 alpha;isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference
 alpha;isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference
 alpha;isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference
@@ -98,6 +100,7 @@ alpha;isRelationshipClassDifference(difference: AnySchemaDifference): difference
 alpha;isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference
 alpha;isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference
 alpha;isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference
+alpha;isSchemaItemDifference(difference: AnySchemaDifference): difference is AnySchemaItemDifference
 alpha;isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference
 alpha;isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference
 alpha;isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference
@@ -124,6 +127,8 @@ alpha;RelationshipConstraintClassDifference
 beta;class RelationshipConstraintDiagnostic
 alpha;RelationshipConstraintDifference
 alpha;RelationshipConstraintId 
+alpha;RenamePropertyEdit
+alpha;RenameSchemaItemEdit
 alpha;SchemaChanges 
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
@@ -136,6 +141,8 @@ alpha;SchemaDifference
 alpha;SchemaDifferenceConflict
 alpha;SchemaDifferenceResult
 alpha;SchemaEditingError 
+alpha;SchemaEdits
+alpha;SchemaEditType
 alpha;SchemaId 
 alpha;class SchemaItemChange 
 alpha;SchemaItemChanges 
@@ -152,6 +159,7 @@ alpha;SchemaTypeIdentifiers
 beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
+alpha;SkipEdit
 alpha;StructClassDifference 
 beta;class SuppressionDiagnosticReporter 
 alpha;UnitDifference 

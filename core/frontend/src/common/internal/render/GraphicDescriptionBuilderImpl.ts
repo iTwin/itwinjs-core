@@ -9,14 +9,13 @@
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
 import {
-  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, GraphicDescriptionConstraints, GraphicDescriptionContext, GraphicDescriptionContextProps,
-  WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps,
+  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions,
 } from "../../render/GraphicDescriptionBuilder";
 import { GraphicType } from "../../render/GraphicType";
 import { GraphicAssembler } from "../../render/GraphicAssembler";
-import { PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
+import { Gradient, PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
 import { BatchOptions } from "../../render/BatchOptions";
-import { assert, Id64String, TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
+import { assert, Id64String, TransientIdSequence } from "@itwin/core-bentley";
 import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { createPointStringParams } from "./PointStringParams";
 import { VertexTable } from "./VertexTable";
@@ -24,6 +23,8 @@ import { createPolylineParams } from "./PolylineParams";
 import { createMeshParams } from "./VertexTableBuilder";
 import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
 import { _accumulator, _implementationProhibited } from "../Symbols";
+import { WorkerGraphicDescriptionContextImpl, WorkerMaterial, WorkerTexture } from "./GraphicDescriptionContextImpl";
+import { GraphicDescriptionContext } from "../../render/GraphicDescriptionContext";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
@@ -44,49 +45,10 @@ export interface GraphicDescriptionImpl extends GraphicDescription {
   remapContext?: GraphicDescriptionContext;
 }
 
-export interface WorkerGraphicDescriptionContextPropsImpl extends WorkerGraphicDescriptionContextProps {
-  readonly constraints: GraphicDescriptionConstraints;
-  readonly transientIds: TransientIdSequenceProps;
-}
-
-export interface GraphicDescriptionContextPropsImpl extends GraphicDescriptionContextProps {
-  readonly transientIds: TransientIdSequenceProps;
-  /** This is set to true the first time we use RenderSystem.createGraphicDescriptionContext on it.
-   * That prevents us from remapping transient Ids to different transient Ids, recreating duplicate textures+materials, etc if
-   * somebody tries to resolve the same props more than once.
-   * We will throw if somebody tries to re-resolve a GraphicDescriptionContextPropsImpl.
-   */
-  resolved?: boolean;
-}
-
-export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescriptionContext {
-  public readonly [_implementationProhibited] = undefined;
-  public readonly constraints: GraphicDescriptionConstraints;
-  public readonly transientIds: TransientIdSequence;
-
-  public constructor(props: WorkerGraphicDescriptionContextProps) {
-    const propsImpl = props as WorkerGraphicDescriptionContextPropsImpl;
-    if (typeof propsImpl.transientIds !== "object" || typeof propsImpl.constraints !== "object") {
-      throw new Error("Invalid WorkerGraphicDescriptionContextProps");
-    }
-
-    this.constraints = propsImpl.constraints;
-    this.transientIds = TransientIdSequence.fromJSON(propsImpl.transientIds);
-  }
-
-  public toProps(_transferables: Set<Transferable>): GraphicDescriptionContextPropsImpl {
-    // We don't yet have any transferable objects. In the future we expect to support transferring texture image data for textures created on the worker thread.
-    return {
-      [_implementationProhibited]: undefined,
-      transientIds: this.transientIds.toJSON(),
-    };
-  }
-}
-
 export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements GraphicDescriptionBuilder {
   public readonly [_implementationProhibited] = undefined;
   private readonly _computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-  private readonly _constraints: GraphicDescriptionConstraints;
+  private readonly _context: WorkerGraphicDescriptionContextImpl;
   private readonly _viewIndependentOrigin?: Point3d;
 
   public constructor(options: GraphicDescriptionBuilderOptions) {
@@ -107,8 +69,12 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     });
 
     this._computeChordTolerance = options.computeChordTolerance;
-    this._constraints = options.constraints;
     this._viewIndependentOrigin = options.viewIndependentOrigin?.clone();
+
+    this._context = options.context as WorkerGraphicDescriptionContextImpl;
+    if (!(this._context.transientIds instanceof TransientIdSequence)) {
+      throw new Error("Invalid WorkerGraphicDescriptionContext");
+    }
   }
 
   public finish(): GraphicDescriptionImpl {
@@ -237,7 +203,21 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   }
 
   private createMeshPrimitive(args: MeshArgs): ImdlModel.Primitive | undefined {
-    const params = createMeshParams(args, this._constraints.maxTextureSize, true);
+    const params = createMeshParams(args, this._context.constraints.maxTextureSize, true);
+
+    let material;
+    const mat = params.surface.material;
+    if (mat) {
+      assert(mat.isAtlas === false && mat.material instanceof WorkerMaterial);
+      material = mat.material.toImdl();
+    }
+
+    let textureMapping;
+    const tex = params.surface.textureMapping;
+    if (tex) {
+      assert(tex.texture instanceof WorkerTexture);
+      textureMapping = { alwaysDisplayed: false, texture: tex.texture.index.toString(10) };
+    }
 
     return {
       type: "mesh",
@@ -249,16 +229,15 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
         surface: {
           ...params.surface,
           indices: params.surface.indices.data,
-          // ###TODO support materials and textures.
-          material: undefined,
-          textureMapping: undefined,
+          material,
+          textureMapping,
         },
       },
     };
   }
 
   private createPolylinePrimitive(args: PolylineArgs): ImdlModel.Primitive | undefined {
-    const params = createPolylineParams(args, this._constraints.maxTextureSize);
+    const params = createPolylineParams(args, this._context.constraints.maxTextureSize);
     if (!params) {
       return undefined;
     }
@@ -278,7 +257,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
   }
 
   private createPointStringPrimitive(args: PolylineArgs): ImdlModel.Primitive | undefined {
-    const params = createPointStringParams(args, this._constraints.maxTextureSize);
+    const params = createPointStringParams(args, this._context.constraints.maxTextureSize);
     if (!params) {
       return undefined;
     }
@@ -293,9 +272,8 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
     };
   }
 
-  protected override resolveGradient() {
-    // ###TODO support textures and materials.
-    return undefined;
+  protected override resolveGradient(gradient: Gradient.Symb) {
+    return this._context.createGradientTexture(gradient);
   }
 }
 
@@ -309,21 +287,8 @@ function convertVertexTable(src: VertexTable): ImdlModel.VertexTable {
 }
 
 export function isGraphicDescription(description: GraphicDescription): description is GraphicDescriptionImpl {
-  const descr = description as any;
-  if ("object" !== typeof descr || !Array.isArray(descr.primitives)) {
-    return false;
-  }
-
-  switch (descr.type) {
-    case GraphicType.ViewBackground:
-    case GraphicType.Scene:
-    case GraphicType.WorldDecoration:
-    case GraphicType.WorldOverlay:
-    case GraphicType.ViewOverlay:
-      return true;
-    default:
-      return false;
-  }
+  const descr = description as GraphicDescriptionImpl;
+  return "object" === typeof descr && Array.isArray(descr.primitives) && "number" === typeof descr.type;
 }
 
 export function collectGraphicDescriptionTransferables(xfers: Set<Transferable>, description: GraphicDescription): void {
