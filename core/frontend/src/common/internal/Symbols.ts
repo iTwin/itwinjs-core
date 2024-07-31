@@ -12,7 +12,8 @@ function sym(name: string): string {
   return `${name}_core-frontend_INTERNAL_ONLY_DO_NOT_USE`;
 }
 
+export const _accumulator = Symbol.for(sym("accumulator"));
 /** @internal */
 export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
 export const _requestSnap = Symbol.for(sym("requestSnap"));
-export const _accumulator = Symbol.for(sym("accumulator"));
+export const _textures = Symbol.for(sym("textures"));
