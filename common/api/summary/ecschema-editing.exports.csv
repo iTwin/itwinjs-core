@@ -3,8 +3,8 @@ Release Tag;API Item
 beta;AnyDiagnostic = IDiagnostic
 alpha;AnyEditingError = SchemaEditingError | Error
 alpha;AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier
-alpha;AnySchemaChange = SkipChange | RenameSchemaItemChange | RenamePropertyChange
 alpha;AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference
+alpha;AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit
 alpha;AnySchemaItemDifference = ClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference
 alpha;AnySchemaItemPathDifference = RelationshipConstraintDifference | RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference
 alpha;AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier
@@ -127,11 +127,9 @@ alpha;RelationshipConstraintClassDifference
 beta;class RelationshipConstraintDiagnostic
 alpha;RelationshipConstraintDifference
 alpha;RelationshipConstraintId 
-alpha;RenamePropertyChange
-alpha;RenameSchemaItemChange
+alpha;RenamePropertyEdit
+alpha;RenameSchemaItemEdit
 alpha;SchemaChanges 
-alpha;SchemaChangeSet
-alpha;SchemaChangeType
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
 alpha;SchemaCompareDirection
@@ -143,6 +141,8 @@ alpha;SchemaDifference
 alpha;SchemaDifferenceConflict
 alpha;SchemaDifferenceResult
 alpha;SchemaEditingError 
+alpha;SchemaEdits
+alpha;SchemaEditType
 alpha;SchemaId 
 alpha;class SchemaItemChange 
 alpha;SchemaItemChanges 
@@ -159,7 +159,7 @@ alpha;SchemaTypeIdentifiers
 beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
-alpha;SkipChange
+alpha;SkipEdit
 alpha;StructClassDifference 
 beta;class SuppressionDiagnosticReporter 
 alpha;UnitDifference 

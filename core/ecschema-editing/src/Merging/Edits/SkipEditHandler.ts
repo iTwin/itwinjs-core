@@ -8,17 +8,17 @@
 
 import type { SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
 import type { SchemaDifferenceConflict } from "../../ecschema-editing";
-import type { SkipChange } from "./SchemaChanges";
+import type { SkipEdit } from "./SchemaEdits";
 
 /**
- * Applies a skip change to the schema differences. It basically removes all entries that
+ * Applies a skip edit to the schema differences. It basically removes all entries that
  * that are associated with the item to skip.
  * @param result  The result of a schema differencing run
- * @param change  The skip change to be applied.
+ * @param edit    The skip edit to be applied.
  * @internal
  */
-export function applySkipChange(result: SchemaDifferenceResult, change: SkipChange) {
-  const [itemName, pathName] = change.key.split(".") as [string, string | undefined];
+export function applySkipEdit(result: SchemaDifferenceResult, edit: SkipEdit) {
+  const [itemName, pathName] = edit.key.split(".") as [string, string | undefined];
   const foundIndices = pathName !== undefined
     ? findRelatedItemEntries(result, itemName, pathName)
     : findItemEntries(result, itemName);
