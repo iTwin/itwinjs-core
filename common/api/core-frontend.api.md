@@ -1471,7 +1471,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     type: number;
 }
 
-// @public
+// @beta
 export class AzureLocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;

@@ -36,7 +36,6 @@ export {
 	AuxCoordSystem3dState,
 	AuxCoordSystemSpatialState,
 	AuxCoordSystemState,
-	AzureLocationProvider,
 	BeButton,
 	BeButtonEvent,
 	BeButtonState,

@@ -12,8 +12,7 @@ import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
 /** Provides an interface to the [Azure Maps Geocoding services](https://learn.microsoft.com/en-us/rest/api/maps/search/get-geocoding).
- * @public
- * @extensions
+ * @beta
  */
 export class AzureLocationProvider {
   private _locationRequestTemplate: string;
@@ -28,7 +27,6 @@ export class AzureLocationProvider {
   /** Return the location of a query (or undefined if not found). The strings "Space Needle" (a landmark) and "1 Microsoft Way Redmond WA" (an address) are examples of query strings with location information.
    * These strings can be specified as a structured URL parameter or as a query parameter value.  See [Azure Maps Search - Geocoding documentation](https://learn.microsoft.com/en-us/rest/api/maps/search/get-geocoding) for additional
    * information on queries.
-   * @public
    */
   public async getLocation(query: string): Promise<GlobalLocation | undefined> {
     const requestUrl = this._locationRequestTemplate.replace("{query}", query);
