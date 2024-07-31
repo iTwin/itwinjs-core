@@ -53,7 +53,7 @@ In many cases, a `CodeSpec` has a strong correlation with a branch of the Elemen
 
 For example, the standard `CodeSpec` called "bis:ViewDefinition" helps ensure unique names for all subclasses of the `BisCore:ViewDefinition` Element class.
 
-Additional Configuration in an application can define the association between Element class and CodeSpec so that a shared service (e.g. 'Identification Code Service') can be used to generate and validate Codes.
+Additional configuration in an application can define the association between Element class and CodeSpec, allowing a shared service (e.g., 'Identification Code Service') to generate and validate Codes.
 
 The CodeSpec can also dictate that Codes for instances of the Element class should be null. This is appropriate when the modeled real-world entities don’t have a meaningful real-world identifier (e.g. a piece of baseboard, a pile of dirt, an average bolt).
 
