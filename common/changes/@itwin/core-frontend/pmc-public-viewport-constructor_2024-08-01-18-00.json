@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promote ScreenViewport and OffScreenViewport constructors.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
