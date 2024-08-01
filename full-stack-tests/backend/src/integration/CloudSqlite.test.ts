@@ -232,7 +232,7 @@ describe("CloudSqlite", () => {
     // clean up
     logTrace.resetHistory();
     logInfo.resetHistory();
-    Logger.initializeToConsole();
+    Logger.initialize();
   });
 
   it("should query bcv stat table", async () => {
