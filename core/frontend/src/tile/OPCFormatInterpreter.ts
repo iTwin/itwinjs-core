@@ -58,7 +58,6 @@ export class OPCFormatInterpreter  {
     // Check to isGeographicCRS and isProjectedCRS are both going to return false in that case and we will fallback to
     // use un-georeferenced code path.
     await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
-    // const _isGeoCentric = CRSManager.ENGINE.isGeocentricCRS(fileCrs);
     const isGeographicCRS = CRSManager.ENGINE.isGeographicCRS(fileCrs);
     const isProjectedCRS = CRSManager.ENGINE.isProjectedCRS(fileCrs);
     if (fileCrs && (isProjectedCRS || isGeographicCRS)) {
