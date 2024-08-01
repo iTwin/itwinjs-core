@@ -14,11 +14,11 @@ import {
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
-import { MeshArgs } from "../common/internal/render/MeshPrimitives";
 import { DisplayParams } from "../common/internal/render/DisplayParams";
 import { MeshParams } from "../common/internal/render/MeshParams";
 import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
 import { IModelApp } from "../IModelApp";
+import { MeshArgs } from "./MeshArgs";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @public
