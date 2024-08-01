@@ -54,25 +54,25 @@ Improve the performance of the ECSchemaRpcLocater by making all of the underlyin
 
 ## Mathematical operation parsing
 
-The quantity formatter now supports parsing mathematical operations. Ex :
+The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
 ```Typescript
-// Simplified example :
-// "5 ft + 12 in + 1 yd -1 ft 6 in" => 7.5 (feet)
-// (5 + 1 + 3 - 1.5) => 7.5
+// Operation containing many units (feet, inches, yards).
+const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
 
 // Asynchronous implementation
-const quantityProps = await Parser.parseIntoQuantity("5 ft + 12 in + 1 yd -1 ft 6 in", format, unitsProvider);
+const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
 quantityProps.magnitude // 7.5 (feet)
 
 // Synchronous implementation
-const parseResult = Parser.parseToQuantityValue("5 ft + 12 in + 1 yd -1 ft 6 in", format, feetConversionSpecs);
+const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
 parseResult.value // 7.5 (feet)
 ```
 
-### Limitations
+#### Limitations
 Only plus(`+`) and minus(`-`) signs are supported for now.
-Other opertaors will end up returning a parsing error or an invalid input result.
+Other operators will end up returning a parsing error or an invalid input result.
 
+#### Usage
 The parsing of mathematical operations is disabled by default.
 To enable it, you can override the default QuantityFormatter. Ex :
 ```Typescript
@@ -85,4 +85,3 @@ To enable it, you can override the default QuantityFormatter. Ex :
   // Override the formatter and enable mathematical operations.
   await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicOperations: true });
 ```
-
