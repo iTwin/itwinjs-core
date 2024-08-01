@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "move MeshArgs and PolylineArgs out of internal",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
