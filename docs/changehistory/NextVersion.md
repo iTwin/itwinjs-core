@@ -14,7 +14,7 @@ Table of contents:
 - [ListenerType helper](#listenertype-helper)
 - [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
 - [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
-- [Mathematical operation formatting](#Mathematical-operation-parsing)
+- [Mathematical operation parsing](#Mathematical-operation-parsing)
 
 ## Workspaces
 
