@@ -169,8 +169,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   /** `rect` is specified in *CSS* pixels. */
   /** @internal */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
-  /** @deprecated in 3.x. use readImageBuffer */
-  /** @internal */
+  /** @deprecated in 3.x. use readImageBuffer
+   * @internal
+   */
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
   /** @internal */
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
