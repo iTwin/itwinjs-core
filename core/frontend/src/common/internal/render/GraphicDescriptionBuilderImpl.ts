@@ -16,7 +16,7 @@ import { GraphicAssembler } from "../../render/GraphicAssembler";
 import { Gradient, PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
 import { BatchOptions } from "../../render/BatchOptions";
 import { assert, Id64String, TransientIdSequence } from "@itwin/core-bentley";
-import { Mesh, MeshArgs, PolylineArgs } from "./MeshPrimitives";
+import { Mesh } from "./MeshPrimitives";
 import { createPointStringParams } from "./PointStringParams";
 import { VertexTable } from "./VertexTable";
 import { createPolylineParams } from "./PolylineParams";
@@ -25,6 +25,8 @@ import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
 import { _accumulator, _implementationProhibited } from "../Symbols";
 import { WorkerGraphicDescriptionContextImpl, WorkerMaterial, WorkerTexture } from "./GraphicDescriptionContextImpl";
 import { GraphicDescriptionContext } from "../../render/GraphicDescriptionContext";
+import { MeshArgs } from "../../../render/MeshArgs";
+import { PolylineArgs } from "../../../render/PolylineArgs";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
