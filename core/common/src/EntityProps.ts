@@ -86,16 +86,17 @@ export enum PrimitiveTypeCode {
   IGeometry = 0xa01, // Used for Bentley.Geometry.Common.IGeometry types
 }
 
-/** A callback function to process properties of an Entity
+/** A callback function used when iterating over the properties of an [Entity]($backend) class using methods like
+ * [Entity.forEachProperty]($backend) and [IModelDb.forEachMetaData]($backend).
  * @public
  */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-/** A custom attribute instance
+/** Represents a [custom attribute]($docs/bis/ec/ec-custom-attributes.md) attached to a [[PropertyMetaData]] or [[EntityMetaData]].
  * @public
  */
 export interface CustomAttribute {
-  /** The class of the CustomAttribute */
+  /** The fully-qualified name of the [custom attribute class]($docs/bis/ec/ec-custom-attribute-class.md).*/
   ecclass: string;
   /** An object whose properties correspond by name to the properties of this custom attribute instance. */
   properties: { [propName: string]: any };
@@ -103,49 +104,81 @@ export interface CustomAttribute {
 
 type FactoryFunc = (jsonObj: any) => any;
 
-/** @public */
+/** JSON representation of a [[PropertyMetaData]].
+ * @public
+ */
 export interface PropertyMetaDataProps {
+  /** See [[PropertyMetaData.primitiveType]]. */
   primitiveType?: number;
+  /** See [[PropertyMetaData.structName]]. */
   structName?: string;
+  /** See [[PropertyMetaData.extendedType]]. */
   extendedType?: string;
+  /** See [[PropertyMetaData.description]]. */
   description?: string;
+  /** See [[PropertyMetaData.displayLabel]]. */
   displayLabel?: string;
+  /** See [[PropertyMetaData.minimumValue]]. */
   minimumValue?: any;
+  /** See [[PropertyMetaData.maximumValue]]. */
   maximumValue?: any;
+  /** See [[PropertyMetaData.minimumLength]]. */
   minimumLength?: number;
+  /** See [[PropertyMetaData.maximumLength]]. */
   maximumLength?: number;
+  /** See [[PropertyMetaData.readOnly]]. */
   readOnly?: boolean;
+  /** See [[PropertyMetaData.kindOfQuantity]]. */
   kindOfQuantity?: string;
+  /** See [[PropertyMetaData.isCustomHandled]]. */
   isCustomHandled?: boolean;
+  /** See [[PropertyMetaData.isCustomHandledOrphan]]. */
   isCustomHandledOrphan?: boolean;
+  /** See [[PropertyMetaData.minOccurs]]. */
   minOccurs?: number;
+  /** See [[PropertyMetaData.maxOccurs]]. */
   maxOccurs?: number;
+  /** See [[PropertyMetaData.direction]]. */
   direction?: string;
+  /** See [[PropertyMetaData.relationshipClass]]. */
   relationshipClass?: string;
+  /** See [[PropertyMetaData.customAttributes]]. */
   customAttributes?: CustomAttribute[];
 }
 
-/** Metadata for a property.
+/** Describes one [property]($docs/bis/ec/ec-property.md) of an [[EntityMetaData]].
  * @public
  */
 export class PropertyMetaData implements PropertyMetaDataProps {
+  /** For a primitive property, its type. */
   public primitiveType?: PrimitiveTypeCode;
   public structName?: string;
   public extendedType?: string;
+  /** An optional extended description of the property. */
   public description?: string;
+  /** An optional user-facing label. */
   public displayLabel?: string;
+  /** For primitive properties, an optional constraint on the minimum value permitted to be assigned to it. */
   public minimumValue?: any;
+  /** For primitive properties, an optional constraint on the maximum value permitted to be assigned to it. */
   public maximumValue?: any;
+  /** For array properties, an optional constraint on the minimum length of the array. */
   public minimumLength?: number;
+  /** For primitive properties, an optional constraint on the maximum value permitted to be assigned to it. */
   public maximumLength?: number;
+  /** If true, the value of the property cannot be changed. */
   public readOnly?: boolean;
   public kindOfQuantity?: string;
+  /** If true, the property has some custom logic that controls its value. Custom-handled properties are limited to a handful of fundamental
+   * properties in the BisCore ECSchema, like [Element.federationGuid]($backend) and [GeometricElement.category]($backend).
+   */
   public isCustomHandled?: boolean;
   public isCustomHandledOrphan?: boolean;
   public minOccurs?: number;
   public maxOccurs?: number;
   public direction?: string;
   public relationshipClass?: string;
+  /** The set of [custom attributes]($docs/bis/ec/ec-custom-attributes.md) attached to the property. */
   public customAttributes?: CustomAttribute[];
 
   public constructor(jsonObj: PropertyMetaDataProps) {
@@ -219,18 +252,25 @@ export class PropertyMetaData implements PropertyMetaDataProps {
   }
 }
 
-/** @public */
+/** The JSON representation of an [[EntityMetaData]].
+ * @public
+ */
 export interface EntityMetaDataProps {
+  /** See [[EntityMetaData.classId]]. */
   classId: Id64String;
+  /** See [[EntityMetaData.ecclass]]. */
   ecclass: string;
+  /** See [[EntityMetaData.description]]. */
   description?: string;
+  /** See [[EntityMetaData.modifier]]. */
   modifier?: string;
+  /** See [[EntityMetaData.displayLabel]]. */
   displayLabel?: string;
-  /** The  base classes from which this class derives. If more than one, the first is the super class and the others are [mixins]($docs/bis/ec/ec-mixin-class). */
+  /** See [[EntityMetaData.baseClasses]]. */
   baseClasses: string[];
-  /** The Custom Attributes for this class */
+  /** See [[EntityMetaData.customAttributes]]. */
   customAttributes?: CustomAttribute[];
-  /** An object whose properties correspond by name to the properties of this class. */
+  /** See [[EntityMetaData.properties]]. */
   properties: { [propName: string]: PropertyMetaData };
 }
 
