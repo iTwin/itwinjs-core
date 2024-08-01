@@ -66,8 +66,15 @@ export class OrbitGtContextIModelCreator {
       const bounds = fileReader.getFileBounds();
       let worldRange = Range3d.createXYZXYZ(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ(), bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ());
       let geoLocated = false;
-      if (fileCrs.length > 0) {
-        await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
+      // Fix https://dev.azure.com/bentleycs/SEG/_workitems/edit/1491612
+      // the CRS 9300 is not defined in the CRS registry database, so we cannot use CRSManager
+      // Check to isGeographicCRS and isProjectedCRS are both going to return false in that case and we will fallback to
+      // use un-georeferenced code path.
+      await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
+      // const _isGeoCentric = CRSManager.ENGINE.isGeocentricCRS(fileCrs);
+      const isGeographicCRS = CRSManager.ENGINE.isGeographicCRS(fileCrs);
+      const isProjectedCRS = CRSManager.ENGINE.isProjectedCRS(fileCrs);
+      if (fileCrs && (isProjectedCRS || isGeographicCRS)) {
         const wgs84Crs = "4978";
         await CRSManager.ENGINE.prepareForArea(wgs84Crs, new OrbitGtBounds());
 
