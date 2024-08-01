@@ -196,7 +196,7 @@ export class Format extends BaseFormat {
     protected _units?: Array<[UnitProps, string | undefined]>;
 }
 
-// @beta
+// @public
 export interface FormatProps {
     // (undocumented)
     readonly composite?: {
