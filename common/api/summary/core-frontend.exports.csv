@@ -617,7 +617,7 @@ internal;RenderSkySphereParams
 public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl
-internal;class RenderTarget 
+public;class RenderTarget 
 internal;RenderTargetDebugControl
 internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
