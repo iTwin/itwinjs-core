@@ -988,19 +988,13 @@ export class AccuSnap implements Decorator {
 export namespace AccuSnap {
     // (undocumented)
     export class Settings {
-        // (undocumented)
         enableFlag: boolean;
-        // (undocumented)
         hiliteColdHits: boolean;
-        // (undocumented)
         hotDistanceFactor: number;
-        // (undocumented)
+        keypointDivisor: number;
         searchDistance: number;
-        // (undocumented)
         stickyFactor: number;
-        // (undocumented)
         toolTip: boolean;
-        // (undocumented)
         toolTipDelay: BeDuration;
     }
     // (undocumented)

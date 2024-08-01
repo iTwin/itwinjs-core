@@ -271,7 +271,7 @@ export class AccuSnap implements Decorator {
   /** Get the current snap divisor to use to use for SnapMode.NearestKeypoint.
    * @public
    */
-  public get keypointDivisor() { return 2; }
+  public get keypointDivisor() { return this._settings.keypointDivisor; }
 
   /** Get the current active SnapModes. SnapMode position determines priority, with the first entry being the highest. The SnapDetail will be returned for the first SnapMode that produces a hot snap.
    * @public
@@ -1224,12 +1224,21 @@ export namespace AccuSnap { // eslint-disable-line no-redeclare
   }
 
   export class Settings {
+    /** How far cursor can be from snap location (relative to snap aperture) and be considered a hot snap */
     public hotDistanceFactor = 1.2;
+    /** When moving along an element, affects the affinity for snapping to the same curve as the previous snap */
     public stickyFactor = 1.0;
+    /** Factor applied to locate aperture when snapping is enabled and used to pick snap candidates */
     public searchDistance = 2.0;
+    /** Whether the snapped element is also hilited when the snap is not hot */
     public hiliteColdHits = true;
+    /** Enables snap on cursor motion when true, only snap using Tentative snap when false */
     public enableFlag = true;
+    /** Whether to show a tooltip for snap and element locate */
     public toolTip = true;
-    public toolTipDelay = BeDuration.fromSeconds(.5); // delay before tooltip pops up
+    /** Delay before tooltip appears */
+    public toolTipDelay = BeDuration.fromSeconds(.5);
+    /** Curve segment divisor used by SnapMode.NearestKeypoint */
+    public keypointDivisor = 2;
   }
 }
