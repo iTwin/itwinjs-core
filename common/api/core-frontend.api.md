@@ -7600,6 +7600,8 @@ export namespace MockRender {
     export type SystemFactory = () => RenderSystem;
     // (undocumented)
     export abstract class Target extends RenderTarget {
+        // (undocumented)
+        protected readonly [_implementationProhibited]: undefined;
         protected constructor(_system: RenderSystem);
         // (undocumented)
         get analysisFraction(): number;
@@ -7887,6 +7889,8 @@ export class NullRenderSystem extends RenderSystem {
 // @internal
 export class NullTarget extends RenderTarget {
     // (undocumented)
+    protected readonly [_implementationProhibited]: undefined;
+    // (undocumented)
     get analysisFraction(): number;
     set analysisFraction(_fraction: number);
     // (undocumented)
@@ -7954,7 +7958,6 @@ export class OffScreenTarget extends Target {
 
 // @public
 export class OffScreenViewport extends Viewport {
-    // @internal
     protected constructor(target: RenderTarget);
     // (undocumented)
     static create(options: OffScreenViewportOptions): OffScreenViewport;
@@ -9915,82 +9918,91 @@ export interface RenderSystemDebugControl {
     resultsCallback?: GLTimerResultCallback;
 }
 
-// @internal
+// @public
 export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
+    // @internal (undocumented)
+    protected abstract readonly [_implementationProhibited]: unknown;
+    // @internal (undocumented)
     adjustPixelSizeForLOD(cssPixelSize: number): number;
-    // (undocumented)
+    // @internal (undocumented)
     abstract get analysisFraction(): number;
     abstract set analysisFraction(fraction: number);
-    // (undocumented)
+    // @internal (undocumented)
     get animationBranches(): AnimationBranchStates | undefined;
     set animationBranches(_transforms: AnimationBranchStates | undefined);
-    // (undocumented)
+    // @internal (undocumented)
     get antialiasSamples(): number;
     set antialiasSamples(_numSamples: number);
-    // (undocumented)
+    // @internal (undocumented)
     assignFrameStatsCollector(_collector: FrameStatsCollector): void;
-    // (undocumented)
+    // @internal (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
-    // (undocumented)
+    // @internal (undocumented)
     abstract changeDynamics(dynamics?: GraphicList): void;
-    // (undocumented)
+    // @internal (undocumented)
     abstract changeRenderPlan(plan: RenderPlan): void;
-    // (undocumented)
+    // @internal (undocumented)
     abstract changeScene(scene: Scene): void;
-    // (undocumented)
+    // @internal (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
-    // (undocumented)
+    // @internal (undocumented)
     createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
-    // (undocumented)
+    // @internal (undocumented)
     createPlanarClassifier(_properties?: ActiveSpatialClassifier): RenderPlanarClassifier | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     cssPixelsToDevicePixels(cssPixels: number, floor?: boolean): number;
-    // (undocumented)
+    // @internal (undocumented)
     get debugControl(): RenderTargetDebugControl | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     get devicePixelRatio(): number;
-    // (undocumented)
+    // @internal (undocumented)
     dispose(): void;
-    // (undocumented)
+    // @internal (undocumented)
     abstract drawFrame(sceneMilSecElapsed?: number): void;
-    // (undocumented)
+    // @internal (undocumented)
     getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void;
-    // (undocumented)
+    // @internal (undocumented)
     onResized(): void;
-    // (undocumented)
+    // @internal (undocumented)
     overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void;
-    // (undocumented)
+    // @internal (undocumented)
     pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined;
+    // @internal (undocumented)
     queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
-    // @deprecated (undocumented)
+    // @internal (undocumented)
     readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     readImageToCanvas(): HTMLCanvasElement;
+    // @internal (undocumented)
     abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
-    // (undocumented)
+    // @internal (undocumented)
     abstract get renderSystem(): RenderSystem;
-    // (undocumented)
+    // @internal (undocumented)
     reset(): void;
+    // @internal (undocumented)
     abstract get screenSpaceEffects(): Iterable<string>;
     abstract set screenSpaceEffects(_effectNames: Iterable<string>);
-    // (undocumented)
+    // @internal (undocumented)
     setFlashed(_elementId: Id64String, _intensity: number): void;
-    // (undocumented)
+    // @internal (undocumented)
     setHiliteSet(_hilited: HiliteSet): void;
+    // @internal (undocumented)
     setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
+    // @internal (undocumented)
     updateSolarShadows(_context: SceneContext | undefined): void;
-    // (undocumented)
+    // @internal (undocumented)
     abstract updateViewRect(): boolean;
+    // @internal (undocumented)
     abstract get viewRect(): ViewRect;
-    // (undocumented)
+    // @internal (undocumented)
     abstract get wantInvertBlackBackground(): boolean;
 }
 
@@ -10209,7 +10221,6 @@ export interface ScreenSpaceEffectSource {
 
 // @public
 export class ScreenViewport extends Viewport {
-    // @internal
     protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget);
     protected addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
@@ -11131,6 +11142,8 @@ export function synchronizeViewportViews(source: Viewport): SynchronizeViewports
 
 // @internal (undocumented)
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
+    // (undocumented)
+    protected readonly [_implementationProhibited]: undefined;
     protected constructor(rect?: ViewRect);
     // (undocumented)
     activeVolumeClassifierModelId?: Id64String;
