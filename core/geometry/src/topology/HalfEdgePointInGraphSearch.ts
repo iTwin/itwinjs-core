@@ -7,24 +7,32 @@
  * @module Topology
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { HalfEdge } from "./Graph";
+import { HalfEdge, HalfEdgeMask } from "./Graph";
 import { NodeXYZUV } from "./HalfEdgeNodeXYZUV";
 import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 
-/* eslint-disable @typescript-eslint/naming-convention */
+/**
+ * Return code from [PointSearchContext.reAimAroundFace]
+ * @internal
+ */
 export enum RayClassification {
-  RC_NoHits,
-  RC_TargetOnVertex,
-  RC_TargetOnEdge,
-  RC_Bracket,
-  RC_TargetBefore,
-  RC_TargetAfter,
+  noHits,
+  targetOnVertex,
+  targetOnEdge,
+  bracket,
+  targetBefore,
+  targetAfter,
 }
-/* eslint-enable @typescript-eslint/naming-convention */
 
+/**
+ * Context for searching for the location of an xy-point in a graph.
+ * * Assumptions: interior faces of the graph are convex, no edge has length less than `tol`.
+ * @internal
+ */
 export class PointSearchContext {
   private _tol: number;
   private constructor(tol: number) {
@@ -39,7 +47,7 @@ export class PointSearchContext {
   /**
    * Reposition `edgeHit` to an adjacent face or vertex, or another position on the edge, that is closer to the
    * target point.
-   * @param edgeHit start point on edge, updated and returned.
+   * @param edgeHit start position on a graph edge, updated and returned.
    * @param ray the ray to the target point.
    * @param targetDistance distance along the ray to the target point.
    * @return detail closer to the target point.
@@ -105,64 +113,70 @@ export class PointSearchContext {
     return result;
   }
   /**
-   * Aim to reposition `searchBase` based on a ray and a target distance. It uses geometric classifications to determine
-   * the new position and updates `searchBase` accordingly.
-   * @param searchBase the detail to reposition.
-   * @param ray the ray to use for repositioning. Ray is assumed to start at the vertex precisely.
-   * @param targetDistance the target distance to aim for.
+   * Reposition `vertexHit` to an adjacent face, edge, or vertex that is closer to the target point.
+   * @param vertexHit start position at a graph vertex, updated and returned.
+   * @param ray the ray to the target point, assumed to start exactly at the vertex.
+   * @param targetDistance distance along the ray to the target point.
+   * @return detail closer to the target point.
    */
   public reAimFromVertex(
-    searchBase: HalfEdgePositionDetail, ray: Ray3d, targetDistance: number,
+    vertexHit: HalfEdgePositionDetail, ray: Ray3d, targetDistance: number,
   ): HalfEdgePositionDetail {
-    const vertexNode = searchBase.node;
+    assert(ray.origin.isExactEqual(vertexHit));
+    const vertexNode = vertexHit.node;
     let result;
     let outboundEdge = vertexNode!;
-    do {
-      // DPoint3d xyzBase;
-      // vu_getDPoint3d(& xyzBase, outboundEdge);
-      const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
-      const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray);
-      const u0 = data0.u;
-      // double u1 = data1.u;
-      const v0 = data0.v;
-      const v1 = data1.v;
-      if (Math.abs(v0) < this._tol) {
-        if (Math.abs(u0 - targetDistance) < this._tol) {
-          // direct hit at far end
-          result = searchBase.resetAsVertex(data0.node);
-          result.setITag(1);
-          return result;
-        } else if (u0 > targetDistance) {
-          // direct hit within edge
-          const edgeFraction = targetDistance / u0;
-          result = searchBase.resetAtEdgeAndFraction(outboundEdge, edgeFraction);
-          return result;
-        } else if (Math.abs(u0) <= this._tol) {
-          // unexpected direct hit on the base of the search, but call it a hit
-          result = searchBase.resetAsVertex(outboundEdge);
-          result.setITag(1);
-          return result;
-        } else if (u0 > this._tol) {
-          // advance to vertex
-          // double edgeFraction = targetDistance / u0;
-          result = searchBase.resetAsVertex(data0.node);
-          return result;
-        } else {
-          // search direction is exactly opposite this edge
-          // see if the other side of the sector is turned even beyond that
-          if (v1 > this._tol) {
-            result = searchBase.resetAsFace(outboundEdge, outboundEdge);
+    do { // examine the sectors around this vertex
+      if (!outboundEdge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
+        const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);   // outBoundEdge vector
+        const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray); // lookBack vector
+        const u0 = data0.u;
+        const u1 = data1.u;
+        const v0 = data0.v;
+        const v1 = data1.v;
+        // examine dot and cross of ray with both edges defining this sector to see if ray lies between them
+        if (Math.abs(v0) <= this._tol) { // ray parallel to outBoundEdge
+          if (Math.abs(u0 - targetDistance) <= this._tol) {
+            // direct hit at far end of outBoundEdge
+            result = vertexHit.resetAsVertex(data0.node);
+            result.setITag(1);
             return result;
+          } else if (u0 > targetDistance) {
+            // direct hit within outBoundEdge
+            const edgeFraction = targetDistance / u0;
+            result = vertexHit.resetAtEdgeAndFraction(outboundEdge, edgeFraction);
+            return result;
+          } else if (Math.abs(u0) <= this._tol) {
+            // unexpected direct hit at outBoundEdge node, but call it a hit
+            result = vertexHit.resetAsVertex(outboundEdge);
+            result.setITag(1);
+            return result;
+          } else if (u0 > this._tol) {
+            // advance to far end of outBoundEdge
+            result = vertexHit.resetAsVertex(data0.node);
+            return result;
+          } else { // u0 < -tol
+            // ray points opposite outBoundEdge, so by our convexity assumption, the only way ray lies in this
+            // sector is if lookBack vector points in the same direction as ray, which gets handled next sector
+          }
+        } else if (v0 < -this._tol) {
+          if (v1 > this._tol) {
+            // ray definitely lies in this sector
+            result = vertexHit.resetAsFace(outboundEdge, outboundEdge);
+            return result;
+          } else if (v1 < -this._tol) {
+            // ray definitely misses this sector; fall through to visit next sector
+          } else { // |v1| <= tol
+            // ray and lookBack vector are parallel, so this is handled by the next sector unless these vectors
+            // point in opposite directions, which only happens when this sector spans ~180 degrees.
+            if (u0 > this._tol && u1 < 0) {
+              // advance to far end of outBoundEdge
+              result = vertexHit.resetAsVertex(data0.node);
+              return result;
+            }
           }
         }
-      } else if (v0 < -this._tol) {
-        if (v1 > this._tol) {
-          // the usual simple entry into an angle < 180
-          result = searchBase.resetAsFace(outboundEdge, outboundEdge);
-          return result;
-        }
       }
-      // NEEDS WORK: angle >= 180 cases
       outboundEdge = outboundEdge.vertexSuccessor;
     } while (outboundEdge !== vertexNode);
     return this.panic();
@@ -170,21 +184,21 @@ export class PointSearchContext {
   /**
    * Visit all edges around the face, updating `lastBefore` and `firstAfter` to ray-edge intersections that
    * lie directly before and/or after the target point on the ray, if at all.
-   * @param faceNode starting node on the face.
+   * @param faceNode starting node on a graph face.
    * @param ray the ray to the target point.
    * @param targetDistance distance along the ray to the target point.
    * @param lastBefore the detail to reset as the last hit on the ray before the target point (CALLER CREATED).
    * @param firstAfter the detail to reset as the first hit on the ray after the target point (CALLER CREATED).
    * @returns summary of the updated details:
-   * * [[RayClassification.RC_TargetOnVertex]] - target lies at a vertex of the face (details are identical)
-   * * [[RayClassification.RC_TargetOnEdge]] - target lies on an edge of the face (details are identical)
-   * * [[RayClassification.RC_TargetBefore]] - target lies before the face; the ray intersects the face beyond
+   * * [[RayClassification.targetOnVertex]] - target lies at a vertex of the face (details are identical)
+   * * [[RayClassification.targetOnEdge]] - target lies on an edge of the face (details are identical)
+   * * [[RayClassification.targetBefore]] - target lies before the face; the ray intersects the face beyond
    * the target point.
-   * * [[RayClassification.RC_TargetAfter]] - target lies after the face; the ray intersects the face before
+   * * [[RayClassification.targetAfter]] - target lies after the face; the ray intersects the face before
    * the target point.
-   * * [[RayClassification.RC_Bracket]] - target lies between intersections of the ray and the face; if the face
+   * * [[RayClassification.bracket]] - target lies between intersections of the ray and the face; if the face
    * is convex, this means the target lies inside the face.
-   * * [[RayClassification.RC_NoHits]] - the face does not intersect the ray
+   * * [[RayClassification.noHits]] - the face does not intersect the ray
    */
   public reAimAroundFace(
     faceNode: HalfEdge,
@@ -193,6 +207,7 @@ export class PointSearchContext {
     lastBefore: HalfEdgePositionDetail,
     firstAfter: HalfEdgePositionDetail,
   ): RayClassification {
+    assert(!faceNode.isMaskSet(HalfEdgeMask.EXTERIOR));
     lastBefore.resetAsUndefinedWithTag(-Number.MAX_VALUE);
     firstAfter.resetAsUndefinedWithTag(Number.MAX_VALUE);
     const data0 = NodeXYZUV.createNodeAndRayOrigin(faceNode, ray);
@@ -212,7 +227,7 @@ export class PointSearchContext {
         if (Math.abs(u1 - targetDistance) < this._tol) {
           firstAfter.setFrom(vertexHit);
           lastBefore.setFrom(vertexHit);
-          return RayClassification.RC_TargetOnVertex;
+          return RayClassification.targetOnVertex;
         }
         if (u1 > targetDistance && u1 < firstAfter.getDTag()!)
           firstAfter.setFrom(vertexHit);
@@ -227,44 +242,37 @@ export class PointSearchContext {
         if (Math.abs(rayFraction - targetDistance) <= this._tol) {
           firstAfter.setFrom(edgeHit);
           lastBefore.setFrom(edgeHit);
-          return RayClassification.RC_TargetOnEdge;
+          return RayClassification.targetOnEdge;
         }
-        if (rayFraction > targetDistance && rayFraction < firstAfter.getDTag()!) {
+        if (rayFraction > targetDistance && rayFraction < firstAfter.getDTag()!)
           firstAfter.setFrom(edgeHit);
-          if (v0 > 0)
-            firstAfter.setITag(-1); // face is not locally convex; this "after" hit cannot bracket
-        }
-        if (rayFraction < targetDistance && rayFraction > lastBefore.getDTag()!) {
+        if (rayFraction < targetDistance && rayFraction > lastBefore.getDTag()!)
           lastBefore.setFrom(edgeHit);
-          lastBefore.setDTag(rayFraction);
-        }
       }
       data0.setFrom(data1);
       node0 = node0.faceSuccessor;
     } while (node0 !== faceNode);
     // returned to start node
-    const afterTag = firstAfter.getITag();
     firstAfter.setITag(0);
     lastBefore.setITag(0);
     if (lastBefore.isUnclassified) {
       if (firstAfter.isUnclassified)
-        return RayClassification.RC_NoHits;
-      return RayClassification.RC_TargetBefore;
+        return RayClassification.noHits;
+      return RayClassification.targetBefore;
     }
-    if (firstAfter.isUnclassified || (firstAfter.isEdge && afterTag && afterTag < 0)) {
-      return RayClassification.RC_TargetAfter;
-    } else {
-      return RayClassification.RC_Bracket; // face is locally convex; target lies inside this face
-    }
+    if (firstAfter.isUnclassified)
+      return RayClassification.targetAfter;
+    else
+      return RayClassification.bracket; // face is locally convex; target lies inside this face
   }
   /**
-   * Set (replace contents) ray with
-   * * `origin` at start.
-   * * `direction` is unit vector from start towards target.
-   * * `a` is distance from start to target.
-   * @param start existing position.
-   * @param target target xy coordinates.
-   * @param ray ray to update.
+   * Initialize the input ray for topology search:
+   * * `origin` is at `start`
+   * * `direction` is the unit xy-vector from `start` towards `target`
+   * * `a` is the xy-distance from `start` to `target`
+   * @param start existing position
+   * @param target target xy coordinates
+   * @param ray updated in place
    * @returns false if target is reached.
    */
   public setSearchRay(start: HalfEdgePositionDetail, target: Point3d, ray: Ray3d): boolean {
@@ -273,7 +281,7 @@ export class PointSearchContext {
     ray.direction.z = 0.0;
     const distanceToTargetXY = ray.direction.magnitudeXY();
     if (distanceToTargetXY < this._tol)
-      return false; // TODO: set ray, start to vertex?
+      return false; // no searching necessary, we are already at the target point
     ray.a = distanceToTargetXY;
     ray.direction.scaleInPlace(1 / distanceToTargetXY);
     return true;

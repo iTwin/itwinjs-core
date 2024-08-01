@@ -200,31 +200,31 @@ export class InsertAndRetriangulateContext {
         const rc = psc.reAimAroundFace(movingPosition.node!, ray, ray.a!, lastBefore, firstAfter);
         // reAimAroundFace returns lots of cases in `lastBefore`
         switch (rc) {
-          case RayClassification.RC_NoHits: {
+          case RayClassification.noHits: {
             movingPosition.resetAsUnknown();
             break;
           }
-          case RayClassification.RC_TargetOnVertex: {
+          case RayClassification.targetOnVertex: {
             movingPosition.setFrom(lastBefore);
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.RC_TargetOnEdge: {
+          case RayClassification.targetOnEdge: {
             movingPosition.setFrom(lastBefore);
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.RC_Bracket: {
+          case RayClassification.bracket: {
             movingPosition.resetAsFace(lastBefore.node, target);
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.RC_TargetBefore: {
+          case RayClassification.targetBefore: {
             movingPosition.resetAsFace(movingPosition.node, target);
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.RC_TargetAfter: {
+          case RayClassification.targetAfter: {
             if (movingPosition.node === lastBefore.node
               && movingPosition.isFace
               && (lastBefore.isEdge || lastBefore.isVertex)) {

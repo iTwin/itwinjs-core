@@ -177,25 +177,9 @@ export class Triangulator {
     } else {
       for (const p of interior) {
         context.insertAndRetriangulate(p, true);
-        numInsert++;
-        if (numInsert > 16) {
-          /*
-          context.reset();
-          Triangulator.flipTriangles(context.graph);
-          // console.log (" intermediate flips " + numFlip);
-          */
-          numInsert = 0;
-        }
+        numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
       }
     }
-    /*
-    // final touchup for aspect ratio flip
-    for (let i = 0; i < 15; i++) {
-      const numFlip = Triangulator.flipTriangles(graph);
-      if (numFlip === 0)
-        break;
-    }
-    */
     return graph;
   }
   /**
