@@ -3316,6 +3316,8 @@ export class ViewGlobeLocationTool extends ViewTool {
 
     if (this._globalLocation === undefined) {
       const locationString = args.join(" ");
+      // We'll look to move to AzureLocationProvider as the default in 5.0.
+      // eslint-disable-next-line
       const bingLocationProvider = new BingLocationProvider();
       try {
         this._globalLocation = await bingLocationProvider.getLocation(locationString);

@@ -643,7 +643,24 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
             url = "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/";
             break;
         }
-
+        break;
+      case "AzureProvider":
+        formatId = "AzureMaps";
+        name = "Azure Maps Imagery";
+        let tileSetId;
+        switch (provider.type) {
+          case BackgroundMapType.Street:
+            tileSetId = "microsoft.base.hybrid.road";
+            break;
+          case BackgroundMapType.Aerial:
+            tileSetId = "microsoft.imagery"; // Azure Maps currently does not support imagery with labels, like with Bing Maps.
+            break;
+          case BackgroundMapType.Hybrid:
+          default:
+            tileSetId = "microsoft.base.road";
+            break;
+        }
+        url = `https://atlas.microsoft.com/map/tile?tilesetId=${tileSetId}&tileSize=256`;
         break;
     }
 

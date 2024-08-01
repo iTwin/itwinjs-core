@@ -704,7 +704,7 @@ class MapTreeSupplier implements TileTreeSupplier {
 
     return cmp;
   }
-
+  // eslint-disable-next-line deprecation/deprecation
   private async computeHeightBias(heightOrigin: number, heightOriginMode: TerrainHeightOriginMode, exaggeration: number, iModel: IModelConnection, elevationProvider: BingElevationProvider): Promise<number> {
     const projectCenter = iModel.projectExtents.center;
     switch (heightOriginMode) {
@@ -734,7 +734,7 @@ class MapTreeSupplier implements TileTreeSupplier {
 
     if (id.applyTerrain) {
       await ApproximateTerrainHeights.instance.initialize();
-      const elevationProvider = new BingElevationProvider();
+      const elevationProvider = new BingElevationProvider(); // eslint-disable-line deprecation/deprecation
 
       bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel, elevationProvider);
       geodeticOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);

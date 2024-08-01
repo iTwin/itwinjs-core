@@ -62,7 +62,7 @@ export function metersToRange(inputMeters: number, minimumOutput: number = 500, 
  * @extensions
  */
 export async function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number> {
-  const bingElevationProvider = new BingElevationProvider();
+  const bingElevationProvider = new BingElevationProvider(); // eslint-disable-line deprecation/deprecation
   if (viewport && viewport.view instanceof ViewState3d && viewport.iModel.isGeoLocated) {
     const view3d = viewport.view;
     if (view3d.displayStyle.displayTerrain) {

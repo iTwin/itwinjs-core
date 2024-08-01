@@ -262,6 +262,9 @@ export class DisplayTestApp {
           BingMaps: configuration.bingMapsKey
             ? { key: "key", value: configuration.bingMapsKey }
             : undefined,
+          AzureMaps: configuration.azureMapsKey
+            ? { key: "subscription-key", value: configuration.azureMapsKey }
+            : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),

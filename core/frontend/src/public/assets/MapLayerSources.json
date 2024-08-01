@@ -1,5 +1,11 @@
 [
   {
+    "url": "https://atlas.microsoft.com/map/tile?tilesetId=microsoft.base&tileSize=256",
+    "name": "Azure Maps",
+    "formatId": "AzureMaps",
+    "transparentBackground": false
+  },
+  {
     "url": "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
     "name": "Bing Maps: Aerial Imagery",
     "formatId": "BingMaps",

@@ -62,6 +62,7 @@ public;AuxCoordSystem2dState
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
+beta;AzureLocationProvider
 internal;AzureMapsLayerImageryProvider 
 internal;B3dmReader 
 internal;BackgroundMapGeometry
@@ -79,7 +80,9 @@ public;BeTouchEventProps
 public;BeWheelEvent 
 public;BeWheelEventProps 
 public;BingElevationProvider
+deprecated;BingElevationProvider
 public;BingLocationProvider
+deprecated;BingLocationProvider
 internal;BingMapsImageryLayerProvider 
 public;BlankConnection 
 public;BlankConnectionProps
@@ -365,7 +368,7 @@ public;class InputCollector
 public;InputSource
 public;InstancedGraphicParams
 public;class InteractiveTool 
-internal;internalMapLayerImageryFormats: (typeof BingMapsMapLayerFormat)[]
+internal;internalMapLayerImageryFormats: (typeof AzureMapsMapLayerFormat)[]
 public;IntersectDetail 
 public;IpcApp
 public;IpcAppOptions

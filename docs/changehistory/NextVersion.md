@@ -6,14 +6,16 @@ publish: false
 
 Table of contents:
 
-- [Workspaces](#workspaces)
-- [Electron 31 support](#electron-31-support)
-- [Type-safe Worker APIs](#type-safe-worker-apis)
-- [Creating graphics in Workers](#creating-graphics-in-workers)
-- [Internal APIs](#internal-apis)
-- [ListenerType helper](#listenertype-helper)
-- [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
-- [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
+- [NextVersion](#nextversion)
+  - [Workspaces](#workspaces)
+  - [Electron 31 support](#electron-31-support)
+  - [Type-safe Worker APIs](#type-safe-worker-apis)
+  - [Creating graphics in Workers](#creating-graphics-in-workers)
+  - [Internal APIs](#internal-apis)
+  - [ListenerType helper](#listenertype-helper)
+  - [ecschema-metadata CustomAttributeClass.containerType deprecated and replaced with appliesTo](#ecschema-metadata-customattributeclasscontainertype-deprecated-and-replaced-with-appliesto)
+  - [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
+  - [Bing Maps Deprecation](#bing-maps-deprecation)
 
 ## Workspaces
 
@@ -50,3 +52,12 @@ The Xml and JSON representations of a custom attribute (and related TypeScript i
 ## Improve the performance of the ECSchemaRpcLocater
 
 Improve the performance of the ECSchemaRpcLocater by making all of the underlying ECSchemaRpcInterface methods GET by default so responses are cached by default. Previously each client had to set the methods to be GET or they would default to POST and were not cached.
+
+## Bing Maps Deprecation
+With [Bing Maps discontinued](https://www.microsoft.com/en-us/maps/bing-maps/discontinued-services), we have taken the following action:
+
+- We've marked `BingLocationProvider` and `BingElevationProvider` as deprecated. Developers who still wish to use them can disable the lint rule `deprecation/deprecation` until those providers are removed.
+- We've re-enabled support for Azure Maps, allowing users to supply the value `AzureProvider` when specifying a `BackgroundMapProviderName`.
+- An `AzureLocationProvider` has been added to replace `BingLocationProvider`. Users will want to supply an Azure Maps subscription key to `IModelAppOptions.mapLayerOptions` before start-up.
+
+In iTwin.js 5.0, we'll look to remove the deprecated interfaces entirely.
