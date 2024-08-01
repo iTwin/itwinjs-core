@@ -146,19 +146,17 @@ export class PointSearchContext {
             const edgeFraction = targetDistance / u0;
             result = vertexHit.resetAtEdgeAndFraction(outboundEdge, edgeFraction);
             return result;
-          } else if (Math.abs(u0) <= this._tol) {
-            // unexpected direct hit at outBoundEdge node, but call it a hit
-            result = vertexHit.resetAsVertex(outboundEdge);
-            result.setITag(1);
-            return result;
           } else if (u0 > this._tol) {
             // advance to far end of outBoundEdge
             result = vertexHit.resetAsVertex(data0.node);
             return result;
-          } else { // u0 < -tol
-            // ray points opposite outBoundEdge, so by our convexity assumption, the only way ray lies in this
-            // sector is if lookBack vector points in the same direction as ray, which gets handled next sector
           }
+          // NOTE: the remaining cases just proceed to next sector:
+          // * If u0 < -this._tol, then ray points opposite outBoundEdge, so by our convexity assumption, the only way
+          //   that ray lies in this sector is if lookBack vector points in the same direction as ray, but this is
+          //   handled in the next sector.
+          // * If |u0| <= tol, then outBoundEdge has unexpected magnitude near tol and nothing can be determined.
+          //   This case was previously mistakenly classified as a vertex hit.
         } else if (v0 < -this._tol) {
           if (v1 > this._tol) {
             // ray definitely lies in this sector
