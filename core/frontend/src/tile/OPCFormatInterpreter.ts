@@ -54,7 +54,6 @@ export class OPCFormatInterpreter  {
     worldRange = Range3d.createXYZXYZ(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ(), bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ());
     isGeolocated = false;
     const fileCrs = fileReader.getFileCRS();
-    // Fix https://dev.azure.com/bentleycs/SEG/_workitems/edit/1491612
     // the CRS 9300 is not defined in the CRS registry database, so we cannot use CRSManager
     // Check to isGeographicCRS and isProjectedCRS are both going to return false in that case and we will fallback to
     // use un-georeferenced code path.
