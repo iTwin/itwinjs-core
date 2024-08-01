@@ -70,7 +70,7 @@ export interface EntityQueryParams {
 }
 
 /** The primitive types of an Entity property.
- * @beta
+ * @public
  */
 export enum PrimitiveTypeCode {
   Uninitialized = 0x00,
@@ -87,12 +87,12 @@ export enum PrimitiveTypeCode {
 }
 
 /** A callback function to process properties of an Entity
- * @beta
+ * @public
  */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** A custom attribute instance
- * @beta
+ * @public
  */
 export interface CustomAttribute {
   /** The class of the CustomAttribute */
@@ -103,7 +103,7 @@ export interface CustomAttribute {
 
 type FactoryFunc = (jsonObj: any) => any;
 
-/** @beta */
+/** @public */
 export interface PropertyMetaDataProps {
   primitiveType?: number;
   structName?: string;
@@ -126,7 +126,7 @@ export interface PropertyMetaDataProps {
 }
 
 /** Metadata for a property.
- * @beta
+ * @public
  */
 export class PropertyMetaData implements PropertyMetaDataProps {
   public primitiveType?: PrimitiveTypeCode;
@@ -185,7 +185,9 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     return val;
   }
 
-  /** construct a single property from an input object according to this metadata */
+  /** Construct a single property from an input object according to this metadata
+   * @deprecated in 4.8. If you are using this for some reason, please [tell us why](https://github.com/orgs/iTwin/discussions).
+   */
   public createProperty(jsonObj: any): any {
     if (jsonObj === undefined)
       return undefined;
@@ -217,7 +219,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
   }
 }
 
-/** @beta */
+/** @public */
 export interface EntityMetaDataProps {
   classId: Id64String;
   ecclass: string;
@@ -233,9 +235,10 @@ export interface EntityMetaDataProps {
 }
 
 /** Metadata for an Entity.
- * @beta
+ * @public
  */
 export class EntityMetaData implements EntityMetaDataProps {
+  private readonly _properties: { [propName: string]: PropertyMetaData & { name: string } };
   /** The Id of the class in the [[IModelDb]] from which the metadata was obtained. */
   public readonly classId: Id64String;
   /** The Entity name */
@@ -247,8 +250,13 @@ export class EntityMetaData implements EntityMetaDataProps {
   public readonly baseClasses: string[];
   /** The Custom Attributes for this class */
   public readonly customAttributes?: CustomAttribute[];
-  /** An object whose properties correspond by name to the properties of this class. */
-  public readonly properties: { [propName: string]: PropertyMetaData };
+  /** An object whose properties correspond by name to the properties of this class.
+   * @note The return type of the indexer is incorrect - it will return `undefined` if no property named `propName` exists.
+   * @deprecated in 4.8. Use getProperty instead.
+   */
+  public get properties(): { [propName: string]: PropertyMetaData } {
+    return this._properties;
+  }
 
   public constructor(jsonObj: EntityMetaDataProps) {
     this.classId = jsonObj.classId;
@@ -258,10 +266,22 @@ export class EntityMetaData implements EntityMetaDataProps {
     this.displayLabel = jsonObj.displayLabel;
     this.baseClasses = jsonObj.baseClasses;
     this.customAttributes = jsonObj.customAttributes;
-    this.properties = {};
+    this._properties = {};
 
     for (const propName in jsonObj.properties) { // eslint-disable-line guard-for-in
-      this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
+      const prop = new PropertyMetaData(jsonObj.properties[propName]) as PropertyMetaData & { name: string };
+      prop.name = propName;
+      this._properties[propName] = prop;
     }
+  }
+
+  /** Look up a property by its name, if it exists. */
+  public getProperty(name: string): Readonly<PropertyMetaData> | undefined {
+    return this._properties[name];
+  }
+
+  /** Iterate over all of the properties of the entity class. */
+  public getProperties(): Iterable<Readonly<PropertyMetaData & { name: string }>> {
+    return Object.values(this._properties);
   }
 }
