@@ -7404,6 +7404,31 @@ export class MeasureVolumeTool extends MeasureElementTool {
 }
 
 // @public
+export interface MeshArgs {
+    auxChannels?: ReadonlyArray<AuxChannel>;
+    colors: ColorIndex;
+    // @internal (undocumented)
+    edges?: MeshArgsEdges;
+    features: FeatureIndex;
+    fillFlags?: FillFlags;
+    hasBakedLighting?: boolean;
+    is2d?: boolean;
+    isPlanar?: boolean;
+    // @internal (undocumented)
+    isVolumeClassifier?: boolean;
+    material?: RenderMaterial;
+    normals?: OctEncodedNormal[];
+    points: QPoint3dList | (Array<Point3d> & {
+        range: Range3d;
+    });
+    textureMapping?: {
+        texture: RenderTexture;
+        uvParams: Point2d[];
+    };
+    vertIndices: number[];
+}
+
+// @public
 export enum MessageBoxIconType {
     // (undocumented)
     Critical = 4,// Means Don't draw Symbol
@@ -8502,6 +8527,19 @@ export class PlanarTilePatch {
     getRangeCorners(heightRange: Range1d, result: Point3d[]): Point3d[];
     // (undocumented)
     normal: Vector3d;
+}
+
+// @public
+export interface PolylineArgs {
+    colors: ColorIndex;
+    features: FeatureIndex;
+    flags: PolylineFlags;
+    linePixels: LinePixels;
+    points: QPoint3dList | (Array<Point3d> & {
+        range: Range3d;
+    });
+    polylines: PolylineIndices[];
+    width: number;
 }
 
 // @beta

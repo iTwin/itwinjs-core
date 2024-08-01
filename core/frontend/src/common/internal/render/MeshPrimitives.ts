@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
-  OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineTypeFlags, QParams3d, QPoint3dList, 
+  OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineTypeFlags, QParams3d, QPoint3dList,
   SilhouetteEdgeArgs,
 } from "@itwin/core-common";
 import { ColorMap } from "./ColorMap";
