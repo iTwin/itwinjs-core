@@ -6,6 +6,7 @@
  * @module Rendering
  */
 
+import { compareStrings, Guid, GuidString } from "@itwin/core-bentley";
 import { ColorDef } from "./ColorDef";
 import { TextureMapping } from "./TextureMapping";
 
@@ -17,15 +18,22 @@ export abstract class RenderMaterial {
   public readonly key?: string;
   /** Describes how to map an image to a surface to which this material is applied. */
   public readonly textureMapping?: TextureMapping;
+  /** Used for ordered comparisons, e.g. in DisplayParams.compareForMerge */
+  private readonly _guid: GuidString;
 
-  // eslint-disable-next-line deprecation/deprecation
-  protected constructor(params: RenderMaterial.Params) {
+  protected constructor(params: { key?: string, textureMapping?: TextureMapping }) {
     this.key = params.key;
     this.textureMapping = params.textureMapping;
+    this._guid = Guid.createValue();
   }
 
   public get hasTexture(): boolean {
     return undefined !== this.textureMapping?.texture;
+  }
+
+  /** An [OrderedComparator]($bentley) that compares this material against `other`. */
+  public compare(other: RenderMaterial): number {
+    return compareStrings(this._guid, other._guid);
   }
 }
 

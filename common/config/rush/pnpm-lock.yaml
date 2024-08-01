@@ -10,7 +10,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.8.31
+      '@bentley/imodeljs-native': 4.8.36
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.1.0
       '@itwin/core-bentley': workspace:*
@@ -61,7 +61,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
-      '@bentley/imodeljs-native': 4.8.31
+      '@bentley/imodeljs-native': 4.8.36
       '@itwin/cloud-agnostic-core': 2.1.0_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.2_scz6qrwecfbbxg4vskopkl3a7u
@@ -1969,7 +1969,7 @@ importers:
       eslint-config-prettier: ^9.1.0
       faker: ^4.1.0
       fast-sort: ^3.0.2
-      fast-xml-parser: ^4.3.5
+      fast-xml-parser: ^4.4.1
       i18next-http-backend: ^1.4.4
       internal-tools: workspace:*
       jsdom: ^19.0.0
@@ -2017,7 +2017,7 @@ importers:
       deep-equal: 1.0.0
       faker: 4.1.0
       fast-sort: 3.0.2
-      fast-xml-parser: 4.3.5
+      fast-xml-parser: 4.4.1
       mocha: 10.2.0
       rimraf: 3.0.2
       sinon: 17.0.1
@@ -3791,8 +3791,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.8.31:
-    resolution: {integrity: sha512-m8jqwOSP9lBpIN8wDhBPttF4brI17I1AR/NIzsWjlVBXTu+mYJcQSu7NKTxnLfl/nAozEUUSc9x8b/1Lv+BIQg==}
+  /@bentley/imodeljs-native/4.8.36:
+    resolution: {integrity: sha512-emLCpqwfHVDK8iAYxLVxnxY2b7O6yPSVl6jEQCJPtZPPImrdOS0AzmgXzamFAcEsEAx+cemhosXYdGnGEJS47g==}
     requiresBuild: true
     dev: false
 
@@ -8269,8 +8269,8 @@ packages:
     resolution: {integrity: sha512-DIKDkHBt+IubEEU44/kEulX3SbIuufEHIhRfw0MCh7f/HLGWmR/Dk7xg2tapT28pVFqnEV1ZDtl6SeViAyVe4Q==}
     dev: false
 
-  /fast-xml-parser/4.3.5:
-    resolution: {integrity: sha512-sWvP1Pl8H03B8oFJpFR3HE31HUfwtX7Rlf9BNsvdpujD4n7WMhfmu8h9wOV2u+c1k0ZilTADhPqypzx2J690ZQ==}
+  /fast-xml-parser/4.4.1:
+    resolution: {integrity: sha512-xkjOecfnKGkSsOwtZ5Pz7Us/T6mrbPQrq0nh+aCO5V9nk5NLWmasAHumTKjiPJPWANe+kAZ84Jc8ooJkzZ88Sw==}
     hasBin: true
     dependencies:
       strnum: 1.0.5
