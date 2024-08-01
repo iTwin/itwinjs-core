@@ -9,7 +9,7 @@ beta;CloneUnit
 beta;CustomFormatProps 
 beta;DecimalPrecision
 beta;Format 
-beta;FormatProps
+public;FormatProps
 internal;formatStringRgx: RegExp
 beta;Formatter
 beta;FormatterSpec
