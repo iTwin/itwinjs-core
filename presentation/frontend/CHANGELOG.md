@@ -1,6 +1,13 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Fri, 19 Jul 2024 14:54:06 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Jul 2024 13:39:32 GMT and should not be manually modified.
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+### Updates
+
+- Fix `Presentation.selection.selectionChange` event not being emitted for `BlankConnection`.
 
 ## 4.7.7
 Fri, 19 Jul 2024 14:52:42 GMT
