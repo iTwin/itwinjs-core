@@ -459,6 +459,7 @@ public;class MeasureElementTool
 public;MeasureLengthTool 
 public;MeasureLocationTool 
 public;MeasureVolumeTool 
+public;MeshArgs
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
@@ -529,6 +530,7 @@ beta;PlanarClipMaskState
 alpha;PlanarGridProps
 alpha;PlanarGridTransparency
 internal;PlanarTilePatch
+public;PolylineArgs
 beta;PreferenceArg 
 beta;PreferenceKeyArg
 public;class PrimitiveTool 
@@ -617,7 +619,7 @@ internal;RenderSkySphereParams
 public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl
-internal;class RenderTarget 
+public;class RenderTarget 
 internal;RenderTargetDebugControl
 internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
