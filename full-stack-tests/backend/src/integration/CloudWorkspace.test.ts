@@ -146,10 +146,27 @@ describe("Cloud workspace containers", () => {
     // after abandoning changes, the patch version we just made is gone
     expect(() => orgContainer.getEditableDb(newVer.newDb)).throws("No version of 'workspace-db' available");
 
+    // Attempting to get a released db version for edit should throw
+    orgContainer.acquireWriteLock(user);
+    expect(() => orgContainer.getEditableDb({ version: "2.0.0" })).throws("workspace-db:2.0.0 has been published and is not editable. Make a new version first.");
+    orgContainer.releaseWriteLock();
+
+    // Pre-release dbs can be edited
+    orgContainer.acquireWriteLock(user);
+    const preReleaseDb = orgContainer.getEditableDb({ version: "3.0.0-beta.0" });
+    preReleaseDb.open();
+    preReleaseDb.updateString("string 1", "new string 1 - admins are still working on this ver");
+    preReleaseDb.close();
+    orgContainer.releaseWriteLock();
+
     // make sure we can read the workspace from another CloudCache
     const wsDb = await IModelHost.appWorkspace.getWorkspaceDb({ ...orgContainerProps, version: "~2.0" });
     expect(wsDb.manifest.workspaceName).equal(orgWsName);
     expect(wsDb.getString("myVersion")).equal("2.0.0");
+
+    // verify the edit in the pre-release version
+    const preReleaseDbs = await IModelHost.appWorkspace.getWorkspaceDb({ ...orgContainerProps, version: "3.0.0-beta.0" });
+    expect(preReleaseDbs.getString("string 1")).equal("new string 1 - admins are still working on this ver");
   });
 
   const withPatchVersion = async (container: EditableWorkspaceContainer, fn: (db: EditableWorkspaceDb) => void) => {

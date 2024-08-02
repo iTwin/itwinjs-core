@@ -538,6 +538,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
       isPublic: cloudContainer.isPublic,
     };
   }
+
   public async createNewWorkspaceDbVersion(args: CreateNewWorkspaceDbVersionArgs): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
@@ -558,12 +559,15 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
   public override getWorkspaceDb(props: WorkspaceDbProps): EditableWorkspaceDb {
     return this.getEditableDb(props);
   }
+
   public getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb {
     const db = this._wsDbs.get(workspaceDbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
     const isPrerelease = semver.major(db.version) === 0 || semver.prerelease(db.version);
 
-    if (!isPrerelease && this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied")
+    if (!isPrerelease && this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied") {
+      this._wsDbs.clear();
       throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
+    }
 
     return db;
   }
