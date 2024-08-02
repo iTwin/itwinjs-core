@@ -347,6 +347,7 @@ internal;GltfChunk
 internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
+beta;GraphemeOffset
 public;GraphicParams
 public;GraphicsRequestProps
 public;GridFileDefinition 

@@ -4150,6 +4150,14 @@ export namespace Gradient {
     }
 }
 
+// @beta
+export interface GraphemeOffset {
+    charCount: number;
+    charOffset: number;
+    leadingGraphemeOffset: number;
+    trailingGraphemeOffset: number;
+}
+
 // @public
 export class GraphicParams {
     // (undocumented)
@@ -8812,6 +8820,7 @@ export interface RunLayoutResult {
     characterOffset: number;
     denominatorRange?: Range2dProps;
     fontId: FontId;
+    graphemeOffsets: GraphemeOffset[];
     justificationRange?: Range2dProps;
     numeratorRange?: Range2dProps;
     offsetFromLine: XAndY;

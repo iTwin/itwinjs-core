@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Grapheme offsets are now calculated for TextRuns when converting a TextBlockLayout to a TextBlockLayoutResult.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
