@@ -88,7 +88,7 @@ yargs.strict(true)
         },
         "apiSummaryFolder": {
           describe: "Directory for the API summary. Defaults to `<Rush repository root>/common/api/summary`."
-        },
+        }
       })
     },
     (argv) => { extractApiCommand(argv) })
