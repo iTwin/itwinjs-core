@@ -69,7 +69,8 @@ export interface EntityQueryParams {
   bindings?: any[] | object;
 }
 
-/** The primitive types of an Entity property.
+/** The set of [fundamental types]($docs/bis/ec/primitive-types.md) for an [EC property]($docs/bis/ec/ec-property.md)
+ * that defines a simple (non-struct) value or an array of such values.
  * @public
  */
 export enum PrimitiveTypeCode {
@@ -83,7 +84,7 @@ export enum PrimitiveTypeCode {
   Point2d = 0x701, // eslint-disable-line @typescript-eslint/no-shadow
   Point3d = 0x801, // eslint-disable-line @typescript-eslint/no-shadow
   String = 0x901,
-  IGeometry = 0xa01, // Used for Bentley.Geometry.Common.IGeometry types
+  IGeometry = 0xa01,
 }
 
 /** A callback function used when iterating over the properties of an [Entity]($backend) class using methods like
@@ -150,9 +151,14 @@ export interface PropertyMetaDataProps {
  * @public
  */
 export class PropertyMetaData implements PropertyMetaDataProps {
-  /** For a primitive property, its type. */
+  /** For a primitive property, or an array of primitive values, the underlying type. */
   public primitiveType?: PrimitiveTypeCode;
+  /** For a complex property, or an array of complex values, the fully-qualified name of the class that defines the property's type. */
   public structName?: string;
+  /** The optional name of a more specific type than [[primitiveType]] that provides additional semantics.
+   * For example, a property of type [[PrimitiveTypeCode.String]] may have an extended type of "Json" if it stores a stringified JSON value, or "URI" if
+   * it stores a universal resource identifier.
+   */
   public extendedType?: string;
   /** An optional extended description of the property. */
   public description?: string;
@@ -162,21 +168,30 @@ export class PropertyMetaData implements PropertyMetaDataProps {
   public minimumValue?: any;
   /** For primitive properties, an optional constraint on the maximum value permitted to be assigned to it. */
   public maximumValue?: any;
-  /** For array properties, an optional constraint on the minimum length of the array. */
+  /** For a string or binary property, an optional constraint on the minimum number of characters of bytes, respectively. */
   public minimumLength?: number;
-  /** For primitive properties, an optional constraint on the maximum value permitted to be assigned to it. */
+  /** For a string or binary property, an optional constraint on the maximum number of characters of bytes, respectively. */
   public maximumLength?: number;
   /** If true, the value of the property cannot be changed. */
   public readOnly?: boolean;
+  /** The optional name denoating the ["kind of quantity"]($docs/bis/ec/kindofquantity.md) this property represents. */
   public kindOfQuantity?: string;
   /** If true, the property has some custom logic that controls its value. Custom-handled properties are limited to a handful of fundamental
    * properties in the BisCore ECSchema, like [Element.federationGuid]($backend) and [GeometricElement.category]($backend).
    */
   public isCustomHandled?: boolean;
+  /** ###TODO what is this for?
+   * AutoHandledPropertiesCollection::DetectOrphanCustomHandledProperty is supposed to "detect" these,
+   * but nobody calls it.
+   */
   public isCustomHandledOrphan?: boolean;
+  /** For an array property, an optional constraint on the minimum number of entries in the array. */
   public minOccurs?: number;
+  /** For an array property, an optional constraint on the maximum number of entries in the array. */
   public maxOccurs?: number;
+  /** For a navigation property, the direction in which to traverse the [relationship]($docs/bis/ec/ec-relationships.md). */
   public direction?: string;
+  /** For a navigation property, the fully-qualified name of the [EC relationship class]($docs/bis/ec/ec-relationship-class.md) defining the relationship. */
   public relationshipClass?: string;
   /** The set of [custom attributes]($docs/bis/ec/ec-custom-attributes.md) attached to the property. */
   public customAttributes?: CustomAttribute[];
@@ -246,7 +261,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     return jsonObj;
   }
 
-  /** Return `true` if this property is a NavigationProperty. */
+  /** Return `true` if this property is a "navigation property" - i.e., it points to another entity via an [EC relationship]($docs/bis/ec/ec-relationships.md). */
   public get isNavigation(): boolean {
     return (this.direction !== undefined); // the presence of `direction` means it is a navigation property
   }
@@ -274,21 +289,30 @@ export interface EntityMetaDataProps {
   properties: { [propName: string]: PropertyMetaData };
 }
 
-/** Metadata for an Entity.
+/** Describes the [ECClass]($docs/bis/ec/ec-class.md) for an [Entity]($backend).
  * @public
  */
-export class EntityMetaData implements EntityMetaDataProps {
+export class EntityMetaData {
   private readonly _properties: { [propName: string]: PropertyMetaData & { name: string } };
-  /** The Id of the class in the [[IModelDb]] from which the metadata was obtained. */
+  /** The Id of the class in the [IModelDb]($backend) from which the metadata was obtained. */
   public readonly classId: Id64String;
-  /** The Entity name */
+  /** The fully-qualified class name. */
   public readonly ecclass: string;
+  /** An optional extended description of the class. */
   public readonly description?: string;
+  /** An optional constraint applied to the class, one of the following:
+   *  - "Abstract", indicating that the class cannot be instantiated, but may have instantiable subclasses;
+   *  - "Sealed", indicating that the class cannot have subclasses; or
+   *  - "None" (the default)
+   */
   public readonly modifier?: string;
+  /** An optional user-facing label. */
   public readonly displayLabel?: string;
-  /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
+  /** The list of classes from which this class derives. The first entry in the array is the direct Entity base class; any subsequent
+   * entries are [mix-ins]($docs/bis/ec/ec-mixin-class.md).
+   */
   public readonly baseClasses: string[];
-  /** The Custom Attributes for this class */
+  /** The set of [custom attributes]($docs/bis/ec/ec-custom-attributes.md) attached to the class. */
   public readonly customAttributes?: CustomAttribute[];
   /** An object whose properties correspond by name to the properties of this class.
    * @note The return type of the indexer is incorrect - it will return `undefined` if no property named `propName` exists.
