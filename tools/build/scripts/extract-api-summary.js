@@ -60,7 +60,7 @@ fs.readFile(argv.apiSignature, function (error, data) {
     if (index === arr.length - 1 && line === "") { return; }
 
     if (previousLines.length !== 0) {
-      const matches = line.match(/export (?:abstract )?(\w+) (\w+)/);
+      const matches = line.match(/export.+?(class|interface|type|function|const|enum|namespace) (\w+)/);
       if (matches) {
         for (const previousLine of previousLines) {
           const line = `${previousLine};${matches[1]};${matches[2]}`;
