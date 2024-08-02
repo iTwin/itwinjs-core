@@ -62,9 +62,8 @@ export abstract class TextBlockComponent {
 
   /** @internal */
   protected constructor(props: TextBlockComponentProps) {
-    // TODO: find a better way to do this
-    this._styleName = props.styleName ?? (props as any)._styleName;
-    this._styleOverrides = { ...props.styleOverrides, ...(props as any)._styleOverrides };
+    this._styleName = props.styleName;
+    this._styleOverrides = { ...props.styleOverrides };
   }
 
   /** The name of the [[TextStyle]] that provides the base formatting for the contents of this component.
