@@ -95,12 +95,12 @@ export class ClassRegistry {
    * @param entityMetaData The Entity metadata that defines the class
    */
   private static generateClassForEntity(entityMetaData: EntityMetaData, iModel: IModelDb): typeof Entity {
-    const name = entityMetaData.ecclass.split(":");
-    const domainName = name[0];
-    const className = name[1];
+    const nameParts = entityMetaData.ecclass.split(":");
+    const domainName = nameParts[0];
+    const className = nameParts[1];
 
     if (0 === entityMetaData.baseClasses.length) // metadata must contain a superclass
-      throw new IModelError(IModelStatus.BadArg, `class ${name} has no superclass`);
+      throw new IModelError(IModelStatus.BadArg, `class ${nameParts} has no superclass`);
 
     // make sure schema exists
     let schema = Schemas.getRegisteredSchema(domainName);
@@ -109,7 +109,7 @@ export class ClassRegistry {
 
     const superclass = this._classMap.get(entityMetaData.baseClasses[0].toLowerCase());
     if (undefined === superclass)
-      throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
+      throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${nameParts}`);
 
     // user defined class hierarchies may skip a class in the hierarchy, and therefore their JS base class cannot
     // be used to tell if there are any generated classes in the hierarchy
@@ -146,10 +146,10 @@ export class ClassRegistry {
     // - it is not in the `BisCore` schema
     // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
     if (!generatedClassHasNonGeneratedNonCoreAncestor) {
-      const navigationProps = Object.entries(entityMetaData.properties)
-        .filter(([_name, prop]) => prop.isNavigation)
+      const navigationProps = Array.from(entityMetaData.getProperties())
+        .filter((prop) => prop.isNavigation)
         // eslint-disable-next-line @typescript-eslint/no-shadow
-        .map(([name, prop]) => {
+        .map((prop) => {
           assert(prop.relationshipClass);
           const maybeMetaData = iModel[_nativeDb].getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
           assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
@@ -160,7 +160,7 @@ export class ClassRegistry {
           const normalizeClassName = (clsName: string) => clsName.replace(".", ":");
           const rootClass = ClassRegistry.findRegisteredClass(normalizeClassName(rootClassMetaData));
           assert(rootClass, `The root class for ${prop.relationshipClass} was not in BisCore.`);
-          return { name, concreteEntityType: EntityReferences.typeFromClass(rootClass) };
+          return { name: prop.name, concreteEntityType: EntityReferences.typeFromClass(rootClass) };
         });
 
       Object.defineProperty(

@@ -89,9 +89,16 @@ export enum PrimitiveTypeCode {
 
 /** A callback function used when iterating over the properties of an [Entity]($backend) class using methods like
  * [Entity.forEachProperty]($backend) and [IModelDb.forEachMetaData]($backend).
+ * @deprecated in 4.8. Use PropertyMetaDataCallback.
  * @public
  */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
+
+/** A callback function used when iterating over the properties of an [Entity]($backend) class using methods like
+ * [Entity.forEachProperty]($backend) and [IModelDb.forEachMetaData]($backend).
+ * @public
+ */
+export type PropertyMetaDataCallback = (name: string, meta: Readonly<PropertyMetaData>) => void;
 
 /** Represents a [custom attribute]($docs/bis/ec/ec-custom-attributes.md) attached to a [[PropertyMetaData]] or [[EntityMetaData]].
  * @public
@@ -343,6 +350,13 @@ export class EntityMetaData {
 
   /** Iterate over all of the properties of the entity class. */
   public getProperties(): Iterable<Readonly<PropertyMetaData & { name: string }>> {
-    return Object.values(this._properties);
+    return this.getMutableProperties();
   }
+
+  /** Retained to avoid breaking PropertyCallback which exposes mutable PropertyMetaData.
+   * @internal
+   */
+   public getMutableProperties(): Iterable<PropertyMetaData & { name: string }> {
+     return Object.values(this._properties);
+   }
 }

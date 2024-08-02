@@ -22,7 +22,7 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, PropertyMetaDataCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreRpc,
@@ -1111,7 +1111,7 @@ export abstract class IModelDb extends IModel {
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
-  public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+  public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyMetaDataCallback | PropertyCallback, includeCustom: boolean = true) { // eslint-disable-line deprecation/deprecation
     iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
   }
 
@@ -1122,12 +1122,11 @@ export abstract class IModelDb extends IModel {
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
-  public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+  public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyMetaDataCallback | PropertyCallback, includeCustom: boolean = true) { // eslint-disable-line deprecation/deprecation
     const meta = this.getMetaData(classFullName); // will load if necessary
-    for (const propName in meta.properties) { // eslint-disable-line guard-for-in
-      const propMeta = meta.properties[propName];
-      if (includeCustom || !propMeta.isCustomHandled || propMeta.isCustomHandledOrphan)
-        func(propName, propMeta);
+    for (const propMeta of meta.getMutableProperties()) {
+      if (includeCustom || !propMeta.isCustomHandled)
+        func(propMeta.name, propMeta);
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)

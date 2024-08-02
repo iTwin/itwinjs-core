@@ -173,6 +173,7 @@ import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
+import { PropertyMetaDataCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
@@ -2253,7 +2254,7 @@ export class Entity {
     protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
-    forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
+    forEachProperty(func: PropertyCallback | PropertyMetaDataCallback, includeCustom?: boolean): void;
     // @internal @deprecated
     getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
@@ -3068,8 +3069,8 @@ export abstract class IModelDb extends IModel {
     get fontMap(): FontMap;
     // (undocumented)
     protected _fontMap?: FontMap;
-    static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
-    forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyMetaDataCallback | PropertyCallback, includeCustom?: boolean): void;
+    forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyMetaDataCallback | PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;

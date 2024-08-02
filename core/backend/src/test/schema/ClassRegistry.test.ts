@@ -51,9 +51,8 @@ describe("Class Registry", () => {
       assert.equal(metaData.baseClasses[0], UrlLink.classFullName);
       assert.equal(metaData.customAttributes![0].ecclass, "BisCore:ClassHasHandler");
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.exists(metaData.properties);
-      assert.isDefined(metaData.properties.repositoryGuid);
-      const p = metaData.properties.repositoryGuid;
+      const p = metaData.getProperty("repositoryGuid")!;
+      assert.isDefined(p);
       assert.equal(p.extendedType, "BeGuid");
       assert.equal(p.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");
     }
@@ -69,9 +68,8 @@ describe("Class Registry", () => {
       assert.equal(metaData.ecclass, SpatialViewDefinition.classFullName);
       assert.isTrue(metaData.baseClasses.length > 0);
       assert.equal(metaData.baseClasses[0], ViewDefinition3d.classFullName);
-      assert.exists(metaData.properties);
-      assert.isDefined(metaData.properties.modelSelector);
-      const n = metaData.properties.modelSelector;
+      const n = metaData.getProperty("modelSelector")!;
+      assert.isDefined(n);
       assert.equal(n.relationshipClass, "BisCore:SpatialViewDefinitionUsesModelSelector");
     }
   });
@@ -92,7 +90,7 @@ describe("Class Registry", () => {
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
     const testData: string[] = [];
-    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName) => {
+    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName: string) => {
       testData.push(propName);
     }, false);
 
