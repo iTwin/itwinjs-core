@@ -42,29 +42,29 @@ export function* getItemNamesFromFormatString(formatString: string): Iterable<st
 }
 /** @beta */
 export enum FormatTraits {
-  Uninitialized = 0b0000000000,
+  Uninitialized = 0,
   /** Show trailing zeroes to requested precision. */
-  TrailZeroes = 0b0000000001,
+  TrailZeroes = 1 << 0,
   /** Indicates that the fractional part of the number is required when the fraction is zero */
-  KeepSingleZero = 0b0000000010,
+  KeepSingleZero = 1 << 1,
   /** Zero magnitude returns blank display value */
-  ZeroEmpty = 0b0000000100,
+  ZeroEmpty = 1 << 2,
   /** Show decimal point when value to right of decimal is empty */
-  KeepDecimalPoint = 0b0000001000,
+  KeepDecimalPoint = 1 << 3,
   /** Use the rounding factor. Not yet supported  */
-  ApplyRounding = 0b0000010000,
+  ApplyRounding = 1 << 4,
   /** Show a dash between whole value and fractional value */
-  FractionDash = 0b0000100000,
+  FractionDash = 1 << 5,
   /** Append the quantity's unit label */
-  ShowUnitLabel = 0b0001000000,
+  ShowUnitLabel = 1 << 6,
   /** Prepend unit label. Not yet supported */
-  PrependUnitLabel = 0b0010000000,
+  PrependUnitLabel = 1 << 7,
   /** show a grouping in each group of 1000. */
-  Use1000Separator = 0b0100000000,
+  Use1000Separator = 1 << 8,
   /** Indicates that if an exponent value is positive to not include a `+`. By default a sign, `+` or `-`, is always shown. Not yet supported */
-  ExponentOnlyNegative = 0b1000000000,
+  ExponentOnlyNegative = 1 << 9,
   /** Indicates the use of a counter clockwise angles. Affects Azimuth only. */
-  CounterClockwiseAngle = 0b10000000000,
+  CounterClockwiseAngle = 1 << 10,
 }
 
 /** Precision for Fractional formatted value types. Range from Whole (1/1) through 1/256.
