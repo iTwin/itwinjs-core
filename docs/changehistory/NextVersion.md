@@ -8,10 +8,13 @@ Table of contents:
 
 - [Workspaces](#workspaces)
 - [Electron 31 support](#electron-31-support)
+- [Type-safe Worker APIs](#type-safe-worker-apis)
+- [Creating graphics in Workers](#creating-graphics-in-workers)
 - [Internal APIs](#internal-apis)
 - [ListenerType helper](#listenertype-helper)
 - [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
 - [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
+- [Mathematical operation parsing](#Mathematical-operation-parsing)
 
 ## Workspaces
 
@@ -20,6 +23,16 @@ The `beta` [Workspace]($backend) and [Settings]($backend) APIs have been updated
 ## Electron 31 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 31](https://www.electronjs.org/blog/electron-31-0).
+
+## Type-safe Worker APIs
+
+The [WorkerProxy APIs](../learning/frontend/WorkerProxy.md) provide an easy way to leverage [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker)s in a type-safe way to move processing out of the JavaScript main thread into a background thread.
+
+## Creating graphics in Workers
+
+Typically, you would use a [GraphicBuilder]($frontend) to create graphics. `GraphicBuilder` produces a [RenderGraphic]($frontend) containing WebGL resources like textures and vertex buffers, so it must execute on the main JavaScript thread. This is fine for simple decorations, but imagine you are streaming large data sets like GeoJSON or point clouds that must be processed into graphics - that would require far more processing which, if executed on the main thread, would utterly degrade the responsiveness of the application by blocking the event loop.
+
+[GraphicDescriptionBuilder]($frontend) has been introduced to address this problem. In conjunction with a [WorkerProxy](#type-safe-worker-apis), you can move the heavy processing into a background thread to produce a [GraphicDescription]($frontend), leaving to the main thread the fast and straighforward task of converting that description into a [RenderGraphic]($frontend) using [RenderSystem.createGraphicFromDescription]($frontend). See [this article](../learning/frontend/WorkerProxy.md) for an example.
 
 ## Internal APIs
 
@@ -38,3 +51,37 @@ The Xml and JSON representations of a custom attribute (and related TypeScript i
 ## Improve the performance of the ECSchemaRpcLocater
 
 Improve the performance of the ECSchemaRpcLocater by making all of the underlying ECSchemaRpcInterface methods GET by default so responses are cached by default. Previously each client had to set the methods to be GET or they would default to POST and were not cached.
+
+## Mathematical operation parsing
+
+The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
+```Typescript
+// Operation containing many units (feet, inches, yards).
+const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
+
+// Asynchronous implementation
+const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
+quantityProps.magnitude // 7.5 (feet)
+
+// Synchronous implementation
+const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
+parseResult.value // 7.5 (feet)
+```
+
+#### Limitations
+Only plus(`+`) and minus(`-`) signs are supported for now.
+Other operators will end up returning a parsing error or an invalid input result.
+
+#### Usage
+The parsing of mathematical operations is disabled by default.
+To enable it, you can override the default QuantityFormatter. Ex :
+```Typescript
+  // App specific
+  const quantityType = QuantityType.LengthEngineering;
+
+  // Default props for the desired quantityType
+  const props = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+
+  // Override the formatter and enable mathematical operations.
+  await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicOperations: true });
+```

@@ -2,6 +2,18 @@
   "name": "@itwin/workspace-editor",
   "entries": [
     {
+      "version": "4.7.8",
+      "tag": "@itwin/workspace-editor_v4.7.8",
+      "date": "Wed, 31 Jul 2024 13:38:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.7",
+      "tag": "@itwin/workspace-editor_v4.7.7",
+      "date": "Fri, 19 Jul 2024 14:52:42 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.7.6",
       "tag": "@itwin/workspace-editor_v4.7.6",
       "date": "Fri, 12 Jul 2024 14:42:56 GMT",
