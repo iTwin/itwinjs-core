@@ -313,7 +313,7 @@ export class EntityMetaData {
   public readonly customAttributes?: CustomAttribute[];
   /** An object whose properties correspond by name to the properties of this class.
    * @note The return type of the indexer is incorrect - it will return `undefined` if no property named `propName` exists.
-   * @deprecated in 4.8. Use getProperty instead.
+   * @deprecated in 4.8. Use getProperty to look up a property, or getProperties to iterate all properties.
    */
   public get properties(): { [propName: string]: PropertyMetaData } {
     return this._properties;
