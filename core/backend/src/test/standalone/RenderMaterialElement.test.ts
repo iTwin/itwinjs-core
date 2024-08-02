@@ -89,8 +89,10 @@ describe("RenderMaterialElement", () => {
   describe("read", () => {
     it("should be able to convert TextureId to hexadecimal string outside javascript's double precision range of 2^53", async () => {
       // LargeNumericRenderMaterialTextureId is a database with a single RenderMaterial whose jsonProperties look something like:
-      // {"materialAssets":{"renderMaterial":{"Map":{"Diffuse":{"TextureId":9223372036854775807}}}}}
+      // {"materialAssets":{"renderMaterial":{"Map":{"Diffuse":{"TextureId":9223372036854775807},"Bump":{"TextureId":18446744073709551615},"Finish":{"TextureId":13835058055282163712}}}}}
       // 9223372036854775807 is equivalent to 2^63 - 1 which is equivalent to the hexadecimal string 0x7fffffffffffffff.
+      // 18446744073709551615 is equivalent to 2^64 - 1 which is equivalent to the hexadecimal string 0xffffffffffffffff.
+      // 13835058055282163712 is equivalent to 2^63 + (2^63 / 2) which is equivalent to the hexadecimal string 0xc000000000000000.
       const seedFileName = IModelTestUtils.resolveAssetFile("LargeNumericRenderMaterialTextureId.bim");
 
       const db = SnapshotDb.openFile(seedFileName);
@@ -102,6 +104,8 @@ describe("RenderMaterialElement", () => {
       });
       const renderMatElement = db.elements.getElement<RenderMaterialElement>(id!).toJSON();
       expect(renderMatElement.jsonProperties?.materialAssets?.renderMaterial?.Map?.Diffuse?.TextureId).to.equal("0x7fffffffffffffff");
+      expect(renderMatElement.jsonProperties?.materialAssets?.renderMaterial?.Map?.Bump?.TextureId).to.equal("0xffffffffffffffff");
+      expect(renderMatElement.jsonProperties?.materialAssets?.renderMaterial?.Map?.Finish?.TextureId).to.equal("0xc000000000000000");
       db.close();
     });
   });
