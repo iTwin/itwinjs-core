@@ -89,27 +89,6 @@ yargs.strict(true)
         "apiSummaryFolder": {
           describe: "Directory for the API summary. Defaults to `<Rush repository root>/common/api/summary`."
         },
-        "summaryVersion": {
-          describe: `Version of the API summary style.
-
-            1 (default) - outputs release tag and name of API items with the function signature or union type definition.
-            2 - outputs release tag, type of the API (function, interface, type, etc.) and names of the API items.
-            
-            Given the following API:
-              export type Foo = string | number;
-              export namespace Foo { ... }
-            
-            1:
-              public;Foo = string | number
-              public;Foo
-            
-            2:
-              public;type;Foo
-              public;namespace;Foo
-          `,
-          choices: [1, 2],
-          default: 1,
-        }
       })
     },
     (argv) => { extractApiCommand(argv) })
@@ -182,8 +161,7 @@ function extractApiCommand(options) {
   const apiReportFolderOpt = options.apiReportFolder ? ["--apiReportFolder", options.apiReportFolder] : [];
   const apiReportTempFolderOpt = options.apiReportTempFolder ? ["--apiReportTempFolder", options.apiReportTempFolder] : [];
   const apiSummaryFolderOpt = options.apiSummaryFolder ? ["--apiSummaryFolder", options.apiSummaryFolder] : [];
-  const summaryVersionOpt = options.summaryVersion ? ["--summaryVersion", options.summaryVersion] : [];
-  exec("node", [getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt, ...apiReportFolderOpt, ...apiReportTempFolderOpt, ...apiSummaryFolderOpt, ...summaryVersionOpt]);
+  exec("node", [getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt, ...apiReportFolderOpt, ...apiReportTempFolderOpt, ...apiSummaryFolderOpt]);
 }
 
 function pseudolocalizeCommand(options) {

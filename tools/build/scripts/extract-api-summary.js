@@ -37,28 +37,19 @@ const apiSignatureFileName = path.parse(argv.apiSignature).name;
 const sigFileName = apiSignatureFileName.substring(0, apiSignatureFileName.lastIndexOf('.'));
 const sigFilePath = path.join(argv.outDir, `${shouldGenerateFullReport ? "summary" : sigFileName}.exports.csv`);
 
-const OUTPUT_VERSION = argv.summaryVersion ?? 1;
-if (argv.summaryVersion)
-  console.log(`API summary generator: Using output version ${argv.summaryVersion}`);
-const CSV_HEADER = OUTPUT_VERSION === 1 ? "Release Tag;API Item" : "Release Tag;API Item Type;API Item Name";
-
 const outputLines = [];
 if (shouldGenerateFullReport) {
   if (fs.existsSync(sigFilePath))
     outputLines.push("");
   else {
     outputLines.push("sep=;");
-    outputLines.push(`Package Name;${CSV_HEADER}`);
+    outputLines.push("Package Name;Release Tag;API Item Type;API Item Name");
   }
 } else {
   fs.createFileSync(sigFilePath);
   outputLines.push("sep=;");
-  outputLines.push(CSV_HEADER);
+  outputLines.push("Release Tag;API Item Type;API Item Name");
 }
-
-const API_REGEX = OUTPUT_VERSION === 1
-  ? /export \S*\s(.+?)(?=<|extends|implements|\s{|;)/
-  : /export (\w+) (\w+)/;
 
 // Open up the signature file
 fs.readFile(argv.apiSignature, function (error, data) {
@@ -69,10 +60,10 @@ fs.readFile(argv.apiSignature, function (error, data) {
     if (index === arr.length - 1 && line === "") { return; }
 
     if (previousLines.length !== 0) {
-      const matches = line.match(API_REGEX);
+      const matches = line.match(/export (?:abstract )?(\w+) (\w+)/);
       if (matches) {
         for (const previousLine of previousLines) {
-          const line = `${previousLine};${matches[1]}${OUTPUT_VERSION === 2 ? `;${matches[2]}` : ""}`;
+          const line = `${previousLine};${matches[1]};${matches[2]}`;
           outputLines.push(shouldGenerateFullReport ? `${sigFileName};${line}` : line);
         }
       }
