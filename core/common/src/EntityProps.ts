@@ -180,10 +180,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
    * properties in the BisCore ECSchema, like [Element.federationGuid]($backend) and [GeometricElement.category]($backend).
    */
   public isCustomHandled?: boolean;
-  /** ###TODO what is this for?
-   * AutoHandledPropertiesCollection::DetectOrphanCustomHandledProperty is supposed to "detect" these,
-   * but nobody calls it.
-   */
+  /** @deprecated in 4.8. This property doesn't do anything useful. */
   public isCustomHandledOrphan?: boolean;
   /** For an array property, an optional constraint on the minimum number of entries in the array. */
   public minOccurs?: number;
