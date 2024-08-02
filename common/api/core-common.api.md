@@ -2919,6 +2919,10 @@ export class EntityMetaData {
     readonly description?: string;
     readonly displayLabel?: string;
     readonly ecclass: string;
+    // @internal
+    getMutableProperties(): Iterable<PropertyMetaData & {
+        name: string;
+    }>;
     getProperties(): Iterable<Readonly<PropertyMetaData & {
         name: string;
     }>>;
@@ -6919,7 +6923,7 @@ export interface ProjectionProps {
     zoneNumber?: number;
 }
 
-// @public
+// @public @deprecated
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @public
@@ -6948,6 +6952,9 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     relationshipClass?: string;
     structName?: string;
 }
+
+// @public
+export type PropertyMetaDataCallback = (name: string, meta: Readonly<PropertyMetaData>) => void;
 
 // @public (undocumented)
 export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
