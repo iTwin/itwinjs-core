@@ -32,6 +32,7 @@ export class BaseFormat {
   protected _stationSeparator = "+"; // optional; default is "+"
   protected _formatTraits: FormatTraits = FormatTraits.Uninitialized;
   protected _spacer: string = " "; // optional; default is " "
+  protected _separator: string = " "; // optional; default is " "
   protected _includeZero: boolean = true; // optional; default is true
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
@@ -81,6 +82,9 @@ export class BaseFormat {
 
   public get spacer(): string | undefined { return this._spacer; }
   public set spacer(spacer: string | undefined) { this._spacer = spacer ?? this._spacer; }
+
+  public get separator(): string | undefined { return this._separator; }
+  public set separator(separator: string | undefined) { this._separator = separator ?? this._separator; }
 
   public get includeZero(): boolean | undefined { return this._includeZero; }
   public set includeZero(includeZero: boolean | undefined) { this._includeZero = includeZero ?? this._includeZero; }
