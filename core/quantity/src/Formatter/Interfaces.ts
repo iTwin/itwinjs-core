@@ -25,8 +25,10 @@ export interface FormatProps {
   readonly scientificType?: string; // conditionally required
   readonly stationOffsetSize?: number; // conditionally required
   readonly stationSeparator?: string;
+  readonly azimuthBase?: number; // value always in radians clockwise from north
   readonly composite?: {
-    readonly spacer?: string;
+    readonly spacer?: string; // separates value and unit label
+    readonly separator?: string; // separates values
     readonly includeZero?: boolean; // not currently used in Native formatter
     readonly units: Array<{
       readonly name: string;
