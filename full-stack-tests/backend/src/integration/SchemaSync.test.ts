@@ -71,7 +71,7 @@ const tinySchemaToXml = (s: TinySchema) => {
 };
 const queryPropNames = (b: BriefcaseDb, className: string) => {
   try {
-    return Object.getOwnPropertyNames(b.getMetaData(className).properties);
+    return Array.from(b.getMetaData(className).getProperties()).map((prop) => prop.name);
   } catch { return []; }
 };
 const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: ChangesetType, description: string) => {
@@ -185,14 +185,14 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b1, "TestSchema1:Pipe1"), ["p1", "p2"]);
 
     // pull schema change into b2 from shared schema channel
     await synchronizeSchemas(b2);
     b2.saveChanges();
 
     // ensure b2 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b2, "TestSchema1:Pipe1"), ["p1", "p2"]);
 
     // add new properties in b2
     const schema2 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -210,14 +210,14 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b2, "TestSchema1:Pipe1"), ["p1", "p2", "p3", "p4"]);
 
     // pull schema change into b1 from shared schema channel
     await synchronizeSchemas(b1);
     b1.saveChanges();
 
     // ensure b1 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b1, "TestSchema1:Pipe1"), ["p1", "p2", "p3", "p4"]);
 
     // push changes
     await b1.pushChanges({ accessToken: user1AccessToken, description: "push schema changes" });
@@ -227,7 +227,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b3.pullChanges({ accessToken: user3AccessToken });
 
     // ensure b3 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b3.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b3, "TestSchema1:Pipe1"), ["p1", "p2", "p3", "p4"]);
 
     b1.close();
     b2.close();
@@ -283,28 +283,28 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b1, "TestSchema1:Pipe1"), ["p1", "p2"]);
 
     // pull schema change into b2 from shared schema channel
     await synchronizeSchemas(b2);
     b2.saveChanges();
 
     // ensure b2 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b2, "TestSchema1:Pipe1"), ["p1", "p2"]);
 
     // import same schema from another briefcase
     await b2.importSchemaStrings([schema1]);
     b2.saveChanges();
 
     // ensure b2 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b2, "TestSchema1:Pipe1"), ["p1", "p2"]);
 
     // pull schema change into b1 from shared schema channel
     await synchronizeSchemas(b1);
     b1.saveChanges();
 
     // ensure b1 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b1, "TestSchema1:Pipe1"), ["p1", "p2"]);
 
     // push changes
     await b1.pushChanges({ accessToken: user1AccessToken, description: "push schema changes" });
@@ -314,7 +314,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b3.pullChanges({ accessToken: user3AccessToken });
 
     // ensure b3 have class and its properties
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b3.getMetaData("TestSchema1:Pipe1").properties));
+    assert.sameOrderedMembers(queryPropNames(b3, "TestSchema1:Pipe1"), ["p1", "p2"]);
 
     b1.close();
     b2.close();
