@@ -16,7 +16,7 @@ import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
-import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
+import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "../../topology/InsertAndRetriangulateContext";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
@@ -209,8 +209,7 @@ describe("InsertAndRetriangulateContext", () => {
         Point3d.create(1.0, 1.0), // at vertex
         Point3d.create(1.0, 1.0), // stay
       ]) {
-        //        GeometryCoreTestIO.consoleLog("insertAndRetriangulate", point);
-        context.insertAndRetriangulate(point, true);
+        context.insertAndRetriangulate(point, InsertedVertexZOptions.Replace);
         numPointsInserted++;
         if (numPointsInserted < 4) {
           y0 += yStep;

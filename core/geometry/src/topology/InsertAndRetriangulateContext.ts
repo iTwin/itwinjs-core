@@ -6,6 +6,7 @@
  * @module Topology
  */
 
+import { Geometry } from "../Geometry";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { SmallSystem } from "../numerics/Polynomials";
@@ -16,28 +17,48 @@ import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 import { Triangulator } from "./Triangulation";
 
 /**
+ * Options for setting the z-coordinate of a vertex in the triangulation when a point with the same xy is inserted.
+ * @internal
+ */
+export enum InsertedVertexZOptions {
+  /** The point's z-coordinate is ignored, and the existing vertex's z-coordinate is unchanged. */
+  Ignore,
+  /** The point's z-coordinate replaces the existing vertex's z-coordinate. */
+  Replace,
+  /**
+   * Like [[InsertedVertexZOptions.Replace]], but the existing vertex's z-coordinate is updated only if the
+   * point's z-coordinate is larger.
+   */
+  ReplaceIfLarger,
+  /**
+   * Like [[InsertedVertexZOptions.Replace]], but the existing vertex's z-coordinate is updated only if the
+   * point's z-coordinate is smaller.
+   */
+  ReplaceIfSmaller,
+}
+
+/**
  * Context for repeated insertion of new points in a graph.
  * * Initial graph should have clean outer boundary (e.g., as typically marked with `HalfEdgeMask.EXTERIOR`).
  * * After each insertion, the current "position" within the graph is remembered so that each subsequent insertion
  * can reuse that position as start for walking to the new point.
+ * @internal
  */
 export class InsertAndRetriangulateContext {
   private _graph: HalfEdgeGraph;
   private _edgeSet: MarkedEdgeSet;
   private _searcher: HalfEdgePositionDetail;
-  // Temporaries used in reAimFromFace
-  // private _lastBefore: HalfEdgePositionDetail;
-  // private _firstAfter: HalfEdgePositionDetail;
-  private constructor(graph: HalfEdgeGraph) {
+  private _tolerance: number;
+
+  private constructor(graph: HalfEdgeGraph, tolerance: number) {
     this._graph = graph;
     this._edgeSet = MarkedEdgeSet.create(graph)!;
     this._searcher = HalfEdgePositionDetail.create();
-    // this._lastBefore = HalfEdgePositionDetail.create();
-    // this._firstAfter = HalfEdgePositionDetail.create();
+    this._tolerance = tolerance;
   }
   /** Create a new context referencing the graph. */
-  public static create(graph: HalfEdgeGraph) {
-    return new InsertAndRetriangulateContext(graph);
+  public static create(graph: HalfEdgeGraph, tolerance: number = Geometry.smallMetricDistance) {
+    return new InsertAndRetriangulateContext(graph, tolerance);
   }
   /** Query the (pointer to) the graph in the context. */
   public get graph(): HalfEdgeGraph {
@@ -128,42 +149,48 @@ export class InsertAndRetriangulateContext {
       this._searcher = this.searchForNearestVertex(xyz);
   }
   /**
-   * Insert a new node in the graph and retriangulate.
-   * @param xyz the coordinates of the node to be inserted.
-   * @param newZWins whether the z-coordinate of the new node should override the z-coordinate of an existing vertex
-   * at the same X and Y coordinates.
-   * @returns true if the node was inserted and re-triangulated, false otherwise.s
+   * Insert a new point into the graph and retriangulate.
+   * @param point the coordinates of the node to be inserted.
+   * @param newZWins rule governing when `point.z` should override the z-coordinate of an existing
+   * vertex with the same x and y.
+   * @returns true if and only if the point didn't need to be inserted or was successfully inserted.
    */
-  public insertAndRetriangulate(xyz: Point3d, newZWins: boolean): boolean {
-    this.moveToPoint(this._searcher, xyz);
-    const seedNode = this._searcher.node;
-    let stat = false;
-    if (seedNode === undefined) {
-    } else if (this._searcher.isFace) { // if searcher is on a face
-      if (!seedNode.isMaskSet(HalfEdgeMask.EXTERIOR)) {
-        const newInteriorNode = this._graph.createEdgeXYZHalfEdge(xyz.x, xyz.y, xyz.z, 0, seedNode, 0);
-        this.retriangulateFromBaseVertex(newInteriorNode);
+  public insertAndRetriangulate(point: Point3d, newZWins: InsertedVertexZOptions): boolean {
+    this.moveToPoint(this._searcher, point);
+    if (this._searcher.node === undefined)
+      return false;
+    const updateZAroundVertex = (vertex: HalfEdge, zOption: InsertedVertexZOptions): void => {
+      if (InsertedVertexZOptions.Ignore === zOption)
+        return;
+      if ((InsertedVertexZOptions.ReplaceIfLarger === zOption) && (point.z <= vertex.z))
+        return;
+      if ((InsertedVertexZOptions.ReplaceIfSmaller === zOption) && (point.z >= vertex.z))
+        return;
+      // only replace z; preserving xy preserves convexity of the hull
+      vertex.setXYZAroundVertex(vertex.x, vertex.y, point.z);
+    };
+    if (this._searcher.isFace) {
+      // insert point into the graph if it lies in an interior face
+      if (!this._searcher.node.isMaskSet(HalfEdgeMask.EXTERIOR)) {
+        const newNode = this._graph.createEdgeXYZHalfEdge(point.x, point.y, point.z, 0, this._searcher.node, 0);
+        this.retriangulateFromBaseVertex(newNode);
         Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
-        this._searcher.resetAsVertex(newInteriorNode);
+        this._searcher.resetAsVertex(newNode);
       }
-      stat = true;
-    } else if (this._searcher.isEdge) { // if searcher is on an edge
-      const newA = this._graph.splitEdgeAtFraction(seedNode, this._searcher.edgeFraction!);
+    } else if (this._searcher.isEdge) {
+      // insert point into the graph by splitting its containing edge
+      const newA = this._graph.splitEdgeAtFraction(this._searcher.node, this._searcher.edgeFraction!);
       const newB = newA.vertexPredecessor;
+      updateZAroundVertex(newA, InsertedVertexZOptions.Replace);  // always replace
       this.retriangulateFromBaseVertex(newA);
       this.retriangulateFromBaseVertex(newB);
       Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
       this._searcher.resetAsVertex(newA);
-      stat = true;
-    } else if (this._searcher.isVertex) { // if searcher is on a vertex
-      // there's already a vertex there; maybe the z is different.
-      if (newZWins)
-        seedNode.setXYZAroundVertex(xyz.x, xyz.y, xyz.z);
-      stat = true;
-    } else {
-      stat = false;
+    } else if (this._searcher.isVertex) {
+      // no need to insert point as there's already a vertex there, but maybe update its z-coord
+      updateZAroundVertex(this._searcher.node, newZWins);
     }
-    return stat;
+    return true;
   }
   /**
    * Advance movingPosition to a face, edge, or vertex position detail that contains `target`.
@@ -177,7 +204,7 @@ export class InsertAndRetriangulateContext {
     target: Point3d,
     announcer?: (position: HalfEdgePositionDetail) => boolean,
   ): boolean {
-    const psc = PointSearchContext.create();
+    const psc = PointSearchContext.create(this._tolerance);
     movingPosition.setITag(0);
     if (movingPosition.isUnclassified) {
       moveToAnyUnmaskedEdge(this.graph, movingPosition, 0.5, 0);
@@ -200,31 +227,31 @@ export class InsertAndRetriangulateContext {
         const rc = psc.reAimAroundFace(movingPosition.node!, ray, ray.a!, lastBefore, firstAfter);
         // reAimAroundFace returns lots of cases in `lastBefore`
         switch (rc) {
-          case RayClassification.noHits: {
+          case RayClassification.NoHits: {
             movingPosition.resetAsUnknown();
             break;
           }
-          case RayClassification.targetOnVertex: {
+          case RayClassification.TargetOnVertex: {
             movingPosition.setFrom(lastBefore);
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.targetOnEdge: {
+          case RayClassification.TargetOnEdge: {
             movingPosition.setFrom(lastBefore);
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.bracket: {
+          case RayClassification.Bracket: {
             movingPosition.resetAsFace(lastBefore.node, target);
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.targetBefore: {
+          case RayClassification.TargetBefore: {
             movingPosition.resetAsFace(movingPosition.node, target);
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.targetAfter: {
+          case RayClassification.TargetAfter: {
             if (movingPosition.node === lastBefore.node
               && movingPosition.isFace
               && (lastBefore.isEdge || lastBefore.isVertex)) {

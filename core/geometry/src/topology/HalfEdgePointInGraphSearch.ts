@@ -20,12 +20,12 @@ import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
  * @internal
  */
 export enum RayClassification {
-  noHits,
-  targetOnVertex,
-  targetOnEdge,
-  bracket,
-  targetBefore,
-  targetAfter,
+  NoHits,
+  TargetOnVertex,
+  TargetOnEdge,
+  Bracket,
+  TargetBefore,
+  TargetAfter,
 }
 
 /**
@@ -48,7 +48,7 @@ export class PointSearchContext {
    * Reposition `edgeHit` to an adjacent face or vertex, or another position on the edge, that is closer to the
    * target point.
    * @param edgeHit start position on a graph edge, updated and returned.
-   * @param ray the ray to the target point.
+   * @param ray the ray to the target point. Origin is assumed to lie on the edge.
    * @param targetDistance distance along the ray to the target point.
    * @return detail closer to the target point.
    */
@@ -69,36 +69,35 @@ export class PointSearchContext {
         result = edgeHit.resetAsFace(dataB.node);
       }
     } else if (sideA === 0 || sideB === 0) {
-      // the usual case is both 0 i.e. ray is clearly along the edge.
       const alongA = dataA.classifyU(targetDistance, this._tol);
       const alongB = dataB.classifyU(targetDistance, this._tol);
-      if (alongA === 0 && sideA === 0) {
+      if (sideA === 0 && alongA === 0) {
         result = edgeHit.resetAsVertex(dataA.node);
         result.setITag(1);
-      } else if (alongB === 0 && sideB === 0) {
+      } else if (sideB === 0 && alongB === 0) {
         result = edgeHit.resetAsVertex(dataB.node);
         result.setITag(1);
-      } else if (alongA * alongB < 0) {
-        // target is within edge (this is written for the case where both sideA and sideB are zero. If only one
-        // is zero, this computes a close edge point but the strong "on" conclusion might be wrong)
-        const edgeFraction = (targetDistance - dataA.u) / (dataB.u - dataA.u);
-        result = edgeHit.resetAtEdgeAndFraction(dataA.node, edgeFraction);
-        result.setITag(1);
-      } else if (alongA < 0 && alongB < 0) {
-        // target is beyond the edge -- move towards it.
-        if (dataA.u > dataB.u)
+      } else if (sideA === 0 && sideB === 0) { // the usual case: ray is clearly along the edge
+        if (alongA * alongB < 0) {
+          // target is within edge
+          const edgeFraction = (targetDistance - dataA.u) / (dataB.u - dataA.u);
+          result = edgeHit.resetAtEdgeAndFraction(dataA.node, edgeFraction);
+          result.setITag(1);
+        } else if (alongA < 0 && alongB < 0) {
+          // target is beyond the edge: move towards it
+          if (dataA.u > dataB.u)
+            result = edgeHit.resetAsVertex(dataA.node);
+          else
+            result = edgeHit.resetAsVertex(dataB.node);
+        } else {
+          // both vertices lie on the ray before or after the target; shouldn't happen for edgeHit between nodes
+          edgeHit.resetAsUnknown();
+          result = this.panic();
+        }
+      } else { // one side of the edge is miniscule but the other is NOT parallel to the ray: reset as vertex hit
+        if (sideA === 0 && Math.abs(dataA.u) <= this._tol) {
           result = edgeHit.resetAsVertex(dataA.node);
-        else
-          result = edgeHit.resetAsVertex(dataB.node);
-      } else {
-        // this shouldn't happen; maybe as if the initial edge point was not within the edge?
-        if (Math.abs(dataA.u) < this._tol
-          && Math.abs(dataA.v) < this._tol
-        ) {
-          result = edgeHit.resetAsVertex(dataA.node);
-        } else if (Math.abs(dataB.u) < this._tol
-          && Math.abs(dataB.v) < this._tol
-        ) {
+        } else if (sideB === 0 && Math.abs(dataB.u) <= this._tol) {
           result = edgeHit.resetAsVertex(dataB.node);
         } else {
           edgeHit.resetAsUnknown();
@@ -106,7 +105,7 @@ export class PointSearchContext {
         }
       }
     } else {
-      // both vertices are to same side of the line; this can't happen for edge point between nodes
+      // both vertices are to same side of the ray; shouldn't happen for edgeHit between nodes
       edgeHit.resetAsUnknown();
       result = this.panic();
     }
@@ -188,15 +187,15 @@ export class PointSearchContext {
    * @param lastBefore the detail to reset as the last hit on the ray before the target point (CALLER CREATED).
    * @param firstAfter the detail to reset as the first hit on the ray after the target point (CALLER CREATED).
    * @returns summary of the updated details:
-   * * [[RayClassification.targetOnVertex]] - target lies at a vertex of the face (details are identical)
-   * * [[RayClassification.targetOnEdge]] - target lies on an edge of the face (details are identical)
-   * * [[RayClassification.targetBefore]] - target lies before the face; the ray intersects the face beyond
+   * * [[RayClassification.TargetOnVertex]] - target lies at a vertex of the face (details are identical)
+   * * [[RayClassification.TargetOnEdge]] - target lies on an edge of the face (details are identical)
+   * * [[RayClassification.TargetBefore]] - target lies before the face; the ray intersects the face beyond
    * the target point.
-   * * [[RayClassification.targetAfter]] - target lies after the face; the ray intersects the face before
+   * * [[RayClassification.TargetAfter]] - target lies after the face; the ray intersects the face before
    * the target point.
-   * * [[RayClassification.bracket]] - target lies between intersections of the ray and the face; if the face
+   * * [[RayClassification.Bracket]] - target lies between intersections of the ray and the face; if the face
    * is convex, this means the target lies inside the face.
-   * * [[RayClassification.noHits]] - the face does not intersect the ray
+   * * [[RayClassification.NoHits]] - the face does not intersect the ray
    */
   public reAimAroundFace(
     faceNode: HalfEdge,
@@ -225,7 +224,7 @@ export class PointSearchContext {
         if (Math.abs(u1 - targetDistance) < this._tol) {
           firstAfter.setFrom(vertexHit);
           lastBefore.setFrom(vertexHit);
-          return RayClassification.targetOnVertex;
+          return RayClassification.TargetOnVertex;
         }
         if (u1 > targetDistance && u1 < firstAfter.getDTag()!)
           firstAfter.setFrom(vertexHit);
@@ -240,7 +239,7 @@ export class PointSearchContext {
         if (Math.abs(rayFraction - targetDistance) <= this._tol) {
           firstAfter.setFrom(edgeHit);
           lastBefore.setFrom(edgeHit);
-          return RayClassification.targetOnEdge;
+          return RayClassification.TargetOnEdge;
         }
         if (rayFraction > targetDistance && rayFraction < firstAfter.getDTag()!)
           firstAfter.setFrom(edgeHit);
@@ -255,13 +254,13 @@ export class PointSearchContext {
     lastBefore.setITag(0);
     if (lastBefore.isUnclassified) {
       if (firstAfter.isUnclassified)
-        return RayClassification.noHits;
-      return RayClassification.targetBefore;
+        return RayClassification.NoHits;
+      return RayClassification.TargetBefore;
     }
     if (firstAfter.isUnclassified)
-      return RayClassification.targetAfter;
+      return RayClassification.TargetAfter;
     else
-      return RayClassification.bracket; // face is locally convex; target lies inside this face
+      return RayClassification.Bracket; // face is locally convex; target lies inside this face
   }
   /**
    * Initialize the input ray for topology search:

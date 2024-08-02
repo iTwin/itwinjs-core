@@ -20,10 +20,10 @@ import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
-import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
+import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "./InsertAndRetriangulateContext";
 
 /**
- * (static) methods for triangulating polygons
+ * Static methods for triangulating polygons and points.
  * * @internal
  */
 export class Triangulator {
@@ -155,18 +155,25 @@ export class Triangulator {
   }
 
   /**
-   * Create a graph with a triangulation points.
-   * * The outer limit of the graph is the convex hull of the points.
-   * * The outside loop is marked `HalfEdgeMask.EXTERIOR`.
+   * Create a graph from an xy-triangulation of the given points.
+   * * The outer boundary of the graph is the xy-convex hull of the points; it is marked `HalfEdgeMask.EXTERIOR`.
+   * @param points the points to triangulate
+   * @param zOptions optional rule for setting the z-coordinate of each new interior vertex inserted into the graph.
+   * Default is `InsertedVertexZOptions.ReplaceIfLarger`.
+   * @param tolerance optional xy-distance tolerance for equating vertices. Default `Geometry.smallMetricDistance`.
    */
-  public static createTriangulatedGraphFromPoints(points: Point3d[]): HalfEdgeGraph | undefined {
+  public static createTriangulatedGraphFromPoints(
+    points: Point3d[],
+    zOptions: InsertedVertexZOptions = InsertedVertexZOptions.ReplaceIfLarger,
+    tolerance: number = Geometry.smallMetricDistance,
+  ): HalfEdgeGraph | undefined {
     if (points.length < 3)
       return undefined;
     const hull: Point3d[] = [];
     const interior: Point3d[] = [];
     Point3dArray.computeConvexHullXY(points, hull, interior, true);
     let graph = new HalfEdgeGraph();
-    const context = InsertAndRetriangulateContext.create(graph);
+    const context = InsertAndRetriangulateContext.create(graph, tolerance);
     Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
     // HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
     let numInsert = 0;
@@ -176,7 +183,7 @@ export class Triangulator {
         graph = triangulatedGraph;
     } else {
       for (const p of interior) {
-        context.insertAndRetriangulate(p, true);
+        context.insertAndRetriangulate(p, zOptions);
         numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
       }
     }

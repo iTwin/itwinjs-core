@@ -1148,7 +1148,8 @@ describe("Triangulation", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let pts = [
-      // all points xy-colinear except 2; A and C are skirt points "underneath" the hull
+      // Minimal test case constructed from dtmPointsSmall.imjs.
+      // All points are xy-colinear except 2; A and C are skirt points "underneath" the hull.
       Point3d.create(29.38440446735313, -46.664765115079454, 49.58476279246775), // 0
       Point3d.create(78.7791513050385, -46.66476333748565, 47.07249011143456),   // 1
       Point3d.create(78.77823641152756, -46.66476229743052, 45.60256502436375),  // A
@@ -1157,21 +1158,20 @@ describe("Triangulation", () => {
       Point3d.create(55.21859962987817, 29.55516271079307, 48.370060922134726),  // 2
       Point3d.create(50.334340847282135, -46.66476423327051, 48.33850061288565), // D
     ];
-    // GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pts, 0.2);
     let mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
     ck.testDefined(mesh, "computed 7-point triangulation");
-    // GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
 
-    // TODO: put behind enableLongTests? small2 has 21 hull points ordered first
-    const files = ["dtmPointsSmall2.imjs" /* , "dtmPointsMedium.imjs", "dtmPointsLarge.imjs" */];
+    // TODO: put behind enableLongTests
+    const files = [/* "dtmPointsSmall.imjs", */ "dtmPointsMedium.imjs" /* , "dtmPointsLarge.imjs" */];
     for (const filename of files) {
       pts = IModelJson.Reader.parsePointArray(JSON.parse(fs.readFileSync(`./src/test/data/polyface/${filename}`, "utf8")));
 
       // TODO: temporary
-      // const translateY = Range3d.createArray(pts).yLow - 1;
-      const scaledPts = pts.slice(); // pts.map((p: Point3d) => Point3d.create(p.x, 1e4 * Math.log((p.y - translateY) * 1e6), p.z));
-      GeometryCoreTestIO.createAndCaptureLoop(allGeometry, scaledPts.slice(0, 21));
-      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, scaledPts.slice(21), 0.2);
+      const hull: Point3d[] = [];
+      const interior: Point3d[] = [];
+      Point3dArray.computeConvexHullXY(pts, hull, interior, true);
+      // GeometryCoreTestIO.createAndCaptureLoop(allGeometry, hull);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior.slice(0, 398), 0.2);
       GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
 
       mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
