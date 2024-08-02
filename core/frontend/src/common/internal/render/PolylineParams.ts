@@ -9,10 +9,11 @@
 import { LinePixels, PolylineIndices, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
 import { VertexIndices } from "./VertexIndices";
 import { VertexTable } from "./VertexTable";
-import { MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { VertexTableBuilder } from "./VertexTableBuilder";
+import { MeshArgs } from "../../../render/MeshArgs";
+import { PolylineArgs } from "../../../render/PolylineArgs";
 
 /** Represents a tesselated polyline.
  * Given a polyline as a line string, each segment of the line string is triangulated into a quad.

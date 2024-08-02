@@ -9,90 +9,62 @@
 import { assert } from "@itwin/core-bentley";
 import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
-  ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
-  OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineIndices, PolylineTypeFlags, QParams3d, QPoint3dList, RenderMaterial,
-  RenderTexture, SilhouetteEdgeArgs,
+  ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
+  OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineTypeFlags, QParams3d, QPoint3dList,
+  SilhouetteEdgeArgs,
 } from "@itwin/core-common";
 import { ColorMap } from "./ColorMap";
 import { DisplayParams } from "./DisplayParams";
 import { MeshPointList, MeshPrimitiveType, Point3dList } from "./MeshPrimitive";
 import { Triangle, TriangleList } from "./Primitives";
 import { VertexKeyProps } from "./VertexKey";
+import { MeshArgs } from "../../../render/MeshArgs";
+import { PolylineArgs } from "../../../render/PolylineArgs";
 
-/** Arguments supplied to [[RenderSystem.createIndexedPolylines]] describing a set of "polylines" (i.e., line strings or point strings).
- * Line strings consist of two or more points, connected by segments between them with a width specified in pixels.
- * Point strings consist of one or more disconnected points, drawn as dots with a radius specified in pixels.
- * @public
- */
-export interface PolylineArgs {
-  /** The color(s) of the vertices. */
-  colors: ColorIndex;
-  /** The [Feature]($common)(s) contained in the [[polylines]]. */
-  features: FeatureIndex;
-  /** The width of the lines or radius of the points, in pixels. */
-  width: number;
-  /** The pixel pattern to apply to the line strings. */
-  linePixels: LinePixels;
-  /** Flags describing how to draw the [[polylines]]. */
-  flags: PolylineFlags;
-  /** The positions of the [[polylines]]' vertices. If the positions are not quantized, they must include
-   * a precomputed [Range3d]($core-geometry) encompassing all of the points.
-   */
-  points: QPoint3dList | (Array<Point3d> & { range: Range3d });
-  /** The set of polylines. Each entry in the array describes a separate line string or point string as a series of indices into [[points]]. */
-  polylines: PolylineIndices[];
-}
+export function createPolylineArgs(mesh: Mesh): PolylineArgs | undefined {
+  if (!mesh.polylines || mesh.polylines.length === 0)
+    return undefined;
 
-/** @public */
-export namespace PolylineArgs {
-  /** @internal */
-  export function fromMesh(mesh: Mesh): PolylineArgs | undefined {
-    if (!mesh.polylines || mesh.polylines.length === 0)
-      return undefined;
+  const polylines = [];
+  for (const polyline of mesh.polylines)
+    if (polyline.indices.length > 0)
+      polylines.push(polyline.indices);
 
-    const polylines = [];
-    for (const polyline of mesh.polylines)
-      if (polyline.indices.length > 0)
-        polylines.push(polyline.indices);
+  if (polylines.length === 0)
+    return undefined;
 
-    if (polylines.length === 0)
-      return undefined;
+  const flags: PolylineFlags = {
+    is2d: mesh.is2d,
+    isPlanar: mesh.isPlanar,
+    isDisjoint: mesh.type === MeshPrimitiveType.Point,
+  };
 
-    const flags: PolylineFlags = {
-      is2d: mesh.is2d,
-      isPlanar: mesh.isPlanar,
-      isDisjoint: mesh.type === MeshPrimitiveType.Point,
-    };
-
-    if (mesh.displayParams.regionEdgeType === DisplayParams.RegionEdgeType.Outline) {
-      // This polyline is behaving as the edges of a region surface.
-      if (!mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined)
-        flags.type = PolylineTypeFlags.Edge;
-      else
-        flags.type = PolylineTypeFlags.Outline; // edges only displayed if fill undisplayed
-    }
-
-    const colors = new ColorIndex();
-    mesh.colorMap.toColorIndex(colors, mesh.colors);
-
-    const features = new FeatureIndex();
-    mesh.toFeatureIndex(features);
-
-    return {
-      width: mesh.displayParams.width,
-      linePixels: mesh.displayParams.linePixels,
-      flags,
-      polylines,
-      points: mesh.points,
-      colors,
-      features,
-    };
+  if (mesh.displayParams.regionEdgeType === DisplayParams.RegionEdgeType.Outline) {
+    // This polyline is behaving as the edges of a region surface.
+    if (!mesh.displayParams.gradient || mesh.displayParams.gradient.isOutlined)
+      flags.type = PolylineTypeFlags.Edge;
+    else
+      flags.type = PolylineTypeFlags.Outline; // edges only displayed if fill undisplayed
   }
+
+  const colors = new ColorIndex();
+  mesh.colorMap.toColorIndex(colors, mesh.colors);
+
+  const features = new FeatureIndex();
+  mesh.toFeatureIndex(features);
+
+  return {
+    width: mesh.displayParams.width,
+    linePixels: mesh.displayParams.linePixels,
+    flags,
+    polylines,
+    points: mesh.points,
+    colors,
+    features,
+  };
 }
 
-/** The vertices of the edges are shared with those of the surface
- * @internal
- */
+/** The vertices of the edges are shared with those of the surface. */
 export class MeshArgsEdges {
   public edges = new EdgeArgs();
   public silhouettes = new SilhouetteEdgeArgs();
@@ -110,106 +82,53 @@ export class MeshArgsEdges {
   public get isValid(): boolean { return this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid; }
 }
 
-/** Arguments supplied to [[RenderSystem.createTriMesh]] describing a triangle mesh.
- * @public
- */
-export interface MeshArgs {
-  /** @internal */
-  edges?: MeshArgsEdges;
-  /** The indices of the triangles. Each consecutive set of three indices represents one triangle.
-   * The indices are used to index into the vertex attribute arrays like [[points]] and [[normals]].
-   * Their values must be 32-bit unsigned integers.
-   */
-  vertIndices: number[];
-  /** The positions of the mesh's vertices, indexed by [[vertIndices]]. If the positions are not quantized, they must include
-   * a precomputed [Range3d]($core-geometry) encompassing all of the points.
-   */
-  points: QPoint3dList | (Array<Point3d> & { range: Range3d });
-  /** The per-vertex normal vectors, indexed by [[vertIndices]].
-   * Normal vectors are required if the mesh is to be lit or have [ThematicDisplay]($common) applied to it.
-   */
-  normals?: OctEncodedNormal[];
-  /** The color(s) of the mesh. */
-  colors: ColorIndex;
-  /** The [Feature]($common)(s) contained in the mesh. */
-  features: FeatureIndex;
-  /** If [[isPlanar]] is `true`, describes how fill is applied to planar region interiors in wireframe mode.
-   * Default: [FillFlags.ByView]($common).
-   */
-  fillFlags?: FillFlags;
-  /** If `true`, indicates that the mesh represents a planar region. Default: false. */
-  isPlanar?: boolean;
-  /** If `true`, indicates that the mesh is two-dimensional - i.e., all [[points]] have the same z coordinate. */
-  is2d?: boolean;
-  /** If `true`, indicates that the mesh has a texture that includes static lighting - e.g., from photogrammetry. */
-  hasBakedLighting?: boolean;
-  /** @internal */
-  isVolumeClassifier?: boolean;
-  /** Auxiliary data associated with the mesh. */
-  auxChannels?: ReadonlyArray<AuxChannel>;
-  /** The material applied to the mesh. */
-  material?: RenderMaterial;
-  /** A texture mapping to be applied to the mesh. */
-  textureMapping?: {
-    /** The texture image. */
-    texture: RenderTexture;
-    /** The per-vertex texture coordinates, indexed by [[vertIndices]]. */
-    uvParams: Point2d[];
+export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
+  if (!mesh.triangles || mesh.triangles.isEmpty || mesh.points.length === 0)
+    return undefined;
+
+  const texture = mesh.displayParams.textureMapping?.texture;
+  const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams } : undefined;
+
+  const colors = new ColorIndex();
+  mesh.colorMap.toColorIndex(colors, mesh.colors);
+
+  const features = new FeatureIndex();
+  mesh.toFeatureIndex(features);
+
+  let edges;
+  if (mesh.edges) {
+    edges = new MeshArgsEdges();
+    edges.width = mesh.displayParams.width;
+    edges.linePixels = mesh.displayParams.linePixels;
+    edges.edges.init(mesh.edges);
+    edges.silhouettes.init(mesh.edges);
+
+    const polylines = [];
+    for (const meshPolyline of mesh.edges.polylines)
+      if (meshPolyline.indices.length > 0)
+        polylines.push(meshPolyline.indices);
+
+    edges.polylines.init(polylines);
+  }
+
+  return {
+    vertIndices: mesh.triangles.indices,
+    points: mesh.points,
+    normals: !mesh.displayParams.ignoreLighting && mesh.normals.length > 0 ? mesh.normals : undefined,
+    textureMapping,
+    colors,
+    features,
+    material: mesh.displayParams.material,
+    fillFlags: mesh.displayParams.fillFlags,
+    isPlanar: mesh.isPlanar,
+    is2d: mesh.is2d,
+    hasBakedLighting: true === mesh.hasBakedLighting,
+    isVolumeClassifier: true === mesh.isVolumeClassifier,
+    edges,
+    auxChannels: mesh.auxChannels,
   };
 }
 
-/** @public */
-export namespace MeshArgs {
-  /** @internal */
-  export function fromMesh(mesh: Mesh): MeshArgs | undefined {
-    if (!mesh.triangles || mesh.triangles.isEmpty || mesh.points.length === 0)
-      return undefined;
-
-    const texture = mesh.displayParams.textureMapping?.texture;
-    const textureMapping = texture && mesh.uvParams.length > 0 ? { texture, uvParams: mesh.uvParams } : undefined;
-
-    const colors = new ColorIndex();
-    mesh.colorMap.toColorIndex(colors, mesh.colors);
-
-    const features = new FeatureIndex();
-    mesh.toFeatureIndex(features);
-
-    let edges;
-    if (mesh.edges) {
-      edges = new MeshArgsEdges();
-      edges.width = mesh.displayParams.width;
-      edges.linePixels = mesh.displayParams.linePixels;
-      edges.edges.init(mesh.edges);
-      edges.silhouettes.init(mesh.edges);
-
-      const polylines = [];
-      for (const meshPolyline of mesh.edges.polylines)
-        if (meshPolyline.indices.length > 0)
-          polylines.push(meshPolyline.indices);
-
-      edges.polylines.init(polylines);
-    }
-
-    return {
-      vertIndices: mesh.triangles.indices,
-      points: mesh.points,
-      normals: !mesh.displayParams.ignoreLighting && mesh.normals.length > 0 ? mesh.normals : undefined,
-      textureMapping,
-      colors,
-      features,
-      material: mesh.displayParams.material,
-      fillFlags: mesh.displayParams.fillFlags,
-      isPlanar: mesh.isPlanar,
-      is2d: mesh.is2d,
-      hasBakedLighting: true === mesh.hasBakedLighting,
-      isVolumeClassifier: true === mesh.isVolumeClassifier,
-      edges,
-      auxChannels: mesh.auxChannels,
-    };
-  }
-}
-
-/** @internal */
 export class Mesh {
   private readonly _data: TriangleList | MeshPolylineList;
   public readonly points: MeshPointList;
@@ -304,11 +223,11 @@ export class Mesh {
   }
 
   public toMeshArgs(): MeshArgs | undefined {
-    return MeshArgs.fromMesh(this);
+    return createMeshArgs(this);
   }
 
   public toPolylineArgs(): PolylineArgs | undefined {
-    return PolylineArgs.fromMesh(this);
+    return createPolylineArgs(this);
   }
 
   public addPolyline(poly: MeshPolyline): void {
@@ -368,7 +287,6 @@ export class Mesh {
   }
 }
 
-/** @internal */
 export namespace Mesh { // eslint-disable-line no-redeclare
   export class Features {
     public readonly table: FeatureTable;
@@ -437,7 +355,6 @@ export namespace Mesh { // eslint-disable-line no-redeclare
   }
 }
 
-/** @internal */
 export class MeshList extends Array<Mesh> {
   public readonly features?: FeatureTable;
   public readonly range?: Range3d;
