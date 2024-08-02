@@ -12,14 +12,17 @@ internal;AccuDrawRotateFrontTool
 internal;AccuDrawRotateSideTool 
 internal;AccuDrawRotateTopTool 
 internal;AccuDrawRotateViewTool 
+internal;AccuDrawSessionToggleTool 
 internal;AccuDrawSetLockAngleTool 
 internal;AccuDrawSetLockDistanceTool 
+internal;AccuDrawSetLockIndexTool 
 internal;AccuDrawSetLockSmartTool 
 internal;AccuDrawSetLockXTool 
 internal;AccuDrawSetLockYTool 
 internal;AccuDrawSetLockZTool 
 internal;AccuDrawSetOriginTool 
 alpha;AccuDrawShortcuts
+internal;AccuDrawSuspendToggleTool 
 public;AccuSnap 
 public;AccuSnap
 internal;acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder

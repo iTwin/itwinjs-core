@@ -772,6 +772,14 @@ export class AccuDrawRotateViewTool extends Tool {
 }
 
 // @internal (undocumented)
+export class AccuDrawSessionToggleTool extends Tool {
+    // (undocumented)
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
 export class AccuDrawSetLockAngleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -781,6 +789,14 @@ export class AccuDrawSetLockAngleTool extends Tool {
 
 // @internal (undocumented)
 export class AccuDrawSetLockDistanceTool extends Tool {
+    // (undocumented)
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockIndexTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
     // (undocumented)
@@ -855,6 +871,7 @@ export class AccuDrawShortcuts {
     static lockAngle(): void;
     // (undocumented)
     static lockDistance(): void;
+    static lockIndex(): void;
     // (undocumented)
     lockIndex(): void;
     // (undocumented)
@@ -885,14 +902,24 @@ export class AccuDrawShortcuts {
     static rotateToBase(): void;
     // (undocumented)
     static rotateToElement(): Promise<boolean>;
+    static sessionToggle(): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
     // (undocumented)
     static setStandardRotation(rotation: RotationMode): void;
+    static suspendToggle(): void;
     // (undocumented)
     static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean;
     // (undocumented)
     static writeACS(_acsName: string): BentleyStatus;
+}
+
+// @internal (undocumented)
+export class AccuDrawSuspendToggleTool extends Tool {
+    // (undocumented)
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @public
