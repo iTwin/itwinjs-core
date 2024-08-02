@@ -2967,6 +2967,8 @@ export class HubMock {
     static downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
     // (undocumented)
     static findLocalHub(iModelId: GuidString): LocalHub;
+    // (undocumented)
+    static getChangesetExtendedData(arg: IModelIdArg & ChangesetArg): Promise<object | undefined>;
     static getChangesetFromNamedVersion(arg: IModelIdArg & {
         versionName: string;
     }): Promise<ChangesetProps>;
@@ -3000,6 +3002,10 @@ export class HubMock {
     // (undocumented)
     static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
     static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+    // (undocumented)
+    static setChangesetExtendedData(arg: IModelIdArg & ChangesetArg & {
+        data: object;
+    }): Promise<void>;
     static shutdown(): void;
     static startup(mockName: LocalDirName, outputDir: string): void;
 }
@@ -3915,6 +3921,8 @@ export class LocalHub {
     getChangesetById(id: ChangesetId): ChangesetProps;
     getChangesetByIndex(index: ChangesetIndex): ChangesetProps;
     // (undocumented)
+    getChangesetExtendedData(changeset: ChangesetIndexOrId): object | undefined;
+    // (undocumented)
     getChangesetId(index: ChangesetIndex): ChangesetId;
     getChangesetIndex(id: ChangesetId): ChangesetIndex;
     getCheckpoints(range?: ChangesetRange): ChangesetIndex[];
@@ -3964,6 +3972,8 @@ export class LocalHub {
     removeDir(dirName: string): void;
     // (undocumented)
     readonly rootDir: LocalDirName;
+    // (undocumented)
+    setChangesetExtendedData(changeset: ChangesetIndexOrId, data: object): void;
     uploadCheckpoint(arg: {
         changesetIndex: ChangesetIndex;
         localFile: LocalFileName;
