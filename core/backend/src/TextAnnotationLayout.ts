@@ -371,7 +371,8 @@ export class RunLayout {
       return [];
     }
 
-    const { content, baselineShift } = this.source;
+    const content = this.stringify();
+    const baselineShift = this.source.baselineShift;
     const style = layoutContext.createRunSettings(this.source);
     // TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+. Cast to any until ES2022+ is supported.
     const segmenter = new (global as any).Intl.Segmenter(undefined, {granularity: "grapheme"});
