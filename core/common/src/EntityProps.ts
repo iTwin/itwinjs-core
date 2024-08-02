@@ -356,7 +356,7 @@ export class EntityMetaData {
   /** Retained to avoid breaking PropertyCallback which exposes mutable PropertyMetaData.
    * @internal
    */
-   public getMutableProperties(): Iterable<PropertyMetaData & { name: string }> {
-     return Object.values(this._properties);
-   }
+  public getMutableProperties(): Iterable<PropertyMetaData & { name: string }> {
+    return Object.values(this._properties);
+  }
 }
