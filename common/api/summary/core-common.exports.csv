@@ -155,7 +155,7 @@ internal;CreateStandaloneIModelProps
 internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
-beta;CustomAttribute
+public;CustomAttribute
 internal;CustomViewState3dCreatorOptions
 internal;CustomViewState3dProps
 public;CutStyle
@@ -241,8 +241,8 @@ public;EmphasizeElementsProps
 public;EmptyLocalization 
 public;EntityIdAndClassId
 public;EntityIdAndClassIdIterable = Iterable
-beta;EntityMetaData 
-beta;EntityMetaDataProps
+public;EntityMetaData
+public;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
 alpha;EntityReference = `${ConcreteEntityTypes}${Id64String}`
@@ -590,16 +590,16 @@ public;PolylineTypeFlags
 public;PositionalVectorTransform 
 public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
-beta;PrimitiveTypeCode
+public;PrimitiveTypeCode
 public;PriorityPlanarClipMaskArgs 
 beta;ProfileOptions
 public;Projection 
 public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransverseMercator" | "TransverseMercatorWisconsin" | "TransverseMercatorMinnesota" | "TransverseMercatorAffine" | "MercatorStandardParallel" | "Mercator" | "UniversalTransverseMercator" | "LambertConformalConicTwoParallels" | "LambertConformalConicBelgium" | "LambertConformalConicAffine" | "LambertConformalConicWisconsin" | "LambertConformalConicMinnesota" | "LambertConformalConicMichigan" | "LambertConformalConicOneParallel" | "AlbersEqualArea" | "NewZealandNationalGrid" | "ObliqueMercator1" | "ObliqueMercator2" | "TransverseMercatorOSTN97" | "TransverseMercatorOSTN02" | "TransverseMercatorOSTN15" | "Krovak" | "KrovakModified" | "ObliqueCylindricalSwiss" | "TransverseMercatorDenmarkSystem34" | "TransverseMercatorDenmarkSystem3499" | "TransverseMercatorDenmarkSystem3401" | "Cassini" | "Sinusoidal" | "VanDerGrinten" | "Bonne" | "Mollweide" | "EckertIV" | "EckertVI" | "GoodeHomolosine" | "Robinson" | "PlateCarree" | "MillerCylindrical" | "WinkelTripel" | "AzimuthalEqualArea" | "ObliqueStereographic" | "RectifiedSkewOrthomorphicCentered" | "RectifiedSkewOrthomorphicOrigin" | "ObliqueCylindricalHungary" | "Orthographic" | "AmericanPolyconic" | "LambertEquidistantAzimuthal" | "ObliqueMercatorMinnesota"
 public;ProjectionProps
-beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
-beta;PropertyMetaData 
+public;PropertyCallback = (name: string, meta: PropertyMetaData) => void
+public;PropertyMetaData 
 public;PropertyMetaDataMap 
-beta;PropertyMetaDataProps
+public;PropertyMetaDataProps
 internal;PullChangesOptions
 public;QParams2d
 alpha;QParams2dProps

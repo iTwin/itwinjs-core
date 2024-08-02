@@ -1815,7 +1815,7 @@ export enum CurrentImdlVersion {
     Minor = 0
 }
 
-// @beta
+// @public
 export interface CustomAttribute {
     ecclass: string;
     properties: {
@@ -2910,37 +2910,34 @@ export interface EntityIdAndClassId {
 // @public
 export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
 
-// @beta
-export class EntityMetaData implements EntityMetaDataProps {
+// @public
+export class EntityMetaData {
     constructor(jsonObj: EntityMetaDataProps);
     readonly baseClasses: string[];
     readonly classId: Id64String;
     readonly customAttributes?: CustomAttribute[];
-    // (undocumented)
     readonly description?: string;
-    // (undocumented)
     readonly displayLabel?: string;
     readonly ecclass: string;
-    // (undocumented)
+    getProperties(): Iterable<Readonly<PropertyMetaData & {
+        name: string;
+    }>>;
+    getProperty(name: string): Readonly<PropertyMetaData> | undefined;
     readonly modifier?: string;
-    readonly properties: {
+    // @deprecated
+    get properties(): {
         [propName: string]: PropertyMetaData;
     };
 }
 
-// @beta (undocumented)
+// @public
 export interface EntityMetaDataProps {
     baseClasses: string[];
-    // (undocumented)
     classId: Id64String;
     customAttributes?: CustomAttribute[];
-    // (undocumented)
     description?: string;
-    // (undocumented)
     displayLabel?: string;
-    // (undocumented)
     ecclass: string;
-    // (undocumented)
     modifier?: string;
     properties: {
         [propName: string]: PropertyMetaData;
@@ -6818,7 +6815,7 @@ export interface PrimaryTileTreeId {
     type: BatchType.Primary;
 }
 
-// @beta
+// @public
 export enum PrimitiveTypeCode {
     // (undocumented)
     Binary = 257,
@@ -6922,49 +6919,33 @@ export interface ProjectionProps {
     zoneNumber?: number;
 }
 
-// @beta
+// @public
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-// @beta
+// @public
 export class PropertyMetaData implements PropertyMetaDataProps {
     constructor(jsonObj: PropertyMetaDataProps);
+    // @deprecated
     createProperty(jsonObj: any): any;
-    // (undocumented)
     customAttributes?: CustomAttribute[];
-    // (undocumented)
     description?: string;
-    // (undocumented)
     direction?: string;
-    // (undocumented)
     displayLabel?: string;
-    // (undocumented)
     extendedType?: string;
-    // (undocumented)
     isCustomHandled?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     isCustomHandledOrphan?: boolean;
     get isNavigation(): boolean;
-    // (undocumented)
     kindOfQuantity?: string;
-    // (undocumented)
     maximumLength?: number;
-    // (undocumented)
     maximumValue?: any;
-    // (undocumented)
     maxOccurs?: number;
-    // (undocumented)
     minimumLength?: number;
-    // (undocumented)
     minimumValue?: any;
-    // (undocumented)
     minOccurs?: number;
-    // (undocumented)
     primitiveType?: PrimitiveTypeCode;
-    // (undocumented)
     readOnly?: boolean;
-    // (undocumented)
     relationshipClass?: string;
-    // (undocumented)
     structName?: string;
 }
 
@@ -6985,43 +6966,25 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     readonly properties: QueryPropertyMetaData[];
 }
 
-// @beta (undocumented)
+// @public
 export interface PropertyMetaDataProps {
-    // (undocumented)
     customAttributes?: CustomAttribute[];
-    // (undocumented)
     description?: string;
-    // (undocumented)
     direction?: string;
-    // (undocumented)
     displayLabel?: string;
-    // (undocumented)
     extendedType?: string;
-    // (undocumented)
     isCustomHandled?: boolean;
-    // (undocumented)
     isCustomHandledOrphan?: boolean;
-    // (undocumented)
     kindOfQuantity?: string;
-    // (undocumented)
     maximumLength?: number;
-    // (undocumented)
     maximumValue?: any;
-    // (undocumented)
     maxOccurs?: number;
-    // (undocumented)
     minimumLength?: number;
-    // (undocumented)
     minimumValue?: any;
-    // (undocumented)
     minOccurs?: number;
-    // (undocumented)
     primitiveType?: number;
-    // (undocumented)
     readOnly?: boolean;
-    // (undocumented)
     relationshipClass?: string;
-    // (undocumented)
     structName?: string;
 }
 
