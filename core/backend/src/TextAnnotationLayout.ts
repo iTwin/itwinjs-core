@@ -245,7 +245,8 @@ function split(source: string): Segment[] {
 }
 
 /**
- * JavaScript's Intl might not have type support and needs to be cast to any.
+ * TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
+ * Use this type as a stand-in until ES2022+ is supported.
  * @internal
  */
 interface IntlSegmenterStandInType {
@@ -361,27 +362,26 @@ export class RunLayout {
 
   /**
    * Computes offsets for each grapheme in a text run. Relies on JavaScript's `Intl.Segmenter` to detect individual graphemes.
+   * Node in the mobile add-on does not include Intl. Right now, mobile users are not expected to do any editing.
+   * Long term we will need to find a better solution.
    * @param layoutContext
    */
   private computeGraphemeOffsets(layoutContext: LayoutContext): GraphemeOffset[] {
-    const content = this.stringify();
-    const style = layoutContext.createRunSettings(this.source);
     if (this.source.type !== "text") {
       return [];
     }
-    // OLD TO DO COMMENT: TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
-    // But doing so causes inexplicable issues with initialization of Model.modeledElement.
-    // So until that's resolved, access it via cast to any.
-    // NEW TO DO COMMENT: Is the above still an issue? Mobile add-on also does not include Intl...
+
+    const { content, baselineShift } = this.source;
+    const style = layoutContext.createRunSettings(this.source);
+    // TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+. Cast to any until ES2022+ is supported.
     const segmenter = new (global as any).Intl.Segmenter(undefined, {granularity: "grapheme"});
     const graphemes: IntlSegmenterStandInType[] = Array.from(segmenter.segment(content));
     const graphemeOffsets: GraphemeOffset[] = [];
-    const baselineShift = this.source.baselineShift;
     let processedText = "";
     let prevGraphemeOffset = 0;
+
     graphemes.forEach((grapheme, index) => {
-      // Get all characters between this grapheme and the next one, or if this is the last grapheme, this grapheme and the end of the run
-      const nextGraphemeCharIndex = graphemes[index+1] ? graphemes[index+1].index : content.length;
+      const nextGraphemeCharIndex = graphemes[index+1]?.index ?? content.length;
       processedText += content.substring(grapheme.index, nextGraphemeCharIndex);
       const rangeForText = layoutContext.computeRangeForText(processedText, style, baselineShift);
       graphemeOffsets.push({
@@ -396,8 +396,6 @@ export class RunLayout {
   }
 
   public toResult(paragraph: Paragraph, layoutContext: LayoutContext): RunLayoutResult {
-    const graphemeOffsets: GraphemeOffset[] = this.computeGraphemeOffsets(layoutContext);
-
     const result: RunLayoutResult = {
       sourceRunIndex: paragraph.runs.indexOf(this.source),
       fontId: this.fontId,
@@ -406,7 +404,7 @@ export class RunLayout {
       range: this.range.toJSON(),
       offsetFromLine: this.offsetFromLine,
       textStyle: this.style.toJSON(),
-      graphemeOffsets,
+      graphemeOffsets: this.computeGraphemeOffsets(layoutContext),
     };
 
     if (this.justificationRange) {
