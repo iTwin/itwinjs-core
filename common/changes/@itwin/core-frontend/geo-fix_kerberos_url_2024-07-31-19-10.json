@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix error reading ArcGIS Map service capabilities when Kerberos authentication is used",
+      "comment": "Fix error reading ArcGIS Map service capabilities when Kerberos authentication is used.",
       "type": "none"
     }
   ],
