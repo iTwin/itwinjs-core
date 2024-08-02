@@ -254,7 +254,7 @@ export class HubMock {
 
       const mockProgress = (index: number) => {
         const bytesDownloaded = Math.floor(totalSize * (index / 4));
-        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort){
+        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort) {
           rejected = true;
           reject(new Error("AbortError"));
         }
@@ -268,5 +268,13 @@ export class HubMock {
         resolve(undefined);
       }, 150);
     });
+  }
+
+  public static async setChangesetExtendedData(arg: IModelIdArg & ChangesetArg & { data: object }): Promise<void> {
+    return this.findLocalHub(arg.iModelId).setChangesetExtendedData(arg.changeset, arg.data);
+  }
+
+  public static async getChangesetExtendedData(arg: IModelIdArg & ChangesetArg): Promise<object | undefined> {
+    return this.findLocalHub(arg.iModelId).getChangesetExtendedData(arg.changeset);
   }
 }

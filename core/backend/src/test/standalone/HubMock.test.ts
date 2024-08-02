@@ -115,6 +115,16 @@ describe("HubMock", () => {
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangeset().id);
 
+    // test changeset extended data
+    {
+      const xdata1 = { foo: "bar1" };
+      const xdata2 = { foo: "bar2" };
+      await HubMock.setChangesetExtendedData({ iModelId, changeset: { index: cs1.index }, data: xdata1 });
+      await HubMock.setChangesetExtendedData({ iModelId, changeset: { index: cs2.index }, data: xdata2 });
+      expect(xdata1).eql(await HubMock.getChangesetExtendedData({ iModelId, changeset: { index: cs1.index } }));
+      expect(xdata2).eql(await HubMock.getChangesetExtendedData({ iModelId, changeset: { index: cs2.index } }));
+    }
+
     localHub.uploadCheckpoint({ changesetIndex: cs2.index, localFile: version0 });
     checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 2);

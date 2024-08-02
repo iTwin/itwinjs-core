@@ -97,7 +97,7 @@ export class LocalHub {
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
     db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL,alias TEXT NOT NULL,assigned INTEGER DEFAULT 1)");
-    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,\
+    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER, xdata TEXT,\
                    FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
@@ -245,6 +245,30 @@ export class LocalHub {
     db.saveChanges();
     IModelJsFs.copySync(changeset.pathname, this.getChangesetFileName(changeset.index));
     return changeset.index;
+  }
+  public setChangesetExtendedData(changeset: ChangesetIndexOrId, data: object): void {
+    const db = this.db;
+    const changesetIndex = this.getIndexFromChangeset(changeset);
+    const str = JSON.stringify(data);
+    db.withSqliteStatement("update timeline set xdata=? where csIndex=?", (stmt) => {
+      stmt.bindString(1, str);
+      stmt.bindInteger(2, changesetIndex);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "setChangesetExtendedData failed");
+    });
+  }
+
+  public getChangesetExtendedData(changeset: ChangesetIndexOrId): object | undefined {
+    const db = this.db;
+    const changesetIndex = this.getIndexFromChangeset(changeset);
+    const str = db.withSqliteStatement("select xdata from timeline where csIndex=?", (stmt) => {
+      stmt.bindInteger(1, changesetIndex);
+      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+        return undefined;
+      return stmt.getValue(0).getString();
+    });
+    return str ? JSON.parse(str) : undefined;
   }
 
   public getIndexFromChangeset(changeset: ChangesetIndexOrId): ChangesetIndex {
