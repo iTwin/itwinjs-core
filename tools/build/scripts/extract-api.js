@@ -18,7 +18,6 @@ if (argv.entry === undefined) {
 const isCI = (process.env.TF_BUILD);
 const entryPointFileName = argv.entry;
 const ignoreMissingTags = argv.ignoreMissingTags;
-const includeUnexportedApis = argv.includeUnexportedApis;
 
 // Resolves the root of the Rush repo
 const resolveRoot = relativePath => {
@@ -54,7 +53,6 @@ const config = {
     enabled: true,
     reportFolder: path.resolve(apiReportFolder),
     reportTempFolder: path.resolve(apiReportTempFolder),
-    includeForgottenExports: !!includeUnexportedApis,
   },
   docModel: {
     enabled: false
@@ -131,7 +129,6 @@ spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
     path.resolve(__dirname, "extract-api-summary.js"),
     "--apiSignature", path.resolve(path.join(apiReportFolder, `${entryPointFileName}.api.md`)),
     "--outDir", path.resolve(apiSummaryFolder),
-    ...(argv.summaryVersion === undefined ? [] : ["--summaryVersion", argv.summaryVersion]),
   ];
 
   spawn("node", extractSummaryArgs).then((code) => {
