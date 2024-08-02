@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Add optional property `allowMathematicOperations` to `BaseFormat` to calculate mathematical operations like addition and subtraction.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

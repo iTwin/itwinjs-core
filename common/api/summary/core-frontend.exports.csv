@@ -290,7 +290,6 @@ beta;GraphicDescription
 beta;GraphicDescriptionBuilder 
 beta;GraphicDescriptionBuilder
 beta;GraphicDescriptionBuilderOptions =
-beta;GraphicDescriptionConstraints
 beta;GraphicDescriptionContext
 beta;GraphicDescriptionContextProps
 public;GraphicLineString
@@ -461,6 +460,7 @@ public;class MeasureElementTool
 public;MeasureLengthTool 
 public;MeasureLocationTool 
 public;MeasureVolumeTool 
+public;MeshArgs
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
@@ -531,6 +531,7 @@ beta;PlanarClipMaskState
 alpha;PlanarGridProps
 alpha;PlanarGridTransparency
 internal;PlanarTilePatch
+public;PolylineArgs
 beta;PreferenceArg 
 beta;PreferenceKeyArg
 public;class PrimitiveTool 
@@ -620,7 +621,7 @@ internal;RenderSkySphereParams
 public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl
-internal;class RenderTarget 
+public;class RenderTarget 
 internal;RenderTargetDebugControl
 internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
@@ -873,5 +874,6 @@ beta;WorkerImplementation
 beta;WorkerInterface
 beta;WorkerProxy
 beta;WorkerReturnType
+beta;WorkerTextureParams
 public;ZoomToOptions
 public;ZoomViewTool 

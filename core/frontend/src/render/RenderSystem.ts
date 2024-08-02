@@ -19,7 +19,7 @@ import { createGraphicFromDescription, MapTileTreeReference, TileTreeReference }
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { imageElementFromImageSource } from "../common/ImageUtil";
+import { imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
 import { MeshParams } from "../common/internal/render/MeshParams";
 import { createPointStringParams, PointStringParams } from "../common/internal/render/PointStringParams";
 import { createPolylineParams, PolylineParams } from "../common/internal/render/PolylineParams";
@@ -28,7 +28,7 @@ import { ViewRect } from "../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../common/render/InstancedGraphicParams";
-import { Mesh, MeshArgs, PolylineArgs } from "../common/internal/render/MeshPrimitives";
+import { Mesh } from "../common/internal/render/MeshPrimitives";
 import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
@@ -43,9 +43,12 @@ import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./Scre
 import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
 import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
-import { GraphicDescription, GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionBuilder";
-import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionBuilderImpl";
-import { _implementationProhibited } from "../common/internal/Symbols";
+import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
+import { _implementationProhibited, _textures } from "../common/internal/Symbols";
+import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
+import { MeshArgs } from "./MeshArgs";
+import { PolylineArgs } from "./PolylineArgs";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -809,7 +812,7 @@ export abstract class RenderSystem implements IDisposable {
    */
   public async resolveGraphicDescriptionContext(props: GraphicDescriptionContextProps, iModel: IModelConnection): Promise<GraphicDescriptionContext> {
     const impl = props as GraphicDescriptionContextPropsImpl;
-    if (typeof impl.transientIds !== "object") {
+    if (typeof impl.transientIds !== "object" || !Array.isArray(impl.textures)) {
       throw new Error("Invalid GraphicDescriptionContextProps");
     }
 
@@ -817,11 +820,50 @@ export abstract class RenderSystem implements IDisposable {
       throw new Error("resolveGraphicDescriptionContext can only be called once for a given GraphicDescriptionContextProps");
     }
 
+    const textures = new Map<string, RenderTexture>();
+
+    await Promise.allSettled(impl.textures.map(async (tex, i) => {
+      let texture: RenderTexture | undefined;
+      if (tex.source.gradient) {
+        texture = this.getGradientTexture(Gradient.Symb.fromJSON(tex.source.gradient));
+      } else if (tex.source.imageSource) {
+        texture = await this.createTextureFromSource({
+          source: new ImageSource(tex.source.imageSource, tex.source.format),
+          type: tex.type,
+          transparency: tex.transparency,
+        });
+      } else if (tex.source.imageBuffer) {
+        texture = this.createTexture({
+          type: tex.type,
+          image: {
+            source: ImageBuffer.create(tex.source.imageBuffer, tex.source.format, tex.source.width),
+            transparency: tex.transparency,
+          },
+        });
+      } else if (tex.source.url) {
+        const image = await tryImageElementFromUrl(tex.source.url);
+        if (image) {
+          texture = this.createTexture({
+            type: tex.type,
+            image: {
+              source: image,
+              transparency: tex.transparency,
+            },
+          });
+        }
+      }
+
+      if (texture) {
+        textures.set(i.toString(10), texture);
+      }
+    }));
+
     const remap = iModel.transientIds.merge(impl.transientIds);
     impl.resolved = true;
     return {
       [_implementationProhibited]: undefined,
       remapTransientLocalId: (source) => remap(source),
+      [_textures]: textures,
     };
   }
 }

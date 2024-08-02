@@ -391,6 +391,7 @@ class GraphicsTile extends Tile {
       type: tree.batchType,
       loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },
+      timeline: tree.timeline,
     });
 
     let content: TileContent = { isLeaf: true };
