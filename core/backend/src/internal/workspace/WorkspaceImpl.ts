@@ -565,7 +565,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
     const isPrerelease = semver.major(db.version) === 0 || semver.prerelease(db.version);
 
     if (!isPrerelease && this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied") {
-      this._wsDbs.clear();
+      this._wsDbs.delete(workspaceDbNameWithDefault(props.dbName));
       throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
     }
 
