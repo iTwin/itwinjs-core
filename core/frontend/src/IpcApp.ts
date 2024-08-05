@@ -8,8 +8,8 @@
 
 import { AsyncMethodsOf, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, IModelStatus, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
-  iTwinChannel, RemoveFunction,
+  BackendError, IModelError, IModelStatus, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
+  nameOfErrorClassToConstructor, RemoveFunction,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { _callIpcChannel } from "./common/internal/Symbols";
@@ -94,7 +94,17 @@ export class IpcApp {
    */
   public static async [_callIpcChannel](channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
-    if (undefined !== retVal.error) {
+
+    if (undefined !== retVal.errorConstructorName) {
+      const constructorName = retVal.errorConstructorName;
+      const constructor = nameOfErrorClassToConstructor[constructorName];
+      if (constructor) {
+        const err = new constructor(...retVal.argsForErrorConstructor);
+        if (retVal.stack)
+          err.stack = retVal.stack;
+        throw err;
+      }
+    } else if (undefined !== retVal.error) {
       const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
       err.stack = retVal.error.stack;
       throw err;

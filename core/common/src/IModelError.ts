@@ -66,7 +66,7 @@ export interface ConflictingLock {
  * An error raised when there is a lock conflict detected.
  * Typically this error would be thrown by [LockControl.acquireLocks]($backend) when you are requesting a lock on an element that is already held by another briefcase.
  * @public
- */
+*/
 export class ConflictingLocksError extends IModelError {
   public conflictingLocks?: ConflictingLock[];
   constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
@@ -75,6 +75,16 @@ export class ConflictingLocksError extends IModelError {
   }
 
 }
+
+/**
+ * A mapping of the error class name to the actual constructor.
+ * This is used to reconstruct more complex error objects on the frontend during IPC calls.
+ * @beta
+ */
+export const nameOfErrorClassToConstructor: { [key: string]: new (...args: any[]) => any } = {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ConflictingLocksError,
+};
 
 /** @public */
 export class ServerError extends IModelError {
