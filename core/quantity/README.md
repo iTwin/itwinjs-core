@@ -8,4 +8,4 @@ The __@itwin/core-quantity__ package contains classes for quantity formatting an
 
 ## Documentation
 
-See the [iTwin.js](https://www.itwinjs.org) documentation for more information.
+See the [iTwin.js](https://www.itwinjs.org/learning/frontend/quantityformatting/) documentation on quantity formatting for more information.
