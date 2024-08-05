@@ -259,7 +259,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     const elemId = insertElement([{ partId }]);
     expectGeom(readElementGeom(elemId), [
       { categoryId, subCategoryId: blueSubCategoryId },
-      { partId },
+      { origin: 0, partId },
     ]);
 
     // Inline and delete the part.
@@ -291,10 +291,10 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
 
     const symb = { categoryId, subCategoryId: blueSubCategoryId };
     expectGeom(readElementGeom(elem1), [symb, { low: 1 }, { pos: 1 }]);
-    expectGeom(readElementGeom(elem2), [symb, { low: 2 }, { pos: 2 }, symb, { partId: part3 }]);
-    expectGeom(readElementGeom(elem3), [symb, { partId: part3 }]);
-    expectGeom(readElementGeom(elem4), [symb, { partId: part4 }]);
-    expectGeom(readElementGeom(elem5), [symb, { partId: part4 }]);
+    expectGeom(readElementGeom(elem2), [symb, { low: 2 }, { pos: 2 }, symb, { origin: 0, partId: part3 }]);
+    expectGeom(readElementGeom(elem3), [symb, { origin: 0, partId: part3 }]);
+    expectGeom(readElementGeom(elem4), [symb, { origin: 0, partId: part4 }]);
+    expectGeom(readElementGeom(elem5), [symb, { origin: 0, partId: part4 }]);
   });
 
   it("applies part transform", () => {
@@ -422,7 +422,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       { low: -1 },
       { pos: -1 },
       { categoryId, subCategoryId: blueSubCategoryId },
-      { partId },
+      { origin: 0, partId },
       { categoryId, subCategoryId: blueSubCategoryId },
       { low: 1 },
       { pos: 1 },

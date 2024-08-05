@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Removed an unused class property",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

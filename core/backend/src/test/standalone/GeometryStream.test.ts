@@ -1157,10 +1157,13 @@ describe("GeometryStream", () => {
     assert.isDefined(value.geom);
 
     let gotHeader = false;
+    let gotAppearance = false;
     for (const entry of value.geom!) {
       expect(undefined === entry.header).to.equal(gotHeader);
       if (undefined !== entry.header) {
         gotHeader = true;
+      } else if (undefined !== entry.appearance) {
+        gotAppearance = true;
       } else {
         assert.isDefined(entry.textString);
         const origin = Point3d.fromJSON(entry.textString!.origin);
@@ -1171,6 +1174,7 @@ describe("GeometryStream", () => {
     }
 
     expect(gotHeader).to.be.true;
+    expect(gotAppearance).to.be.true;
 
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
@@ -1362,7 +1366,7 @@ describe("GeometryStream", () => {
     const geometryStream: GeometryStreamProps = [];
 
     geometryStream.push({ header: { flags: 0 } });
-    geometryStream.push({ appearance: {} }); // Native ToJson should add appearance entry with no defined values for this case...
+    geometryStream.push({ appearance: { subCategory: params.subCategoryId } });
     geometryStream.push({ fill: { display: FillDisplay.ByView } });
     geometryStream.push({ loop: [{ lineString: [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0]] }] });
 
@@ -1480,7 +1484,7 @@ describe("GeometryStream", () => {
 
       const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
       expect(json.geom).not.to.be.undefined;
-      expect(json.geom!.length).to.equal(2);
+      expect(json.geom!.length).to.equal(3);
       expect(json.geom![0].header).not.to.be.undefined;
       const flags = json.geom![0].header!.flags;
       expect(flags).to.equal(builder.isViewIndependent ? GeometryStreamFlags.ViewIndependent : GeometryStreamFlags.None);

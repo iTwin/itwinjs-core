@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Changed getElement to a single prepared statement Bis.Element $ syntax query",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

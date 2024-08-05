@@ -210,7 +210,7 @@ describe("ViewDefinition", () => {
       }],
     }];
 
-    const ds1Row = await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles });
+    const ds1Row = await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties?.styles });
     expect(ds1Row).equal("@1");
     const ds1out = vs1.getDisplayStyleSync({ id: ds1Row });
     expect(ds1out.classFullName).equal("BisCore:DisplayStyle3d");
@@ -258,7 +258,7 @@ describe("ViewDefinition", () => {
     viewDefOut.displayStyleId = "@2";
     await expect(vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut })).to.be.rejectedWith("invalid Id for displayStyles");
     // add a new display style and uodate the view to use it
-    viewDefOut.displayStyleId = await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles });
+    viewDefOut.displayStyleId = await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties?.styles });
     await vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut });
     viewDefOut = vs1.getViewDefinitionSync({ viewId: v1 }) as SpatialViewDefinitionProps;
     expect(viewDefOut.displayStyleId).equal("@2");
