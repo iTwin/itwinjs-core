@@ -7,9 +7,10 @@ import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { MeshArgs, MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
+import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
 import { VertexIndices } from "../../../common/internal/render/VertexIndices";
 import { createEdgeParams, EdgeParams, EdgeTable } from "../../../common/internal/render/EdgeParams";
+import { MeshArgs } from "../../../render/MeshArgs";
 
 function makeNormalPair(n0: number, n1: number): OctEncodedNormalPair {
   return new OctEncodedNormalPair(new OctEncodedNormal(n0), new OctEncodedNormal(n1));

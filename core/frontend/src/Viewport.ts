@@ -1119,7 +1119,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   protected initialize(): void {
   }
 
-  /** @internal */
+  /** @internal because subclasses must derive from ScreenViewport or OffScreenviewport. */
   protected constructor(target: RenderTarget) {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
@@ -3134,7 +3134,6 @@ export class ScreenViewport extends Viewport {
     logo.onmousemove = logo.onmousedown = logo.onmouseup = (ev) => ev.stopPropagation();
   }
 
-  /** @internal */
   protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
     super(target);
     this.canvas = canvas;
@@ -3724,7 +3723,6 @@ export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
   private _drawingToSheetTransform?: Transform;
 
-  /** @internal */
   protected constructor(target: RenderTarget) {
     super(target);
   }
