@@ -18,7 +18,7 @@ const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -
 async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions, callback?: (row: any) => void) {
   ecdb.saveChanges();
   let rowCount: number = 0;
-  for await (const queryRow of ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames, convertClassIdsToClassNames: true })) {
+  for await (const queryRow of ecdb.createQueryReader(ecsql, params, { ...config, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rowCount++;
     if (callback)
       callback(queryRow.toRow());
