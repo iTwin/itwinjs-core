@@ -290,10 +290,10 @@ export class ArcGisUtilities {
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
         }
       }
-      let response = await fetch(tmpUrl.toString(), { method: "GET" });
+      let response = await fetch(tmpUrl, { method: "GET" });
       if (response.status === 401 && !requireToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
         // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(url, {method: "GET", credentials: "include" });
+        response = await fetch(tmpUrl, {method: "GET", credentials: "include" });
       }
 
       // Append security token when corresponding error code is returned by ArcGIS service
