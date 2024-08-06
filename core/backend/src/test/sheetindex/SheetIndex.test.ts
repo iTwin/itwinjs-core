@@ -8,9 +8,9 @@ import { CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedElement, SheetPr
 
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
-import { Sheet, SheetIndex, SheetIndexFolder, SheetReference } from "../../Element";
+import { Sheet, SheetIndex, SheetIndexEntry, SheetIndexFolder, SheetReference } from "../../Element";
 import { expect } from "chai";
-import { DictionaryModel, DocumentListModel, SheetModel } from "../../Model";
+import { DocumentListModel, SheetIndexModel, SheetModel } from "../../Model";
 
 let documentListModelId: string | undefined;
 const getOrCreateDocumentList = async (iModel: IModelDb): Promise<Id64String> => {
@@ -54,6 +54,14 @@ const insertSheet = async (iModel: IModelDb, sheetName: string): Promise<Id64Str
   return sheetModelId;
 };
 
+const insertCodeSpec = async (iModel: IModelDb) => {
+  const indexSpec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
+  iModel.codeSpecs.insert(indexSpec);
+
+  const entrySpec = CodeSpec.create(iModel, SheetIndexEntry.getCodeSpecName(), CodeScopeSpec.Type.ParentElement);
+  iModel.codeSpecs.insert(entrySpec);
+};
+
 describe("SheetIndex", () => {
   let iModel: SnapshotDb;
 
@@ -64,6 +72,8 @@ describe("SheetIndex", () => {
     await ExtensiveTestScenario.prepareDb(iModelDb);
     ExtensiveTestScenario.populateDb(iModelDb);
     iModel = iModelDb;
+
+    await insertCodeSpec(iModel);
   });
 
   afterEach(() => {
@@ -72,19 +82,17 @@ describe("SheetIndex", () => {
   });
 
   // Currently busted
-  // test.skip("SheetIndexModel Should insert", async () => {
-  //   const subjectId = iModel.elements.getRootSubject().id;
+  it.only("SheetIndexModel Should insert", async () => {
+    const subjectId = iModel.elements.getRootSubject().id;
 
-  //   const modelId = SheetIndexModel.insert(iModel, subjectId, "testSheetIndex");
-  //   expect(Id64.isValidId64(modelId)).to.be.true;
-  // });
+    const modelId = SheetIndexModel.insert(iModel, subjectId, "testSheetIndex");
+    expect(Id64.isValidId64(modelId)).to.be.true;
+  });
 
   it("SheetIndex Should insert", async () => {
     const subjectId = iModel.elements.getRootSubject().id;
-    const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
-    iModel.codeSpecs.insert(spec);
 
-    const modelId = DictionaryModel.insert(iModel, subjectId, "TestSheetIndexModel");
+    const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
     expect(Id64.isValidId64(modelId)).to.be.true;
 
     const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
@@ -94,10 +102,7 @@ describe("SheetIndex", () => {
   it("SheetIndexFolders Should insert", async () => {
     const subjectId = iModel.elements.getRootSubject().id;
 
-    const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
-    iModel.codeSpecs.insert(spec);
-
-    const modelId = DictionaryModel.insert(iModel, subjectId, "TestSheetIndexModel");
+    const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
     expect(Id64.isValidId64(modelId)).to.be.true;
     const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
     expect(Id64.isValidId64(sheetIndex)).to.be.true;
@@ -113,11 +118,7 @@ describe("SheetIndex", () => {
     it("Should insert SheetReferences without a Sheet", async () => {
       const subjectId = iModel.elements.getRootSubject().id;
 
-      const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
-      iModel.codeSpecs.insert(spec);
-
-      // const modelId = SheetIndexModel.insert(iModel, subjectId, "testSheetIndex");
-      const modelId = DictionaryModel.insert(iModel, subjectId, "TestSheetIndexModel");
+      const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
       expect(Id64.isValidId64(modelId)).to.be.true;
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
@@ -133,11 +134,7 @@ describe("SheetIndex", () => {
       const subjectId = iModel.elements.getRootSubject().id;
       const sheetId = await insertSheet(iModel, "sheet-1");
 
-      const spec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
-      iModel.codeSpecs.insert(spec);
-
-      // const modelId = SheetIndexModel.insert(iModel, subjectId, "testSheetIndex");
-      const modelId = DictionaryModel.insert(iModel, subjectId, "TestSheetIndexModel");
+      const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
       expect(Id64.isValidId64(modelId)).to.be.true;
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
