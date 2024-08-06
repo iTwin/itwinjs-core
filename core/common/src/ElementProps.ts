@@ -626,3 +626,24 @@ export interface RenderTimelineProps extends ElementProps {
    */
   script: string;
 }
+
+/** Properties of a SheetIndexEntry */
+export interface SheetIndexEntryProps extends ElementProps {
+  /** Can be used to prioritize or order members within a SheetIndex or SheetIndexFolder. */
+  entryPriority: number;
+}
+
+/** Properties of a SheetIndexFolder */
+export type SheetIndexFolderProps = SheetIndexEntryProps;
+
+/** Properties of a SheetIndexReference */
+export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
+  /** The bis:SheetIndex that this bis:SheetIndexReference is pointing to. */
+  sheetIndex?: Id64String;
+}
+
+/** Properties of a SheetReference */
+export interface SheetReferenceProps extends SheetIndexEntryProps {
+  /** The bis:Sheet that this bis:SheetReference is pointing to. */
+  sheet?: Id64String;
+}

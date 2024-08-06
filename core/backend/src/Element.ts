@@ -12,8 +12,8 @@ import {
   ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, IModelError, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RelatedElementProps, RenderSchedule, RenderTimelineProps,
-  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetProps, SheetTemplateProps,
-  SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetIndexEntryProps, SheetIndexFolderOwnsEntries, SheetIndexFolderProps, SheetIndexOwnsEntries,
+  SheetIndexReferenceProps, SheetProps, SheetReferenceProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
@@ -873,30 +873,6 @@ export class SectionDrawing extends Drawing {
   }
 }
 
-/** Properties of a SheetIndex */
-export type SheetIndexProps = ElementProps;
-
-/** Properties of a SheetIndexEntry */
-export interface SheetIndexEntryProps extends ElementProps {
-  /** Can be used to prioritize or order members within a SheetIndex or SheetIndexFolder. */
-  entryPriority: number;
-}
-
-/** Properties of a SheetIndexFolder */
-export type SheetIndexFolderProps = SheetIndexEntryProps;
-
-/** Properties of a SheetIndexReference */
-export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
-  /** The bis:SheetIndex that this bis:SheetIndexReference is pointing to. */
-  sheetIndex?: Id64String;
-}
-
-/** Properties of a SheetReference */
-export interface SheetReferenceProps extends SheetIndexEntryProps {
-  /** The bis:Sheet that this bis:SheetReference is pointing to. */
-  sheet?: Id64String;
-}
-
 /**
  * A bis:InformationReferenceElement used to organize bis:Sheet instances into a hierarchy with the assistance
  * of bis:SheetIndexFolder and other bis:SheetIndex instances.
@@ -930,7 +906,7 @@ export class SheetIndex extends InformationReferenceElement {
    * @throws [[IModelError]] if there is a problem creating the SheetIndex
    */
   public static create(iModelDb: IModelDb, modelId: Id64String, name: string): SheetIndex {
-    const props: SheetIndexProps = {
+    const props: ElementProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, modelId, name).toJSON(),
       model: modelId,
