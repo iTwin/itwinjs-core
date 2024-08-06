@@ -65,6 +65,8 @@ export enum FormatTraits {
   ExponentOnlyNegative = 1 << 9,
   /** Indicates the use of a counter clockwise angles. Affects Azimuth only. */
   CounterClockwiseAngle = 1 << 10,
+  /** Causes the angle on a bearing to be omitted where possible e.g. N45°E turns into NE. And N0°E turns into N. */
+  OmitAngleOnCardinalBearing = 1 << 11,
 }
 
 /** Precision for Fractional formatted value types. Range from Whole (1/1) through 1/256.

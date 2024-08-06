@@ -37,6 +37,11 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
+  protected _azimuthBase?: number; // value always in radians clockwise from north
+  protected _northLabel?: string; // used when formatting angles; default is 'N'
+  protected _eastLabel?: string; // used when formatting angles; default is 'E'
+  protected _southLabel?: string; // used when formatting angles; default is 'S'
+  protected _westLabel?: string; // used when formatting angles; default is '
 
   constructor(name: string) {
     this._name = name;
@@ -88,6 +93,21 @@ export class BaseFormat {
 
   public get includeZero(): boolean | undefined { return this._includeZero; }
   public set includeZero(includeZero: boolean | undefined) { this._includeZero = includeZero ?? this._includeZero; }
+
+  public get azimuthBase(): number | undefined { return this._azimuthBase; }
+  public set azimuthBase(azimuthBase: number | undefined) { this._azimuthBase = azimuthBase; }
+
+  public get northLabel(): string | undefined { return this._northLabel; }
+  public set northLabel(northLabel: string | undefined) { this._northLabel = northLabel ?? this._northLabel; }
+
+  public get eastLabel(): string | undefined { return this._eastLabel; }
+  public set eastLabel(eastLabel: string | undefined) { this._eastLabel = eastLabel ?? this._eastLabel; }
+
+  public get southLabel(): string | undefined { return this._southLabel; }
+  public set southLabel(southLabel: string | undefined) { this._southLabel = southLabel ?? this._southLabel; }
+
+  public get westLabel(): string | undefined { return this._westLabel; }
+  public set westLabel(westLabel: string | undefined) { this._westLabel = westLabel ?? this._westLabel; }
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid FormatType. Throws exception if not valid. */
   public parseFormatTraits(formatTraitsFromJson: string | string[]) {
@@ -180,6 +200,36 @@ export class BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
       this._stationSeparator = formatProps.stationSeparator;
     }
+
+    if (undefined !== formatProps.azimuthBase) { // optional; default is 0.0
+      if (typeof (formatProps.azimuthBase) !== "number")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBase' attribute. It should be of type 'number'.`);
+      this._azimuthBase = formatProps.azimuthBase;
+    }
+
+    if (undefined !== formatProps.northLabel) { // optional; default is "N"
+      if (typeof (formatProps.northLabel) !== "string")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'northLabel' attribute. It should be of type 'string'.`);
+      this._northLabel = formatProps.northLabel;
+    }
+
+    if (undefined !== formatProps.eastLabel) { // optional; default is "E"
+      if (typeof (formatProps.eastLabel) !== "string")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'eastLabel' attribute. It should be of type 'string'.`);
+      this._eastLabel = formatProps.eastLabel;
+    }
+
+    if (undefined !== formatProps.southLabel) { // optional; default is "S"
+      if (typeof (formatProps.southLabel) !== "string")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'southLabel' attribute. It should be of type 'string'.`);
+      this._southLabel = formatProps.southLabel;
+    }
+
+    if (undefined !== formatProps.westLabel) { // optional; default is "W"
+      if (typeof (formatProps.westLabel) !== "string")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'westLabel' attribute. It should be of type 'string'.`);
+      this._westLabel = formatProps.westLabel;
+    }
   }
 }
 
@@ -242,6 +292,11 @@ export class Format extends BaseFormat {
     newFormat._formatTraits = this._formatTraits;
     newFormat._spacer = this._spacer;
     newFormat._includeZero = this._includeZero;
+    newFormat._azimuthBase = this._azimuthBase;
+    newFormat._northLabel = this._northLabel;
+    newFormat._eastLabel = this._eastLabel;
+    newFormat._southLabel = this._southLabel;
+    newFormat._westLabel = this._westLabel;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
 
@@ -299,6 +354,13 @@ export class Format extends BaseFormat {
         if (jsonObj.composite.spacer.length > 1)
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
         this._spacer = jsonObj.composite.spacer;
+      }
+      if(jsonObj.composite.separator !== undefined) { // separator must be a string if it is defined
+        if (typeof (jsonObj.composite.separator) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'separator' attribute. It must be of type 'string'.`);
+        if (jsonObj.composite.separator.length > 1)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'separator' attribute. It should be an empty or one character string.`);
+        this._separator = jsonObj.composite.separator;
       }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
         if (!Array.isArray(jsonObj.composite.units)) { // must be an array

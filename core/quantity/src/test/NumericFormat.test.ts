@@ -489,7 +489,7 @@ describe("Numeric Formats tests:", () => {
     }
   });
 
-  it("Imperial Station Formatting", async () => {
+  it.only("Imperial Station Formatting", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const formatData = {

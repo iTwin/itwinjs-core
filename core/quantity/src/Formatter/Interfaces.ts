@@ -26,6 +26,10 @@ export interface FormatProps {
   readonly stationOffsetSize?: number; // conditionally required
   readonly stationSeparator?: string;
   readonly azimuthBase?: number; // value always in radians clockwise from north
+  readonly northLabel?: string; // label used when formatting direction. default 'N'
+  readonly eastLabel?: string; // label used when formatting direction. default 'E'
+  readonly southLabel?: string; // label used when formatting direction. default 'S'
+  readonly westLabel?: string; // label used when formatting direction. default 'W'
   readonly composite?: {
     readonly spacer?: string; // separates value and unit label
     readonly separator?: string; // separates values
