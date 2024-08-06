@@ -140,7 +140,7 @@ export interface PropertyMetaDataProps {
   kindOfQuantity?: string;
   /** See [[PropertyMetaData.isCustomHandled]]. */
   isCustomHandled?: boolean;
-  /** See [[PropertyMetaData.isCustomHandledOrphan]]. */
+  /** @deprecated in 4.8. This property doesn't do anything useful. */
   isCustomHandledOrphan?: boolean;
   /** See [[PropertyMetaData.minOccurs]]. */
   minOccurs?: number;

@@ -6981,6 +6981,7 @@ export interface PropertyMetaDataProps {
     displayLabel?: string;
     extendedType?: string;
     isCustomHandled?: boolean;
+    // @deprecated (undocumented)
     isCustomHandledOrphan?: boolean;
     kindOfQuantity?: string;
     maximumLength?: number;
