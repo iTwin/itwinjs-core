@@ -12,14 +12,17 @@ internal;class;AccuDrawRotateFrontTool
 internal;class;AccuDrawRotateSideTool
 internal;class;AccuDrawRotateTopTool
 internal;class;AccuDrawRotateViewTool
+internal;class;AccuDrawSessionToggleTool
 internal;class;AccuDrawSetLockAngleTool
 internal;class;AccuDrawSetLockDistanceTool
+internal;class;AccuDrawSetLockIndexTool
 internal;class;AccuDrawSetLockSmartTool
 internal;class;AccuDrawSetLockXTool
 internal;class;AccuDrawSetLockYTool
 internal;class;AccuDrawSetLockZTool
 internal;class;AccuDrawSetOriginTool
 alpha;class;AccuDrawShortcuts
+internal;class;AccuDrawSuspendToggleTool
 public;class;AccuSnap
 public;namespace;AccuSnap
 internal;function;acquireImdlDecoder
