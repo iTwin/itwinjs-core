@@ -910,9 +910,9 @@ export class SheetIndex extends InformationReferenceElement {
     return "SheetIndex";
   }
 
-  /** Get the name of the CodeSpec that is used by SheetIndexEntry objects. */
+  /** Get the name of the CodeSpec that is used by SheetIndex objects. */
   public static getCodeSpecName(): string {
-    return "bis:SheetIndex";
+    return BisCodeSpec.sheetIndex;
   }
 
   /** Create a Code for a SheetIndex given a name that is meant to be unique within the scope of the specified SheetIndexModel.
@@ -971,7 +971,7 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
 
   /** Get the name of the CodeSpec that is used by SheetIndexEntry objects. */
   public static getCodeSpecName(): string {
-    return "bis:SheetIndex";
+    return BisCodeSpec.sheetIndexEntry;
   }
 
   public override toJSON(): SheetIndexEntryProps {
