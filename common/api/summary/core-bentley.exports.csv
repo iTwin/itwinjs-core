@@ -1,145 +1,145 @@
 sep=;
-Release Tag;API Item
-beta;AbandonedError 
-public;AccessToken = string
-public;areEqualPossiblyUndefined
-public;asInstanceOf
-public;assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition
-public;AsyncFunction = (...args: any[]) => Promise
-public;AsyncMethodsOf
-public;base64StringToUint8Array(base64: string): Uint8Array
-public;BeDuration
-public;BeEvent
-public;BeEventList
-public;BentleyError 
-public;BentleyLoggerCategory
-public;BentleyStatus
-public;BeTimePoint
-public;BeUiEvent
-public;BriefcaseStatus
-public;ByteStream
-public;ChangeSetStatus
-public;CloneFunction
-public;compareBooleans(a: boolean, b: boolean): number
-public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
-public;compareNumbers(a: number, b: number): number
-public;compareNumbersOrUndefined(lhs?: number, rhs?: number): number
-public;comparePossiblyUndefined
-public;compareStrings(a: string, b: string): number
-public;compareStringsOrUndefined(lhs?: string, rhs?: string): number
-public;compareWithTolerance(a: number, b: number, tolerance?: number): number
-public;CompressedId64Set = string
-public;CompressedId64Set
-public;ComputePriorityFunction
-public;Constructor
-internal;DbChangeStage
-internal;DbConflictCause
-internal;DbConflictResolution
-public;DbOpcode
-public;DbResult
-internal;DbValueType
-public;Dictionary
-public;DictionaryEntry
-public;DisposableList 
-public;dispose(disposable?: IDisposable): undefined
-public;disposeArray(list?: IDisposable[]): undefined
-public;DisposeFunc = () => void
-public;DuplicatePolicy
-public;Entry
-public;EntryContainer
-alpha;class ErrorCategory 
-public;GeoServiceStatus
-public;GetMetaDataFunction = () => object | undefined
-public;Guid
-public;GuidString = string
-beta;HttpStatus
-public;Id64
-public;Id64Arg = Id64String | Id64Set | Id64Array
-public;Id64Array = Id64String[]
-public;Id64Set = Set
-public;Id64String = string
-public;IDisposable
-public;IModelHubStatus
-public;IModelStatus
-public;IndexedValue
-public;IndexMap
-public;isIDisposable(obj: unknown): obj is IDisposable
-public;isInstanceOf
-public;isProperSubclassOf
-public;isSubclassOf
-public;JSONSchema
-public;JSONSchemaMap
-public;JSONSchemaSnippet
-public;JSONSchemaType = string | number | boolean | object | JSONSchemaType[]
-public;JSONSchemaTypeName = "string" | "number" | "integer" | "boolean" | "null" | "array" | "object"
-public;JsonUtils
-public;Listener = (...arg: any[]) => void
-public;ListenerType
-public;LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void
-public;Logger
-public;LoggerCategoryAndLevel
-public;LoggerLevelsConfig
-public;LoggingMetaData = GetMetaDataFunction | object | undefined
-public;LogLevel
-public;lowerBound
-public;LRUCache
-public;LRUDictionary
-public;LRUMap
-public;MarkRequired
-public;Mutable
-public;MutableCompressedId64Set 
-public;NonFunctionPropertiesOf
-public;NonFunctionPropertyNamesOf
-public;ObservableSet
-public;omit
-beta;OneAtATimeAction
-public;OnUnexpectedError = (error: any) => void
-public;OpenMode
-public;Optional
-public;OrderedComparator
-public;OrderedId64Array 
-public;OrderedId64Iterable = Iterable
-public;OrderedId64Iterable
-public;OrderedSet
-public;partitionArray
-public;PerfLogger 
-public;PickAsyncMethods
-public;PickMethods
-public;PickSyncMethods
-public;PriorityQueue
-public;ProcessDetector
-public;PromiseReturnType
-public;ReadonlyOrderedSet
-public;ReadonlySortedArray
-alpha;RealityDataStatus
-public;RemapTransientLocalId = (sourceLocalId: number) => number
-internal;RepositoryStatus
-public;RequireAtLeastOne
-beta;RpcInterfaceStatus
-public;shallowClone
-public;SortedArray
-public;SpanKind
-deprecated;SpanKind
-internal;staticLoggerMetadata: Map
-alpha;class StatusCategory
-alpha;StatusCategoryHandler = (error: Error) => StatusCategory | undefined
-public;StopWatch
-alpha;class SuccessCategory 
-public;Tracing
-deprecated;Tracing
-public;TransientIdSequence
-public;TransientIdSequenceProps
-public;TupleKeyedMap
-public;TypedArrayBuilder
-public;TypedArrayBuilderOptions
-public;Uint16ArrayBuilder 
-public;Uint32ArrayBuilder 
-public;Uint8ArrayBuilder 
-public;UintArray = Uint8Array | Uint16Array | Uint32Array
-public;UintArrayBuilder 
-public;UintArrayBuilderOptions 
-public;UnexpectedErrors
-public;using
-public;utf8ToString(utf8: Uint8Array): string | undefined
-public;YieldManager
-public;YieldManagerOptions
+Release Tag;API Item Type;API Item Name
+beta;class;AbandonedError
+public;type;AccessToken
+public;function;areEqualPossiblyUndefined
+public;function;asInstanceOf
+public;function;assert
+public;type;AsyncFunction
+public;type;AsyncMethodsOf
+public;function;base64StringToUint8Array
+public;class;BeDuration
+public;class;BeEvent
+public;class;BeEventList
+public;class;BentleyError
+public;enum;BentleyLoggerCategory
+public;enum;BentleyStatus
+public;class;BeTimePoint
+public;class;BeUiEvent
+public;enum;BriefcaseStatus
+public;class;ByteStream
+public;enum;ChangeSetStatus
+public;type;CloneFunction
+public;function;compareBooleans
+public;function;compareBooleansOrUndefined
+public;function;compareNumbers
+public;function;compareNumbersOrUndefined
+public;function;comparePossiblyUndefined
+public;function;compareStrings
+public;function;compareStringsOrUndefined
+public;function;compareWithTolerance
+public;type;CompressedId64Set
+public;namespace;CompressedId64Set
+public;type;ComputePriorityFunction
+public;type;Constructor
+internal;enum;DbChangeStage
+internal;enum;DbConflictCause
+internal;enum;DbConflictResolution
+public;enum;DbOpcode
+public;enum;DbResult
+internal;enum;DbValueType
+public;class;Dictionary
+public;interface;DictionaryEntry
+public;class;DisposableList
+public;function;dispose
+public;function;disposeArray
+public;type;DisposeFunc
+public;enum;DuplicatePolicy
+public;class;Entry
+public;interface;EntryContainer
+alpha;class;ErrorCategory
+public;enum;GeoServiceStatus
+public;type;GetMetaDataFunction
+public;namespace;Guid
+public;type;GuidString
+beta;enum;HttpStatus
+public;namespace;Id64
+public;type;Id64Arg
+public;type;Id64Array
+public;type;Id64Set
+public;type;Id64String
+public;interface;IDisposable
+public;enum;IModelHubStatus
+public;enum;IModelStatus
+public;class;IndexedValue
+public;class;IndexMap
+public;function;isIDisposable
+public;function;isInstanceOf
+public;function;isProperSubclassOf
+public;function;isSubclassOf
+public;interface;JSONSchema
+public;interface;JSONSchemaMap
+public;interface;JSONSchemaSnippet
+public;type;JSONSchemaType
+public;type;JSONSchemaTypeName
+public;namespace;JsonUtils
+public;type;Listener
+public;type;ListenerType
+public;type;LogFunction
+public;class;Logger
+public;interface;LoggerCategoryAndLevel
+public;interface;LoggerLevelsConfig
+public;type;LoggingMetaData
+public;enum;LogLevel
+public;function;lowerBound
+public;class;LRUCache
+public;class;LRUDictionary
+public;class;LRUMap
+public;type;MarkRequired
+public;type;Mutable
+public;class;MutableCompressedId64Set
+public;type;NonFunctionPropertiesOf
+public;type;NonFunctionPropertyNamesOf
+public;class;ObservableSet
+public;function;omit
+beta;class;OneAtATimeAction
+public;type;OnUnexpectedError
+public;enum;OpenMode
+public;type;Optional
+public;type;OrderedComparator
+public;class;OrderedId64Array
+public;type;OrderedId64Iterable
+public;namespace;OrderedId64Iterable
+public;class;OrderedSet
+public;function;partitionArray
+public;class;PerfLogger
+public;type;PickAsyncMethods
+public;type;PickMethods
+public;type;PickSyncMethods
+public;class;PriorityQueue
+public;class;ProcessDetector
+public;type;PromiseReturnType
+public;class;ReadonlyOrderedSet
+public;class;ReadonlySortedArray
+alpha;enum;RealityDataStatus
+public;type;RemapTransientLocalId
+internal;enum;RepositoryStatus
+public;type;RequireAtLeastOne
+beta;enum;RpcInterfaceStatus
+public;function;shallowClone
+public;class;SortedArray
+public;enum;SpanKind
+deprecated;enum;SpanKind
+internal;const;staticLoggerMetadata
+alpha;class;StatusCategory
+alpha;type;StatusCategoryHandler
+public;class;StopWatch
+alpha;class;SuccessCategory
+public;class;Tracing
+deprecated;class;Tracing
+public;class;TransientIdSequence
+public;interface;TransientIdSequenceProps
+public;class;TupleKeyedMap
+public;class;TypedArrayBuilder
+public;interface;TypedArrayBuilderOptions
+public;class;Uint16ArrayBuilder
+public;class;Uint32ArrayBuilder
+public;class;Uint8ArrayBuilder
+public;type;UintArray
+public;class;UintArrayBuilder
+public;interface;UintArrayBuilderOptions
+public;class;UnexpectedErrors
+public;function;using
+public;function;utf8ToString
+public;class;YieldManager
+public;interface;YieldManagerOptions
