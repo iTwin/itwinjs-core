@@ -247,7 +247,7 @@ export class Formatter {
       posMagnitude = Math.abs(Formatter.roundDouble(magnitude, spec.format.roundFactor));
 
     const isSci = ((posMagnitude > 1.0e12) || spec.format.type === FormatType.Scientific);
-    const isDecimal = (isSci || spec.format.type === FormatType.Decimal);
+    const isDecimal = (isSci || spec.format.type === FormatType.Decimal || spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth);
     const isFractional = (!isDecimal && spec.format.type === FormatType.Fractional);
     /* const usesStops = spec.format.type === FormatType.Station; */
     const isPrecisionZero = spec.format.precision === DecimalPrecision.Zero;
@@ -367,25 +367,32 @@ export class Formatter {
     let prefix = "";
     let suffix = "";
     let formattedValue = "";
+    if(spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) {
+      const result = this.processBearingAndAzimuth(magnitude, spec);
+      magnitude = result.magnitude;
+      prefix = result.prefix ?? "";
+      suffix = result.suffix ?? "";
+    }
+
     switch (spec.format.showSignOption) {
       case ShowSignOption.NegativeParentheses:
         if (valueIsNegative) {
-          prefix = "(";
-          suffix = ")";
+          prefix += "(";
+          suffix = `)${suffix}`;
         }
         break;
 
       case ShowSignOption.OnlyNegative:
         if (valueIsNegative)
-          prefix = "-";
+          prefix += "-";
 
         break;
 
       case ShowSignOption.SignAlways:
         if (valueIsNegative)
-          prefix = "-";
+          prefix += "-";
         else
-          prefix = "+";
+          prefix += "+";
 
         break;
 
@@ -420,4 +427,83 @@ export class Formatter {
     return formattedValue;
   }
 
+  private static processBearingAndAzimuth(magnitude: number, spec: FormatterSpec): {magnitude: number, prefix?: string, suffix?: string} {
+    const type = spec.format.type;
+    if (type !== FormatType.Bearing && type !== FormatType.Azimuth)
+      return {magnitude};
+
+    const perigon = this.getPerigon(spec.persistenceUnit.name);
+    magnitude = this.normalizeAngle(magnitude, spec, perigon);
+
+    if (type === FormatType.Bearing) {
+      const rightAngle = perigon / 4;
+      let quadrant = 0;
+      while (magnitude > rightAngle) {
+        magnitude -= rightAngle;
+        quadrant++;
+      }
+      let prefix, suffix: string;
+
+      // Quadrants are
+      // 3 0
+      // 2 1
+      // For quadrants 1 and 3 we have to subtract the angle from 90 degrees because they go counter clockwise
+      if (quadrant === 1 || quadrant === 3)
+        magnitude = rightAngle - magnitude;
+
+      if (quadrant === 0 || quadrant === 3)
+        prefix = spec.format.northLabel ?? "N";
+
+      if (quadrant === 1 || quadrant === 2)
+        prefix = spec.format.southLabel ?? "S";
+
+      if (quadrant === 0 || quadrant === 1)
+        suffix = spec.format.eastLabel ?? "E";
+
+      if (quadrant === 2 || quadrant === 3)
+        suffix = spec.format.westLabel ?? "W";
+
+      return {magnitude, prefix, suffix: suffix!};
+    }
+
+    if (type === FormatType.Azimuth) {
+      const azimuthBase = spec.format.azimuthBase ?? 0;
+      if (azimuthBase === 0.0)
+        return {magnitude}; // no conversion necessary
+
+      magnitude -= azimuthBase;
+      while (magnitude < 0)
+        magnitude += perigon;
+
+      while (magnitude > perigon)
+        magnitude -= perigon;
+
+      if (spec.format.hasFormatTraitSet(FormatTraits.CounterClockwiseAngle))
+        magnitude = perigon - magnitude;
+    }
+
+    return {magnitude};
+  }
+
+  private static normalizeAngle(magnitude: number, spec: FormatterSpec, perigon: number): number {
+    if (spec.persistenceUnit.phenomenon.toLowerCase() !== "units.angle") {
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Invalid unit for ${spec.format.name} format. Phenomenon must be 'Angle'. Unit used: ${spec.persistenceUnit.name} with phenomenon: ${spec.persistenceUnit.phenomenon}`);
+    }
+
+    magnitude = magnitude % perigon; // Strip anything that goes around more than once
+
+    if (magnitude < 0) // If the value is negative, representing a counter-clockwise angle, we want to normalize it to a positive angle
+      magnitude += perigon;
+
+    return magnitude;
+  }
+
+  private static getPerigon(unitName: string): number {
+    if (unitName.toLowerCase() === "units.arc_deg") {
+      return 360;
+    } else if (unitName.toLowerCase() === "units.rad") {
+      return 2 * Math.PI;
+    }
+    throw new QuantityError(QuantityStatus.UnsupportedUnit, `Unsupported unit for angle math: ${unitName}`);
+  }
 }
