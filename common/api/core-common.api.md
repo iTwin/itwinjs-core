@@ -6439,6 +6439,8 @@ export class PackedFeatureTable implements RenderFeatureTable {
     readonly batchModelIdPair: Id64.Uint32Pair;
     // (undocumented)
     get byteLength(): number;
+    // (undocumented)
+    readonly data: Uint32Array;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
@@ -7519,7 +7521,11 @@ export interface RenderFeatureTable {
 
 // @public
 export abstract class RenderMaterial {
-    protected constructor(params: RenderMaterial.Params);
+    protected constructor(params: {
+        key?: string;
+        textureMapping?: TextureMapping;
+    });
+    compare(other: RenderMaterial): number;
     // (undocumented)
     get hasTexture(): boolean;
     readonly key?: string;
@@ -7942,6 +7948,7 @@ export abstract class RenderTexture implements IDisposable {
     protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
+    compare(other: RenderTexture): number;
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
@@ -9852,6 +9859,7 @@ export interface TextureLoadProps {
 // @public
 export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
+    compare(other: TextureMapping): number;
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
     // @beta
@@ -9907,6 +9915,7 @@ export namespace TextureMapping {
     }
     export class Params {
         constructor(props?: TextureMapping.ParamProps);
+        compare(other: Params): number;
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
         constantLodParams: ConstantLodParams;
@@ -9919,6 +9928,7 @@ export namespace TextureMapping {
     }
     export class Trans2x3 {
         constructor(m00?: number, m01?: number, originX?: number, m10?: number, m11?: number, originY?: number);
+        compare(other: Trans2x3): number;
         static readonly identity: Trans2x3;
         readonly transform: Transform;
     }

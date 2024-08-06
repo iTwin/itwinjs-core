@@ -22,12 +22,12 @@ import { Marker } from "../Marker";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 import { CanvasDecoration } from "../render/CanvasDecoration";
-import { GraphicType } from "../render/GraphicBuilder";
 import { DecorateContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { GraphicType } from "../common/render/GraphicType";
 
 function translateBold(key: string) {
   return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
