@@ -754,7 +754,15 @@ public;ServerError
 public;ServerTimeoutError 
 public;SessionProps
 beta;SheetBorderTemplateProps 
+beta;SheetIndexEntryProps 
+beta;SheetIndexFolderOwnsEntries 
+beta;SheetIndexFolderProps = SheetIndexEntryProps
+beta;SheetIndexOwnsEntries 
+beta;SheetIndexReferenceProps 
+beta;SheetIndexReferenceRefersToSheetIndex 
 public;SheetProps 
+beta;SheetReferenceProps 
+beta;SheetReferenceRefersToSheet 
 beta;SheetTemplateProps 
 internal;SilhouetteEdgeArgs 
 public;SkyBox

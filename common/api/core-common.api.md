@@ -708,6 +708,8 @@ export enum BisCodeSpec {
     physicalType = "bis:PhysicalType",
     renderMaterial = "bis:RenderMaterial",
     sheet = "bis:Sheet",
+    sheetIndex = "bis:SheetIndex",
+    sheetIndexEntry = "bis:SheetIndexEntry",
     spatialCategory = "bis:SpatialCategory",
     spatialLocationType = "bis:SpatialLocationType",
     subCategory = "bis:SubCategory",
@@ -8940,6 +8942,40 @@ export interface SheetBorderTemplateProps extends ElementProps {
     width?: number;
 }
 
+// @beta
+export interface SheetIndexEntryProps extends ElementProps {
+    entryPriority: number;
+}
+
+// @beta
+export class SheetIndexFolderOwnsEntries extends RelatedElement {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export type SheetIndexFolderProps = SheetIndexEntryProps;
+
+// @beta
+export class SheetIndexOwnsEntries extends RelatedElement {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
+    sheetIndex?: Id64String;
+}
+
+// @beta
+export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export interface SheetProps extends ElementProps {
     // (undocumented)
@@ -8952,6 +8988,18 @@ export interface SheetProps extends ElementProps {
     sheetTemplate?: Id64String;
     // (undocumented)
     width?: number;
+}
+
+// @beta
+export interface SheetReferenceProps extends SheetIndexEntryProps {
+    sheet?: Id64String;
+}
+
+// @beta
+export class SheetReferenceRefersToSheet extends RelatedElement {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta

@@ -360,7 +360,14 @@ beta;SettingsPriority
 beta;SettingsSchemas
 public;Sheet 
 public;SheetBorderTemplate 
+beta;SheetIndex 
+beta;class SheetIndexEntry 
+beta;SheetIndexFolder 
+beta;SheetIndexModel 
+beta;SheetIndexPartition 
+beta;SheetIndexReference 
 public;SheetModel 
+beta;SheetReference 
 public;SheetTemplate 
 public;SheetViewDefinition 
 public;SnapshotDb 

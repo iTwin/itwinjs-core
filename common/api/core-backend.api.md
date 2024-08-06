@@ -180,6 +180,7 @@ import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
+import { RelatedElementProps } from '@itwin/core-common';
 import { RelationshipProps } from '@itwin/core-common';
 import { RemoveFunction } from '@itwin/core-common';
 import { RenderMaterialProps } from '@itwin/core-common';
@@ -197,7 +198,10 @@ import { SectionType } from '@itwin/core-common';
 import { ServerStorage } from '@itwin/object-storage-core';
 import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
+import { SheetIndexEntryProps } from '@itwin/core-common';
+import { SheetIndexReferenceProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
+import { SheetReferenceProps } from '@itwin/core-common';
 import { SheetTemplateProps } from '@itwin/core-common';
 import { SnapRequestProps } from '@itwin/core-common';
 import { SnapResponseProps } from '@itwin/core-common';
@@ -4945,10 +4949,79 @@ export class SheetBorderTemplate extends Document_2 {
     width?: number;
 }
 
+// @beta
+export class SheetIndex extends InformationReferenceElement {
+    // (undocumented)
+    static get className(): string;
+    static create(iModelDb: IModelDb, modelId: Id64String, name: string): SheetIndex;
+    static createCode(iModel: IModelDb, scopeSheetIndexModelId: CodeScopeProps, codeValue: string): Code;
+    static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String;
+}
+
+// @beta
+export abstract class SheetIndexEntry extends InformationReferenceElement {
+    protected constructor(props: SheetIndexEntryProps, iModel: IModelDb);
+    // (undocumented)
+    static get className(): string;
+    static createCode(iModelDb: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // (undocumented)
+    protected static createParentRelationshipProps(iModelDb: IModelDb, id: Id64String): RelatedElementProps;
+    // (undocumented)
+    protected static createProps(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number): SheetIndexEntryProps;
+    entryPriority: number;
+    // (undocumented)
+    toJSON(): SheetIndexEntryProps;
+}
+
+// @beta
+export class SheetIndexFolder extends SheetIndexEntry {
+    // (undocumented)
+    static get className(): string;
+    static create(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number): SheetIndexFolder;
+    static insert(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number): Id64String;
+}
+
+// @beta
+export class SheetIndexModel extends InformationModel {
+    // (undocumented)
+    static get className(): string;
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+}
+
+// @beta
+export class SheetIndexPartition extends InformationPartitionElement {
+    // (undocumented)
+    static get className(): string;
+}
+
+// @beta
+export class SheetIndexReference extends SheetIndexEntry {
+    protected constructor(props: SheetIndexReferenceProps, iModel: IModelDb);
+    // (undocumented)
+    static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    static create(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number, sheetIndex?: Id64String): SheetIndexReference;
+    static insert(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number, sheetIndex?: Id64String): Id64String;
+    sheetIndex?: SheetIndex;
+}
+
 // @public
 export class SheetModel extends GraphicalModel2d {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export class SheetReference extends SheetIndexEntry {
+    protected constructor(props: SheetReferenceProps, iModel: IModelDb);
+    // (undocumented)
+    static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    static create(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number, sheet?: Id64String): SheetReference;
+    static insert(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number, sheet?: Id64String): Id64String;
+    sheet: Sheet | undefined;
 }
 
 // @public
