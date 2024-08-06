@@ -14,7 +14,7 @@ import {
   AxisAlignedBox3d, ElementProps, EntityReferenceSet, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel,
   InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
-import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
+import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
@@ -435,6 +435,32 @@ export abstract class InformationModel extends Model {
  */
 export abstract class GroupInformationModel extends InformationModel {
   public static override get className(): string { return "GroupInformationModel"; }
+}
+
+/** A container for persisting bis:SheetIndexEntry and bis:SheetIndex elements. */
+export class SheetIndexModel extends InformationModel {
+  public static override get className(): string { return "SheetIndexModel"; }
+
+  /** Insert a SheetIndex and a SheetIndexModel that sub-models it.
+ * @param iModelDb Insert into this iModel
+ * @param parentSubjectId The SheetIndex will be inserted as a child of this Subject element.
+ * @param name The name of the SheetIndex that the new SheetIndexModel will sub-model.
+ * @returns The Id of the newly inserted SheetIndexModel.
+ * @throws [[IModelError]] if there is an insert problem.
+ */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const sheetIndex: InformationPartitionElementProps = {
+      classFullName: SheetIndexPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: SheetIndexPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId = iModelDb.elements.insertElement(sheetIndex);
+    return iModelDb.models.insertModel({
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+    });
+  }
 }
 
 /** A container for persisting Information Record Elements

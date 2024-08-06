@@ -897,9 +897,6 @@ export interface SheetReferenceProps extends SheetIndexEntryProps {
   sheet?: Id64String;
 }
 
-/** Properties of a SheetIndexModel */
-export type SheetIndexModelProps = ModelProps;
-
 /**
  * A bis:InformationReferenceElement used to organize bis:Sheet instances into a hierarchy with the assistance
  * of bis:SheetIndexFolder and other bis:SheetIndex instances.
@@ -1622,6 +1619,13 @@ export class DefinitionPartition extends InformationPartitionElement {
  */
 export class DocumentPartition extends InformationPartitionElement {
   public static override get className(): string { return "DocumentPartition"; }
+}
+
+/** A bis:SheetIndexPartition element establishes a 'Sheet Index' Modeling Perspective for its parent bis:Subject
+ * A SheetIndexPartition is always sub-modeled by a SheetIndexModel.
+ */
+export class SheetIndexPartition extends InformationPartitionElement {
+  public static override get className(): string { return "SheetIndexPartition"; }
 }
 
 /** A GroupInformationPartition element establishes a *Group Information* modeling perspective for its parent Subject.
