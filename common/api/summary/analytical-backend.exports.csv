@@ -1,8 +1,8 @@
 sep=;
-Release Tag;API Item
-beta;class AnalyticalElement 
-beta;class AnalyticalModel 
-beta;AnalyticalPartition 
-beta;AnalyticalSchema 
-beta;AnalyticalSimulatesSpatialElement 
-beta;class AnalyticalType 
+Release Tag;API Item Type;API Item Name
+beta;class;AnalyticalElement
+beta;class;AnalyticalModel
+beta;class;AnalyticalPartition
+beta;class;AnalyticalSchema
+beta;class;AnalyticalSimulatesSpatialElement
+beta;class;AnalyticalType
