@@ -9,7 +9,7 @@ import { Formatter } from "../Formatter/Formatter";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatProps, UnitProps } from "../core-quantity";
 
-describe("Bearing angle tests:", () => {
+describe("Bearing direction tests:", () => {
 
   it.only("Format radian angle as bearing", async () => {
     const unitsProvider = new TestUnitsProvider();
@@ -18,6 +18,7 @@ describe("Bearing angle tests:", () => {
       minWidth: 2,
       precision: 0,
       type: "Bearing",
+      formatTraits: [""],
       composite: {
         includeZero: true,
         separator: ":",
@@ -85,34 +86,36 @@ describe("Bearing angle tests:", () => {
       dmsWithLabel: string;
       decimal: string;
     }
-    const pi = Math.PI;
+
+    const degreesToRadians = (degrees: number): number => degrees * (Math.PI / 180);
     const testData: TestData[] = [
-      { input: pi * 0.0,          unit: rad, dms: "N00:00:00E", dmsWithLabel: "N00°00'00\"E", decimal: "N00.000°E" },
-      { input: pi / 36,           unit: rad, dms: "N05:00:00E", dmsWithLabel: "N05°00'00\"E", decimal: "N05.000°E" },
-      { input: pi / 4,            unit: rad, dms: "N45:00:00E", dmsWithLabel: "N45°00'00\"E", decimal: "N45.000°E" },
-      { input: pi * 0.25279333,   unit: rad, dms: "N45:30:10E", dmsWithLabel: "N45°30'10\"E", decimal: "N45.503°E" },
-      { input: pi / 2,            unit: rad, dms: "N90:00:00E", dmsWithLabel: "N90°00'00\"E", decimal: "N90.000°E" },
-      { input: pi * 3 / 4,        unit: rad, dms: "S45:00:00E", dmsWithLabel: "S45°00'00\"E", decimal: "S45.000°E" },
-      { input: pi,                unit: rad, dms: "S00:00:00E", dmsWithLabel: "S00°00'00\"E", decimal: "S00.000°E" },
-      { input: pi * 5 / 4,        unit: rad, dms: "S45:00:00W", dmsWithLabel: "S45°00'00\"W", decimal: "S45.000°W" },
-      { input: pi * 1.3027622,    unit: rad, dms: "S54:29:50W", dmsWithLabel: "S54°29'50\"W", decimal: "S54.497°W" },
-      { input: pi * 3 / 2,        unit: rad, dms: "S90:00:00W", dmsWithLabel: "S90°00'00\"W", decimal: "S90.000°W" },
-      { input: pi * 7 / 4,        unit: rad, dms: "N45:00:00W", dmsWithLabel: "N45°00'00\"W", decimal: "N45.000°W" },
-      { input: pi * 2,            unit: rad, dms: "N00:00:00E", dmsWithLabel: "N00°00'00\"E", decimal: "N00.000°E" },
-      { input: pi * 103 / 45,     unit: rad, dms: "N52:00:00E", dmsWithLabel: "N52°00'00\"E", decimal: "N52.000°E" },
-      { input: pi * 47 / 18,      unit: rad, dms: "S70:00:00E", dmsWithLabel: "S70°00'00\"E", decimal: "S70.000°E" },
-      { input: pi * 29 / 9,       unit: rad, dms: "S40:00:00W", dmsWithLabel: "S40°00'00\"W", decimal: "S40.000°W" },
-      { input: pi * 32 / 9,       unit: rad, dms: "N80:00:00W", dmsWithLabel: "N80°00'00\"W", decimal: "N80.000°W" },
+      { input: 0.0,      unit: rad, dms: "N00:00:00E", dmsWithLabel: "N00°00'00\"E", decimal: "N00.000°E" },
+      { input: 5.0,      unit: rad, dms: "N05:00:00E", dmsWithLabel: "N05°00'00\"E", decimal: "N05.000°E" },
+      { input: 45.0,     unit: rad, dms: "N45:00:00E", dmsWithLabel: "N45°00'00\"E", decimal: "N45.000°E" },
+      { input: 45.5028,  unit: rad, dms: "N45:30:10E", dmsWithLabel: "N45°30'10\"E", decimal: "N45.503°E" },
+      { input: 90.0,     unit: rad, dms: "N90:00:00E", dmsWithLabel: "N90°00'00\"E", decimal: "N90.000°E" },
+      { input: 135.0,    unit: rad, dms: "S45:00:00E", dmsWithLabel: "S45°00'00\"E", decimal: "S45.000°E" },
+      { input: 180.0,    unit: rad, dms: "S00:00:00E", dmsWithLabel: "S00°00'00\"E", decimal: "S00.000°E" },
+      { input: 225.0,    unit: rad, dms: "S45:00:00W", dmsWithLabel: "S45°00'00\"W", decimal: "S45.000°W" },
+      { input: 234.4972, unit: rad, dms: "S54:29:50W", dmsWithLabel: "S54°29'50\"W", decimal: "S54.497°W" },
+      { input: 270.0,    unit: rad, dms: "S90:00:00W", dmsWithLabel: "S90°00'00\"W", decimal: "S90.000°W" },
+      { input: 315.0,    unit: rad, dms: "N45:00:00W", dmsWithLabel: "N45°00'00\"W", decimal: "N45.000°W" },
+      { input: 360.0,    unit: rad, dms: "N00:00:00E", dmsWithLabel: "N00°00'00\"E", decimal: "N00.000°E" },
+      { input: 412.0,    unit: rad, dms: "N52:00:00E", dmsWithLabel: "N52°00'00\"E", decimal: "N52.000°E" },
+      { input: 470.0,    unit: rad, dms: "S70:00:00E", dmsWithLabel: "S70°00'00\"E", decimal: "S70.000°E" },
+      { input: 580.0,    unit: rad, dms: "S40:00:00W", dmsWithLabel: "S40°00'00\"W", decimal: "S40.000°W" },
+      { input: 640.0,    unit: rad, dms: "N80:00:00W", dmsWithLabel: "N80°00'00\"W", decimal: "N80.000°W" },
     ];
 
     for (const entry of testData) {
-      const resultBearingDMS = Formatter.formatQuantity(entry.input, bearingDMSFormatter);
+      const radians = degreesToRadians(entry.input);
+      const resultBearingDMS = Formatter.formatQuantity(radians, bearingDMSFormatter);
       expect(resultBearingDMS).to.be.eql(entry.dms);
 
-      const resultBearingDMSWithLabel = Formatter.formatQuantity(entry.input, bearingDMSWithLabelFormatter);
+      const resultBearingDMSWithLabel = Formatter.formatQuantity(radians, bearingDMSWithLabelFormatter);
       expect(resultBearingDMSWithLabel).to.be.eql(entry.dmsWithLabel);
 
-      const resultBearingDecimal = Formatter.formatQuantity(entry.input, bearingDecimalFormatter);
+      const resultBearingDecimal = Formatter.formatQuantity(radians, bearingDecimalFormatter);
       expect(resultBearingDecimal).to.be.eql(entry.decimal);
       // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
