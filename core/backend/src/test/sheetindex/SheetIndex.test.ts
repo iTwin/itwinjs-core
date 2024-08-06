@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedElement, SheetProps } from "@itwin/core-common";
+import { BisCodeSpec, CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedElement, SheetProps } from "@itwin/core-common";
 
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
-import { Sheet, SheetIndex, SheetIndexEntry, SheetIndexFolder, SheetReference } from "../../Element";
+import { Sheet, SheetIndex, SheetIndexFolder, SheetReference } from "../../Element";
 import { expect } from "chai";
 import { DocumentListModel, SheetIndexModel, SheetModel } from "../../Model";
 
@@ -55,10 +55,10 @@ const insertSheet = async (iModel: IModelDb, sheetName: string): Promise<Id64Str
 };
 
 const insertCodeSpec = async (iModel: IModelDb) => {
-  const indexSpec = CodeSpec.create(iModel, SheetIndex.getCodeSpecName(), CodeScopeSpec.Type.Model);
+  const indexSpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndex, CodeScopeSpec.Type.Model);
   iModel.codeSpecs.insert(indexSpec);
 
-  const entrySpec = CodeSpec.create(iModel, SheetIndexEntry.getCodeSpecName(), CodeScopeSpec.Type.ParentElement);
+  const entrySpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndexEntry, CodeScopeSpec.Type.ParentElement);
   iModel.codeSpecs.insert(entrySpec);
 };
 

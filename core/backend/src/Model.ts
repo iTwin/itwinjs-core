@@ -437,7 +437,10 @@ export abstract class GroupInformationModel extends InformationModel {
   public static override get className(): string { return "GroupInformationModel"; }
 }
 
-/** A container for persisting bis:SheetIndexEntry and bis:SheetIndex elements. */
+/** A container for persisting SheetIndexEntry and SheetIndex elements.
+ * @see [[SheetIndexPartition]]
+ * @beta
+ */
 export class SheetIndexModel extends InformationModel {
   public static override get className(): string { return "SheetIndexModel"; }
 

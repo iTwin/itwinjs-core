@@ -875,17 +875,12 @@ export class SectionDrawing extends Drawing {
 
 /**
  * A bis:InformationReferenceElement used to organize bis:Sheet instances into a hierarchy with the assistance
- * of bis:SheetIndexFolder and other bis:SheetIndex instances.
- * @public
+ * of [[bis:SheetIndexFolder]] and other [[bis:SheetIndex]] instances.
+ * @beta
  */
 export class SheetIndex extends InformationReferenceElement {
   public static override get className(): string {
     return "SheetIndex";
-  }
-
-  /** Get the name of the CodeSpec that is used by SheetIndex objects. */
-  public static getCodeSpecName(): string {
-    return BisCodeSpec.sheetIndex;
   }
 
   /** Create a Code for a SheetIndex given a name that is meant to be unique within the scope of the specified SheetIndexModel.
@@ -894,7 +889,7 @@ export class SheetIndex extends InformationReferenceElement {
    * @param codeValue The SheetIndex name
    */
   public static createCode(iModel: IModelDb, scopeSheetIndexModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(this.getCodeSpecName());
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.sheetIndex);
     return new Code({ spec: codeSpec.id, scope: scopeSheetIndexModelId, value: codeValue });
   }
 
@@ -929,7 +924,9 @@ export class SheetIndex extends InformationReferenceElement {
   }
 }
 
-/** A bis:InformationReferenceElement used as the base-class for elements that participate in a Sheet-Index hierarchy. */
+/** A InformationReferenceElement used as the base-class for elements that participate in a Sheet-Index hierarchy.
+ * @beta
+*/
 export abstract class SheetIndexEntry extends InformationReferenceElement {
   public static override get className(): string {
     return "SheetIndexEntry";
@@ -942,23 +939,17 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
     this.entryPriority = props.entryPriority;
   }
 
-  /** Get the name of the CodeSpec that is used by SheetIndexEntry objects. */
-  public static getCodeSpecName(): string {
-    return BisCodeSpec.sheetIndexEntry;
-  }
-
   public override toJSON(): SheetIndexEntryProps {
     return { ...super.toJSON(), entryPriority: this.entryPriority };
   }
 
   /** Create a Code for a Sheet Index Entry given a name that is meant to be unique within the scope of the specified SheetIndexModel.
    * @param iModel  The IModel
-   * @param scopeModelId The Id of the SheetIndexModel that contains the SheetIndexEntry and provides the scope for its name.
+   * @param scopeModelId The Id of the [[SheetIndexModel]] that contains the [[SheetIndexEntry]] and provides the scope for its name.
    * @param codeValue The name of the entry
-   * @return A sheet index Code
    */
   public static createCode(iModelDb: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
-    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(this.getCodeSpecName());
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.sheetIndexEntry);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
@@ -988,7 +979,9 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
   }
 }
 
-/** A SheetIndexEntry used to organize other SheetIndexEntry instances in a hierarchy. */
+/** A SheetIndexFolder used to organize other [[SheetIndexEntry]] instances in a hierarchy.
+ * @beta
+ */
 export class SheetIndexFolder extends SheetIndexEntry {
   public static override get className(): string {
     return "SheetIndexFolder";
@@ -1037,7 +1030,9 @@ export class SheetIndexFolder extends SheetIndexEntry {
   }
 }
 
-/** A SheetIndexEntry used to include a SheetIndex hierarchy into another one. */
+/** A SheetIndexReference used to include a [[SheetIndex]] hierarchy into another one.
+ * @beta
+*/
 export class SheetIndexReference extends SheetIndexEntry {
   public static override get className(): string {
     return "SheetIndexReference";
@@ -1111,7 +1106,9 @@ export class SheetIndexReference extends SheetIndexEntry {
   }
 }
 
-/** A SheetIndexEntry used to include a Sheet instance into a Sheet-Index hierarchy. */
+/** A SheetReference used to include a [[Sheet]] instance into a Sheet-Index hierarchy.
+ * @beta
+*/
 export class SheetReference extends SheetIndexEntry {
   public static override get className(): string {
     return "SheetReference";
@@ -1597,8 +1594,10 @@ export class DocumentPartition extends InformationPartitionElement {
   public static override get className(): string { return "DocumentPartition"; }
 }
 
-/** A bis:SheetIndexPartition element establishes a 'Sheet Index' Modeling Perspective for its parent bis:Subject
+/** A SheetIndexPartition element establishes a *Sheet Index* modeling perspective for its parent Subject
  * A SheetIndexPartition is always sub-modeled by a SheetIndexModel.
+ * @see [[SheetIndexModel]]
+ * @beta
  */
 export class SheetIndexPartition extends InformationPartitionElement {
   public static override get className(): string { return "SheetIndexPartition"; }

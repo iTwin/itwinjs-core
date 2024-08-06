@@ -174,12 +174,12 @@ export enum BisCodeSpec {
    * @see [SheetIndex.createCode]($backend)
    */
   sheetIndex = "bis:SheetIndex",
-  /** The name of the standard [[CodeSpec]] used when creating codes for [SheetIndexEntry]($backend) elements.
+  /** The name of the standard [[CodeSpec]] used when creating codes for [SheetIndex]($backend) elements.
    * @see [SheetIndex.createCode]($backend)
    */
   sheetIndexEntry = "bis:SheetIndexEntry",
-  /** The name of the standard [[CodeSpec]] used when creating codes for [SpatialCategory]($backend) elements.
-   * @see [SpatialCategory.createCode]($backend)
+  /** The name of the standard [[CodeSpec]] used when creating codes for [SheetIndexEntry]($backend) elements.
+   * @see [SheetIndexEntry.createCode]($backend)
    */
   spatialCategory = "bis:SpatialCategory",
   /** The name of the standard [[CodeSpec]] used when creating codes for [SpatialLocationType]($backend) elements.
