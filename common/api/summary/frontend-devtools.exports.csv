@@ -1,239 +1,239 @@
 sep=;
-Release Tag;API Item
-beta;class AddEffectTool 
-beta;AnimationIntervalTool 
-alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
-beta;ApplyRenderingStyleTool 
-beta;ApplyViewByIdTool 
-beta;ApplyViewTool 
-beta;AttachArcGISFeatureMapLayerByUrlTool 
-beta;AttachArcGISMapLayerByUrlTool 
-beta;AttachCesiumAssetTool 
-beta;AttachMapLayerTool 
-beta;AttachMapOverlayTool 
-beta;AttachModelMapLayerTool 
-beta;AttachOgcApiFeaturesMapLayerTool 
-beta;AttachRealityModelTool 
-beta;AttachTileURLMapLayerByUrlTool 
-beta;AttachWmsMapLayerByUrlTool 
-beta;AttachWmtsMapLayerByUrlTool 
-alpha;Button
-alpha;ButtonHandler = (button: HTMLInputElement) => void
-alpha;ButtonProps
-beta;ChangeBackgroundColorTool 
-beta;ChangeCameraTool 
-beta;ChangeEmphasisSettingsTool 
-beta;ChangeFlashSettingsTool 
-beta;ChangeHiliteModeTool 
-beta;ChangeHiliteSettingsTool 
-beta;class ChangeHiliteTool 
-beta;class ChangePlanProjectionSettingsTool 
-beta;ChangeUnitsTool 
-beta;ChangeViewFlagsTool 
-alpha;CheckBox
-alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
-alpha;CheckBoxProps
-beta;ClearEffectsTool 
-beta;ClearEmphasizedElementsTool 
-beta;ClearIsolatedElementsTool 
-beta;ClearModelAppearanceOverrides 
-beta;ClearRealityModelAppearanceOverrides 
-beta;ClipColorTool 
-beta;ClipIntersectionTool 
-alpha;ColorInput
-alpha;ColorInputHandler = (value: string) => void
-alpha;ColorInputProps
-alpha;ComboBox
-alpha;ComboBoxEntry
-alpha;ComboBoxHandler = (select: HTMLSelectElement) => void
-alpha;ComboBoxProps
-beta;CompileShadersTool 
-alpha;convertHexToRgb(hex: string): RgbColor | undefined
-beta;class ConvolutionEffect 
-beta;copyStringToClipboard(str: string): void
-alpha;createButton(props: ButtonProps): Button
-alpha;createCheckBox(props: CheckBoxProps): CheckBox
-alpha;createColorInput(props: ColorInputProps): ColorInput
-alpha;createComboBox(props: ComboBoxProps): ComboBox
-alpha;createDataList(props: DataListProps): DataList
-alpha;createLabeledNumericInput(props: LabeledNumericInputProps): LabeledNumericInput
-alpha;createNestedMenu(props: NestedMenuProps): NestedMenu
-alpha;createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInputElement
-alpha;createRadioBox(props: RadioBoxProps): RadioBox
-alpha;createSlider(props: SliderProps): Slider
-alpha;createTextBox(props: TextBoxProps): TextBox
-alpha;DataList
-alpha;DataListEntry
-alpha;DataListHandler = (list: HTMLDataListElement) => void
-alpha;DataListProps
-beta;DefaultTileSizeModifierTool 
-beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
-beta;DetachMapLayersTool 
-beta;DetachRealityModelTool 
-beta;DiagnosticsPanel
-beta;DiagnosticsPanelProps
-beta;class DisplayStyleTool 
-beta;DumpPlanProjectionSettingsTool 
-beta;DumpSelectionSetTool 
-beta;EdgeDetectionEffect 
-beta;ElementIdFromSourceAspectIdTool 
-beta;EmbossEffect 
-beta;class EmphasizeElementsTool 
-beta;EmphasizeSelectedElementsTool 
-beta;EmphasizeVisibleElementsTool 
-beta;ExplosionEffect 
-beta;FadeOutTool 
-beta;FlipImageConfig 
-beta;FlipImageEffect 
-internal;formatMemory(numBytes: number): string
-beta;FpsTracker
-beta;FreezeSceneTool 
-beta;FrontendDevTools
-beta;FrustumDecorator 
-beta;GaussianBlurEffect 
-alpha;GpuProfiler
-beta;InspectElementTool 
-beta;IsolateSelectedElementsTool 
-beta;KeyinField
-beta;KeyinFieldLocalization
-beta;KeyinFieldProps
-alpha;LabeledNumericInput
-alpha;LabeledNumericInputProps 
-beta;LensDistortionConfig 
-beta;LensDistortionEffect 
-beta;LoseWebGLContextTool 
-beta;MapBaseColorTool 
-beta;MapBaseTransparencyTool 
-beta;MapBaseVisibilityTool 
-beta;MapLayerSubLayerVisibilityTool 
-beta;MapLayerTransparencyTool 
-beta;MapLayerVisibilityTool 
-beta;MapLayerZoomTool 
-beta;MaskBackgroundMapByElementTool 
-beta;MaskBackgroundMapByExcludedElementTool 
-beta;MaskBackgroundMapByModelTool 
-beta;MaskBackgroundMapBySubCategoryTool 
-beta;MaskRealityModelByElementTool 
-beta;MaskRealityModelByExcludedElementTool 
-beta;MaskRealityModelByModelTool 
-beta;MaskRealityModelBySubCategoryTool 
-beta;MeasureTileLoadTimeTool 
-beta;MemoryTracker
-alpha;NestedMenu
-alpha;NestedMenuProps
-alpha;NestMenuHandler = (expanded: boolean) => void
-alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
-alpha;NumericInputProps
-beta;class OverrideSubCategoryPriorityTool 
-beta;OverrideSubCategoryTool 
-beta;parseArgs(args: string[]): ToolArgs
-beta;parseBoolean(arg: string | undefined): boolean | undefined
-beta;parseToggle(arg: string | undefined): string | boolean | undefined
-beta;class PlanarMaskBaseTool 
-beta;ProjectExtentsDecoration
-beta;QueryScheduleScriptTool 
-alpha;RadioBox
-alpha;RadioBoxEntry
-alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
-alpha;RadioBoxProps
-beta;randomFloat(min: number, max: number): number
-beta;randomFloatInRange(range: Range1d): number
-beta;randomInteger(min: number, max: number): number
-beta;randomIntegerInRange(range: Range1d): number
-beta;randomPositionInRange(range: Range3d): Point3d
-beta;RealityTransitionTool 
-beta;refreshViewportsForEffect(effectName: string): void
-beta;class RenderSystemDebugControlTool 
-beta;class RenderTargetDebugControlToggleTool 
-beta;class RenderTargetDebugControlTool 
-beta;ReorderMapLayers 
-beta;ReportWebGLCompatibilityTool 
-beta;ReverseScheduleScriptTool 
-beta;SaturationConfig 
-beta;SaturationEffect 
-beta;SaveRealityModelTool 
-beta;SaveRenderingStyleTool 
-beta;SaveViewTool 
-beta;SelectElementsByIdTool 
-beta;serializeViewState(view: ViewState): ViewStateProps
-beta;SetAASamplesTool 
-beta;SetAspectRatioSkewTool 
-beta;SetGpuMemoryLimitTool 
-beta;SetHigherPriorityRealityModelMasking 
-beta;SetMapBaseTool 
-beta;SetMapHigherPriorityMasking 
-beta;SetModelColorTool 
-beta;SetModelEmphasizedTool 
-beta;SetModelIgnoresMaterialsTool 
-beta;SetModelLineCodeTool 
-beta;SetModelLineWeightTool 
-beta;SetModelLocateTool 
-beta;SetModelTransparencyTool 
-beta;SetRealityModelColorTool 
-beta;SetRealityModelEmphasizedTool 
-beta;SetRealityModelLocateTool 
-beta;SetRealityModelTransparencyTool 
-beta;SetScheduleScriptTool 
-beta;SharpenEffect 
-beta;SharpnessEffect 
-beta;ShowTileVolumesTool 
-beta;SkyCubeTool 
-beta;SkySphereTool 
-alpha;Slider
-alpha;SliderHandler = (slider: HTMLInputElement) => void
-alpha;SliderProps
-beta;SnowDecorator 
-beta;SnowEffect 
-beta;SnowParams
-beta;SnowParticle 
-beta;SourceAspectIdFromElementIdTool 
-beta;class SourceAspectIdTool 
-beta;TestClipStyleTool 
-beta;TextBox
-alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
-alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
-alpha;TextBoxProps
-beta;TileMemoryBreakdown
-beta;TileStatisticsTracker
-beta;Toggle3dManipulationsTool 
-beta;ToggleDPIForLODTool 
-beta;ToggleDrapeFrustumTool 
-beta;ToggleDrawingGraphicsTool 
-beta;ToggleFrustumSnapshotTool 
-beta;ToggleMaskFrustumTool 
-beta;ToggleNormalMaps 
-beta;ToggleOSMBuildingDisplay 
-beta;TogglePrimitiveVisibilityTool 
-beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
-beta;ToggleProjectExtentsTool 
-beta;ToggleReadPixelsTool 
-beta;ToggleRealityTileBounds 
-beta;ToggleRealityTileFreeze 
-beta;ToggleRealityTileLogging 
-beta;ToggleRealityTilePreload 
-beta;ToggleSectionCutTool 
-beta;ToggleSectionDrawingSpatialViewTool 
-beta;ToggleSelectedViewFrustumTool 
-beta;ToggleShadowFrustumTool 
-beta;ToggleSkyboxTool 
-beta;ToggleTerrainTool 
-beta;ToggleTileRequestDecorationTool 
-beta;ToggleTileTreeBoundsDecorationTool 
-beta;ToggleTileTreeReferencesTool 
-beta;ToggleToolTipsTool 
-beta;ToggleViewAttachmentBoundariesTool 
-beta;ToggleViewAttachmentClipShapesTool 
-beta;ToggleViewAttachmentsTool 
-beta;ToggleVolClassIntersect 
-beta;ToggleWiremeshTool 
-beta;ToolArgs
-alpha;ToolSettingsTracker
-beta;UnmaskMapTool 
-beta;UnmaskRealityModelTool 
-beta;UnsharpenEffect 
-beta;ViewportAddRealityModel 
-beta;ViewportTileSizeModifierTool 
-beta;class ViewportToggleTool 
-beta;VignetteConfig 
-beta;VignetteEffect 
-beta;WoWIgnoreBackgroundTool 
+Release Tag;API Item Type;API Item Name
+beta;class;AddEffectTool
+beta;class;AnimationIntervalTool
+alpha;function;appendDataListEntries
+beta;class;ApplyRenderingStyleTool
+beta;class;ApplyViewByIdTool
+beta;class;ApplyViewTool
+beta;class;AttachArcGISFeatureMapLayerByUrlTool
+beta;class;AttachArcGISMapLayerByUrlTool
+beta;class;AttachCesiumAssetTool
+beta;class;AttachMapLayerTool
+beta;class;AttachMapOverlayTool
+beta;class;AttachModelMapLayerTool
+beta;class;AttachOgcApiFeaturesMapLayerTool
+beta;class;AttachRealityModelTool
+beta;class;AttachTileURLMapLayerByUrlTool
+beta;class;AttachWmsMapLayerByUrlTool
+beta;class;AttachWmtsMapLayerByUrlTool
+alpha;interface;Button
+alpha;type;ButtonHandler
+alpha;interface;ButtonProps
+beta;class;ChangeBackgroundColorTool
+beta;class;ChangeCameraTool
+beta;class;ChangeEmphasisSettingsTool
+beta;class;ChangeFlashSettingsTool
+beta;class;ChangeHiliteModeTool
+beta;class;ChangeHiliteSettingsTool
+beta;class;ChangeHiliteTool
+beta;class;ChangePlanProjectionSettingsTool
+beta;class;ChangeUnitsTool
+beta;class;ChangeViewFlagsTool
+alpha;interface;CheckBox
+alpha;type;CheckBoxHandler
+alpha;interface;CheckBoxProps
+beta;class;ClearEffectsTool
+beta;class;ClearEmphasizedElementsTool
+beta;class;ClearIsolatedElementsTool
+beta;class;ClearModelAppearanceOverrides
+beta;class;ClearRealityModelAppearanceOverrides
+beta;class;ClipColorTool
+beta;class;ClipIntersectionTool
+alpha;interface;ColorInput
+alpha;type;ColorInputHandler
+alpha;interface;ColorInputProps
+alpha;interface;ComboBox
+alpha;interface;ComboBoxEntry
+alpha;type;ComboBoxHandler
+alpha;interface;ComboBoxProps
+beta;class;CompileShadersTool
+alpha;function;convertHexToRgb
+beta;class;ConvolutionEffect
+beta;function;copyStringToClipboard
+alpha;function;createButton
+alpha;function;createCheckBox
+alpha;function;createColorInput
+alpha;function;createComboBox
+alpha;function;createDataList
+alpha;function;createLabeledNumericInput
+alpha;function;createNestedMenu
+alpha;function;createNumericInput
+alpha;function;createRadioBox
+alpha;function;createSlider
+alpha;function;createTextBox
+alpha;interface;DataList
+alpha;interface;DataListEntry
+alpha;type;DataListHandler
+alpha;interface;DataListProps
+beta;class;DefaultTileSizeModifierTool
+beta;function;deserializeViewState
+beta;class;DetachMapLayersTool
+beta;class;DetachRealityModelTool
+beta;class;DiagnosticsPanel
+beta;interface;DiagnosticsPanelProps
+beta;class;DisplayStyleTool
+beta;class;DumpPlanProjectionSettingsTool
+beta;class;DumpSelectionSetTool
+beta;class;EdgeDetectionEffect
+beta;class;ElementIdFromSourceAspectIdTool
+beta;class;EmbossEffect
+beta;class;EmphasizeElementsTool
+beta;class;EmphasizeSelectedElementsTool
+beta;class;EmphasizeVisibleElementsTool
+beta;class;ExplosionEffect
+beta;class;FadeOutTool
+beta;class;FlipImageConfig
+beta;class;FlipImageEffect
+internal;function;formatMemory
+beta;class;FpsTracker
+beta;class;FreezeSceneTool
+beta;class;FrontendDevTools
+beta;class;FrustumDecorator
+beta;class;GaussianBlurEffect
+alpha;class;GpuProfiler
+beta;class;InspectElementTool
+beta;class;IsolateSelectedElementsTool
+beta;class;KeyinField
+beta;enum;KeyinFieldLocalization
+beta;interface;KeyinFieldProps
+alpha;interface;LabeledNumericInput
+alpha;interface;LabeledNumericInputProps
+beta;class;LensDistortionConfig
+beta;class;LensDistortionEffect
+beta;class;LoseWebGLContextTool
+beta;class;MapBaseColorTool
+beta;class;MapBaseTransparencyTool
+beta;class;MapBaseVisibilityTool
+beta;class;MapLayerSubLayerVisibilityTool
+beta;class;MapLayerTransparencyTool
+beta;class;MapLayerVisibilityTool
+beta;class;MapLayerZoomTool
+beta;class;MaskBackgroundMapByElementTool
+beta;class;MaskBackgroundMapByExcludedElementTool
+beta;class;MaskBackgroundMapByModelTool
+beta;class;MaskBackgroundMapBySubCategoryTool
+beta;class;MaskRealityModelByElementTool
+beta;class;MaskRealityModelByExcludedElementTool
+beta;class;MaskRealityModelByModelTool
+beta;class;MaskRealityModelBySubCategoryTool
+beta;class;MeasureTileLoadTimeTool
+beta;class;MemoryTracker
+alpha;interface;NestedMenu
+alpha;interface;NestedMenuProps
+alpha;type;NestMenuHandler
+alpha;type;NumericInputHandler
+alpha;interface;NumericInputProps
+beta;class;OverrideSubCategoryPriorityTool
+beta;class;OverrideSubCategoryTool
+beta;function;parseArgs
+beta;function;parseBoolean
+beta;function;parseToggle
+beta;class;PlanarMaskBaseTool
+beta;class;ProjectExtentsDecoration
+beta;class;QueryScheduleScriptTool
+alpha;interface;RadioBox
+alpha;interface;RadioBoxEntry
+alpha;type;RadioBoxHandler
+alpha;interface;RadioBoxProps
+beta;function;randomFloat
+beta;function;randomFloatInRange
+beta;function;randomInteger
+beta;function;randomIntegerInRange
+beta;function;randomPositionInRange
+beta;class;RealityTransitionTool
+beta;function;refreshViewportsForEffect
+beta;class;RenderSystemDebugControlTool
+beta;class;RenderTargetDebugControlToggleTool
+beta;class;RenderTargetDebugControlTool
+beta;class;ReorderMapLayers
+beta;class;ReportWebGLCompatibilityTool
+beta;class;ReverseScheduleScriptTool
+beta;class;SaturationConfig
+beta;class;SaturationEffect
+beta;class;SaveRealityModelTool
+beta;class;SaveRenderingStyleTool
+beta;class;SaveViewTool
+beta;class;SelectElementsByIdTool
+beta;function;serializeViewState
+beta;class;SetAASamplesTool
+beta;class;SetAspectRatioSkewTool
+beta;class;SetGpuMemoryLimitTool
+beta;class;SetHigherPriorityRealityModelMasking
+beta;class;SetMapBaseTool
+beta;class;SetMapHigherPriorityMasking
+beta;class;SetModelColorTool
+beta;class;SetModelEmphasizedTool
+beta;class;SetModelIgnoresMaterialsTool
+beta;class;SetModelLineCodeTool
+beta;class;SetModelLineWeightTool
+beta;class;SetModelLocateTool
+beta;class;SetModelTransparencyTool
+beta;class;SetRealityModelColorTool
+beta;class;SetRealityModelEmphasizedTool
+beta;class;SetRealityModelLocateTool
+beta;class;SetRealityModelTransparencyTool
+beta;class;SetScheduleScriptTool
+beta;class;SharpenEffect
+beta;class;SharpnessEffect
+beta;class;ShowTileVolumesTool
+beta;class;SkyCubeTool
+beta;class;SkySphereTool
+alpha;interface;Slider
+alpha;type;SliderHandler
+alpha;interface;SliderProps
+beta;class;SnowDecorator
+beta;class;SnowEffect
+beta;interface;SnowParams
+beta;interface;SnowParticle
+beta;class;SourceAspectIdFromElementIdTool
+beta;class;SourceAspectIdTool
+beta;class;TestClipStyleTool
+beta;interface;TextBox
+alpha;type;TextBoxHandler
+alpha;type;TextBoxKeyPressHandler
+alpha;interface;TextBoxProps
+beta;class;TileMemoryBreakdown
+beta;class;TileStatisticsTracker
+beta;class;Toggle3dManipulationsTool
+beta;class;ToggleDPIForLODTool
+beta;class;ToggleDrapeFrustumTool
+beta;class;ToggleDrawingGraphicsTool
+beta;class;ToggleFrustumSnapshotTool
+beta;class;ToggleMaskFrustumTool
+beta;class;ToggleNormalMaps
+beta;class;ToggleOSMBuildingDisplay
+beta;class;TogglePrimitiveVisibilityTool
+beta;function;toggleProjectExtents
+beta;class;ToggleProjectExtentsTool
+beta;class;ToggleReadPixelsTool
+beta;class;ToggleRealityTileBounds
+beta;class;ToggleRealityTileFreeze
+beta;class;ToggleRealityTileLogging
+beta;class;ToggleRealityTilePreload
+beta;class;ToggleSectionCutTool
+beta;class;ToggleSectionDrawingSpatialViewTool
+beta;class;ToggleSelectedViewFrustumTool
+beta;class;ToggleShadowFrustumTool
+beta;class;ToggleSkyboxTool
+beta;class;ToggleTerrainTool
+beta;class;ToggleTileRequestDecorationTool
+beta;class;ToggleTileTreeBoundsDecorationTool
+beta;class;ToggleTileTreeReferencesTool
+beta;class;ToggleToolTipsTool
+beta;class;ToggleViewAttachmentBoundariesTool
+beta;class;ToggleViewAttachmentClipShapesTool
+beta;class;ToggleViewAttachmentsTool
+beta;class;ToggleVolClassIntersect
+beta;class;ToggleWiremeshTool
+beta;interface;ToolArgs
+alpha;class;ToolSettingsTracker
+beta;class;UnmaskMapTool
+beta;class;UnmaskRealityModelTool
+beta;class;UnsharpenEffect
+beta;class;ViewportAddRealityModel
+beta;class;ViewportTileSizeModifierTool
+beta;class;ViewportToggleTool
+beta;class;VignetteConfig
+beta;class;VignetteEffect
+beta;class;WoWIgnoreBackgroundTool
