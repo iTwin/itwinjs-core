@@ -99,7 +99,7 @@ export class TypeDefinition extends RelatedElement {
 }
 
 /** Relates a [[SheetIndexFolder]] and [[Entries]] that it owns.
- * @public
+ * @beta
  */
 export class SheetIndexFolderOwnsEntries extends RelatedElement {
   public static classFullName = "BisCore:SheetIndexFolderOwnsEntries";
@@ -109,7 +109,7 @@ export class SheetIndexFolderOwnsEntries extends RelatedElement {
 }
 
 /** Relates a [[SheetIndex]] and [[Entries]] that it owns.
- * @public
+ * @beta
  */
 export class SheetIndexOwnsEntries extends RelatedElement {
   public static classFullName = "BisCore:SheetIndexOwnsEntries";
@@ -119,7 +119,7 @@ export class SheetIndexOwnsEntries extends RelatedElement {
 }
 
 /** Relates a [[SheetReference]] and [[Sheet]] that it owns.
- * @public
+ * @beta
  */
 export class SheetReferenceRefersToSheet extends RelatedElement {
   public static classFullName = "BisCore:SheetReferenceRefersToSheet";
@@ -129,7 +129,7 @@ export class SheetReferenceRefersToSheet extends RelatedElement {
 }
 
 /** Relates a [[SheetIndexReference]] to a [[SheetIndex]] it refers.
- * @public
+ * @beta
  */
 export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
   public static classFullName = "BisCore:SheetIndexReferenceRefersToSheetIndex";
