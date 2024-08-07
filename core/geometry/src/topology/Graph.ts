@@ -1628,7 +1628,7 @@ export class HalfEdgeGraph {
    * Visit each half edge (node) of the graph once.
    * * Call the `announceNode` function.
    * * Continue search if `announceNode(graph, node)` returns `true`.
-   * * Terminate search if `announceFace(graph, node)` returns `false`.
+   * * Terminate search if `announceNode(graph, node)` returns `false`.
    * @param announceNode function to apply at each node.
    */
   public announceNodes(announceNode: GraphNodeFunction): void {
