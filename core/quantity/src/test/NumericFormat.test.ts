@@ -489,12 +489,11 @@ describe("Numeric Formats tests:", () => {
     }
   });
 
-  it.only("Imperial Station Formatting", async () => {
+  it("Imperial Station Formatting", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const formatData = {
       formatTraits: ["trailZeroes"],
-      minWidth: 10,
       precision: 2,
       stationOffsetSize: 2,
       type: "Station",
