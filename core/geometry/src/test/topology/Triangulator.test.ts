@@ -1147,9 +1147,20 @@ describe("Triangulation", () => {
   it.only("TriangulatorHang", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+    const meshRange = Range3d.create();
+    let x0 = 0;
+    let y0 = 0;
+    let z0 = 0;
+
+    const options = new StrokeOptions();
+    options.chordTol = 1.0e-3;  // TODO: try several chord tols (2.0e-3 works)
+
     let pts = [
       // Minimal test case constructed from dtmPointsSmall.imjs.
-      // All points are xy-colinear except 2; A and C are skirt points "underneath" the hull.
+      // * Numbered points are on the convex hull.
+      // * All points are essentially xy-colinear except 2.
+      // * B and D are xy-near the hull.
+      // * A and C are skirt points "underneath" the hull.
       Point3d.create(29.38440446735313, -46.664765115079454, 49.58476279246775), // 0
       Point3d.create(78.7791513050385, -46.66476333748565, 47.07249011143456),   // 1
       Point3d.create(78.77823641152756, -46.66476229743052, 45.60256502436375),  // A
@@ -1158,25 +1169,43 @@ describe("Triangulation", () => {
       Point3d.create(55.21859962987817, 29.55516271079307, 48.370060922134726),  // 2
       Point3d.create(50.334340847282135, -46.66476423327051, 48.33850061288565), // D
     ];
-    let mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
-    ck.testDefined(mesh, "computed 7-point triangulation");
+    let mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts, options);
+    if (ck.testDefined(mesh, "computed 7-point triangulation")) {
+      mesh.range(undefined, meshRange);
+      x0 -= meshRange.low.x;
+      y0 -= meshRange.low.y;
+      z0 -= meshRange.low.z;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, z0);
+      x0 = meshRange.xLength() + 10;
+      y0 = z0 = 0;
+    }
+    // TODO: measure area to avoid regression after fix skirt points
 
     // TODO: put behind enableLongTests
     const files = [/* "dtmPointsSmall.imjs", */ "dtmPointsMedium.imjs" /* , "dtmPointsLarge.imjs" */];
     for (const filename of files) {
       pts = IModelJson.Reader.parsePointArray(JSON.parse(fs.readFileSync(`./src/test/data/polyface/${filename}`, "utf8")));
+      meshRange.setFrom(Range3d.create(...pts));
+      x0 -= meshRange.low.x;
+      y0 -= meshRange.low.y;
+      z0 -= meshRange.low.z;
 
-      // TODO: temporary
-      const hull: Point3d[] = [];
-      const interior: Point3d[] = [];
-      Point3dArray.computeConvexHullXY(pts, hull, interior, true);
-      // GeometryCoreTestIO.createAndCaptureLoop(allGeometry, hull);
-      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior.slice(0, 398), 0.2);
-      GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
+      if (GeometryCoreTestIO.enableSave) { // save now in case triangulation hangs below
+        const hull: Point3d[] = [];
+        const interior: Point3d[] = [];
+        Point3dArray.computeConvexHullXY(pts, hull, interior, true);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hull, 0.2, x0, y0, z0);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior.slice(0, 46), 0.1, x0, y0, z0);
+        GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
+      }
 
-      mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
-      ck.testDefined(mesh, `computed triangulation of dataset ${filename}`);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+      mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(pts, options);
+      if (ck.testDefined(mesh, `computed triangulation of dataset ${filename}`)) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, z0);
+        x0 += meshRange.xLength() + 10;
+      }
+
+      y0 = z0 = 0;
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
