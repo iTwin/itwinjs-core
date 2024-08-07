@@ -17,7 +17,7 @@ import { MutableEntityClass } from "./Mutable/MutableEntityClass";
 import { NavigationProperties } from "./Properties";
 import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { ClassId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 
 /**
  * @alpha

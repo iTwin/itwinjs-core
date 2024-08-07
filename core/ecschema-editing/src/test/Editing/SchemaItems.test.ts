@@ -2,7 +2,7 @@ import { SchemaContext, SchemaItemKey, SchemaKey, UnitSystem } from "@itwin/ecsc
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 describe("Properties editing tests", () => {
   // Uses an entity class to create properties.

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { CustomAttributeClass, CustomAttributeContainerType, ECVersion, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 describe("CustomAttribute tests", () => {
   let testEditor: SchemaContextEditor;

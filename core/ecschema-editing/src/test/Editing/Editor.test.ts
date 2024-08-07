@@ -11,7 +11,7 @@ import { SchemaContextEditor } from "../../Editing/Editor";
 import { AnyDiagnostic } from "../../Validation/Diagnostic";
 import { Diagnostics } from "../../Validation/ECRules";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

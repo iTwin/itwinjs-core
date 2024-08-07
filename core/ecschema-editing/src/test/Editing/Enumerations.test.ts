@@ -7,7 +7,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { ECClassModifier, Enumeration, EnumerationProps, PrimitiveType, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);

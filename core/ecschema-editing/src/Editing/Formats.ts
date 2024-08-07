@@ -13,7 +13,7 @@ import { MutableFormat } from "./Mutable/MutableFormat";
 import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
 import { SchemaItemId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 
 /**
  * @alpha

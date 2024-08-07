@@ -11,7 +11,7 @@ import {
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 describe("ECClass tests", () => {
   // Uses an entity class to create properties.

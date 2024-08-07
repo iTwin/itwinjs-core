@@ -12,7 +12,7 @@ import { MutableEnumeration } from "./Mutable/MutableEnumeration";
 import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { SchemaItems } from "./SchemaItems";
 import { EnumeratorId, SchemaItemId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 
 type MutableEnumerator = {
   -readonly [P in keyof AnyEnumerator]: AnyEnumerator[P]

@@ -28,7 +28,7 @@ import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 import { ISchemaEditChangeInfo } from "./ChangeInfo/ChangeInfo";
 import { CustomAttributeId, SchemaId, SchemaItemId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.
@@ -72,7 +72,7 @@ export class SchemaContextEditor {
 
   public addEditInfo(changeInfo: ISchemaEditChangeInfo) {
     const length = this._currentChanges.push(changeInfo);
-    changeInfo.sequence = length-1;
+    changeInfo.sequence = length - 1;
   }
 
   public async revertCurrentChanges(): Promise<void> {
@@ -95,6 +95,10 @@ export class SchemaContextEditor {
   public removeChange(change: ISchemaEditChangeInfo) {
     this._currentChanges = this._currentChanges.splice(change.sequence, 1);
     change.sequence = -1;
+  }
+
+  public get changeInfo() {
+    return this._currentChanges;
   }
 
   /**

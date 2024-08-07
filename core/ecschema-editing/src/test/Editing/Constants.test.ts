@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { Constant, ConstantProps, ECVersion, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 describe("Constant tests", () => {
   let testEditor: SchemaContextEditor;

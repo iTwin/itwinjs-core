@@ -22,7 +22,8 @@ import { ChangeOptions } from "./ChangeInfo/ChangeOptions";
 import { ISchemaEditChangeInfo } from "./ChangeInfo/ChangeInfo";
 import { RenamePropertyChange } from "./ChangeInfo/RenamePropertyChange";
 import { ClassId, CustomAttributeId, PropertyId, PropertyTypeName, SchemaId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
+import { NumberAttributeChangeInfo } from "./ChangeInfo/NumberAttributeChangeInfo";
 
 type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimitiveOrEnumPropertyBase | MutableNavigationProperty | MutableStructProperty;
 
@@ -89,10 +90,8 @@ export class Properties {
     if (!overridingBaseProperty)
       await this.validatePropertyAgainstDerivedProperties(existingProperty.class, existingProperty, newPropertyName, elements.gatheredDerivedClasses, options);
 
-    const classId = new ClassId(existingProperty.class.schemaItemType, classKey);
-
     // Create change info object to allow for edit cancelling and change reversal.
-    const changeInfo = new RenamePropertyChange(this._schemaEditor, elements, classId, newPropertyName, propertyName, this.revertSetName.bind(this));
+    const changeInfo = new RenamePropertyChange(this._schemaEditor, existingProperty.class, newPropertyName, propertyName, elements, this.revertSetName.bind(this));
 
     // Callback returns false to cancel the edit.
     if (!(await changeInfo.beginChange()))
@@ -162,6 +161,8 @@ export class Properties {
       .catch((e: any) => {
         throw new SchemaEditingError(SchemaEditType.SetPriority, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
+
+    new NumberAttributeChangeInfo(this._schemaEditor, SchemaEditType.SetPriority, priority, property.priority, property);
     property.setPriority(priority);
   }
 

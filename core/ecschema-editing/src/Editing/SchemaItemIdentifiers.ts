@@ -276,9 +276,7 @@ export class ClassId extends SchemaItemId implements IClassIdentifier {
     this.schemaItemType = schemaItemType;
   }
 
-  public static fromECClass(ecClass: ECClass | undefined): ClassId | undefined{
-    if (!ecClass)
-      return undefined;
+  public static fromECClass(ecClass: ECClass): ClassId{
     return new ClassId(ecClass.schemaItemType as ECClassSchemaItems, ecClass.key);
   }
 }
@@ -317,6 +315,10 @@ export class PropertyId implements IPropertyIdentifier {
     this.ecClass = new ClassId(schemaItemType, classKey);
     this.schemaKey = classKey.schemaKey;
     this.typeName = typeName;
+  }
+
+  public static fromProperty(property: Property) {
+    return new PropertyId(property.class.schemaItemType, property.class.key, property.name);
   }
 }
 

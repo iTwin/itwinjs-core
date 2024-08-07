@@ -9,7 +9,9 @@ import { ECEditingStatus } from "../../Editing/Exception";
 import { ChangeOption, ChangeOptions } from "../../Editing/ChangeInfo/ChangeOptions";
 import { RenamePropertyChange } from "../../Editing/ChangeInfo/RenamePropertyChange";
 import { ISchemaEditChangeInfo } from "../../Editing/ChangeInfo/ChangeInfo";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
+import { NumberAttributeChangeInfo } from "../../Editing/ChangeInfo/NumberAttributeChangeInfo";
+import { PropertyId } from "../../Editing/SchemaItemIdentifiers";
 
 describe("Properties editing tests", () => {
   // Uses an entity class to create properties.
@@ -353,6 +355,12 @@ describe("Properties editing tests", () => {
 
       await testEditor.entities.properties.setPriority(entityKey, "TestProperty", 1);
 
+      const changeInfo = testEditor.changeInfo[0] as NumberAttributeChangeInfo;
+
+      expect(changeInfo.editType).to.eql(SchemaEditType.SetPriority);
+      expect(changeInfo.newValue).to.eql(1);
+      expect(changeInfo.oldValue).to.eql(0);
+      expect(changeInfo.propertyId).to.deep.equal(PropertyId.fromProperty(property));
       expect(property.priority).to.eql(1);
     });
 

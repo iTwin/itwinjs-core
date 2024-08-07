@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ECVersion, SchemaContext, SchemaItemKey, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 describe("Units tests", () => {
   let testEditor: SchemaContextEditor;

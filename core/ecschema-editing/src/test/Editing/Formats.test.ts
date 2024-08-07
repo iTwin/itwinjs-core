@@ -7,7 +7,7 @@ import { ECClassModifier, ECVersion, Format, SchemaContext, SchemaKey } from "@i
 import { FormatTraits, FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 describe("Formats tests", () => {
   let testEditor: SchemaContextEditor;

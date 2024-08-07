@@ -4,7 +4,7 @@ import { ECElementSelection } from "../ECElementSelection";
 import { ISchemaEditChangeInfo, ISchemaEditChangeProps, SchemaEditChangeBase } from "./ChangeInfo";
 import { ChangeOptions } from "./ChangeOptions";
 import { ClassId, ECClassSchemaItems } from "../SchemaItemIdentifiers";
-import { SchemaEditType } from "../SchmaEditType";
+import { SchemaEditType } from "../SchemaEditType";
 
 export interface SetBaseClassChangeProps extends ISchemaEditChangeProps {
   readonly newBaseClass?: ClassId;
@@ -26,16 +26,12 @@ export class SetBaseClassChange extends SchemaEditChangeBase {
   public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
   public readonly derivedClasses?: ClassId[];
 
-  constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, modifiedClass: ClassId, newBaseClass: ClassId | undefined, oldBaseClass: ClassId | undefined);
-  constructor(contextEditor: SchemaContextEditor, changeOptions: ChangeOptions, modifiedClass: ClassId, newBaseClass: ClassId, oldBaseClass: ClassId | undefined);
-  constructor(contextEditor: SchemaContextEditor, selectedElementsOrOptions: ECElementSelection | ChangeOptions, modifiedClass: ClassId, newBaseClass: ClassId, oldBaseClass: ClassId | undefined) {
-    super(contextEditor, getChangeOptions(selectedElementsOrOptions), modifiedClass.schemaItemType);
-    this.modifiedClass = modifiedClass;
-    this.newBaseClass = newBaseClass;
-    this.oldBaseClass = oldBaseClass;
-    if (!ChangeOptions.isChangeOptions(selectedElementsOrOptions)) {
-      this.derivedClasses = this.getClassIds(selectedElementsOrOptions.gatheredDerivedClasses);
-    }
+  constructor(contextEditor: SchemaContextEditor, modifiedClass: ECClass, newBaseClass: ECClass | undefined, oldBaseClass: ECClass | undefined, selectedElements: ECElementSelection) {
+    super(contextEditor, modifiedClass.schemaItemType, selectedElements.options);
+    this.modifiedClass = ClassId.fromECClass(modifiedClass);
+    this.newBaseClass = newBaseClass ? ClassId.fromECClass(modifiedClass) : undefined;
+    this.oldBaseClass = oldBaseClass ? ClassId.fromECClass(oldBaseClass) : undefined;
+    this.derivedClasses = this.getClassIds(selectedElements.gatheredDerivedClasses);
   }
 
   private getClassIds(classes: Map<string, ECClass>) {

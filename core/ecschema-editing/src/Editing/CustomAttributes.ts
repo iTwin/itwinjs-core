@@ -16,7 +16,7 @@ import { ECClasses } from "./ECClasses";
 import { MutableCAClass } from "./Mutable/MutableCAClass";
 import { SchemaEditingError } from "./Exception";
 import { ClassId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 
 /**
  * @alpha

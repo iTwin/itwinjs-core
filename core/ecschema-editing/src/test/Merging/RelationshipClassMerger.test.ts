@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ECEditingStatus } from "../../Editing/Exception";
 import { AnyDiagnostic } from "../../ecschema-editing";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

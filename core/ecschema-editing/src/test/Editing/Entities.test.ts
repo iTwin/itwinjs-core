@@ -9,7 +9,7 @@ import {
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -351,7 +351,7 @@ describe("Entities tests", () => {
     await expect(testEditor.entities.setBaseClass(entityRes, baseClass2Res)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Found property 'testEntity.TestProp' of type 'dateTime' which is not compatible with the base property 'testBaseClass.TestProp' of type 'boolean'.`);
-      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidBaseClass);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidPropertyType);
     });
   });
 

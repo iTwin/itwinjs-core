@@ -10,7 +10,7 @@ import {
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { AnyDiagnostic, Diagnostics } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
   let violations = "";

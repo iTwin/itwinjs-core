@@ -12,7 +12,7 @@ import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { MutableSchemaItem } from "./Mutable/MutableSchemaItem";
 import { SchemaId, SchemaItemId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 
 export type CreateSchemaItem<T extends SchemaItem> = (schema: MutableSchema) => (name: string, ...args: any[]) => Promise<T>;
 export type CreateSchemaItemFromProps<T extends SchemaItem> = (props: SchemaItemProps, ...args: any[]) => Promise<T>;
@@ -52,7 +52,7 @@ export abstract class SchemaItems {
       await schema.deleteSchemaItem(existingName);
       schema.addItem(mutableItem);
       return mutableItem.key;
-    } catch(e: any) {
+    } catch (e: any) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
         throw new SchemaEditingError(SchemaEditType.SetClassName, new SchemaItemId(this.schemaItemType, itemKey),
           new SchemaEditingError(ECEditingStatus.InvalidECName, new SchemaItemId(this.schemaItemType, itemKey)));
@@ -96,12 +96,12 @@ export abstract class SchemaItems {
     return schema;
   }
 
-  protected async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
+  protected async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T> {
     schemaItemType = schemaItemType ?? this.schemaItemType;
     return this.schemaEditor.getSchemaItem<T>(schemaItemKey, schemaItemType);
   }
 
-  protected async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
+  protected async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T> {
     schemaItemType = schemaItemType ?? this.schemaItemType;
     return this.schemaEditor.lookupSchemaItem(schemaOrKey, schemaItemKey, schemaItemType);
   }

@@ -19,7 +19,7 @@ import { AnyDiagnostic, RelationshipConstraintDiagnostic, SchemaItemDiagnostic }
 import { NavigationProperties } from "./Properties";
 import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { ClassId, CustomAttributeId, RelationshipConstraintId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 
 /**
  * @alpha

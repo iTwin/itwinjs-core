@@ -12,7 +12,7 @@ import { ECClasses } from "./ECClasses";
 import { MutableStructClass } from "./Mutable/MutableClass";
 import { SchemaEditingError } from "./Exception";
 import { ClassId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 
 /**
  * @alpha A class extending ECClasses allowing you to create schema items of type StructClass.

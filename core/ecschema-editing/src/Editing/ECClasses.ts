@@ -24,7 +24,7 @@ import { AnyDiagnostic } from "../Validation/Diagnostic";
 import { CreateSchemaItem, SchemaItems } from "./SchemaItems";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { PropertyId, SchemaItemId, ClassId, CustomAttributeId } from "./SchemaItemIdentifiers";
-import { SchemaEditType } from "./SchmaEditType";
+import { SchemaEditType } from "./SchemaEditType";
 import { ECElementSelection } from "./ECElementSelection";
 import { ChangeOptions } from "./ChangeInfo/ChangeOptions";
 import { SetBaseClassChange } from "./ChangeInfo/SetBaseClassChange";
@@ -35,7 +35,7 @@ export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.Str
  * @alpha
  * Acts as a base class for schema class creation. Enables property creation.
  */
-export class ECClasses extends SchemaItems{
+export class ECClasses extends SchemaItems {
 
   protected constructor(schemaItemType: ECClassSchemaItems, schemaEditor: SchemaContextEditor) {
     super(schemaItemType, schemaEditor);
@@ -87,7 +87,7 @@ export class ECClasses extends SchemaItems{
   public async createProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType, prefix: string): Promise<void> {
     if (type !== PrimitiveType.Double && type !== PrimitiveType.String && type !== PrimitiveType.DateTime
       && type !== PrimitiveType.Integer)
-      throw new Error ("Property creation is restricted to type Double, String, DateTime, and Integer.");
+      throw new Error("Property creation is restricted to type Double, String, DateTime, and Integer.");
 
     if ("" === prefix)
       throw new Error("The specified property name prefix is invalid");
@@ -109,7 +109,7 @@ export class ECClasses extends SchemaItems{
     try {
       const mutableClass = await this.getClass(classKey);
       await mutableClass.createPrimitiveProperty(name, type);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreatePrimitiveProperty, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -117,9 +117,9 @@ export class ECClasses extends SchemaItems{
   public async createPrimitivePropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitivePropertyProps): Promise<void> {
     try {
       const mutableClass = await this.getClass(classKey);
-      const newProperty =  await mutableClass.createPrimitiveProperty(name, type);
+      const newProperty = await mutableClass.createPrimitiveProperty(name, type);
       await newProperty.fromJSON(primitiveProps);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreatePrimitivePropertyFromProps, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -132,7 +132,7 @@ export class ECClasses extends SchemaItems{
         throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(SchemaItemType.Enumeration, type.name, mutableClass.schema.schemaKey));
 
       await mutableClass.createPrimitiveProperty(name, type);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreateEnumerationProperty, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -140,9 +140,9 @@ export class ECClasses extends SchemaItems{
   public async createEnumerationPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, enumProps: EnumerationPropertyProps): Promise<void> {
     try {
       const mutableClass = await this.getClass(classKey);
-      const newProperty =  await mutableClass.createPrimitiveProperty(name, type);
+      const newProperty = await mutableClass.createPrimitiveProperty(name, type);
       await newProperty.fromJSON(enumProps);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreateEnumerationArrayPropertyFromProps, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -151,7 +151,7 @@ export class ECClasses extends SchemaItems{
     try {
       const mutableClass = await this.getClass(classKey);
       await mutableClass.createPrimitiveArrayProperty(name, type);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreatePrimitiveArrayProperty, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -159,9 +159,9 @@ export class ECClasses extends SchemaItems{
   public async createPrimitiveArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitiveArrayPropertyProps): Promise<void> {
     try {
       const mutableClass = await this.getClass(classKey);
-      const newProperty =  await mutableClass.createPrimitiveArrayProperty(name, type);
+      const newProperty = await mutableClass.createPrimitiveArrayProperty(name, type);
       await newProperty.fromJSON(primitiveProps);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreatePrimitiveArrayPropertyFromProps, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -170,7 +170,7 @@ export class ECClasses extends SchemaItems{
     try {
       const mutableClass = await this.getClass(classKey);
       await mutableClass.createPrimitiveArrayProperty(name, type);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreateEnumerationArrayProperty, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -178,9 +178,9 @@ export class ECClasses extends SchemaItems{
   public async createEnumerationArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, props: PrimitiveArrayPropertyProps): Promise<void> {
     try {
       const mutableClass = await this.getClass(classKey);
-      const newProperty =  await mutableClass.createPrimitiveArrayProperty(name, type);
+      const newProperty = await mutableClass.createPrimitiveArrayProperty(name, type);
       await newProperty.fromJSON(props);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreateEnumerationArrayPropertyFromProps, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -189,7 +189,7 @@ export class ECClasses extends SchemaItems{
     try {
       const mutableClass = await this.getClass(classKey);
       await mutableClass.createStructProperty(name, type);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreateStructProperty, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -197,9 +197,9 @@ export class ECClasses extends SchemaItems{
   public async createStructPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructPropertyProps): Promise<void> {
     try {
       const mutableClass = await this.getClass(classKey);
-      const newProperty =  await mutableClass.createStructProperty(name, type);
+      const newProperty = await mutableClass.createStructProperty(name, type);
       await newProperty.fromJSON(structProps);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreateStructPropertyFromProps, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -208,7 +208,7 @@ export class ECClasses extends SchemaItems{
     try {
       const mutableClass = await this.getClass(classKey);
       await mutableClass.createStructArrayProperty(name, type);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreateStructArrayProperty, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -216,9 +216,9 @@ export class ECClasses extends SchemaItems{
   public async createStructArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructArrayPropertyProps): Promise<void> {
     try {
       const mutableClass = await this.getClass(classKey);
-      const newProperty =  await mutableClass.createStructArrayProperty(name, type);
+      const newProperty = await mutableClass.createStructArrayProperty(name, type);
       await newProperty.fromJSON(structProps);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.CreateStructArrayPropertyFromProps, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -227,7 +227,7 @@ export class ECClasses extends SchemaItems{
     try {
       const mutableClass = await this.getClass(classKey);
       await mutableClass.deleteProperty(name);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.DeleteProperty, new PropertyId(this.schemaItemType, classKey, name), e);
     }
   }
@@ -240,7 +240,7 @@ export class ECClasses extends SchemaItems{
         return;
 
       await schema.deleteClass(ecClass.name);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.DeleteClass, new ClassId(this.schemaItemType, classKey), e);
     }
   }
@@ -266,7 +266,7 @@ export class ECClasses extends SchemaItems{
         this.removeCustomAttribute(mutableClass, customAttribute);
         throw new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, mutableClass), undefined, diagnostics);
       }
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.AddCustomAttributeToClass, new ClassId(this.schemaItemType, classKey), e);
     }
   }
@@ -306,14 +306,14 @@ export class ECClasses extends SchemaItems{
       }
 
       // Create change info object to allow for edit cancelling
-      const changeInfo = new SetBaseClassChange(this.schemaEditor, elements, ClassId.fromECClass(classItem)!, ClassId.fromECClass(baseClassItem), ClassId.fromECClass(await classItem.baseClass));
+      const changeInfo = new SetBaseClassChange(this.schemaEditor, classItem, baseClassItem, await classItem.baseClass, elements);
 
       // Callback returns false to cancel the edit.
       if (!(await changeInfo.beginChange()))
         return;
 
       classItem.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(SchemaEditType.SetBaseClass, new ClassId(this.schemaItemType, itemKey), e);
     }
   }
@@ -329,7 +329,7 @@ export class ECClasses extends SchemaItems{
 
       if (baseProperty.propertyType !== derivedProperty.propertyType) {
         throw new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.schemaItemType, derivedClass.key, derivedProperty), undefined, undefined,
-        `Found property '${derivedProperty.fullName}' of type '${Properties.propertyTypeToString(derivedProperty)}' which is not compatible with the base property '${baseProperty.fullName}' of type '${Properties.propertyTypeToString(baseProperty)}'.`);
+          `Found property '${derivedProperty.fullName}' of type '${Properties.propertyTypeToString(derivedProperty)}' which is not compatible with the base property '${baseProperty.fullName}' of type '${Properties.propertyTypeToString(baseProperty)}'.`);
       }
     }
   }
@@ -374,7 +374,7 @@ export class ECClasses extends SchemaItems{
     map.delete(customAttribute.className);
   }
 
-  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
+  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>> {
     const derivedClasses: Array<MutableClass> = [];
     const schemaItems = this.schemaEditor.schemaContext.getSchemaItems();
     let { value, done } = schemaItems.next();

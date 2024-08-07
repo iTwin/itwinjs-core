@@ -4,7 +4,7 @@ import { RelationshipClass, RelationshipConstraint, RelationshipEnd, Schema, Sch
 import { ECEditingStatus, SchemaEditingError } from "../../Editing/Exception";
 import { AnyDiagnostic, Diagnostics } from "../../ecschema-editing";
 import { ClassId, PropertyId, RelationshipConstraintId, SchemaId, SchemaItemId } from "../../Editing/SchemaItemIdentifiers";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
   let violations = "";

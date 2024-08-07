@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ECVersion, Phenomenon, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 // TODO: Must add phenomenon and Unit system tests before you can do this.
 describe("Phenomenons tests", () => {

@@ -1,8 +1,7 @@
 import { SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editor";
 import { ChangeOptionProps, ChangeOptions } from "./ChangeOptions";
-import { RenamePropertyChange } from "./RenamePropertyChange";
-import { SchemaEditType } from "../SchmaEditType";
+import { SchemaEditType } from "../SchemaEditType";
 
 
 export type SchemaChangeRevertCallback = <T extends ISchemaEditChangeInfo>(changeInfo: T) => Promise<void>;
@@ -16,7 +15,7 @@ export interface ISchemaEditChangeProps {
 
 export interface ISchemaEditChangeInfo {
   readonly contextEditor: SchemaContextEditor;
-  readonly changeOptions: ChangeOptions;
+  readonly changeOptions?: ChangeOptions;
   readonly editType: SchemaEditType;
   readonly schemaItemType: SchemaItemType;
   set sequence(value: number)
@@ -29,11 +28,11 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
 
   public abstract readonly editType: SchemaEditType;
   public readonly contextEditor: SchemaContextEditor;
-  public readonly changeOptions: ChangeOptions;
+  public readonly changeOptions?: ChangeOptions;
   public readonly schemaItemType: SchemaItemType;
   protected readonly revertCallback?: SchemaChangeRevertCallback;
 
-  constructor(contextEditor: SchemaContextEditor, changeOptions: ChangeOptions, schemaItemType: SchemaItemType, revertCallback?: SchemaChangeRevertCallback) {
+  constructor(contextEditor: SchemaContextEditor, schemaItemType: SchemaItemType, changeOptions?: ChangeOptions, revertCallback?: SchemaChangeRevertCallback) {
     this.contextEditor = contextEditor;
     this.changeOptions = changeOptions;
     this.schemaItemType = schemaItemType;
@@ -51,15 +50,16 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
   }
 
   public get isLocalChange(): boolean {
-    return this.changeOptions.localChange;
+
+    return this.changeOptions ? this.changeOptions.localChange : false;
   }
 
   public get changeBase(): boolean {
-    return this.changeOptions.changeBase;
+    return this.changeOptions ? this.changeOptions.changeBase : false;
   }
 
   public get changeDerived(): boolean {
-    return this.changeOptions.changeDerived;
+    return this.changeOptions ? this.changeOptions.changeDerived: false;
   }
 
   public async revertChange(): Promise<void> {
@@ -76,7 +76,7 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
 
   public async beginChange(): Promise<boolean> {
     // Edit continues if no callback is available
-    if (!this.changeOptions.beginChangeCallback)
+    if (!this.changeOptions || !this.changeOptions.beginChangeCallback)
       return true;
 
     const startEdit = await this.changeOptions.beginChangeCallback(this);

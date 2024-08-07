@@ -1,10 +1,10 @@
-import { Property } from "@itwin/ecschema-metadata";
+import { ECClass, Property } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editor";
 import { ECElementSelection } from "../ECElementSelection";
 import { ISchemaEditChangeInfo, ISchemaEditChangeProps, SchemaChangeRevertCallback, SchemaEditChangeBase } from "./ChangeInfo";
 import { ChangeOptions } from "./ChangeOptions";
 import { ClassId, PropertyId } from "../SchemaItemIdentifiers";
-import { SchemaEditType } from "../SchmaEditType";
+import { SchemaEditType } from "../SchemaEditType";
 
 export interface RenamePropertyChangeProps extends ISchemaEditChangeProps {
   readonly newPropertyName: string;
@@ -27,16 +27,14 @@ export class RenamePropertyChange extends SchemaEditChangeBase {
   public readonly baseProperties?: PropertyId[];
   public readonly derivedProperties?: PropertyId[];
 
-  constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, modifiedClass: ClassId, newPropertyName: string, oldPropertyName: string, revertCallback?: SchemaChangeRevertCallback);
-  constructor(contextEditor: SchemaContextEditor, changeOptions: ChangeOptions, modifiedClass: ClassId, newPropertyName: string, oldPropertyName: string, revertCallback?: SchemaChangeRevertCallback);
-  constructor(contextEditor: SchemaContextEditor, selectedElementsOrOptions: ECElementSelection | ChangeOptions, modifiedClass: ClassId, newPropertyName: string, oldPropertyName: string, revertCallback?: SchemaChangeRevertCallback) {
-    super(contextEditor, getChangeOptions(selectedElementsOrOptions), modifiedClass.schemaItemType, revertCallback);
-    this.modifiedClass = modifiedClass;
+  constructor(contextEditor: SchemaContextEditor, modifiedClass: ECClass, newPropertyName: string, oldPropertyName: string, selectedElements: ECElementSelection, revertCallback?: SchemaChangeRevertCallback) {
+    super(contextEditor, modifiedClass.schemaItemType, selectedElements.options, revertCallback);
+    this.modifiedClass = ClassId.fromECClass(modifiedClass);
     this.newPropertyName = newPropertyName;
     this.oldPropertyName = oldPropertyName;
-    if (!ChangeOptions.isChangeOptions(selectedElementsOrOptions)) {
-      this.baseProperties = this.getPropertyIds(selectedElementsOrOptions.gatheredBaseProperties);
-      this.derivedProperties = this.getPropertyIds(selectedElementsOrOptions.gatheredDerivedProperties);
+    if (!ChangeOptions.isChangeOptions(selectedElements)) {
+      this.baseProperties = this.getPropertyIds(selectedElements.gatheredBaseProperties);
+      this.derivedProperties = this.getPropertyIds(selectedElements.gatheredDerivedProperties);
     }
   }
 

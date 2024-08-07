@@ -11,7 +11,7 @@ import {
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { SchemaEditType } from "../../Editing/SchmaEditType";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
