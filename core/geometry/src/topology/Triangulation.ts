@@ -158,35 +158,34 @@ export class Triangulator {
    * Create a graph from an xy-triangulation of the given points.
    * * The outer boundary of the graph is the xy-convex hull of the points; it is marked `HalfEdgeMask.EXTERIOR`.
    * @param points the points to triangulate
-   * @param zOptions optional rule for setting the z-coordinate of each new interior vertex inserted into the graph.
-   * Default is `InsertedVertexZOptions.ReplaceIfLarger`.
-   * @param tolerance optional xy-distance tolerance for equating vertices. Default `Geometry.smallMetricDistance`.
+   * @param zRule optional rule for updating the z-coordinate of an existing vertex when an xy-duplicate point is
+   * inserted into the graph. Default is `InsertedVertexZOptions.ReplaceIfLarger`.
+   * @param pointTolerance optional xy-distance tolerance for equating vertices. Default is
+   * `Geometry.smallMetricDistance`.
    */
   public static createTriangulatedGraphFromPoints(
     points: Point3d[],
-    zOptions: InsertedVertexZOptions = InsertedVertexZOptions.ReplaceIfLarger,
-    tolerance: number = Geometry.smallMetricDistance,
+    zRule: InsertedVertexZOptions = InsertedVertexZOptions.ReplaceIfLarger,
+    pointTolerance: number = Geometry.smallMetricDistance,
   ): HalfEdgeGraph | undefined {
     if (points.length < 3)
       return undefined;
     const hull: Point3d[] = [];
     const interior: Point3d[] = [];
     Point3dArray.computeConvexHullXY(points, hull, interior, true);
-    let graph = new HalfEdgeGraph();
-    const context = InsertAndRetriangulateContext.create(graph, tolerance);
-    Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
+    const graph = new HalfEdgeGraph();
+    const context = InsertAndRetriangulateContext.create(graph, pointTolerance);
+    const face0 = Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
+    if (undefined === face0)
+      return undefined;
     // HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
     let numInsert = 0;
-    if (interior.length === 0) {
-      const triangulatedGraph = Triangulator.createTriangulatedGraphFromSingleLoop(hull);
-      if (triangulatedGraph)
-        graph = triangulatedGraph;
-    } else {
-      for (const p of interior) {
-        context.insertAndRetriangulate(p, zOptions);
-        numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
-      }
+    for (const p of interior) {
+      context.insertAndRetriangulate(p, zRule);
+      numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
     }
+    if (face0.countEdgesAroundFace() > 3) // all vertices are on the hull (or duplicates of them)
+      return Triangulator.createTriangulatedGraphFromSingleLoop(hull);
     return graph;
   }
   /**
@@ -441,7 +440,7 @@ export class Triangulator {
    * * This applies the masks used by typical applications:
    *   * HalfEdgeMask.BOUNDARY on both sides.
    *   * HalfEdgeMask.PRIMARY_EDGE on both sides.
-   * * Use `createFaceLoopFromCoordinatesAndMasks` for detail control of masks.
+   * * Use [[createFaceLoopFromCoordinatesAndMasks]] for detailed control of masks.
    */
   public static createFaceLoopFromCoordinates(
     graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean,
