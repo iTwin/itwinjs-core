@@ -193,7 +193,7 @@ export function parseFormatTrait(formatTraitsString: string, formatName: string)
     case "prependunitlabel": return FormatTraits.PrependUnitLabel;
     case "use1000separator": return FormatTraits.Use1000Separator;
     case "exponentonlynegative": return FormatTraits.ExponentOnlyNegative;
-    case "counterClockwiseAngle": return FormatTraits.CounterClockwiseAngle;
+    case "counterclockwiseangle": return FormatTraits.CounterClockwiseAngle;
     default:
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'formatTraits' attribute.`);
   }
