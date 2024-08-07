@@ -175,9 +175,9 @@ export class PropertyMetaData implements PropertyMetaDataProps {
   public minimumValue?: any;
   /** For primitive properties, an optional constraint on the maximum value permitted to be assigned to it. */
   public maximumValue?: any;
-  /** For a string or binary property, an optional constraint on the minimum number of characters of bytes, respectively. */
+  /** For a string or binary property, an optional constraint on the minimum number of characters or bytes, respectively. */
   public minimumLength?: number;
-  /** For a string or binary property, an optional constraint on the maximum number of characters of bytes, respectively. */
+  /** For a string or binary property, an optional constraint on the maximum number of characters or bytes, respectively. */
   public maximumLength?: number;
   /** If true, the value of the property cannot be changed. */
   public readOnly?: boolean;
