@@ -74,7 +74,7 @@ export class Properties {
       if (baseProperty.propertyType !== existingProperty.propertyType) {
         throw new SchemaEditingError(SchemaEditType.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
           new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.ecClassType, baseProperty.class.key, newPropertyName), undefined, undefined,
-            `Found base Property '${baseProperty.name}' of type '${this.propertyTypeToString(baseProperty)}' which is not compatible with type '${this.propertyTypeToString(existingProperty)}'`));
+            `Found base Property '${baseProperty.name}' of type '${Properties.propertyTypeToString(baseProperty)}' which is not compatible with type '${Properties.propertyTypeToString(existingProperty)}'`));
       }
 
       overridingBaseProperty = true;
@@ -213,7 +213,7 @@ export class Properties {
     }
   }
 
-  public propertyTypeToString(property: Property) {
+  public static propertyTypeToString(property: Property) {
     let typeName = "";
 
     if (property.isPrimitive()) {
@@ -333,12 +333,14 @@ export class Properties {
         if (baseProperty.propertyType !== derivedProperty.propertyType) {
           throw new SchemaEditingError(SchemaEditType.SetPropertyName, new PropertyId(this.ecClassType, baseClass.key, baseProperty),
             new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.ecClassType, derivedClass.key, derivedProperty), undefined, undefined,
-              `Found derived Property '${derivedProperty.fullName}' of type '${this.propertyTypeToString(derivedProperty)}' which is not compatible with type '${this.propertyTypeToString(baseProperty)}'`));
+              `Found derived Property '${derivedProperty.fullName}' of type '${Properties.propertyTypeToString(derivedProperty)}' which is not compatible with type '${Properties.propertyTypeToString(baseProperty)}'`));
         }
       }
     }
   }
 }
+
+
 
 /**
  * @alpha

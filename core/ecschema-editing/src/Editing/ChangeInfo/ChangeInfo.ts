@@ -24,8 +24,6 @@ export interface ISchemaEditChangeInfo {
   revertChange(): Promise<void>;
 }
 
-export type SchemaEditChange = RenamePropertyChange;
-
 export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
   private _sequence: number = -1;
 

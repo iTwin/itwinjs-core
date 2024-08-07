@@ -25,6 +25,9 @@ import { CreateSchemaItem, SchemaItems } from "./SchemaItems";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { PropertyId, SchemaItemId, ClassId, CustomAttributeId } from "./SchemaItemIdentifiers";
 import { SchemaEditType } from "./SchmaEditType";
+import { ECElementSelection } from "./ECElementSelection";
+import { ChangeOptions } from "./ChangeInfo/ChangeOptions";
+import { SetBaseClassChange } from "./ChangeInfo/SetBaseClassChange";
 
 export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
 
@@ -273,7 +276,7 @@ export class ECClasses extends SchemaItems{
    * @param itemKey The SchemaItemKey of the Item.
    * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
    */
-  public async setBaseClass(itemKey: SchemaItemKey, baseClassKey: SchemaItemKey | undefined): Promise<void> {
+  public async setBaseClass(itemKey: SchemaItemKey, baseClassKey: SchemaItemKey | undefined, options: ChangeOptions = ChangeOptions.default): Promise<void> {
 
     try {
       const classItem = await this.getSchemaItem<ECClass>(itemKey);
@@ -285,13 +288,63 @@ export class ECClasses extends SchemaItems{
 
       const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : classItem.schema as MutableSchema;
       const baseClassItem = await this.lookupSchemaItem<ECClass>(baseClassSchema, baseClassKey);
+
       if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
-        throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
+        throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClassItem.key), undefined, undefined, `Base class ${baseClassItem.key.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
+
+      await this.checkForBaseClassCycles(classItem, baseClassItem);
+      await this.validateBaseClass(baseClassItem, classItem);
+      for await (const baseClass of baseClassItem.getAllBaseClasses()) {
+        await this.validateBaseClass(baseClass, classItem);
+      }
+
+      const elements = new ECElementSelection(this.schemaEditor, classItem.schema, classItem, undefined, options);
+      await ECElementSelection.gatherClassesAndPropertyOverrides(classItem, elements);
+
+      for (const derivedClassEntry of elements.gatheredDerivedClasses) {
+        await this.validateBaseClass(baseClassItem, derivedClassEntry[1]);
+      }
+
+      // Create change info object to allow for edit cancelling
+      const changeInfo = new SetBaseClassChange(this.schemaEditor, elements, ClassId.fromECClass(classItem)!, ClassId.fromECClass(baseClassItem), ClassId.fromECClass(await classItem.baseClass));
+
+      // Callback returns false to cancel the edit.
+      if (!(await changeInfo.beginChange()))
+        return;
 
       classItem.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem);
     } catch(e: any) {
       throw new SchemaEditingError(SchemaEditType.SetBaseClass, new ClassId(this.schemaItemType, itemKey), e);
     }
+  }
+
+  private async validateBaseClass(baseClass: ECClass, derivedClass: ECClass) {
+    if (!baseClass.properties)
+      return;
+
+    for (const baseProperty of baseClass.properties) {
+      const derivedProperty = await derivedClass.getProperty(baseProperty.name, false);
+      if (undefined === derivedProperty)
+        continue;
+
+      if (baseProperty.propertyType !== derivedProperty.propertyType) {
+        throw new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.schemaItemType, derivedClass.key, derivedProperty), undefined, undefined,
+        `Found property '${derivedProperty.fullName}' of type '${Properties.propertyTypeToString(derivedProperty)}' which is not compatible with the base property '${baseProperty.fullName}' of type '${Properties.propertyTypeToString(baseProperty)}'.`);
+      }
+    }
+  }
+
+  private async checkForBaseClassCycles(ecClass: ECClass, baseClass: ECClass): Promise<boolean> {
+    if (baseClass.key.matches(ecClass.key))
+      throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClass.key), undefined, undefined, `The class ${ecClass.key.fullName} cannot derive from itself.`);
+
+    if (!baseClass.baseClass)
+      return false;
+
+    if (baseClass.baseClass.matches(ecClass.key))
+      throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClass.key), undefined, undefined, `Base class ${baseClass.fullName} derives from ${ecClass.fullName}.`);
+
+    return this.checkForBaseClassCycles(ecClass, await baseClass.baseClass);
   }
 
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {

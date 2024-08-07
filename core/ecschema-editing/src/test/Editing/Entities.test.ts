@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import {
-  ECClassModifier, ECVersion, EntityClass, EntityClassProps, NavigationProperty, NavigationPropertyProps, RelationshipClass, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection, StrengthType,
+  ECClassModifier, ECVersion, EntityClass, EntityClassProps, NavigationProperty, NavigationPropertyProps, PrimitiveType, RelationshipClass, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
@@ -303,6 +303,70 @@ describe("Entities tests", () => {
       expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Base class ${newBaseClassRes.fullName} must derive from ${baseClassRes.fullName}.`);
       expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidBaseClass);
+    });
+  });
+
+  it("try changing the entity base class that creates a cycle, returns error", async () => {
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
+    const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel", entityRes);
+    const baseClass2Res = await testEditor.entities.create(testKey, "testBaseClass2", ECClassModifier.None, "testLabel", baseClassRes);
+
+    await expect(testEditor.entities.setBaseClass(entityRes, baseClass2Res)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `Base class ${baseClassRes.fullName} derives from ${entityRes.fullName}.`);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidBaseClass);
+    });
+  });
+
+  it("try changing the entity base class to itself, returns error", async () => {
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
+
+    await expect(testEditor.entities.setBaseClass(entityRes, entityRes)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `The class ${entityRes.fullName} cannot derive from itself.`);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidBaseClass);
+    });
+  });
+
+  it("try setting the entity base class that contains an incompatible property type with class, returns error", async () => {
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
+    const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel");
+    await testEditor.entities.createPrimitiveProperty(baseClassRes, "TestProp", PrimitiveType.Boolean);
+    await testEditor.entities.createPrimitiveProperty(entityRes, "TestProp", PrimitiveType.DateTime);
+
+    await expect(testEditor.entities.setBaseClass(entityRes, baseClassRes)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `Found property 'testEntity.TestProp' of type 'dateTime' which is not compatible with the base property 'testBaseClass.TestProp' of type 'boolean'.`);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidPropertyType);
+    });
+  });
+
+  it("try setting base class that contains, through inheritance, an incompatible property type with the entity class (grandchild), returns error", async () => {
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
+    const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel");
+    const baseClass2Res = await testEditor.entities.create(testKey, "testBaseClass2", ECClassModifier.None, "testLabel", baseClassRes);
+    await testEditor.entities.createPrimitiveProperty(baseClassRes, "TestProp", PrimitiveType.Boolean);
+    await testEditor.entities.createPrimitiveProperty(entityRes, "TestProp", PrimitiveType.DateTime);
+
+    await expect(testEditor.entities.setBaseClass(entityRes, baseClass2Res)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `Found property 'testEntity.TestProp' of type 'dateTime' which is not compatible with the base property 'testBaseClass.TestProp' of type 'boolean'.`);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidBaseClass);
+    });
+  });
+
+  it("try setting the entity base class containing incompatible property type with a derived class, returns error", async () => {
+    const entityRes = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel");
+    const testDerivedClassRes = await testEditor.entities.create(testKey, "testDerivedClass", ECClassModifier.None, "testLabel", entityRes);
+    const baseClassRes = await testEditor.entities.create(testKey, "testBaseClass", ECClassModifier.None, "testLabel");
+
+    await testEditor.entities.createPrimitiveProperty(baseClassRes, "TestProp", PrimitiveType.Boolean);
+    await testEditor.entities.createPrimitiveProperty(testDerivedClassRes, "TestProp", PrimitiveType.DateTime);
+
+    await expect(testEditor.entities.setBaseClass(entityRes, baseClassRes)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("schemaEditType", SchemaEditType.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `Found property 'testDerivedClass.TestProp' of type 'dateTime' which is not compatible with the base property 'testBaseClass.TestProp' of type 'boolean'.`);
+      expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidPropertyType);
     });
   });
 

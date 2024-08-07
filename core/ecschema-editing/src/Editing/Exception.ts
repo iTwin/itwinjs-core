@@ -120,7 +120,7 @@ export class SchemaEditingError extends Error {
       else
         innerMessage = ` Inner error: ${this.innerError.message}`;
     }
-    const statusText = this.schemaEditType ? `SchemaEditType.${this.schemaEditType}: ECEditingStatus.${this.errorStatus}` : `ECEditingStatus.${this.errorStatus}`;
+    const statusText = this.schemaEditType ? `SchemaEditType.${this.schemaEditType}` : `ECEditingStatus.${this.errorStatus}`;
     return this._appendMessage(`${statusText}`) + innerMessage;
   }
 

@@ -1,4 +1,4 @@
-import { SchemaItemType, SchemaKey, SchemaItemKey, Property, AnyEnumerator, Enumeration, primitiveTypeToString, PrimitiveType, CustomAttributeContainerProps, RelationshipConstraint } from "@itwin/ecschema-metadata";
+import { SchemaItemType, SchemaKey, SchemaItemKey, Property, AnyEnumerator, Enumeration, primitiveTypeToString, PrimitiveType, CustomAttributeContainerProps, RelationshipConstraint, ECClass } from "@itwin/ecschema-metadata";
 
 /**
  * Defines the possible property type names.
@@ -274,6 +274,12 @@ export class ClassId extends SchemaItemId implements IClassIdentifier {
   constructor(schemaItemType: ECClassSchemaItems, schemaItemKeyOrName: SchemaItemKey | string, schemaKey?: SchemaKey) {
     super(schemaItemType, schemaItemKeyOrName, schemaKey);
     this.schemaItemType = schemaItemType;
+  }
+
+  public static fromECClass(ecClass: ECClass | undefined): ClassId | undefined{
+    if (!ecClass)
+      return undefined;
+    return new ClassId(ecClass.schemaItemType as ECClassSchemaItems, ecClass.key);
   }
 }
 
