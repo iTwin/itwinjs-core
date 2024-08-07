@@ -179,15 +179,15 @@ export class Formatter {
     let componentText = "";
     if (!isLastPart) {
       componentText = Formatter.integerPartToText(compositeValue, spec);
+      if(spec.format.minWidth) { // integerPartToText does not do this padding
+        componentText = this.countAndPad(componentText, spec.format.minWidth);
+      }
     } else {
       componentText = Formatter.formatMagnitude(compositeValue, spec);
     }
 
     if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
       componentText = componentText + spec.format.uomSeparator + label;
-    } else {
-      if (!isLastPart)
-        componentText = `${componentText}:`;
     }
 
     return componentText;
@@ -232,7 +232,7 @@ export class Formatter {
       }
     }
 
-    return compositeStrings.join(spec.format.spacer ? spec.format.spacer : "");
+    return compositeStrings.join((spec.format.spacer !== undefined) ? spec.format.spacer : " ");
   }
 
   /** Format a quantity value into a single text string. Imitate how formatting done by server method NumericFormatSpec::FormatDouble.
@@ -355,7 +355,22 @@ export class Formatter {
         formattedValue = stationString + fractionString;
       }
     }
+
+    if(spec.format.minWidth) {
+      formattedValue = this.countAndPad(formattedValue, spec.format.minWidth);
+    }
+
     return formattedValue;
+  }
+
+  private static countAndPad(value: string, minWidth: number): string {
+    const regex = /[\d,.]/g;
+    const matches = value.match(regex);
+    const count = matches ? matches.length : 0;
+    if (count < minWidth) {
+      value = value.padStart(minWidth, "0");
+    }
+    return value;
   }
 
   /** Format a quantity value into a single text string based on the current format specification of this class.
@@ -420,9 +435,6 @@ export class Formatter {
       formattedValue = prefix + formattedMagnitude + suffix;
     else
       formattedValue = formattedMagnitude;
-
-    if (spec.format.minWidth && spec.format.minWidth < formattedValue.length)
-      formattedValue.padStart(spec.format.minWidth, " ");
 
     return formattedValue;
   }

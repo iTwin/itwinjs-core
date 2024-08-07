@@ -18,10 +18,9 @@ describe("Bearing direction tests:", () => {
       minWidth: 2,
       precision: 0,
       type: "Bearing",
-      formatTraits: [""],
       composite: {
         includeZero: true,
-        separator: ":",
+        spacer: ":",
         units: [
           { name: "Units.ARC_DEG" },
           { name: "Units.ARC_MINUTE" },
@@ -35,9 +34,9 @@ describe("Bearing direction tests:", () => {
       precision: 0,
       type: "Bearing",
       formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
       composite: {
         includeZero: true,
-        separator: "",
         spacer: "",
         units: [
           { name: "Units.ARC_DEG", label: "°" },
@@ -52,6 +51,7 @@ describe("Bearing direction tests:", () => {
       minWidth: 6,
       precision: 3,
       type: "Bearing",
+      uomSeparator: "",
       composite: {
         includeZero: true,
         spacer: "",
