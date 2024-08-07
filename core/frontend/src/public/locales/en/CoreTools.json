@@ -230,6 +230,16 @@
       "flyover": "Select Elements"
     },
     "AccuDraw": {
+      "SessionToggle": {
+        "keyin": "accudraw session toggle",
+        "description": "Disable/Enable AccuDraw for session",
+        "flyover": "Disable/Enable"
+      },
+      "SuspendToggle": {
+        "keyin": "accudraw suspend toggle",
+        "description": "Suspend/Unsuspend AccuDraw for current tool",
+        "flyover": "Suspend/Unsuspend"
+      },
       "SetOrigin": {
         "keyin": "accudraw set origin",
         "description": "Set AccuDraw origin",
@@ -239,6 +249,11 @@
         "keyin": "accudraw lock smart",
         "description": "Set AccuDraw locks based off current state",
         "flyover": "Smart Lock"
+      },
+      "LockIndex": {
+        "keyin": "accudraw lock index",
+        "description": "Set AccuDraw indexing based off current state",
+        "flyover": "Lock Index"
       },
       "LockX": {
         "keyin": "accudraw lock x",
