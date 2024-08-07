@@ -39,7 +39,7 @@ export class ParserSpec {
    * async calls to lookup unit definitions.
    *  @param format     The format specification.
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
-   *  @param outUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
+   *  @param outUnit The unit a value will be formatted to. This unit is often referred to as persistence unit.
    */
   public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec> {
     const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit, altUnitLabelsProvider);

@@ -21,7 +21,7 @@ There are nine built-in quantity types (see [QuantityType]($frontend)). The Quan
 
 #### Overriding Default Formats
 
-The `QuantityFormat` provides the method `setOverrideFormats` which allows the default format to be overridden.  These overrides may be persisted by implementing the [UnitFormattingSettingsProvider]($frontend) interface in the QuantityFormatter. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be used store settings to local storage and to maintain overrides by iModel as shown below:
+The `QuantityFormatter` provides the method `setOverrideFormats` which allows the default format to be overridden.  These overrides may be persisted by implementing the [UnitFormattingSettingsProvider]($frontend) interface in the QuantityFormatter. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be used to store settings in local storage and to maintain overrides by iModel as shown below:
 
 ```ts
     await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true));
@@ -46,7 +46,7 @@ A units provider is used to define all available units and provides conversion f
 
 ```ts
     const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
+    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(schemaLocater));
 ```
 
 If errors occur while configuring the units provider, they are caught within the [QuantityFormatter.setUnitsProvider]($frontend) method, and the code reverts back to the [BasicUnitsProvider] described above.
@@ -226,7 +226,7 @@ Below are a couple examples of formatting values using methods directly from the
 
     // create the formatter spec - the name is not used by the formatter it is only
     // provided so user can cache formatter spec and then retrieve spec via its name.
-    const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
 
     // apply the formatting held in FormatterSpec
     const formattedValue = spec.applyFormatting(magnitude);
@@ -275,7 +275,7 @@ The composite format below we will provide a unit in meters and produce a format
 
     // create the formatter spec - the name is not used by the formatter it is only
     // provided so user can cache formatter spec and then retrieve spec via its name.
-    const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
 
     // apply the formatting held in FormatterSpec
     const formattedValue = spec.applyFormatting(magnitude);
@@ -321,16 +321,17 @@ The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
 ```Typescript
+
 // Operation containing many units (feet, inches, yards).
 const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
 
 // Asynchronous implementation
 const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
-quantityProps.magnitude // 7.5 (feet)
+// quantityProps.magnitude 7.5 (value in feet)
 
 // Synchronous implementation
 const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
-parseResult.value // 7.5 (feet)
+// parseResult.value 7.5 (value in feet)
 ```
 
 #### Limitations
@@ -350,4 +351,3 @@ To enable it, you can override the default QuantityFormatter. Ex :
   // Override the formatter and enable mathematical operations.
   await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicOperations: true });
 ```
-
