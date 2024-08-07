@@ -11,7 +11,7 @@ import { FormatProps, UnitProps } from "../core-quantity";
 
 describe("Bearing direction tests:", () => {
 
-  it.only("Format radian angle as bearing", async () => {
+  it.only("Format radian", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const bearingDMSJson: FormatProps = {
@@ -117,8 +117,92 @@ describe("Bearing direction tests:", () => {
 
       const resultBearingDecimal = Formatter.formatQuantity(radians, bearingDecimalFormatter);
       expect(resultBearingDecimal).to.be.eql(entry.decimal);
-      // eslint-disable-next-line no-console
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+    }
+  });
+});
+
+describe("Azimuth direction tests:", () => {
+
+  it.only("Format radian", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const azimuthDMSJson: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Azimuth",
+      composite: {
+        includeZero: true,
+        spacer: ":",
+        units: [
+          { name: "Units.ARC_DEG" },
+          { name: "Units.ARC_MINUTE" },
+          { name: "Units.ARC_SECOND" },
+        ],
+      },
+    };
+
+    const azimuthDecimalJson: FormatProps = {
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      minWidth: 6,
+      precision: 3,
+      type: "Azimuth",
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+        ],
+      },
+    };
+
+    const azimuthDMS = new Format("BearingDMS");
+    await azimuthDMS.fromJSON(unitsProvider, azimuthDMSJson).catch(() => { });
+    assert.isTrue(azimuthDMS.hasUnits);
+
+    const azimuthDecimal = new Format("BearingDecimal");
+    await azimuthDecimal.fromJSON(unitsProvider, azimuthDecimalJson).catch(() => { });
+    assert.isTrue(azimuthDecimal.hasUnits);
+
+    const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");
+    assert.isTrue(rad.isValid);
+    const azimuthDMSFormatter = await FormatterSpec.create("RadToBearingDMS", azimuthDMS, unitsProvider, rad);
+    const azimuthDecimalFormatter = await FormatterSpec.create("RadToBearingDecimal", azimuthDecimal, unitsProvider, rad);
+
+    interface TestData {
+      input: number;
+      unit: UnitProps;
+      dms: string;
+      decimal: string;
+    }
+
+    const degreesToRadians = (degrees: number): number => degrees * (Math.PI / 180);
+    const testData: TestData[] = [
+      { input: 0.0,      unit: rad, dms: "00:00:00", decimal: "00.000°"},
+      { input: 5.0,      unit: rad, dms: "05:00:00", decimal: "05.000°"},
+      { input: 45.0,     unit: rad, dms: "45:00:00", decimal: "45.000°"},
+      { input: 45.5028,  unit: rad, dms: "45:30:10", decimal: "45.503°"},
+      { input: 90.0,     unit: rad, dms: "90:00:00", decimal: "90.000°"},
+      { input: 135.0,    unit: rad, dms: "135:00:00", decimal: "135.000°"},
+      { input: 180.0,    unit: rad, dms: "180:00:00", decimal: "180.000°"},
+      { input: 225.0,    unit: rad, dms: "225:00:00", decimal: "225.000°"},
+      { input: 234.4972, unit: rad, dms: "234:29:50", decimal: "234.497°"},
+      { input: 270.0,    unit: rad, dms: "270:00:00", decimal: "270.000°"},
+      { input: 315.0,    unit: rad, dms: "315:00:00", decimal: "315.000°"},
+      { input: 360.0,    unit: rad, dms: "00:00:00", decimal: "00.000°"},
+      { input: 412.0,    unit: rad, dms: "52:00:00", decimal: "52.000°"},
+      { input: 470.0,    unit: rad, dms: "110:00:00", decimal: "110.000°"},
+      { input: 580.0,    unit: rad, dms: "220:00:00", decimal: "220.000°"},
+      { input: 640.0,    unit: rad, dms: "280:00:00", decimal: "280.000°"},
+    ];
+
+    for (const entry of testData) {
+      const radians = degreesToRadians(entry.input);
+      const resultBearingDMS = Formatter.formatQuantity(radians, azimuthDMSFormatter);
+      expect(resultBearingDMS).to.be.eql(entry.dms);
+
+      const resultBearingDecimal = Formatter.formatQuantity(radians, azimuthDecimalFormatter);
+      expect(resultBearingDecimal).to.be.eql(entry.decimal);
     }
   });
 });
