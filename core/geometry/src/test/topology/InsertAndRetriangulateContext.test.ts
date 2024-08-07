@@ -134,12 +134,12 @@ describe("InsertAndRetriangulateContext", () => {
       showPosition(allGeometry, oldPosition, position, aa, x0, y0, z1);
     }
     oldPosition.resetAsUnknown();
-    context.resetSearch(Point3d.create(1.5, 0.5), 0);
+    context.resetSearch(Point3d.create(1.5, 0.5), false);
     ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to vertex");
-    context.resetSearch(Point3d.create(1.5, 0.5), 1);
+    context.resetSearch(Point3d.create(1.5, 0.5), true);
     ck.testExactNumber(HalfEdgeTopo.Edge, context.currentPosition.getTopo(), "Reset to edge search");
     // hit the "vertex sector" case. ..
-    context.resetSearch(Point3d.create(-0.5, -0.5), 1);
+    context.resetSearch(Point3d.create(-0.5, -0.5), true);
     ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to edge search");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "moveTo");

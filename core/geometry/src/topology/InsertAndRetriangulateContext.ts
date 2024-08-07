@@ -6,8 +6,10 @@
  * @module Topology
  */
 
-import { Geometry } from "../Geometry";
+import { assert } from "@itwin/core-bentley";
+import { Geometry, PolygonLocation } from "../Geometry";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { SmallSystem } from "../numerics/Polynomials";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
@@ -39,7 +41,8 @@ export enum InsertedVertexZOptions {
 
 /**
  * Context for repeated insertion of new points in a graph.
- * * Initial graph should have clean outer boundary (e.g., as typically marked with `HalfEdgeMask.EXTERIOR`).
+ * * Initial graph should have clean outer boundary (e.g., as typically marked with `HalfEdgeMask.EXTERIOR` and
+ * `HalfEdgeMask.BOUNDARY_EDGE`).
  * * After each insertion, the current "position" within the graph is remembered so that each subsequent insertion
  * can reuse that position as start for walking to the new point.
  * @internal
@@ -70,9 +73,9 @@ export class InsertAndRetriangulateContext {
    */
   private retriangulateFromBaseVertex(centralNode: HalfEdge) {
     const numNode = centralNode.countEdgesAroundFace();
-    this._edgeSet.addAroundFace(centralNode);
-    if (numNode < 4 || centralNode.signedFaceArea() <= 0.0)
+    if (numNode < 4 || centralNode.isMaskSet(HalfEdgeMask.EXTERIOR))
       return;
+    this._edgeSet.addAroundFace(centralNode);
     const numEdge = numNode - 3;
     let farNode = centralNode.faceSuccessor;
     let nearNode = centralNode;
@@ -91,10 +94,7 @@ export class InsertAndRetriangulateContext {
   public get currentPosition() {
     return this._searcher;
   }
-  /**
-   * Linear search through the graph.
-   * * Returns a HalfEdgePositionDetail for the nearest edge or vertex.
-   */
+  /** Linear search for the nearest graph edge or vertex. */
   public searchForNearestEdgeOrVertex(xyz: Point3d): HalfEdgePositionDetail {
     const position = HalfEdgePositionDetail.create();
     position.setDTag(Number.MAX_VALUE);
@@ -129,6 +129,7 @@ export class InsertAndRetriangulateContext {
     }
     return position;
   }
+  /** Linear search for the nearest graph vertex. */
   public searchForNearestVertex(xyz: Point3d): HalfEdgePositionDetail {
     const position = HalfEdgePositionDetail.create();
     position.setDTag(Number.MAX_VALUE);
@@ -142,12 +143,86 @@ export class InsertAndRetriangulateContext {
     }
     return position;
   }
-  public resetSearch(xyz: Point3d, maxDim: number): void {
-    if (maxDim > 0)
+  /**
+   * Reset the "current" position to a vertex nearest the target point.
+   * @param xyz target point
+   * @param searchEdgesToo reset to nearest vertex or edge
+  */
+  public resetSearch(xyz: Point3d, searchEdgesToo: boolean): void {
+    if (searchEdgesToo)
       this._searcher = this.searchForNearestEdgeOrVertex(xyz);
     else
       this._searcher = this.searchForNearestVertex(xyz);
   }
+
+  /** Reclassify the current interior face hit if it is too close to an edge of the face. */
+  private reclassifyFaceHit(point: Point3d): boolean {
+    if (undefined === this._searcher.node || !this._searcher.isFace || this._searcher.node.isMaskSet(HalfEdgeMask.EXTERIOR))
+      return false;
+    const pointXY = Point3d.create(point.x, point.y);
+    const face = this._searcher.node.collectAroundFace((node: HalfEdge) => {
+      const xy = Point3d.create(node.x, node.y);
+      (xy as any).node = node; // decorate the point with the node
+      return xy;
+    });
+    const detail = PolygonOps.closestPointOnBoundary(face, pointXY, this._tolerance);
+    assert(detail.code === PolygonLocation.OnPolygonEdgeInterior);
+    if (detail.a > this._tolerance)
+      return false;
+    const edge = face[detail.closestEdgeIndex].node;
+    const vertex = (detail.closestEdgeParam < 0.5) ? edge : edge.faceSuccessor;
+    if (detail.point.distanceSquaredXY(vertex) <= this._tolerance * this._tolerance)
+      this._searcher.resetAsVertex(vertex);
+    else
+      this._searcher.resetAtEdgeAndFraction(edge, detail.closestEdgeParam);
+    return true;
+  }
+
+  /** Reclassify the current interior edge hit if it is too close to an edge of either adjacent face. */
+  private reclassifyEdgeHit(point: Point3d): boolean {
+    if (undefined === this._searcher.node || !this._searcher.isEdge || this._searcher.node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE))
+      return false;
+    const pointXY = Point3d.create(point.x, point.y);
+    const superFace: Point3d[] = [];
+    for (let n = this._searcher.node.faceSuccessor; n !== this._searcher.node; n = n.faceSuccessor) {
+      const xy = Point3d.create(n.x, n.y);
+      (xy as any).node = n; // decorate the point with a node of the left face
+      superFace.push(xy);
+    }
+    for (let n = this._searcher.node.vertexPredecessor; n !== this._searcher.node.edgeMate; n = n.faceSuccessor) {
+      const xy = Point3d.create(n.x, n.y);
+      (xy as any).node = n; // decorate the point with a node of the right face
+      superFace.push(xy);
+    }
+    const detail = PolygonOps.closestPointOnBoundary(superFace, pointXY, this._tolerance);
+    if (detail.a > this._tolerance)
+      return false;
+    const edge = (superFace[detail.closestEdgeIndex] as any).node;
+    const vertex = (detail.closestEdgeParam < 0.5) ? edge : edge.faceSuccessor;
+    if (detail.code === PolygonLocation.OnPolygonVertex) // can happen if superFace is non-concave (e.g., a dart)
+      this._searcher.resetAsVertex(vertex);
+    else if (detail.point.distanceSquaredXY(vertex) <= this._tolerance * this._tolerance)
+      this._searcher.resetAsVertex(vertex);
+    else
+      this._searcher.resetAtEdgeAndFraction(edge, detail.closestEdgeParam);
+    return true;
+  }
+
+  /**
+   * Given a point that was just inserted into the graph at the given node, apply the z-coordinate rule around
+   * the vertex loop.
+   */
+  private updateZAroundVertex(node: HalfEdge, point: Point3d, zOption: InsertedVertexZOptions): void {
+    if (InsertedVertexZOptions.Ignore === zOption)
+      return;
+    if ((InsertedVertexZOptions.ReplaceIfLarger === zOption) && (point.z <= node.z))
+      return;
+    if ((InsertedVertexZOptions.ReplaceIfSmaller === zOption) && (point.z >= node.z))
+      return;
+    // only replace z; preserving xy preserves convexity of the hull
+    node.setXYZAroundVertex(node.x, node.y, point.z);
+  }
+
   /**
    * Insert a new point into the graph and retriangulate.
    * @param point the coordinates of the node to be inserted.
@@ -159,16 +234,13 @@ export class InsertAndRetriangulateContext {
     this.moveToPoint(this._searcher, point);
     if (this._searcher.node === undefined)
       return false;
-    const updateZAroundVertex = (vertex: HalfEdge, zOption: InsertedVertexZOptions): void => {
-      if (InsertedVertexZOptions.Ignore === zOption)
-        return;
-      if ((InsertedVertexZOptions.ReplaceIfLarger === zOption) && (point.z <= vertex.z))
-        return;
-      if ((InsertedVertexZOptions.ReplaceIfSmaller === zOption) && (point.z >= vertex.z))
-        return;
-      // only replace z; preserving xy preserves convexity of the hull
-      vertex.setXYZAroundVertex(vertex.x, vertex.y, point.z);
-    };
+
+    // Try to avoid skinny triangles. If we iterated, this could get out of control (e.g., inserting point into a fan).
+    // Limiting reclassification to one pass ensures the hit doesn't move more than tol and reduces skinny triangles
+    // adjacent to the hull.
+    if (!this.reclassifyFaceHit(point))
+      this.reclassifyEdgeHit(point);
+
     if (this._searcher.isFace) {
       // insert point into the graph if it lies in an interior face
       if (!this._searcher.node.isMaskSet(HalfEdgeMask.EXTERIOR)) {
@@ -181,14 +253,14 @@ export class InsertAndRetriangulateContext {
       // insert point into the graph by splitting its containing edge
       const newA = this._graph.splitEdgeAtFraction(this._searcher.node, this._searcher.edgeFraction!);
       const newB = newA.vertexPredecessor;
-      updateZAroundVertex(newA, InsertedVertexZOptions.Replace);  // always replace
+      this.updateZAroundVertex(newA, point, InsertedVertexZOptions.Replace);  // always replace
       this.retriangulateFromBaseVertex(newA);
       this.retriangulateFromBaseVertex(newB);
       Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
       this._searcher.resetAsVertex(newA);
     } else if (this._searcher.isVertex) {
       // no need to insert point as there's already a vertex there, but maybe update its z-coord
-      updateZAroundVertex(this._searcher.node, newZWins);
+      this.updateZAroundVertex(this._searcher.node, point, newZWins);
     }
     return true;
   }
@@ -207,7 +279,7 @@ export class InsertAndRetriangulateContext {
     const psc = PointSearchContext.create(this._tolerance);
     movingPosition.setITag(0);
     if (movingPosition.isUnclassified) {
-      moveToAnyUnmaskedEdge(this.graph, movingPosition, 0.5, 0);
+      moveToAnyUnmaskedEdge(this.graph, movingPosition, 0.5, HalfEdgeMask.NULL_MASK);
       if (movingPosition.isUnclassified)
         return false;
     }
@@ -246,7 +318,7 @@ export class InsertAndRetriangulateContext {
             movingPosition.setITag(1);
             break;
           }
-          case RayClassification.TargetBefore: {
+          case RayClassification.TargetBefore: { // do we ever get here?
             movingPosition.resetAsFace(movingPosition.node, target);
             movingPosition.setITag(1);
             break;
@@ -289,7 +361,7 @@ export class InsertAndRetriangulateContext {
     return false;
   }
 }
-/** Create a VuPositionDetail for specified fraction along any unmasked edge. */
+/** Set `position` to a random unmasked edge at the specified fraction. */
 function moveToAnyUnmaskedEdge(
   graph: HalfEdgeGraph, position: HalfEdgePositionDetail, edgeFraction: number, skipMask: HalfEdgeMask,
 ): boolean {
