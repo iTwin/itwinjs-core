@@ -11,7 +11,7 @@ import { FormatProps, UnitProps } from "../core-quantity";
 
 describe("Bearing direction tests:", () => {
 
-  it.only("Format radian", async () => {
+  it("Format radian", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const bearingDMSJson: FormatProps = {
@@ -123,7 +123,7 @@ describe("Bearing direction tests:", () => {
 
 describe("Azimuth direction tests:", () => {
 
-  it.only("Format radian", async () => {
+  it("Format radian", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const azimuthDMSJson: FormatProps = {
@@ -203,6 +203,77 @@ describe("Azimuth direction tests:", () => {
 
       const resultBearingDecimal = Formatter.formatQuantity(radians, azimuthDecimalFormatter);
       expect(resultBearingDecimal).to.be.eql(entry.decimal);
+    }
+  });
+
+  it("Format degrees with various bases", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const azimuthDecimalJson: FormatProps = {
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      minWidth: 4,
+      precision: 1,
+      type: "Azimuth",
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+        ],
+      },
+    };
+
+    const createFormatter = async (baseInDegrees: number, counterClockwise: boolean): Promise<FormatterSpec> => {
+      const props = {
+        ...azimuthDecimalJson,
+        azimuthBase: baseInDegrees,
+        formatTraits: Array.isArray(azimuthDecimalJson.formatTraits) ? [...azimuthDecimalJson.formatTraits] : [], // Deep copy with type guard
+      };
+
+      if(counterClockwise && Array.isArray(props.formatTraits)) {
+        props.formatTraits.push("counterClockwiseAngle");
+      }
+
+      const format = new Format(`azimuthWith${baseInDegrees}Base`);
+      await format.fromJSON(unitsProvider, props);
+      assert.isTrue(format.hasUnits);
+      return FormatterSpec.create(`DegreeToAzimuthWith${baseInDegrees}Base`, format, unitsProvider);
+    };
+
+    const unit: UnitProps = await unitsProvider.findUnitByName("Units.ARC_DEG");
+    assert.isTrue(unit.isValid);
+
+    interface TestData {
+      input: number;
+      base: number;
+      counterClockwise: boolean;
+      result: string;
+    }
+
+    const testData: TestData[] = [
+      { input: 0.0,   base: 0.0,   counterClockwise: false, result: "00.0°" },
+      { input: 0.0,   base: 180.0, counterClockwise: false, result: "180.0°" },
+      { input: 0.0,   base: 185.0, counterClockwise: false, result: "175.0°" },
+      { input: 0.0,   base: 185.0, counterClockwise: true,  result: "185.0°" },
+      { input: 0.0,   base: 95.0,  counterClockwise: false, result: "265.0°" },
+      { input: 0.0,   base: 85.0,  counterClockwise: false, result: "275.0°" },
+      { input: 0.0,   base: 270.0, counterClockwise: false, result: "90.0°" },
+      { input: 0.0,   base: 270.0, counterClockwise: true,  result: "270.0°" },
+      { input: 90.0,  base: 0.0,   counterClockwise: false, result: "90.0°" },
+      { input: 90.0,  base: 180.0, counterClockwise: false, result: "270.0°" },
+      { input: 90.0,  base: 185.0, counterClockwise: false, result: "265.0°" },
+      { input: 90.0,  base: 185.0, counterClockwise: true,  result: "95.0°" },
+      { input: 90.0,  base: 95.0,  counterClockwise: false, result: "355.0°" },
+      { input: 90.0,  base: 85.0,  counterClockwise: false, result: "05.0°" },
+      { input: 90.0,  base: 270.0, counterClockwise: false, result: "180.0°" },
+      { input: 90.0,  base: 270.0, counterClockwise: true,  result: "180.0°" },
+    ];
+
+    for (const entry of testData) {
+      const formatter = await createFormatter(entry.base, entry.counterClockwise);
+      const result = Formatter.formatQuantity(entry.input, formatter);
+      expect(result, formatter.name).to.be.eql(entry.result);
     }
   });
 });
