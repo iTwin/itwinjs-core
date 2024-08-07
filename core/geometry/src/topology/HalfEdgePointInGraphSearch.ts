@@ -123,57 +123,54 @@ export class PointSearchContext {
   ): HalfEdgePositionDetail {
     assert(ray.origin.isExactEqual(vertexHit));
     const vertexNode = vertexHit.node;
-    let result;
     let outboundEdge = vertexNode!;
-    do { // examine the sectors around this vertex
-      if (!outboundEdge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
-        const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);   // outBoundEdge vector
-        const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray); // lookBack vector
-        const u0 = data0.u;
-        const u1 = data1.u;
-        const v0 = data0.v;
-        const v1 = data1.v;
-        // examine dot and cross of ray with both edges defining this sector to see if ray lies between them
-        if (Math.abs(v0) <= this._tol) { // ray parallel to outBoundEdge
-          if (Math.abs(u0 - targetDistance) <= this._tol) {
-            // direct hit at far end of outBoundEdge
-            result = vertexHit.resetAsVertex(data0.node);
-            result.setITag(1);
-            return result;
-          } else if (u0 > targetDistance) {
-            // direct hit within outBoundEdge
-            const edgeFraction = targetDistance / u0;
-            result = vertexHit.resetAtEdgeAndFraction(outboundEdge, edgeFraction);
-            return result;
-          } else if (u0 > this._tol) {
-            // advance to far end of outBoundEdge
-            result = vertexHit.resetAsVertex(data0.node);
-            return result;
-          }
-          // NOTE: the remaining cases just proceed to next sector:
-          // * If u0 < -this._tol, then ray points opposite outBoundEdge, so by our convexity assumption, the only way
-          //   that ray lies in this sector is if lookBack vector points in the same direction as ray, but this is
-          //   handled in the next sector.
-          // * If |u0| <= tol, then outBoundEdge has unexpected magnitude near tol and nothing can be determined.
-          //   This case was previously mistakenly classified as a vertex hit.
-        } else if (v0 < -this._tol) {
-          if (v1 > this._tol) {
-            // ray definitely lies in this sector
-            result = vertexHit.resetAsFace(outboundEdge, outboundEdge);
-            return result;
-          } else if (v1 < -this._tol) {
-            // ray definitely misses this sector; fall through to visit next sector
-          } else { // |v1| <= tol
-            // ray and lookBack vector are parallel, so this is handled by the next sector unless these vectors
-            // point in opposite directions, which only happens when this sector spans ~180 degrees.
-            if (u0 > this._tol && u1 < 0) {
-              // advance to far end of outBoundEdge
-              result = vertexHit.resetAsVertex(data0.node);
-              return result;
-            }
-          }
-        }
+
+    // lambda to handle the case where the target definitively lies in the same direction as outboundEdge
+    const advancePositionAlongOutboundEdge = (rayParam: number): boolean => {
+      if (Math.abs(rayParam - targetDistance) <= this._tol) { // direct hit at far end of outBoundEdge
+        vertexHit.resetAsVertex(outboundEdge.faceSuccessor).setITag(1);
+      } else if (rayParam > targetDistance) { // direct hit within outBoundEdge
+        vertexHit.resetAtEdgeAndFraction(outboundEdge, targetDistance / rayParam);
+      } else if (rayParam > this._tol) { // far end of outBoundEdge is closer to target
+        vertexHit.resetAsVertex(outboundEdge.faceSuccessor);
+      } else {
+        return false;
       }
+      return true;
+    };
+
+    do {
+      // examine the sector at the outboundEdge node; if ray lies in this sector, return updated detail
+      const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
+      const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray);
+      const u0 = data0.u;
+      const u1 = data1.u;
+      const v0 = data0.v;
+      const v1 = data1.v;
+      // examine dot and cross of ray with both edges defining this sector to see if ray lies between them
+      if (Math.abs(v0) <= this._tol) { // ray parallel to outBoundEdge
+        if (advancePositionAlongOutboundEdge(u0))
+          return vertexHit;
+        if (Math.abs(u0) <= this._tol) { // edge is unexpectedly small
+          // best guess as to whether ray lies in this sector
+          if (v0 <= 0 && v1 > this._tol && (u0 >= 0 || (u0 < 0 && u1 > this._tol)))
+            return vertexHit.resetAsFace(outboundEdge, outboundEdge);
+        }
+        // The only remaining case is u0 < -this._tol, i.e., ray points opposite outBoundEdge.
+        // By our convexity assumption, the only way that ray lies in this sector is if the lookBack
+        // vector points in the same direction as ray, but this would be handled in the next sector.
+      } else if (v0 < -this._tol) {
+        if (v1 > this._tol) // ray definitely lies in this sector
+          return vertexHit.resetAsFace(outboundEdge, outboundEdge);
+        if (v1 >= -this._tol) { // ray and lookBack vector are parallel
+          // this case is handled in the next sector unless ray and lookBack point in opposite directions
+          if (u0 > this._tol && u1 < 0) // sector spans ~180 degrees; far end is closer to target
+            return vertexHit.resetAsVertex(outboundEdge.faceSuccessor);
+        }
+        // The only remaining case is v1 < -this._tol, i.e., ray definitely lies outside this sector.
+      }
+      // Proceed to the next sector around this vertex. We even examine the (concave) exterior sector at a boundary
+      // vertex in order to handle the case where the target lies in the direction of an exterior outboundEdge.
       outboundEdge = outboundEdge.vertexSuccessor;
     } while (outboundEdge !== vertexNode);
     return this.panic();
@@ -217,8 +214,7 @@ export class PointSearchContext {
       const u1 = data1.u;
       const v0 = data0.v;
       const v1 = data1.v;
-      if (Math.abs(v1) < this._tol) {
-        // vertex hit
+      if (Math.abs(v1) < this._tol) { // ray parallel to edge
         const vertexHit = HalfEdgePositionDetail.createVertex(node1);
         vertexHit.setDTag(u1);
         if (Math.abs(u1 - targetDistance) < this._tol) {
@@ -230,8 +226,7 @@ export class PointSearchContext {
           firstAfter.setFrom(vertexHit);
         if (u1 < targetDistance && u1 > lastBefore.getDTag()!)
           lastBefore.setFrom(vertexHit);
-      } else if (v0 * v1 < 0.0) {
-        // edge crossing
+      } else if (v0 * v1 < 0.0) { // ray crosses edge
         const edgeFraction = -v0 / (v1 - v0);
         const rayFraction = Geometry.interpolate(u0, edgeFraction, u1);
         const edgeHit = HalfEdgePositionDetail.createEdgeAtFraction(data0.node, edgeFraction);
