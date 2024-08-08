@@ -57,6 +57,8 @@ internal;interface;BisCodeSpecIndexProps
 internal;interface;FontIndexProps
 public;class;CodeSpecs
 public;interface;ComputedProjectExtents
+beta;function;computeGraphemeOffsets
+beta;interface;ComputeGraphemeOffsetsArgs
 beta;function;computeLayoutTextBlockResult
 public;interface;ComputeProjectExtentsOptions
 alpha;type;ConcreteEntity
