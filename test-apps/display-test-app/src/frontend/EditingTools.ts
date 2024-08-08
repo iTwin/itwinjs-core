@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Id64String, OrderedId64Array } from "@itwin/core-bentley";
 import {
   Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
 } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
+  AccuDrawHintBuilder, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
   NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
   ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { IModelJson, LineString3d, Point3d, Sphere, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { IModelJson, LineString3d, Point3d, Sphere, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { basicManipulationIpc, CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import { setTitle } from "./Title";
@@ -251,5 +251,70 @@ export class PlaceLineStringTool extends CreateElementTool {
     const tool = new PlaceLineStringTool();
     if (!await tool.run())
       return this.exitTool();
+  }
+}
+
+function orderIds(elementIds: string[]): OrderedId64Array {
+  const ids = new OrderedId64Array();
+  elementIds.forEach((id) => ids.insert(id));
+  return ids;
+}
+
+function compressIds(elementIds: string[]): CompressedId64Set {
+  const ids = orderIds(elementIds);
+  return CompressedId64Set.compressIds(ids);
+}
+
+async function startCommand(imodel: BriefcaseConnection): Promise<string> {
+  return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: imodel.key });
+}
+
+export async function transformElements(imodel: BriefcaseConnection, ids: string[], transform: Transform) {
+  await startCommand(imodel);
+  await basicManipulationIpc.transformPlacement(compressIds(ids), transform.toJSON());
+}
+
+/** This tool adds a seequent reality model to the viewport.
+ * @alpha
+ */
+export class MoveElementTool extends Tool {
+  public static override toolId = "MoveElement";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 4; }
+
+  /** This method runs the tool, adding a reality model to the viewport
+   * @param url the URL which points to the reality model tileset
+   */
+  public override async run(elementId: string, x: number, y: number, z: number): Promise<boolean> {
+
+    if (!IModelApp.viewManager.selectedView) {
+      return false;
+    }
+    const imodel = IModelApp.viewManager.selectedView.iModel;
+
+    if (imodel.isBriefcaseConnection()) {
+      await transformElements(imodel, [elementId], Transform.createTranslationXYZ(x, y, z));
+      await imodel.saveChanges();
+    }
+
+    return true;
+  }
+
+  /** Executes this tool's run method with args[0] containing the `url` argument.
+   * @see [[run]]
+   */
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    let x = 0;
+    let y = 0;
+    let z = 1;
+
+    if (args.length > 1)
+      x = parseFloat(args[1]);
+    if (args.length > 2)
+      y = parseFloat(args[2]);
+    if (args.length > 3)
+      z = parseFloat(args[3]);
+
+    return this.run(args[0], x, y, z);
   }
 }
