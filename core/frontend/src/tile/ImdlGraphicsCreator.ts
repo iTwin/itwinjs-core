@@ -20,7 +20,7 @@ import { VertexIndices } from "../common/internal/render/VertexIndices";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
-import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
+import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
@@ -228,13 +228,7 @@ function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instance
   const mod = primitive.modifier;
   switch (mod?.type) {
     case "instances":
-      return {
-        instances: {
-          ...mod,
-          transformCenter: Point3d.fromJSON(mod.transformCenter),
-          range: mod.range ? Range3d.fromJSON(mod.range) : undefined,
-        },
-      };
+      return { instances: InstancedGraphicParams.fromProps(mod) };
     case "viewIndependentOrigin":
       return {
         viOrigin: Point3d.fromJSON(mod.origin),
