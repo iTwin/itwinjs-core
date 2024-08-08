@@ -320,7 +320,7 @@
     },
     {
       "name": "@itwin/oidc-signin-tool",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/perf-tools",
@@ -523,6 +523,10 @@
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
+      "name": "dotenv-webpack",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "electron",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -564,7 +568,7 @@
     },
     {
       "name": "file-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "file-saver",
@@ -695,6 +699,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "node-polyfill-webpack-plugin",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "node-simctl",
       "allowedCategories": [ "backend", "internal" ]
     },
@@ -757,6 +765,10 @@
     {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "rollup",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "rollup-plugin-copy",
@@ -893,6 +905,10 @@
     {
       "name": "webpack-cli",
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "webpack-node-externals",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "wms-capabilities",

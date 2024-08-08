@@ -17,7 +17,9 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run -s webpackTests && certa -r chrome",
-    "webpackTests": "webpack --config ./src/test/utils/webpack-config.js 1>&2"
+    "webpackTests": "webpack --config ./src/test/utils/webpack-config.js 1>&2",
+    "webpackIntegrationTests": "webpack --config ./src/integration-test/utils/webpack-config.js 1>&2",
+    "integrationTest": "npm run -s webpackIntegrationTests && certa --config ./integration-certa.json -r chrome"
   },
   "repository": {
     "type": "git",
@@ -46,6 +48,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
+    "@itwin/oidc-signin-tool": "^4.3.5",
     "@itwin/eslint-plugin": "^4.0.2",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -63,6 +66,9 @@
     "sinon": "^17.0.1",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.3.3",
-    "webpack": "^5.76.0"
+    "webpack": "^5.76.0",
+    "dotenv-webpack": "^8.1.0",
+    "file-loader": "^6.2.0"
+  
   }
 }
