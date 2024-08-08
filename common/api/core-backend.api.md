@@ -190,6 +190,7 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
+import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -1318,6 +1319,16 @@ export interface ComputedProjectExtents {
     extents: Range3d;
     extentsWithOutliers?: Range3d;
     outliers?: Id64Array;
+}
+
+// @beta
+export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
+
+// @beta
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+    graphemeCharIndexes: number[];
+    paragraphIndex: number;
+    runLayoutResult: RunLayoutResult;
 }
 
 // @beta
