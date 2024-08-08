@@ -110,7 +110,7 @@
     "linebreak": "^1.1.0",
     "multiparty": "^4.2.1",
     "reflect-metadata": "^0.1.13",
-    "semver": "^7.3.5",
+    "semver": "^7.5.2",
     "touch": "^3.1.0",
     "ws": "^7.5.10"
   },
