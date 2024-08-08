@@ -61,14 +61,14 @@ const unitData: UnitDefinition[] = [
   { name: "Units.US_SURVEY_MILE", phenomenon: "Units.LENGTH", system: "Units.USSURVEY", conversion: { numerator: 3937.0, denominator: 5280.0 * 1200.0, offset: 0.0 }, displayLabel: "mi (US Survey)", altDisplayLabels: ["miles (US Survey)", "mile (US Survey)", "USM"] },
   { name: "Units.US_SURVEY_CHAIN", phenomenon: "Units.LENGTH", system: "Units.USSURVEY", conversion: { numerator: 1.0, denominator: 20.11684, offset: 0.0 }, displayLabel: "chain (US Survey)", altDisplayLabels: ["chains (US Survey)"] },
   // conversion => specified unit to base unit of m²
+  { name: "Units.SQ_M", phenomenon: "Units.AREA", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m²", altDisplayLabels: ["sm"] },
   { name: "Units.SQ_FT", phenomenon: "Units.AREA", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: .09290304, offset: 0.0 }, displayLabel: "ft²", altDisplayLabels: ["sf"] },
   { name: "Units.SQ_US_SURVEY_FT", phenomenon: "Units.AREA", system: "Units.USCUSTOM", conversion: { numerator: 15499969.0, denominator: 1440000, offset: 0.0 }, displayLabel: "ft² (US Survey)", altDisplayLabels: ["sussf"] },
-  { name: "Units.SQ_M", phenomenon: "Units.AREA", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m²", altDisplayLabels: ["sm"] },
   // conversion => specified unit to base unit m³
+  { name: "Units.CUB_M", phenomenon: "Units.VOLUME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: ["cm"] },
   { name: "Units.CUB_FT", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.028316847, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_US_SURVEY_FT", phenomenon: "Units.VOLUME", system: "Units.USSURVEY", conversion: { numerator: 1, denominator: 0.0283170164937591, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YRD", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
-  { name: "Units.CUB_M", phenomenon: "Units.VOLUME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: ["cm"] },
 ];
 
 export class ConversionData implements UnitConversionProps {
