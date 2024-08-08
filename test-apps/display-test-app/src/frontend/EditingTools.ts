@@ -254,15 +254,8 @@ export class PlaceLineStringTool extends CreateElementTool {
   }
 }
 
-function orderIds(elementIds: string[]): OrderedId64Array {
-  const ids = new OrderedId64Array();
-  elementIds.forEach((id) => ids.insert(id));
-  return ids;
-}
-
 function compressIds(elementIds: string[]): CompressedId64Set {
-  const ids = orderIds(elementIds);
-  return CompressedId64Set.compressIds(ids);
+  return CompressedId64Set.sortAndCompressIds(elementIds);
 }
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
