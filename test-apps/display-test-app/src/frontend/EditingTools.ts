@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, Id64String, OrderedId64Array } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
 } from "@itwin/core-common";
@@ -255,7 +255,7 @@ export class PlaceLineStringTool extends CreateElementTool {
 }
 
 function compressIds(elementIds: string[]): CompressedId64Set {
-  return CompressedId64Set.sortAndCompressIds(elementIds);
+  return CompressedId64Set.sortAndCompress(elementIds);
 }
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
