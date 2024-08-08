@@ -15,6 +15,8 @@ import { HalfEdge, HalfEdgeMask } from "./Graph";
 import { NodeXYZUV } from "./HalfEdgeNodeXYZUV";
 import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 
+// cspell:word Chebyshev
+
 /**
  * Return code from [PointSearchContext.reAimAroundFace]
  * @internal
@@ -112,7 +114,7 @@ export class PointSearchContext {
     return result;
   }
   /**
-   * Reposition `vertexHit` to an adjacent face, edge, or vertex that is closer to the target point.
+   * Reposition `vertexHit` to an adjacent face, edge, or vertex hit that is closer to the target point.
    * @param vertexHit start position at a graph vertex, updated and returned.
    * @param ray the ray to the target point, assumed to start exactly at the vertex.
    * @param targetDistance distance along the ray to the target point.
@@ -151,28 +153,39 @@ export class PointSearchContext {
       if (Math.abs(v0) <= this._tol) { // ray parallel to outBoundEdge
         if (advancePositionAlongOutboundEdge(u0))
           return vertexHit;
-        if (Math.abs(u0) <= this._tol) { // edge is unexpectedly small
-          // best guess as to whether ray lies in this sector
+        if (Math.abs(u0) <= this._tol) { // edge is unexpectedly* small
           if (v0 <= 0 && v1 > this._tol && (u0 >= 0 || (u0 < 0 && u1 > this._tol)))
             return vertexHit.resetAsFace(outboundEdge, outboundEdge);
         }
-        // The only remaining case is u0 < -this._tol, i.e., ray points opposite outBoundEdge.
+        // The only remaining case is u0 < -this._tol: ray points opposite outBoundEdge.
         // By our convexity assumption, the only way that ray lies in this sector is if the lookBack
         // vector points in the same direction as ray, but this would be handled in the next sector.
       } else if (v0 < -this._tol) {
         if (v1 > this._tol) // ray definitely lies in this sector
           return vertexHit.resetAsFace(outboundEdge, outboundEdge);
         if (v1 >= -this._tol) { // ray and lookBack vector are parallel
-          // this case is handled in the next sector unless ray and lookBack point in opposite directions
-          if (u0 > this._tol && u1 < 0) // sector spans ~180 degrees; far end is closer to target
-            return vertexHit.resetAsVertex(outboundEdge.faceSuccessor);
+          // handle special cases not handled in the next sector
+          if (Math.abs(u1) <= this._tol) { // lookBack vector is unexpectedly* small...
+            if (v1 > 0 && (u1 >= 0 || (u0 > this._tol && u1 < 0))) // ...and ray is in this sector
+              return vertexHit.resetAsFace(outboundEdge, outboundEdge);
+          } else if (u0 > this._tol && u1 < 0) { // ray and lookBack point in opposite directions
+            return vertexHit.resetAsVertex(outboundEdge.faceSuccessor); // far end is closer to target
+          }
         }
-        // The only remaining case is v1 < -this._tol, i.e., ray definitely lies outside this sector.
+        // The only remaining case is v1 < -this._tol: ray definitely lies outside this sector.
       }
       // Proceed to the next sector around this vertex. We even examine the (concave) exterior sector at a boundary
       // vertex in order to handle the case where the target lies in the direction of an exterior outboundEdge.
       outboundEdge = outboundEdge.vertexSuccessor;
     } while (outboundEdge !== vertexNode);
+
+    // * Note on "unexpectedly": this is because we are using two different metrics to triangulate: Euclidean
+    // for distinguishing points (to match user expectation), and Chebyshev aka "max component", for efficiently
+    // testing ray-sector inclusion. Epsilon-balls in the former are smaller than in the latter. Thus an edge
+    // can be inserted into the graph with Euclidean length (barely) greater than epsilon, but the edge's
+    // parallel/perpendicular components with respect to a ray can have Euclidean length less than epsilon,
+    // yielding a Chebyshev length less than epsilon for the edge. This discrepancy requires careful analysis
+    // of the cases here.
     return this.panic();
   }
   /**
