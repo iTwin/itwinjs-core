@@ -277,7 +277,7 @@ export async function transformElements(imodel: BriefcaseConnection, ids: string
 /** This tool moves an element relative to its current position. */
 export class MoveElementTool extends Tool {
   public static override toolId = "MoveElement";
-  public static override get minArgs() { return 1; }
+  public static override get minArgs() { return 2; }
   public static override get maxArgs() { return 4; }
 
   public override async run(elementId: string, x: number, y: number, z: number): Promise<boolean> {
@@ -301,7 +301,7 @@ export class MoveElementTool extends Tool {
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     let x = 0;
     let y = 0;
-    let z = 1;
+    let z = 0;
 
     if (args.length > 1)
       x = parseFloat(args[1]);
