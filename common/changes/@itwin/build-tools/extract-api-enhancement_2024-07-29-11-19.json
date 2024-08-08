@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "extract-api-summary: Improve regex so that includes all exports with improved output.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

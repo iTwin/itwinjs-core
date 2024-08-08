@@ -11,7 +11,7 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  _nativeDb, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
+  _nativeDb, CloudSqlite, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import {
   constructWorkspaceDb,
@@ -28,7 +28,6 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 /* eslint-disable id-blacklist,no-console */
 
 /** Currently executing an "@" script? */
-let inScript = false;
 let wsEditor: WorkspaceEditor;
 
 interface EditorProps {
@@ -65,9 +64,10 @@ interface WorkspaceDbOpt extends EditorOpts {
   glob?: string;
 }
 
-// interface CreateWorkspaceDbOpt extends WorkspaceDbOpt {
-//   workspaceName: string;
-// }
+interface CreateWorkspaceDbOpt extends Omit<WorkspaceDbOpt, "dbName" | "version"> {
+  dbName: WorkspaceDbName;
+  workspaceName: string;
+}
 
 /** options for copying a WorkspaceDb to a new name */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
@@ -153,13 +153,12 @@ function friendlyFileSize(size: number) {
   return `${Math.round(size / Math.pow(1024, units))}${["", "K", "M", "G", "T"][units]}`;
 }
 
-// /** Create a new empty WorkspaceDb  */
-// async function createWorkspaceDb(args: CreateWorkspaceDbOpt) {
-//   const wsFile = WorkspaceEditor.createEmptyDb(args);, IModelHost.appWorkspace.getContainer(args));
-//   await wsFile.createDb({ manifest: { workspaceName: args.workspaceName } });
-//   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
-//   wsFile.close();
-// }
+/** Create a new empty WorkspaceDb  */
+async function createWorkspaceDb(args: CreateWorkspaceDbOpt) {
+  const container: EditableWorkspaceContainer = getWriteContainer(args);
+  const wsDb = container.createDb({ ...args, dbName: args.dbName, manifest: { workspaceName: args.workspaceName } });
+  showMessage(`created WorkspaceDb ${(await wsDb).dbName}`);
+}
 
 /** open, call a function to process, then close a WorkspaceDb */
 async function processWorkspace<W extends EditableWorkspaceDb | WorkspaceDb, T extends WorkspaceDbOpt>(args: T, ws: W, fn: (ws: W, args: T) => Promise<void>) {
@@ -174,7 +173,7 @@ async function processWorkspace<W extends EditableWorkspaceDb | WorkspaceDb, T e
 
 /** get a WorkspaceContainer that may or may not be a cloud container. */
 function getWriteContainer(args: EditorOpts) {
-  return wsEditor.getContainer(args);
+  return wsEditor.getContainer({ ...args, writeable: true });
 }
 function getReadContainer(args: EditorOpts) {
   return IModelHost.appWorkspace.getContainer(args);
@@ -231,9 +230,9 @@ async function listWorkspaceDb(args: ListOptions) {
 
     if (args.strings) {
       showMessage(" strings:");
-      file.sqliteDb.withSqliteStatement("SELECT id,LENGTH(value) FROM strings ORDER BY id COLLATE NOCASE", (stmt) => {
+      file.sqliteDb.withSqliteStatement("SELECT id,value FROM strings ORDER BY id COLLATE NOCASE", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
-          nameAndSize(stmt);
+          showMessage(`  name="${stmt.getValueString(0)}" value=${stmt.getValueString(1)}`);
       });
     }
 
@@ -445,13 +444,13 @@ async function initializeWorkspace(args: InitializeOpts) {
   if (undefined === args.storageType || !args.baseUri)
     throw new Error("No cloud container supplied");
   if (!args.noPrompt) {
-    const yesNo = await askQuestion(`Are you sure you want to initialize ${sayContainer(args)}"? [y/n]: `);
+    const yesNo = await askQuestion(`Are you sure you want to initialize "${sayContainer(args)}"? [y/n]: `);
     if (yesNo[0].toUpperCase() !== "Y")
       return;
   }
   const container = CloudSqlite.createCloudContainer(args as CloudSqlite.ContainerAccessProps);
   container.initializeContainer({ checksumBlockNames: true, blockSize: 4 * 1024 * 1024 });
-  showMessage(`container "${args.containerId} initialized`);
+  showMessage(`container "${args.containerId}" initialized`);
 }
 
 /** purge unused (garbage) blocks from a WorkspaceContainer. */
@@ -546,6 +545,10 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
       showMessage(` "${dbName}", size=${friendlyFileSize(db.totalBlocks * blockSize)}, ${friendlyFileSize(db.localBlocks * blockSize)} downloaded (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%)${editable}${dirty}`);
     }
   }
+
+  if (dbs.length === 0) {
+    showMessage("...there aren't any.");
+  }
 }
 
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
@@ -553,9 +556,6 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>, read
   return async (args: T) => {
     if (readonly === "readonly")
       args.forReadOnly = true;
-
-    if (inScript)
-      return cmd(args);
 
     try {
       const workspace = {
@@ -612,7 +612,7 @@ Yargs.options({
 });
 Yargs.command<AddFileOptions>({
   command: "add <dbName> <files>",
-  describe: "add files into a WorkspaceDb",
+  describe: "add a resource into a WorkspaceDb",
   builder: addOrReplace,
   handler: runCommand(addResource),
 });
@@ -649,14 +649,14 @@ Yargs.command<WorkspaceDbOpt>({
   describe: "delete a WorkspaceDb from a cloud container",
   handler: runCommand(deleteWorkspaceDb),
 });
-// Yargs.command<CreateWorkspaceDbOpt>({
-//   command: "createDb <dbName>",
-//   describe: "create a new WorkspaceDb",
-//   builder: {
-//     workspaceName: { describe: "user interface name for the WorkspaceDb", string: true },
-//   },
-//   handler: runCommand(createWorkspaceDb),
-// });
+Yargs.command<CreateWorkspaceDbOpt>({
+  command: "createDb <dbName>",
+  describe: "create a new WorkspaceDb",
+  builder: {
+    workspaceName: { describe: "user interface name for the WorkspaceDb", string: true },
+  },
+  handler: runCommand(createWorkspaceDb),
+});
 Yargs.command<CopyWorkspaceDbOpt>({
   command: "copyDb <dbName> <newDbName>",
   describe: "make a copy of a WorkspaceDb in a cloud container with a new name",
@@ -734,7 +734,6 @@ Yargs.command<InitializeOpts>({
 
 /** execute an "@" script - a list of WorkspaceEditor commands */
 async function runScript(arg: EditorProps & { scriptName: string }) {
-  inScript = true;
   const val = fs.readFileSync(arg.scriptName, "utf-8");
   const lines = val.split(/\r?\n/);
   let i = 0;

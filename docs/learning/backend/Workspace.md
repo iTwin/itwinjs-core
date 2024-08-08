@@ -11,6 +11,7 @@ To explore [Workspace]($backend) concepts, let's take the example of an imaginar
 [Settings]($backend) are how administrators of an application or project configure the workspace for end-users. Be careful to avoid confusing them with "user preferences", which can be configured by individual users. For example, an application might provide a check box to toggle "dark mode" on or off. Each individual user can make their own choice as to whether they want to use this mode - it is a user preference, not a setting. But an administrator may define a setting that controls whether users can see that check box in the first place.
 
 A [Setting]($backend) is simply a name-value pair. The value can be of one of the following types:
+
 - A `string`, `number`, or `boolean`;
 - An `object` containing properties of any of these types; or
 - An `array` containing elements of one of these types.
@@ -100,6 +101,7 @@ Now, as expected, "landscapePro/flora/preferredStyle" is no longer `undefined`. 
 Configurations are often layered: an application may ship with built-in default settings, that an administrator may selectively override for all users of the application. Beyond that, additional configuration may be needed on a per-organization, per-iTwin, and/or per-iModel level. [SettingsPriority]($backend) defines which dictionaries' settings take precedence over others - the dictionary with the highest priority overrides any other dictionaries that provide a value for a given setting.
 
 A [SettingsPriority]($backend) is just a number, but specific values carry semantics:
+
 - [SettingsPriority.defaults]($backend) describes settings from settings dictionaries loaded from files automatically at the start of a session.
 - [SettingsPriority.application]($backend) describes settings supplied by the application at run-time to override or supplement the defaults.
 - [SettingsPriority.organization]($backend) describes settings that apply to all iTwins belonging to a particular organization.
@@ -134,12 +136,14 @@ The "hardinessRange" setting is obtained from the iModel's settings dictionary, 
 ## Workspace resources
 
 "Resources" are bits of data that an application depends on at run-time to perform its functions. The kinds of resources can vary widely from one application to another, but some common examples include:
+
 - [TextStyle]($common)s and fonts used when placing [TextAnnotation]($common)s.
 - [GeographicCRS]($common)es used to specify an iModel's spatial coordinate system.
 - Images that can be used as pattern maps for [Texture]($backend)s.
 - [SettingsDictionary]($backend)s defining reusable settings.
 
 It might be technically possible to store resources in [Setting]($backend)s, but doing so would present significant disadvantages:
+
 - Some resources, like images and fonts, may be defined in a binary format that is inefficient to represent using JSON.
 - Some resources, like geographic coordinate system definitions, must be extracted to files on the local file system before they can be used.
 - Some resources may be large, in size and/or quantity.
@@ -152,6 +156,7 @@ To address these requirements, workspace resources are stored in immutable, vers
 A [WorkspaceDb]($backend) can contain any number of resources of any kind, where "kind" refers to the purpose for which it is intended to be used. For example, fonts, text styles, and images are different kinds of resources. Each resource must have a unique name, between 1 and 1024 characters in length and containing no leading or trailing whitespace. A resource name should incorporate a [schemaPrefix](#settings-schemas) and an additional qualifier to distinguish between different kinds of resources stored inside the same `WorkspaceDb`. For example, a database might include text styles named "itwin/textStyles/*styleName*" and images named "itwin/patternMaps/*imageName*". Prefixes in resource names are essential unless you are creating a `WorkspaceDb` that will only ever hold a single kind of resource.
 
 Ultimately, each resource is stored as one of three underlying types:
+
 - A string, which quite often is interpreted as a serialized JSON object. Examples include text styles and settings dictionaries.
 - A binary blob, such as an image.
 - An embedded file, like a PDF file that users can view in a separate application.
@@ -172,7 +177,8 @@ Since every [WorkspaceDb]($backend) must reside inside a [WorkspaceContainer]($b
 [[include:WorkspaceExamples.CreateWorkspaceDb]]
 ```
 
-Now, let's define what a "tree" resource looks like, and add some of them to a new `WorkspaceDb`. To do so, we'll need to make a new version of the empty "cornus" `WorkspaceDb` we created above. `WorkspaceDb`s use [semantic versioning](https://semver.org/), and each version of a given `WorkspaceDb` becomes immutable once it is published to cloud storage. So, the process for creating a new version of a `WorkspaceDb` is as follows:
+Now, let's define what a "tree" resource looks like, and add some of them to a new `WorkspaceDb`. To do so, we'll need to make a new version of the empty "cornus" `WorkspaceDb` we created above. `WorkspaceDb`s use [semantic versioning](https://semver.org/), starting with a pre-release version (0.0.0). Each version of a given `WorkspaceDb` becomes immutable once published to cloud storage, with the exception of pre-release versions. The process for creating a new version of a `WorkspaceDb` is as follows:
+
 1. Acquire the container's write lock. Only one person - the current holder of the lock - can make changes to the contents of a given container at any given time.
 1. Create a new version of an existing `WorkspaceDb`.
 1. Open the new version of the db for writing.
@@ -182,6 +188,8 @@ Now, let's define what a "tree" resource looks like, and add some of them to a n
 1. Release the container's write lock.
 
 Once the write lock is released, the new versions of the `WorkspaceDb`s are published to cloud storage and become immutable. Alternatively, you can discard all of your changes via [EditableWorkspaceContainer.abandonChanges]($backend) - this also releases the write lock.
+
+> Semantic versioning and immutability of published versions are core features of Workspaces. Newly created `WorkspaceDb`s start with a pre-release version that bypasses these features. Therefore, after creating a `WorkspaceDb`, administrators should load it with the desired resources and then publish version 1.0.0. Pre-release versions are useful when making work-in-progress adjustments or sharing changes prior to publishing a new version.
 
 ```ts
 [[include:WorkspaceExamples.AddTrees]]
