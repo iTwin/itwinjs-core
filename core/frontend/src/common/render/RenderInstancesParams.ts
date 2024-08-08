@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { InstancedGraphicParams } from "./InstancedGraphicParams";
+import { InstancedGraphicProps } from "./InstancedGraphicParams";
 import { Transform } from "@itwin/core-geometry";
 import { Feature, FeatureAppearance, LinePixels, RgbColorProps } from "@itwin/core-common";
 
@@ -18,8 +18,8 @@ export interface InstancedFeaturesParams {
 }
 
 export interface RenderInstancesParams {
-  opaque?: InstancedGraphicParams;
-  translucent?: InstancedGraphicParams;
+  opaque?: InstancedGraphicProps;
+  translucent?: InstancedGraphicProps;
   features?: InstancedFeaturesParams;
 }
 
@@ -37,9 +37,12 @@ export interface Instance {
 }
 
 export interface RenderInstancesParamsBuilder {
-  
+  add(instance: Instance): void;
+  finish(): RenderInstancesParams;
 }
 
+
+// ###TODO
 // export namespace RenderInstancesParams {
 //   export function collectTransferables(xfers: Set<Tranferable>, params: RenderInstancesParams): void {
 //     if ()
