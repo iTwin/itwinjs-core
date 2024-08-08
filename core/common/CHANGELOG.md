@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 31 Jul 2024 13:39:32 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Aug 2024 16:15:37 GMT and should not be manually modified.
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:37 GMT
+
+### Updates
+
+- Fixed planar masks when using new tiles
+- Added new LayoutResult classes, containing information about the result of laying out the lines of a TextBlock.
+- Add RPC method queryAllUsedSpatialSubCategories() to fetch all subcategories of used spatial categories and 3D elements.
+- Remove ThirdPartyNotices.md
+- add ConflictingLocksError
+- TextAnnotation.computeTransform aligns the anchor point with the origin.
+- Add IModel.onChangesetChanged event.
+- Begin deprecating @internal APis.
+- Fix bugs with TextAnnotation wrapping and justification.
 
 ## 4.7.8
 Wed, 31 Jul 2024 13:38:04 GMT

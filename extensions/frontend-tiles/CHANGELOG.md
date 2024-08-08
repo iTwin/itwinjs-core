@@ -1,6 +1,17 @@
 # Change Log - @itwin/frontend-tiles
 
-This log was last generated on Wed, 31 Jul 2024 13:39:32 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Aug 2024 16:15:38 GMT and should not be manually modified.
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:38 GMT
+
+### Updates
+
+- Add iTwinjs version and Tile version tracking to query params
+- Fixed planar masks when using new tiles
+- Improve resolution of planar clip masks
+- Return undefined in getGeoscienceTilesetUrl() if the response is invalid and log error message.
+- Add optional Nop fallback to frontend tiles. When a tileset.json is not found or cannot be deserialized we will return an empty Tile Tree instead of using default tiles.
 
 ## 4.7.8
 Wed, 31 Jul 2024 13:38:04 GMT
