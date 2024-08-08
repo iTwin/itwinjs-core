@@ -34,8 +34,8 @@ export namespace AmbientOcclusion {
 
   /** Describes the properties with which ambient occlusion should be drawn. These properties correspond to a horizon-based ambient occlusion approach. */
   export class Settings implements Props {
-    private static _defaultBias: number = 0.25;
-    private static _defaultZLengthCap: number = 0.0025;
+    private static _defaultBias: number = 0.5;
+    private static _defaultZLengthCap: number = 0.00001385;
     private static _defaultMaxDistance: number = 10000.0;
     private static _defaultIntensity: number = 1.0;
     private static _defaultTexelStepSize: number = 1;
