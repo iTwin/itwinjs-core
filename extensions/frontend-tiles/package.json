@@ -68,7 +68,8 @@
     "typescript": "~5.3.3",
     "webpack": "^5.76.0",
     "dotenv-webpack": "^8.1.0",
-    "file-loader": "^6.2.0"
-  
+    "file-loader": "^6.2.0",
+    "@itwin/core-webpack-tools": "workspace:*",
+    "node-polyfill-webpack-plugin": "^1.1.4"
   }
 }

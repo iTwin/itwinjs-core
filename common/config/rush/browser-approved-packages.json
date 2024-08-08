@@ -216,7 +216,7 @@
     },
     {
       "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-editing",

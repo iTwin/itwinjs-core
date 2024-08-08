@@ -9,6 +9,11 @@ const {globSync} = require('glob');
 const frontendLib = path.resolve(__dirname, '../../../lib/cjs');
 const Dotenv = require('dotenv-webpack');
 const webpack = require('webpack');
+const copyExternalsPlugin =
+    require(
+        '../../../node_modules/@itwin/core-webpack-tools/lib/plugins/CopyExternalsPlugin.js')
+        .CopyExternalsPlugin;
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 function createConfig(shouldInstrument) {
   const config = {
@@ -63,10 +68,10 @@ function createConfig(shouldInstrument) {
                                },
                                {}),
       }),
-      new Dotenv()
+      new Dotenv(),
+      new NodePolyfillPlugin(),
+      new copyExternalsPlugin(),
     ],
-    target: 'web',
-    externalsPresets: {node: true},
   };
 
   if (shouldInstrument) {
