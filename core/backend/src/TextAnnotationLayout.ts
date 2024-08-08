@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FractionRun, GraphemeOffset, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -87,6 +87,49 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult {
   const layout = layoutTextBlock(args);
   return layout.toResult();
+}
+
+/**
+ * Arguments supplied to [[computeGraphemeOffsets]].
+ * @beta
+ */
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+  /** The index of the [Paragraph]($common) in the text block that contains the run layout result text. */
+  paragraphIndex: number;
+  /** The run layout result for which grapheme ranges will be computed. */
+  runLayoutResult: RunLayoutResult;
+  /** An array of starting character indexes for each grapheme. Each entry represents the index of the first character in a grapheme. */
+  graphemeCharIndexes: number[];
+};
+
+/**
+ * Computes the range from the start of a [RunLayoutResult]($common) to the trailing edge of each grapheme.
+ * It is the responsibility of the caller to determine the number and character indexes of the graphemes.
+ * @returns If the [RunLayoutResult]($common)'s source is a [TextRun]($common), it returns an array containing the range of each grapheme.
+ * Otherwise, it returns and empty array.
+ * @beta
+ */
+export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[] {
+  const { textBlock, paragraphIndex, runLayoutResult, graphemeCharIndexes, iModel } = args;
+  const findFontId = args.findFontId ?? ((name) => iModel.fontMap.getFont(name)?.id ?? 0);
+  const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
+  const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
+  const source = textBlock.paragraphs[paragraphIndex].runs[runLayoutResult.sourceRunIndex];
+
+  if (source.type !== "text" || runLayoutResult.characterCount === 0) {
+    return [];
+  }
+
+  const style = TextStyleSettings.fromJSON(runLayoutResult.textStyle);
+
+  const layoutContext = new LayoutContext(textBlock, computeTextRange, findTextStyle, findFontId);
+  const graphemeRanges: Range2d[] = [];
+
+  graphemeCharIndexes.forEach((_, index) => {
+    const nextGraphemeCharIndex = graphemeCharIndexes[index + 1] ?? runLayoutResult.characterCount;
+    graphemeRanges.push(layoutContext.computeRangeForTextRun(style, source, runLayoutResult.characterOffset, nextGraphemeCharIndex).layout);
+  });
+  return graphemeRanges;
 }
 
 function scaleRange(range: Range2d, scale: number): void {
@@ -244,17 +287,6 @@ function split(source: string): Segment[] {
   return segments;
 }
 
-/**
- * TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+.
- * Use this type as a stand-in until ES2022+ is supported.
- * @internal
- */
-interface IntlSegmenterStandInType {
-  segment: string;
-  index: number;
-  input: string;
-}
-
 /** @internal */
 export class RunLayout {
   public source: Run;
@@ -360,43 +392,7 @@ export class RunLayout {
     });
   }
 
-  /**
-   * Computes offsets for each grapheme in a text run. Relies on JavaScript's `Intl.Segmenter` to detect individual graphemes.
-   * Node in the mobile add-on does not include Intl. Right now, mobile users are not expected to do any editing.
-   * Long term we will need to find a better solution.
-   * @param layoutContext
-   */
-  private computeGraphemeOffsets(layoutContext: LayoutContext): GraphemeOffset[] {
-    if (this.source.type !== "text") {
-      return [];
-    }
-
-    const content = this.stringify();
-    const baselineShift = this.source.baselineShift;
-    const style = layoutContext.createRunSettings(this.source);
-    // TypeScript only provides type declarations for Intl.Segmenter if targeting ES2022+. Cast to any until ES2022+ is supported.
-    const segmenter = new (global as any).Intl.Segmenter(undefined, {granularity: "grapheme"});
-    const graphemes: IntlSegmenterStandInType[] = Array.from(segmenter.segment(content));
-    const graphemeOffsets: GraphemeOffset[] = [];
-    let processedText = "";
-    let prevGraphemeOffset = 0;
-
-    graphemes.forEach((grapheme, index) => {
-      const nextGraphemeCharIndex = graphemes[index+1]?.index ?? content.length;
-      processedText += content.substring(grapheme.index, nextGraphemeCharIndex);
-      const rangeForText = layoutContext.computeRangeForText(processedText, style, baselineShift);
-      graphemeOffsets.push({
-        charOffset: grapheme.index,
-        charCount: grapheme.segment.length,
-        leadingGraphemeOffset: prevGraphemeOffset,
-        trailingGraphemeOffset: rangeForText.layout.high.x,
-      });
-      prevGraphemeOffset = rangeForText.layout.high.x;
-    });
-    return graphemeOffsets;
-  }
-
-  public toResult(paragraph: Paragraph, layoutContext: LayoutContext): RunLayoutResult {
+  public toResult(paragraph: Paragraph): RunLayoutResult {
     const result: RunLayoutResult = {
       sourceRunIndex: paragraph.runs.indexOf(this.source),
       fontId: this.fontId,
@@ -405,7 +401,6 @@ export class RunLayout {
       range: this.range.toJSON(),
       offsetFromLine: this.offsetFromLine,
       textStyle: this.style.toJSON(),
-      graphemeOffsets: this.computeGraphemeOffsets(layoutContext),
     };
 
     if (this.justificationRange) {
@@ -481,10 +476,10 @@ export class LineLayout {
     }
   }
 
-  public toResult(textBlock: TextBlock, layoutContext: LayoutContext): LineLayoutResult {
+  public toResult(textBlock: TextBlock): LineLayoutResult {
     return {
       sourceParagraphIndex: textBlock.paragraphs.indexOf(this.source),
-      runs: this.runs.map((x) => x.toResult(this.source, layoutContext)),
+      runs: this.runs.map((x) => x.toResult(this.source)),
       range: this.range.toJSON(),
       justificationRange: this.justificationRange.toJSON(),
       offsetFromDocument: this.offsetFromDocument,
@@ -517,7 +512,7 @@ export class TextBlockLayout {
 
   public toResult(): TextBlockLayoutResult {
     return {
-      lines: this.lines.map((x) => x.toResult(this.source, this._context)),
+      lines: this.lines.map((x) => x.toResult(this.source)),
       range: this.range.toJSON(),
     };
   }

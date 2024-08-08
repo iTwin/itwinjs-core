@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
+import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontMap, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
@@ -669,59 +669,74 @@ describe("layoutTextBlock", () => {
 
   describe("grapheme offsets", () => {
     it("should return an empty array if source type is not text", function () {
-      if (!isIntlSupported()) {
-        this.skip();
-      }
-
       const textBlock = TextBlock.create({ styleName: "" });
       const fractionRun = FractionRun.create({ numerator: "1", denominator: "2", styleName: "fraction" });
       textBlock.appendRun(fractionRun);
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
-      const graphemeOffsets = result.lines[0].runs[0].graphemeOffsets;
+      const args: ComputeGraphemeOffsetsArgs = {
+        textBlock,
+        iModel: {} as any,
+        findTextStyle: () => TextStyleSettings.defaults,
+        findFontId: () => 0,
+        computeTextRange: computeTextRangeAsStringLength,
+        paragraphIndex: result.lines[0].sourceParagraphIndex,
+        runLayoutResult: result.lines[0].runs[0],
+        graphemeCharIndexes: [0],
+      };
+      const graphemeRanges = computeGraphemeOffsets(args);
 
-      expect(graphemeOffsets).to.be.an("array").that.is.empty;
-    });
-
-    it("should compute grapheme offsets correctly for a given text", function () {
-      if (!isIntlSupported()) {
-        this.skip();
-      }
-      const textBlock = TextBlock.create({ styleName: "" });
-      const textRun = TextRun.create({ content: "hello", styleName: "text" });
-      textBlock.appendRun(textRun);
-
-      const layout = doLayout(textBlock);
-      const result = layout.toResult();
-      const graphemeOffsets = result.lines[0].runs[0].graphemeOffsets;
-
-      expect(graphemeOffsets).to.be.an("array").that.has.lengthOf(5);
-      expect(graphemeOffsets[0]).to.deep.include({ charOffset: 0, charCount: 1, leadingGraphemeOffset: 0, trailingGraphemeOffset: 1 });
-      expect(graphemeOffsets[4]).to.deep.include({ charOffset: 4, charCount: 1, leadingGraphemeOffset: 4, trailingGraphemeOffset: 5 });
+      expect(graphemeRanges).to.be.an("array").that.is.empty;
     });
 
     it("should handle empty text content", function () {
-      if (!isIntlSupported()) {
-        this.skip();
-      }
-
       const textBlock = TextBlock.create({ styleName: "" });
       const textRun = TextRun.create({ content: "", styleName: "text" });
       textBlock.appendRun(textRun);
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
-      const graphemeOffsets = result.lines[0].runs[0].graphemeOffsets;
+      const args: ComputeGraphemeOffsetsArgs = {
+        textBlock,
+        iModel: {} as any,
+        findTextStyle: () => TextStyleSettings.defaults,
+        findFontId: () => 0,
+        computeTextRange: computeTextRangeAsStringLength,
+        paragraphIndex: result.lines[0].sourceParagraphIndex,
+        runLayoutResult: result.lines[0].runs[0],
+        graphemeCharIndexes: [0], // Supply a grapheme index even though there is no text
+      };
+      const graphemeRanges = computeGraphemeOffsets(args);
 
-      expect(graphemeOffsets).to.be.an("array").that.is.empty;
+      expect(graphemeRanges).to.be.an("array").that.is.empty;
+    });
+
+    it("should compute grapheme offsets correctly for a given text", function () {
+      const textBlock = TextBlock.create({ styleName: "" });
+      const textRun = TextRun.create({ content: "hello", styleName: "text" });
+      textBlock.appendRun(textRun);
+
+      const layout = doLayout(textBlock);
+      const result = layout.toResult();
+      const args: ComputeGraphemeOffsetsArgs = {
+        textBlock,
+        iModel: {} as any,
+        findTextStyle: () => TextStyleSettings.defaults,
+        findFontId: () => 0,
+        computeTextRange: computeTextRangeAsStringLength,
+        paragraphIndex: result.lines[0].sourceParagraphIndex,
+        runLayoutResult: result.lines[0].runs[0],
+        graphemeCharIndexes: [0, 1, 2, 3, 4],
+      };
+      const graphemeRanges = computeGraphemeOffsets(args);
+
+      expect(graphemeRanges).to.be.an("array").that.has.lengthOf(5);
+      expect(graphemeRanges[0].high.x).to.equal(1);
+      expect(graphemeRanges[4].high.x).to.equal(5);
     });
 
     it("should compute grapheme offsets correctly for non-English text", function () {
-      if (!isIntlSupported()) {
-        this.skip();
-      }
-
       const textBlock = TextBlock.create({ styleName: "" });
       // Hindi - "Paragraph"
       const textRun = TextRun.create({ content: "अनुच्छेद", styleName: "text" });
@@ -729,28 +744,46 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
-      const graphemeOffsets = result.lines[0].runs[0].graphemeOffsets;
+      const args: ComputeGraphemeOffsetsArgs = {
+        textBlock,
+        iModel: {} as any,
+        findTextStyle: () => TextStyleSettings.defaults,
+        findFontId: () => 0,
+        computeTextRange: computeTextRangeAsStringLength,
+        paragraphIndex: result.lines[0].sourceParagraphIndex,
+        runLayoutResult: result.lines[0].runs[0],
+        graphemeCharIndexes: [0, 1, 3, 7],
+      };
+      const graphemeRanges = computeGraphemeOffsets(args);
 
-      expect(graphemeOffsets).to.be.an("array").that.has.lengthOf(4); // Length based on actual grapheme segmentation
-      expect(graphemeOffsets[0]).to.deep.include({ charOffset: 0, charCount: 1, leadingGraphemeOffset: 0, trailingGraphemeOffset: 1 });
-      expect(graphemeOffsets[3]).to.deep.include({ charOffset: 7, charCount: 1, leadingGraphemeOffset: 7, trailingGraphemeOffset: 8 });
+      expect(graphemeRanges).to.be.an("array").that.has.lengthOf(4); // Length based on actual grapheme segmentation
+      expect(graphemeRanges[0].high.x).to.equal(1);
+      expect(graphemeRanges[1].high.x).to.equal(3);
+      expect(graphemeRanges[2].high.x).to.equal(7);
+      expect(graphemeRanges[3].high.x).to.equal(8);
     });
 
     it("should compute grapheme offsets correctly for emoji content", function () {
-      if (!isIntlSupported()) {
-        this.skip();
-      }
-
       const textBlock = TextBlock.create({ styleName: "" });
       const textRun = TextRun.create({ content: "👨‍👦", styleName: "text" });
       textBlock.appendRun(textRun);
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
-      const graphemeOffsets = result.lines[0].runs[0].graphemeOffsets;
+      const args: ComputeGraphemeOffsetsArgs = {
+        textBlock,
+        iModel: {} as any,
+        findTextStyle: () => TextStyleSettings.defaults,
+        findFontId: () => 0,
+        computeTextRange: computeTextRangeAsStringLength,
+        paragraphIndex: result.lines[0].sourceParagraphIndex,
+        runLayoutResult: result.lines[0].runs[0],
+        graphemeCharIndexes: [0],
+      };
+      const graphemeRanges = computeGraphemeOffsets(args);
 
-      expect(graphemeOffsets).to.be.an("array").that.has.lengthOf(1); // Length based on actual grapheme segmentation
-      expect(graphemeOffsets[0]).to.deep.include({ charOffset: 0, charCount: 5, leadingGraphemeOffset: 0, trailingGraphemeOffset: 5 });
+      expect(graphemeRanges).to.be.an("array").that.has.lengthOf(1); // Length based on actual grapheme segmentation
+      expect(graphemeRanges[0].high.x).to.equal(5);
     });
   });
 

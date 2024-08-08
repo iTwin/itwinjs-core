@@ -11,21 +11,6 @@ import { FontId } from "../Fonts";
 import { TextStyleSettingsProps } from "./TextStyle";
 
 /**
- * The offset of a grapheme in a text [[RunLayoutResult]].
- * @beta
- */
-export interface GraphemeOffset {
-  /** The character index in the [[RunLayoutResult]] that the grapheme starts at. */
-  charOffset: number;
-  /** The number of characters in the grapheme. */
-  charCount: number;
-  /** The distance from the start of the run to the start of the grapheme. */
-  leadingGraphemeOffset: number;
-  /** The distance from the start of the run to the end of the grapheme. */
-  trailingGraphemeOffset: number;
-}
-
-/**
  * Represents a single run in a [[LineLayoutResult]].
  * @note Get the text content of the RunLayoutResult using a combination of the `sourceRunIndex`, `characterOffset`, and `characterCount`.
  * @beta
@@ -54,8 +39,6 @@ export interface RunLayoutResult {
   numeratorRange?: Range2dProps;
   /** The range containing the contents of the [[FractionRun]]'s denominator. */
   denominatorRange?: Range2dProps;
-  /** Offsets for each grapheme in a text run. Empty if the run is not a [[TextRun]]. */
-  graphemeOffsets: GraphemeOffset[];
 }
 
 /**
