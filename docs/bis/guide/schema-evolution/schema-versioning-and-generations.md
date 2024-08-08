@@ -173,7 +173,7 @@ Deleting ECClasses, ECEnumerations, KindOfQuantities, or ECProperties.
   * KindOfQuantities
     * Add a new KindOfQuantity
   * PropertyCategories
-    * Add, delete, modify a PropertyCategory
+    * Add, delete, or modify a PropertyCategory
   * CustomAttributes on the ECSchema
     * Add, delete, modify
 
