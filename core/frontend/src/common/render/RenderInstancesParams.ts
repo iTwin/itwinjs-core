@@ -23,6 +23,22 @@ export interface RenderInstancesParams {
   features?: InstancedFeaturesParams;
 }
 
+export namespace RenderInstancesParams {
+  export function collectTransferables(xfers: Set<Transferable>, params: RenderInstancesParams): void {
+    if (params.opaque) {
+      InstancedGraphicProps.collectTransferables(xfers, params.opaque);
+    }
+
+    if (params.translucent) {
+      InstancedGraphicProps.collectTransferables(xfers, params.translucent);
+    }
+
+    if (params.features) {
+      xfers.add(params.features.data.buffer);
+    }
+  }
+}
+
 export interface InstanceSymbology {
   weight?: number;
   linePixels?: LinePixels;
@@ -41,10 +57,3 @@ export interface RenderInstancesParamsBuilder {
   finish(): RenderInstancesParams;
 }
 
-
-// ###TODO
-// export namespace RenderInstancesParams {
-//   export function collectTransferables(xfers: Set<Tranferable>, params: RenderInstancesParams): void {
-//     if ()
-//   }
-// }
