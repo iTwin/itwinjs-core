@@ -41,7 +41,11 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
+<<<<<<< HEAD
     implementation 'com.github.itwin:mobile-native-android:4.8.39'
+=======
+    implementation 'com.github.itwin:mobile-native-android:4.9.4'
+>>>>>>> 2e5b5dfe3b (Check for the possibility that a TextureId is a number while cloning it. (#6933))
     implementation 'androidx.webkit:webkit:1.5.0'
 }
 

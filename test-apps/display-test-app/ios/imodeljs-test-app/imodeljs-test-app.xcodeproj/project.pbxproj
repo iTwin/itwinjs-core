@@ -453,7 +453,11 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
+<<<<<<< HEAD
 				version = 4.8.39;
+=======
+				version = 4.9.4;
+>>>>>>> 2e5b5dfe3b (Check for the possibility that a TextureId is a number while cloning it. (#6933))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
