@@ -52,7 +52,7 @@ importers:
       nyc: ^15.1.0
       reflect-metadata: ^0.1.13
       rimraf: ^3.0.2
-      semver: ^7.3.5
+      semver: ^7.5.2
       sinon: ^17.0.1
       source-map-loader: ^4.0.0
       touch: ^3.1.0
@@ -73,7 +73,7 @@ importers:
       linebreak: 1.1.0
       multiparty: 4.2.1
       reflect-metadata: 0.1.13
-      semver: 7.3.5
+      semver: 7.5.4
       touch: 3.1.0
       ws: 7.5.10
     devDependencies:
@@ -1067,7 +1067,7 @@ importers:
       mocha: ^10.2.0
       nyc: ^15.1.0
       rimraf: ^3.0.2
-      semver: ^7.3.5
+      semver: ^7.5.2
       typescript: ~5.3.3
     devDependencies:
       '@itwin/build-tools': link:../../../tools/build
@@ -1086,7 +1086,7 @@ importers:
       mocha: 10.2.0
       nyc: 15.1.0
       rimraf: 3.0.2
-      semver: 7.3.5
+      semver: 7.5.4
       typescript: 5.3.3
 
   ../../domains/linear-referencing/backend:
@@ -2069,7 +2069,7 @@ importers:
       glob: ^10.3.12
       null-loader: ^4.0.1
       rimraf: ^3.0.2
-      semver: ^7.3.5
+      semver: ^7.5.2
       source-map-loader: ^4.0.0
       spdy: ^4.0.1
       stream-browserify: ^3.0.0
@@ -2086,7 +2086,7 @@ importers:
       '@itwin/express-server': link:../../core/express-server
       electron: 31.0.0
       express: 4.18.2
-      semver: 7.3.5
+      semver: 7.5.4
       spdy: 4.0.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -2251,7 +2251,7 @@ importers:
       rimraf: ^3.0.2
       rxjs: ^7.8.1
       rxjs-for-await: ^1.0.0
-      semver: ^7.3.5
+      semver: ^7.5.2
       sinon: ^17.0.1
       sinon-chai: ^3.7.0
       source-map-support: ^0.5.6
@@ -2261,7 +2261,7 @@ importers:
       object-hash: 1.3.1
       rxjs: 7.8.1
       rxjs-for-await: 1.0.0_rxjs@7.8.1
-      semver: 7.3.5
+      semver: 7.5.4
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../../core/backend
@@ -10528,7 +10528,7 @@ packages:
       lodash: 4.17.21
       npmlog: 7.0.1
       rimraf: 5.0.5
-      semver: 7.3.5
+      semver: 7.6.0
       source-map-support: 0.5.6
       teen_process: 2.1.1
       uuid: 9.0.1
@@ -11819,20 +11819,12 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  /semver/7.3.5:
-    resolution: {integrity: sha512-PoeGJYh8HK4BTO/a9Tf6ZG3veo/A7ZVsYrSA6J8ny9nb3B1VrpkuN+z9OE5wfE5p6H4LchYZsegiQgbJD94ZFQ==}
-    engines: {node: '>=10'}
-    hasBin: true
-    dependencies:
-      lru-cache: 6.0.0
-
   /semver/7.5.4:
     resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
-    dev: false
 
   /semver/7.6.0:
     resolution: {integrity: sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==}
@@ -13126,7 +13118,7 @@ packages:
       perfect-debounce: 1.0.0
       picocolors: 1.0.0
       sirv: 2.0.4
-      vite: 5.3.3_@types+node@18.16.20
+      vite: 5.3.3
     transitivePeerDependencies:
       - rollup
       - supports-color
