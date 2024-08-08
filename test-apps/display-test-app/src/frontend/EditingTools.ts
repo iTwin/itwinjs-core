@@ -274,17 +274,12 @@ export async function transformElements(imodel: BriefcaseConnection, ids: string
   await basicManipulationIpc.transformPlacement(compressIds(ids), transform.toJSON());
 }
 
-/** This tool adds a seequent reality model to the viewport.
- * @alpha
- */
+/** This tool moves an element relative to its current position. */
 export class MoveElementTool extends Tool {
   public static override toolId = "MoveElement";
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 4; }
 
-  /** This method runs the tool, adding a reality model to the viewport
-   * @param url the URL which points to the reality model tileset
-   */
   public override async run(elementId: string, x: number, y: number, z: number): Promise<boolean> {
 
     if (!IModelApp.viewManager.selectedView) {
@@ -300,7 +295,7 @@ export class MoveElementTool extends Tool {
     return true;
   }
 
-  /** Executes this tool's run method with args[0] containing the `url` argument.
+  /** Executes this tool's run method passing in the elementId and the offset.
    * @see [[run]]
    */
   public override async parseAndRun(...args: string[]): Promise<boolean> {
