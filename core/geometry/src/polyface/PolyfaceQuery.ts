@@ -593,9 +593,9 @@ export class PolyfaceQuery {
   }
   /**
    * Test edges pairing in `source` mesh.
-   * * For `allowSimpleBoundaries === false` true return means this is a closed 2-manifold surface.
-   * * For `allowSimpleBoundaries === true` true means this is a 2-manifold surface which may have boundary, but is
-   * still properly matched internally.
+   * * For `allowSimpleBoundaries === false`, returning true means this is a closed 2-manifold surface.
+   * * For `allowSimpleBoundaries === true`, returning true means this is a 2-manifold surface which may have
+   * a boundary, but is still properly matched internally.
    * * Any edge with 3 or more adjacent facets triggers `false` return.
    * * Any edge with 2 adjacent facets in the same direction triggers a `false` return.
   */

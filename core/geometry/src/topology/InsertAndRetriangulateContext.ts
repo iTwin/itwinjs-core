@@ -236,7 +236,7 @@ export class InsertAndRetriangulateContext {
       return false;
 
     // Try to avoid skinny triangles. If we iterated, this could get out of control (e.g., inserting point into a fan).
-    // Limiting reclassification to one pass ensures the hit doesn't move more than tol and reduces skinny triangles
+    // Limiting to one reclassification ensures the hit doesn't move more than tol and reduces skinny triangles
     // adjacent to the hull.
     if (!this.reclassifyFaceHit(point))
       this.reclassifyEdgeHit(point);
