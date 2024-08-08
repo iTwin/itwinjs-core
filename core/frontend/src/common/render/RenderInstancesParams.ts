@@ -8,10 +8,13 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { InstancedGraphicProps } from "./InstancedGraphicParams";
-import { Transform } from "@itwin/core-geometry";
-import { Feature, FeatureAppearance, LinePixels, RgbColorProps } from "@itwin/core-common";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { Feature, FeatureAppearance, FeatureTable, LinePixels, RgbColorProps } from "@itwin/core-common";
+import { _implementationProhibited } from "../internal/Symbols";
 
 export interface InstancedFeaturesParams {
+  /** @internal */
+  [_implementationProhibited]: unknown;
   modelId: Id64String;
   data: Uint32Array;
   count: number;
@@ -57,6 +60,8 @@ export interface CreateRenderInstancesParamsBuilderArgs {
 }
 
 export interface RenderInstancesParamsBuilder {
+  /** @internal */
+  [_implementationProhibited]: unknown;
   add(instance: Instance): void;
   finish(): RenderInstancesParams;
 }
@@ -67,26 +72,103 @@ export namespace RenderInstancesParamsBuilder {
   }
 }
 
+class PropsBuilder {
+  private readonly _instances: Instance[] = [];
+  private readonly _transformRange = new Range3d();
+  private _haveSymbology = false;
+  
+  public add(instance: Instance): void {
+    this._instances.push(instance);
+
+    this._transformRange.extendXYZ(instance.transform.origin.x, instance.transform.origin.y, instance.transform.origin.z);
+
+    if (instance.symbology) {
+      this._haveSymbology = true;
+    }
+  }
+
+  public get length() { return this._instances.length; }
+
+  public finish(featureTable: FeatureTable | undefined): InstancedGraphicProps | undefined {
+    const count = this.length;
+    if (0 === count) {
+      return undefined;
+    }
+
+    const tfc = this._transformRange.center;
+    const transformCenter = { x: tfc.x, y: tfc.y, z: tfc.z };
+
+    const transforms = new Float32Array(count * 12);
+    const featureIds = featureTable ? new Uint8Array(count * 3) : undefined;
+    const symbologyOverrides = this._haveSymbology ? new Uint8Array(count * 8) : undefined;
+
+    for (let i = 0; i < count; i++) {
+      const instance = this._instances[i];
+      if (featureIds) {
+        const feature = typeof instance.feature === "string" ? new Feature(instance.feature) : instance.feature;
+        const featureIndex = feature ? featureTable!.insert(feature) : 0;
+        featureIds[i * 3 + 0] = featureIndex & 0xff;
+        featureIds[i * 3 + 1] = (featureIndex & 0xff00) >> 8;
+        featureIds[i * 3 + 2] = (featureIndex & 0xff0000) >> 16;
+      }
+
+      if (symbologyOverrides && instance.symbology) {
+        // ###TODO
+      }
+
+      // ###TODO transform
+    }
+
+    return {
+      count,
+      transforms,
+      transformCenter,
+      featureIds,
+      symbologyOverrides,
+    };
+  }
+}
+
 class Builder implements RenderInstancesParamsBuilder {
-  private readonly _opaque: Instance[] = []
-  private readonly _translucent: Instance[] = []
+  public readonly [_implementationProhibited] = undefined;
+  private readonly _opaque = new PropsBuilder();
+  private readonly _translucent = new PropsBuilder();
   private readonly _modelId?: Id64String;
+  private _numFeatures = 0;
   
   public constructor(modelId?: Id64String) {
     this._modelId = modelId;
   }
 
   public add(instance: Instance): void {
-    if (undefined !== instance.feature && undefined === this._modelId) {
-      throw new Error("Instanced features require a model Id to be supplied when creating the RenderInstancesParamsBuilder");
-    }
-
     // If symbology.transparency is defined and non-zero, the instance goes in the translucent bucket.
     const list = instance.symbology?.transparency ? this._translucent : this._opaque;
-    list.push(instance);
+    list.add(instance);
+    
+    if (undefined !== instance.feature) {
+      this._numFeatures++;
+    }
   }
 
   public finish(): RenderInstancesParams {
-    return {} as any;
+    const numInstances = this._opaque.length + this._translucent.length;
+    if (numInstances === 0) {
+      return { };
+    }
+
+    let featureTable;
+    if (this._numFeatures > 0) {
+      featureTable = new FeatureTable(numInstances, this._modelId);
+      if (this._numFeatures < numInstances) {
+        // Some instances don't correspond to a Feature. They'll use feature index zero.
+        featureTable.insert(new Feature());
+      }
+    }
+
+    return {
+      opaque: this._opaque.finish(featureTable),
+      translucent: this._translucent.finish(featureTable),
+      // ###TODO features
+    };
   }
 }
