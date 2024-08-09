@@ -91,7 +91,7 @@ yargs.strict(true)
         },
         "includeUnexportedApis": {
           boolean: true,
-          describe: "If this flag is set, then APIs that are unexported but are accessible via exported APIs will also be included to the API report. Defaults to `false`"
+          describe: "If this flag is set, then APIs that are unexported, but still indirectly accessible via exported APIs, will also be included to the API report. Defaults to `false`"
         },
       })
     },
