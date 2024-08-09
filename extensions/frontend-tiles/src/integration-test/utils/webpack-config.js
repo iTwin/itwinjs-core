@@ -10,9 +10,7 @@ const frontendLib = path.resolve(__dirname, '../../../lib/cjs');
 const Dotenv = require('dotenv-webpack');
 const webpack = require('webpack');
 const copyExternalsPlugin =
-    require(
-        '../../../node_modules/@itwin/core-webpack-tools/lib/plugins/CopyExternalsPlugin.js')
-        .CopyExternalsPlugin;
+    require('@itwin/core-webpack-tools').CopyExternalsPlugin;
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 function createConfig(shouldInstrument) {
@@ -59,19 +57,21 @@ function createConfig(shouldInstrument) {
     plugins: [
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
-      new webpack.DefinePlugin({
-        'process.env': Object.keys(process.env)
-                           .reduce(
-                               (env, key) => {
-                                 env[key] = JSON.stringify(process.env[key]);
-                                 return env;
-                               },
-                               {}),
-      }),
+      // new webpack.DefinePlugin({
+      //   'process.env': Object.keys(process.env)
+      //                      .reduce(
+      //                          (env, key) => {
+      //                            env[key] = JSON.stringify(process.env[key]);
+      //                            return env;
+      //                          },
+      //                          {}),
+      // }),
       new Dotenv(),
       new NodePolyfillPlugin(),
       new copyExternalsPlugin(),
     ],
+    // target: 'node',
+    // externalsPresets: {node: true},
   };
 
   if (shouldInstrument) {
@@ -95,37 +95,3 @@ function createConfig(shouldInstrument) {
 
 // Runs webpack once for each config in the export array
 module.exports = [createConfig(false), createConfig(true)]
-
-
-
-    // module.exports = {
-    //   entry : globSync(path.resolve(frontendLib,
-    //   'integration-test/**/*.test.js'), {
-    //           windowsPathsNoEscape : true,
-    //         }),
-    //   output : {
-    //     filename : 'bundled-integration-tests.js',
-    //     path : path.resolve(__dirname, 'dist'),
-    //   },
-    //   plugins : [new Dotenv(), new NodePolyfillPlugin()],
-    //   externalsPresets : {
-    //     node : true,
-    //   },
-    //   module : {
-    //     rules :
-    //     [
-    //       {test : /\.js$/, loader : 'source-map-loader', enforce : 'pre'}, {
-    //         test : /\.(jsx?|tsx?)$/,
-    //         include : frontendLib,
-    //         exclude : path.join(frontendLib, 'test'),
-    //         use : {
-    //           loader : 'babel-loader',
-    //           options : {
-    //             plugins : ['babel-plugin-istanbul'],
-    //           },
-    //         },
-    //         enforce : 'post',
-    //       }
-    //     ]
-    //   },
-    // };
