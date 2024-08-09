@@ -321,17 +321,31 @@ The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
 ```Typescript
+const unitsProvider = IModelApp.quantityFormatter.unitsProvider; // Uses the BasicUnitsProvider by default
+const outUnit = await unitsProvider.findUnitByName("Units.FT");
+
+const formatData = {
+  composite: {
+    includeZero: true,
+    spacer: "-",
+    units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
+  },
+  formatTraits: ["keepSingleZero", "showUnitLabel"],
+  precision: 8,
+  type: "Fractional",
+  uomSeparator: "",
+  allowMathematicOperations: true,
+};
+
+const format = new Format("compositeFeetInches");
+await format.fromJSON(unitsProvider, formatData);
 
 // Operation containing many units (feet, inches, yards).
-const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
+const inString = "5 ft + 12 in + 1 yd -1 ft 6 in + 1'6\""; // 1'6" translates to a value of 1.5 ft
 
-// Asynchronous implementation
-const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
-// quantityProps.magnitude 7.5 (value in feet)
-
-// Synchronous implementation
-const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
-// parseResult.value 7.5 (value in feet)
+const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
+const parseResult = parserSpec.parseToQuantityValue(inString);
+// parseResult.value returns 9.0 (value in feet)
 ```
 
 #### Limitations

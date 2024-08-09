@@ -34,4 +34,30 @@ When FormatterSpec and ParserSpec are initialized, they ask for the unit convers
 
 ### Examples of Usage
 
-#### Formatting Examples
+
+#### Mathematical operation parsing
+
+The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
+```Typescript
+const unitsProvider = new BasicUnitsProvider();
+const formatData = {
+  formatTraits: ["keepSingleZero", "showUnitLabel"],
+  precision: 8,
+  type: "Fractional",
+  uomSeparator: "",
+  allowMathematicOperations: true,
+};
+
+const format = new Format("exampleFormat");
+await format.fromJSON(unitsProvider, formatData);
+// Operation containing many units (feet, inches, yards).
+const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
+
+// Asynchronous implementation
+const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
+// quantityProps.magnitude 7.5 (value in feet)
+
+// Synchronous implementation
+const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
+// parseResult.value 7.5 (value in feet)
+```
