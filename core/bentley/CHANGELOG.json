@@ -2,6 +2,27 @@
   "name": "@itwin/core-bentley",
   "entries": [
     {
+      "version": "4.8.0",
+      "tag": "@itwin/core-bentley_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add `ListenerType` helper to retrieve listener type of a `BeEvent`."
+          },
+          {
+            "comment": "Update ThirdPartyNotices.md"
+          },
+          {
+            "comment": "Add fork and merge methods to TransientIdSequence."
+          },
+          {
+            "comment": "Begin deprecating @internal APIs."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.7.8",
       "tag": "@itwin/core-bentley_v4.7.8",
       "date": "Wed, 31 Jul 2024 13:38:04 GMT",
