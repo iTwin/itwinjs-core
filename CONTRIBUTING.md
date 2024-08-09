@@ -68,11 +68,6 @@ You may be asked to clarify things or try different approaches, so please follow
 We'd love to accept your contributions to iTwin.js.
 There are just a few guidelines you need to follow.
 
-### Contributor License Agreement (CLA)
-
-A [Contribution License Agreement with Bentley](https://gist.github.com/imodeljs-admin/9a071844d3a8d420092b5cf360e978ca) must be signed before your contributions will be accepted. Upon opening a pull request, you will be prompted to use [cla-assistant](https://cla-assistant.io/) for a one-time acceptance applicable for all Bentley projects.
-You can read more about [Contributor License Agreements](https://en.wikipedia.org/wiki/Contributor_License_Agreement) on Wikipedia.
-
 ### Pull Requests
 
 All submissions go through a review process.
@@ -88,5 +83,7 @@ We welcome contributions, large or small, including:
 - Documentation corrections or additions
 - Example code snippets
 - Sample data
+
+If you would like to contribute new APIs, please check the [CODEOWNERS](https://github.com/iTwin/itwinjs-core/blob/master/.github/CODEOWNERS) file to ensure your contributions align with the package owner's and project goals.
 
 Thank you for taking the time to contribute to open source and making great projects like iTwin.js possible!
