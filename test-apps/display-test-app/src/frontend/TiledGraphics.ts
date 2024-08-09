@@ -5,7 +5,7 @@
 
 import { QueryRowFormat } from "@itwin/core-common";
 import {
-  FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
+  FeatureSymbology, IModelApp, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Tool, Viewport,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
@@ -123,5 +123,19 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
   } catch (err: any) {
     alert(err.toString());
     return;
+  }
+}
+
+export class ToggleSecondaryIModelTool extends Tool {
+  public static override toolId = "ToggleSecondaryIModel";
+
+  public override async run(): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp) {
+      return false;
+    }
+
+    await toggleExternalTiledGraphicsProvider(vp);
+    return true;
   }
 }
