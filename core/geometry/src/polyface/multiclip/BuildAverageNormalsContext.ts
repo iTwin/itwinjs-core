@@ -86,11 +86,7 @@ export class BuildAverageNormalsContext {
     // At each sector of each face, notate (a) IndexedAreaNormal of the facet, (b) the sector index, (c) the point index.
 
     while (visitor.moveToNextFacet()) {
-      let facetNormal = PolygonOps.areaNormalGo(visitor.point);
-      if (!facetNormal) {
-        facetNormal = defaultNormal.clone();
-      }
-
+      const facetNormal = PolygonOps.areaNormalGo(visitor.point) ?? defaultNormal.clone();
       let area = facetNormal.magnitude();
       if (area < smallArea) {
         facetNormal.setFromVector3d(defaultNormal);
