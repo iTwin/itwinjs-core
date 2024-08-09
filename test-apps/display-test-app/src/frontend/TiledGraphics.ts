@@ -102,15 +102,37 @@ class Provider implements TiledGraphicsProvider {
 
 class Provider implements TiledGraphicsProvider {
   private readonly _view: ViewState;
+  private readonly _ovrs: FeatureSymbology.Overrides;
 
   public get iModel() { return this._view.iModel; }
 
   private constructor(view: ViewState) {
     this._view = view;
+    this._ovrs = new FeatureSymbology.Overrides(view);
   }
 
   public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
     this._view.forEachTileTreeRef(func);
+  }
+
+  public addToScene(context: SceneContext): void {
+    this._view.forEachTileTreeRef((ref) => {
+      const tree = ref.treeOwner.load();
+      if (!tree) {
+        return;
+      }
+
+      const args = ref.createDrawArgs(context);
+      if (!args) {
+        return;
+      }
+
+      tree.draw(args);
+
+      args.graphics.symbologyOverrides = this._ovrs;
+      const branch = context.createBranch(args.graphics, args.location);
+      context.outputGraphic(branch);
+    });
   }
 
   public static async create(iModel: IModelConnection): Promise<Provider> {
