@@ -5,11 +5,12 @@
 
 import { QueryRowFormat } from "@itwin/core-common";
 import {
-  FeatureSymbology, IModelApp, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Tool, Viewport,
+  FeatureSymbology, IModelApp, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
-/** A reference to a TileTree originating from a different IModelConnection than the one the user opened. */
+/*
+// A reference to a TileTree originating from a different IModelConnection than the one the user opened.
 class ExternalTreeRef extends TileTreeReference {
   private readonly _ref: TileTreeReference;
   private readonly _ovrs: FeatureSymbology.Overrides;
@@ -97,10 +98,31 @@ class Provider implements TiledGraphicsProvider {
       func(ref);
   }
 }
+*/
+
+class Provider implements TiledGraphicsProvider {
+  private readonly _view: ViewState;
+
+  public get iModel() { return this._view.iModel; }
+
+  private constructor(view: ViewState) {
+    this._view = view;
+  }
+
+  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
+    this._view.forEachTileTreeRef(func);
+  }
+
+  public static async create(iModel: IModelConnection): Promise<Provider> {
+    const creator = new ViewCreator3d(iModel);
+    const view = await creator.createDefaultView();
+    return new Provider(view);
+  }
+}
 
 const providersByViewport = new Map<Viewport, Provider>();
 
-/** A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport. */
+//* A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport.
 export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise<void> {
   const existing = providersByViewport.get(vp);
   if (undefined !== existing) {
@@ -117,7 +139,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
   let iModel;
   try {
     iModel = await SnapshotConnection.openFile(filename);
-    const provider = await Provider.create(vp, iModel);
+    const provider = await Provider.create(iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);
   } catch (err: any) {
