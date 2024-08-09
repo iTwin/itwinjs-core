@@ -1,6 +1,14 @@
 # Change Log - @itwin/ecschema-rpcinterface-common
 
-This log was last generated on Wed, 31 Jul 2024 13:39:32 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Aug 2024 17:40:25 GMT and should not be manually modified.
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:38 GMT
+
+### Updates
+
+- Make all RPC methods GET by default
+- ECSchemaRpcLocater now has the beta tag;
 
 ## 4.7.8
 Wed, 31 Jul 2024 13:38:04 GMT

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Fix GeometryStreamBuilder.appendTextBlock producing incorrect geometry for black text.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

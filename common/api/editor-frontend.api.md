@@ -235,6 +235,8 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
     // (undocumented)
     protected _graphicsProvider?: DynamicGraphicsProvider;
     // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
     onCleanup(): Promise<void>;
     // (undocumented)
     onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;

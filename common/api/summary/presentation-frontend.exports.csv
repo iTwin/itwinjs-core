@@ -1,57 +1,58 @@
 sep=;
-Release Tag;API Item
-internal;BrowserLocalFavoritePropertiesStorage 
-public;consoleDiagnosticsHandler(diagnostics: ClientDiagnostics): void
-public;createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]): (diagnostics: ClientDiagnostics) => void
-public;createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage
-internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
-public;createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps
-public;DefaultFavoritePropertiesStorageTypes
-internal;DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties"
-internal;FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo"
-internal;FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties"
-public;FavoritePropertiesManager 
-public;FavoritePropertiesManagerProps
-public;FavoritePropertiesOrderInfo
-public;FavoritePropertiesScope
-public;GetContentRequestOptions = ContentRequestOptions
-public;GetDistinctValuesRequestOptions = DistinctValuesRequestOptions
-internal;getFieldInfos: (field: Field) => Set
-public;GetNodesRequestOptions = HierarchyRequestOptions
-public;getScopeId(scope: SelectionScope | string | undefined): string
-deprecated;getScopeId(scope: SelectionScope | string | undefined): string
-public;HiliteSet
-public;HiliteSetProvider
-public;HiliteSetProviderProps
-public;IFavoritePropertiesStorage
-internal;IModelAppFavoritePropertiesStorage 
-public;IModelContentChangeEventArgs
-public;IModelHierarchyChangeEventArgs
-internal;IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation"
-public;ISelectionProvider
-internal;NoopFavoritePropertiesStorage 
-internal;OfflineCachingFavoritePropertiesStorage 
-internal;OfflineCachingFavoritePropertiesStorageProps
-public;Presentation
-public;PresentationFrontendLoggerCategory
-public;PresentationManager 
-public;PresentationManagerProps
-public;PresentationProps
-public;PropertyFullName = string
-public;RulesetManager
-internal;RulesetManagerImpl 
-public;RulesetVariablesManager
-internal;RulesetVariablesManagerImpl 
-public;SelectionChangeEvent 
-public;SelectionChangeEventArgs
-public;SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void
-public;SelectionChangeType
-public;SelectionHandler 
-public;SelectionHandlerProps
-public;SelectionHelper
-public;SelectionManager 
-public;SelectionManagerProps
-public;SelectionScopesManager
-public;SelectionScopesManagerProps
-internal;ToolSelectionSyncHandler 
-internal;TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT"
+Release Tag;API Item Type;API Item Name
+internal;class;BrowserLocalFavoritePropertiesStorage
+public;function;consoleDiagnosticsHandler
+public;function;createCombinedDiagnosticsHandler
+public;function;createFavoritePropertiesStorage
+internal;const;createFieldOrderInfos
+public;function;createSelectionScopeProps
+public;enum;DefaultFavoritePropertiesStorageTypes
+internal;const;DEPRECATED_PROPERTIES_SETTING_NAMESPACE
+internal;const;FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME
+internal;const;FAVORITE_PROPERTIES_SETTING_NAME
+public;class;FavoritePropertiesManager
+public;interface;FavoritePropertiesManagerProps
+public;interface;FavoritePropertiesOrderInfo
+public;enum;FavoritePropertiesScope
+public;type;GetContentRequestOptions
+public;type;GetDistinctValuesRequestOptions
+internal;const;getFieldInfos
+public;type;GetNodesRequestOptions
+public;function;getScopeId
+deprecated;function;getScopeId
+public;interface;HiliteSet
+public;class;HiliteSetProvider
+public;interface;HiliteSetProviderProps
+public;interface;IFavoritePropertiesStorage
+internal;class;IModelAppFavoritePropertiesStorage
+public;interface;IModelContentChangeEventArgs
+public;interface;IModelHierarchyChangeEventArgs
+internal;const;IMODELJS_PRESENTATION_SETTING_NAMESPACE
+public;interface;ISelectionProvider
+public;type;MultipleValuesRequestOptions
+internal;class;NoopFavoritePropertiesStorage
+internal;class;OfflineCachingFavoritePropertiesStorage
+internal;interface;OfflineCachingFavoritePropertiesStorageProps
+public;class;Presentation
+public;enum;PresentationFrontendLoggerCategory
+public;class;PresentationManager
+public;interface;PresentationManagerProps
+public;interface;PresentationProps
+public;type;PropertyFullName
+public;interface;RulesetManager
+internal;class;RulesetManagerImpl
+public;interface;RulesetVariablesManager
+internal;class;RulesetVariablesManagerImpl
+public;class;SelectionChangeEvent
+public;interface;SelectionChangeEventArgs
+public;type;SelectionChangesListener
+public;enum;SelectionChangeType
+public;class;SelectionHandler
+public;interface;SelectionHandlerProps
+public;class;SelectionHelper
+public;class;SelectionManager
+public;interface;SelectionManagerProps
+public;class;SelectionScopesManager
+public;interface;SelectionScopesManagerProps
+internal;class;ToolSelectionSyncHandler
+internal;const;TRANSIENT_ELEMENT_CLASSNAME

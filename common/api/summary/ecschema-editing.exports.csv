@@ -1,167 +1,167 @@
 sep=;
-Release Tag;API Item
-beta;AnyDiagnostic = IDiagnostic
-alpha;AnyEditingError = SchemaEditingError | Error
-alpha;AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier
-alpha;AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference
-alpha;AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit
-alpha;AnySchemaItemDifference = ClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference
-alpha;AnySchemaItemPathDifference = RelationshipConstraintDifference | RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference
-alpha;AnySchemaItemTypeIdentifier = SchemaTypeIdentifiers.SchemaItemIdentifier | SchemaTypeIdentifiers.ClassIdentifier
-alpha;BaseClassDelta 
-beta;class BaseDiagnostic
-beta;BaseRule
-alpha;class BaseSchemaChange 
-alpha;class BaseSchemaChanges 
-alpha;ChangeType
-alpha;ClassChanges 
-beta;class ClassDiagnostic
-alpha;ClassId 
-alpha;ClassItemDifference = EntityClassDifference | MixinClassDifference | StructClassDifference | CustomAttributeClassDifference | RelationshipClassDifference
-alpha;ClassPropertyDifference
-alpha;ConflictCode
-alpha;ConstantDifference 
-beta;createClassDiagnosticClass
-beta;createCustomAttributeContainerDiagnosticClass
-beta;createPropertyDiagnosticClass
-beta;createRelationshipConstraintDiagnosticClass
-beta;createSchemaDiagnosticClass
-beta;createSchemaItemDiagnosticClass
-alpha;CustomAttributeClassDifference 
-alpha;CustomAttributeContainerChange 
-alpha;CustomAttributeContainerChanges 
-beta;class CustomAttributeContainerDiagnostic
-alpha;CustomAttributeDifference = CustomAttributeSchemaDifference | CustomAttributeSchemaItemDifference | CustomAttributePropertyDifference | CustomAttributeRelationshipConstraintDifference
-alpha;CustomAttributeId 
-alpha;CustomAttributePropertyDifference
-alpha;CustomAttributeRelationshipConstraintDifference
-alpha;CustomAttributeSchemaDifference
-alpha;CustomAttributeSchemaItemDifference
-beta;DiagnosticCategory
-beta;diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion"
-beta;DiagnosticCodes:
-beta;Diagnostics:
-beta;DiagnosticType
-beta;diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem"
-alpha;DifferenceType = "add" | "modify"
-alpha;ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass
-alpha;ECEditingStatus
-beta;ECRuleSet: IRuleSet
-alpha;EntityClassChanges 
-alpha;EntityClassDifference 
-alpha;EntityClassMixinDifference
-alpha;EntityMixinChange 
-alpha;EntityMixinChanges 
-alpha;EnumerationChanges 
-alpha;EnumerationDifference 
-alpha;EnumeratorChanges 
-alpha;EnumeratorDelta 
-alpha;EnumeratorDifference
-alpha;EnumeratorId 
-alpha;EnumeratorMissing 
-alpha;FormatChanges 
-beta;class FormatDiagnosticReporter 
-alpha;FormatDifference 
-alpha;FormatUnitChange 
-alpha;FormatUnitChanges 
-alpha;getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise
-alpha;IClassIdentifier 
-alpha;ICustomAttributeIdentifier 
-beta;IDiagnostic
-beta;IDiagnosticReporter
-alpha;InvertedUnitDifference 
-alpha;IPropertyIdentifier 
-alpha;IRelationshipConstraintIdentifier 
-beta;IRule
-beta;IRuleSet
-beta;IRuleSuppressionMap
-beta;IRuleSuppressionSet
-alpha;ISchemaChange
-alpha;ISchemaChanges
-alpha;ISchemaComparer
-alpha;ISchemaCompareReporter
-alpha;ISchemaIdentifier 
-alpha;ISchemaItemIdentifier 
-alpha;ISchemaTypeIdentifier
-alpha;isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference
-alpha;isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference
-alpha;isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference
-alpha;isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference
-alpha;isCustomAttributeDifference(difference: AnySchemaDifference): difference is CustomAttributeDifference
-alpha;isEntityClassDifference(difference: AnySchemaDifference): difference is EntityClassDifference
-alpha;isEntityClassMixinDifference(difference: AnySchemaDifference): difference is EntityClassMixinDifference
-alpha;isEnumerationDifference(difference: AnySchemaDifference): difference is EnumerationDifference
-alpha;isEnumeratorDifference(difference: AnySchemaDifference): difference is EnumeratorDifference
-alpha;isKindOfQuantityDifference(difference: AnySchemaDifference): difference is KindOfQuantityDifference
-alpha;isMixinClassDifference(difference: AnySchemaDifference): difference is MixinClassDifference
-alpha;isPhenomenonDifference(difference: AnySchemaDifference): difference is PhenomenonDifference
-alpha;isPropertyCategoryDifference(difference: AnySchemaDifference): difference is PropertyCategoryDifference
-alpha;isRelationshipClassDifference(difference: AnySchemaDifference): difference is RelationshipClassDifference
-alpha;isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference
-alpha;isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference
-alpha;isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference
-alpha;isSchemaItemDifference(difference: AnySchemaDifference): difference is AnySchemaItemDifference
-alpha;isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference
-alpha;isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference
-alpha;isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference
-beta;ISuppressionRule
-alpha;KindOfQuantityChanges 
-alpha;KindOfQuantityDifference 
-beta;LoggingDiagnosticReporter 
-alpha;MixinClassDifference 
-alpha;PhenomenonDifference 
-alpha;PresentationUnitChange 
-alpha;PresentationUnitChanges 
-alpha;PropertyCategoryDifference 
-alpha;PropertyChanges 
-beta;class PropertyDiagnostic
-alpha;PropertyId 
-alpha;PropertyMissing 
-alpha;PropertyTypeName
-alpha;PropertyValueChange 
-alpha;RelationshipClassChanges 
-alpha;RelationshipClassDifference 
-alpha;RelationshipConstraintChanges 
-alpha;RelationshipConstraintClassChange 
-alpha;RelationshipConstraintClassDifference
-beta;class RelationshipConstraintDiagnostic
-alpha;RelationshipConstraintDifference
-alpha;RelationshipConstraintId 
-alpha;RenamePropertyEdit
-alpha;RenameSchemaItemEdit
-alpha;SchemaChanges 
-beta;SchemaCompareCodes:
-beta;SchemaCompareDiagnostics:
-alpha;SchemaCompareDirection
-alpha;SchemaComparer
-alpha;SchemaConflictsError 
-alpha;SchemaContextEditor
-beta;class SchemaDiagnostic
-alpha;SchemaDifference
-alpha;SchemaDifferenceConflict
-alpha;SchemaDifferenceResult
-alpha;SchemaEditingError 
-alpha;SchemaEdits
-alpha;SchemaEditType
-alpha;SchemaId 
-alpha;class SchemaItemChange 
-alpha;SchemaItemChanges 
-beta;class SchemaItemDiagnostic
-alpha;SchemaItemId 
-alpha;SchemaItemMissing 
-beta;SchemaMerger
-alpha;SchemaOtherTypes
-alpha;SchemaReferenceDelta 
-alpha;SchemaReferenceDifference
-alpha;SchemaReferenceMissing 
-alpha;SchemaType = SchemaOtherTypes | SchemaItemType
-alpha;SchemaTypeIdentifiers
-beta;SchemaValidater
-beta;SchemaValidationVisitor 
-internal;SchemaWalker
-alpha;SkipEdit
-alpha;StructClassDifference 
-beta;class SuppressionDiagnosticReporter 
-alpha;UnitDifference 
-alpha;UnitLabelOverrideDelta 
-alpha;UnitSystemDifference 
+Release Tag;API Item Type;API Item Name
+beta;type;AnyDiagnostic
+alpha;type;AnyEditingError
+alpha;type;AnyIdentifier
+alpha;type;AnySchemaDifference
+alpha;type;AnySchemaEdits
+alpha;type;AnySchemaItemDifference
+alpha;type;AnySchemaItemPathDifference
+alpha;type;AnySchemaItemTypeIdentifier
+alpha;class;BaseClassDelta
+beta;class;BaseDiagnostic
+beta;type;BaseRule
+alpha;class;BaseSchemaChange
+alpha;class;BaseSchemaChanges
+alpha;enum;ChangeType
+alpha;class;ClassChanges
+beta;class;ClassDiagnostic
+alpha;class;ClassId
+alpha;type;ClassItemDifference
+alpha;interface;ClassPropertyDifference
+alpha;enum;ConflictCode
+alpha;interface;ConstantDifference
+beta;function;createClassDiagnosticClass
+beta;function;createCustomAttributeContainerDiagnosticClass
+beta;function;createPropertyDiagnosticClass
+beta;function;createRelationshipConstraintDiagnosticClass
+beta;function;createSchemaDiagnosticClass
+beta;function;createSchemaItemDiagnosticClass
+alpha;interface;CustomAttributeClassDifference
+alpha;class;CustomAttributeContainerChange
+alpha;class;CustomAttributeContainerChanges
+beta;class;CustomAttributeContainerDiagnostic
+alpha;type;CustomAttributeDifference
+alpha;class;CustomAttributeId
+alpha;interface;CustomAttributePropertyDifference
+alpha;interface;CustomAttributeRelationshipConstraintDifference
+alpha;interface;CustomAttributeSchemaDifference
+alpha;interface;CustomAttributeSchemaItemDifference
+beta;enum;DiagnosticCategory
+beta;function;diagnosticCategoryToString
+beta;const;DiagnosticCodes
+beta;const;Diagnostics
+beta;enum;DiagnosticType
+beta;function;diagnosticTypeToString
+alpha;type;DifferenceType
+alpha;type;ECClassSchemaItems
+alpha;enum;ECEditingStatus
+beta;const;ECRuleSet
+alpha;class;EntityClassChanges
+alpha;interface;EntityClassDifference
+alpha;interface;EntityClassMixinDifference
+alpha;class;EntityMixinChange
+alpha;class;EntityMixinChanges
+alpha;class;EnumerationChanges
+alpha;interface;EnumerationDifference
+alpha;class;EnumeratorChanges
+alpha;class;EnumeratorDelta
+alpha;interface;EnumeratorDifference
+alpha;class;EnumeratorId
+alpha;class;EnumeratorMissing
+alpha;class;FormatChanges
+beta;class;FormatDiagnosticReporter
+alpha;interface;FormatDifference
+alpha;class;FormatUnitChange
+alpha;class;FormatUnitChanges
+alpha;function;getSchemaDifferences
+alpha;interface;IClassIdentifier
+alpha;interface;ICustomAttributeIdentifier
+beta;interface;IDiagnostic
+beta;interface;IDiagnosticReporter
+alpha;interface;InvertedUnitDifference
+alpha;interface;IPropertyIdentifier
+alpha;interface;IRelationshipConstraintIdentifier
+beta;type;IRule
+beta;interface;IRuleSet
+beta;interface;IRuleSuppressionMap
+beta;interface;IRuleSuppressionSet
+alpha;interface;ISchemaChange
+alpha;interface;ISchemaChanges
+alpha;interface;ISchemaComparer
+alpha;interface;ISchemaCompareReporter
+alpha;interface;ISchemaIdentifier
+alpha;interface;ISchemaItemIdentifier
+alpha;interface;ISchemaTypeIdentifier
+alpha;function;isClassDifference
+alpha;function;isClassPropertyDifference
+alpha;function;isConstantDifference
+alpha;function;isCustomAttributeClassDifference
+alpha;function;isCustomAttributeDifference
+alpha;function;isEntityClassDifference
+alpha;function;isEntityClassMixinDifference
+alpha;function;isEnumerationDifference
+alpha;function;isEnumeratorDifference
+alpha;function;isKindOfQuantityDifference
+alpha;function;isMixinClassDifference
+alpha;function;isPhenomenonDifference
+alpha;function;isPropertyCategoryDifference
+alpha;function;isRelationshipClassDifference
+alpha;function;isRelationshipConstraintClassDifference
+alpha;function;isRelationshipConstraintDifference
+alpha;function;isSchemaDifference
+alpha;function;isSchemaItemDifference
+alpha;function;isSchemaReferenceDifference
+alpha;function;isStructClassDifference
+alpha;function;isUnitSystemDifference
+beta;type;ISuppressionRule
+alpha;class;KindOfQuantityChanges
+alpha;interface;KindOfQuantityDifference
+beta;class;LoggingDiagnosticReporter
+alpha;interface;MixinClassDifference
+alpha;interface;PhenomenonDifference
+alpha;class;PresentationUnitChange
+alpha;class;PresentationUnitChanges
+alpha;interface;PropertyCategoryDifference
+alpha;class;PropertyChanges
+beta;class;PropertyDiagnostic
+alpha;class;PropertyId
+alpha;class;PropertyMissing
+alpha;enum;PropertyTypeName
+alpha;class;PropertyValueChange
+alpha;class;RelationshipClassChanges
+alpha;interface;RelationshipClassDifference
+alpha;class;RelationshipConstraintChanges
+alpha;class;RelationshipConstraintClassChange
+alpha;interface;RelationshipConstraintClassDifference
+beta;class;RelationshipConstraintDiagnostic
+alpha;interface;RelationshipConstraintDifference
+alpha;class;RelationshipConstraintId
+alpha;interface;RenamePropertyEdit
+alpha;interface;RenameSchemaItemEdit
+alpha;class;SchemaChanges
+beta;const;SchemaCompareCodes
+beta;const;SchemaCompareDiagnostics
+alpha;enum;SchemaCompareDirection
+alpha;class;SchemaComparer
+alpha;class;SchemaConflictsError
+alpha;class;SchemaContextEditor
+beta;class;SchemaDiagnostic
+alpha;interface;SchemaDifference
+alpha;interface;SchemaDifferenceConflict
+alpha;interface;SchemaDifferenceResult
+alpha;class;SchemaEditingError
+alpha;class;SchemaEdits
+alpha;enum;SchemaEditType
+alpha;class;SchemaId
+alpha;class;SchemaItemChange
+alpha;class;SchemaItemChanges
+beta;class;SchemaItemDiagnostic
+alpha;class;SchemaItemId
+alpha;class;SchemaItemMissing
+beta;class;SchemaMerger
+alpha;enum;SchemaOtherTypes
+alpha;class;SchemaReferenceDelta
+alpha;interface;SchemaReferenceDifference
+alpha;class;SchemaReferenceMissing
+alpha;type;SchemaType
+alpha;enum;SchemaTypeIdentifiers
+beta;class;SchemaValidater
+beta;class;SchemaValidationVisitor
+internal;class;SchemaWalker
+alpha;interface;SkipEdit
+alpha;interface;StructClassDifference
+beta;class;SuppressionDiagnosticReporter
+alpha;interface;UnitDifference
+alpha;class;UnitLabelOverrideDelta
+alpha;interface;UnitSystemDifference
