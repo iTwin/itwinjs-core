@@ -32,7 +32,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/core-bentley.*                         @iTwin/itwinjs-core-admins
 /common/**/core-bentley/                          @iTwin/itwinjs-core-admins
 /common/**/build-tools/                           @aruniverse @ben-polinsky @calebmshafer @wgoehrig
-/common/**/certa/                                 @calebmshafer @wgoehrig
+/common/**/certa/                                 @aruniverse @calebmshafer @wgoehrig
 
 /common/**/*-extension/                           @aruniverse @calebmshafer
 
@@ -90,12 +90,13 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/core-webpack-tools/                    @aruniverse @calebmshafer @wgoehrig
 
 /common/config/azure-pipelines                    @aruniverse @calebmshafer @ColinKerr @wgoehrig
-/core/ecsql                                       @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
+
 /core/backend                                     @iTwin/itwinjs-core-admins
 /core/bentley                                     @iTwin/itwinjs-core-admins
 /core/common                                      @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
 /core/ecschema-*                                  @ColinKerr @christophermlawson @StefanApfel-Bentley
+/core/ecsql                                       @iTwin/itwinjs-core-admins @khanaffan @ColinKerr
 /core/electron                                    @wgoehrig @GytisCepk @ben-polinsky
 /core/express-server                              @paulius-valiunas @wgoehrig
 /core/extension                                   @calebmshafer @wgoehrig @aruniverse @ben-polinsky
@@ -112,11 +113,9 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /core/webgl-compatibility                         @iTwin/itwinjs-core-display
 
 /docs                                             @iTwin/itwinjs-core
-/docs/getting-started                             @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
-/docs/config                                      @iTwin/itwinjs-core-admins @anmolshres98 @hl662 @DanRod1999
-/docs/presentation                                @iTwin/itwinjs-core-presentation
 /docs/bis                                         @diegoalexdiaz @ColinKerr
-/docs/ui                                          @iTwin/itwinjs-core-ui @GerardasB
+/docs/config                                      @iTwin/itwinjs-core-admins @ben-polinsky
+/docs/presentation                                @iTwin/itwinjs-core-presentation
 
 # These domains should be split up a bit more
 /domains                                          @iTwin/itwinjs-core-admins
@@ -152,15 +151,10 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /test-apps/imodel-from-orbitgt                    @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model              @iTwin/itwinjs-core-display
 
-/tools/backend-webpack                            @aruniverse @calebmshafer @wgoehrig
-/tools/build                                      @aruniverse @calebmshafer @wgoehrig
-/tools/certa                                      @calebmshafer @wgoehrig
-/tools/ecschema2ts                                @calebmshafer @ColinKerr @wgoehrig @christophermlawson @naveedkhan8067
-/tools/internal                                   @aruniverse @calebmshafer @wgoehrig
-/tools/perf-tools                                 @aruniverse @calebmshafer @wgoehrig
-/tools/webpack-core                               @aruniverse @calebmshafer @wgoehrig
+/tools                                            @aruniverse @calebmshafer @wgoehrig
+/tools/ecschema2ts                                @ColinKerr @christophermlawson @naveedkhan8067
 
-/ui                                               @iTwin/itwinjs-core-ui
+/ui                                               @iTwin/itwinjs-core-ui @ben-polinsky
 
 # These are at the end to override all previous reviews
 
