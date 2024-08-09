@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "extract-api: Add `includeUnexportedApis` option which includes unexported but still accessible to the end-user APIs to the summary.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}
