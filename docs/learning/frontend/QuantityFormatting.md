@@ -42,7 +42,7 @@ To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) as sh
 
 ### Units Provider
 
-A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most IModels contain a `Units` schema. If this is the case, an SchemaUnitsProvider may be defined when an IModel is opened. The parent application must opt-in to using an IModel specific UnitsProvider using the following technique:
+A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most IModels contain a `Units` schema. If this is the case, a SchemaUnitProvider may be defined when an IModel is opened. The parent application must opt-in to using an IModel specific UnitsProvider using the following technique:
 
 ```ts
     const schemaLocater = new ECSchemaRpcLocater(iModelConnection);

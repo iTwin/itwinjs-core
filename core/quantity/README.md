@@ -2,15 +2,13 @@
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-## Description
-
 The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing.
 
-## Documentation
+## Terms and Concepts
 
 ### Common Terms
 
-- Unit/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label.
+- [Unit]($quantity)/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label. The definition of any unit is represented through it's `UnitProps`.
 - [UnitsProvider]($quantity) - A class that will also locate the UnitProps for a unit given name or label. This class will also provide a [UnitConversion]($quantity) to convert from one unit to another.
 - Unit Family/[Phenomenon]($ecschema-metadata) - The physical quantity that this unit measures (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
 - Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel. While there is **NO** explicit flag or property to denote a persistence unit, those units are typically a part of the `Units.SI` [UnitSystem]($ecschema-metadata). The unit conversion of any persistence unit should both have its numerator and denominator set to 1.
@@ -23,11 +21,20 @@ The __@itwin/core-quantity__ package contains classes for quantity formatting an
 
 See the [iTwin.js](https://www.itwinjs.org/learning/frontend/quantityformatting/#quantity-package) documentation on quantity formatting for more information.
 
-## How Formatting Works
+### Concepts
 
-Client-facing applications typically use the [QuantityFormatter](https://www.itwinjs.org/reference/core-frontend/quantityformatting/quantityformatter/) found in [core-frontend]($frontend) as the entry point to formatting and parsing. For more specific use cases, the primitive [Parser]($quantity) and [Formatter]($quantity) found in [core-quantity]($quantity) can be used.
+#### Unit Provider
+To appropriately parse and output formatted values, A units provider is used to define all available units and provides conversion factors between units. (There are a couple implementations of the UnitsProvider across iTwin.js:
+
+The [BasicUnitsProvider]($frontend) holds many common units and their conversions between each other.)* - NAM I feel like any writing that cites multiple different packages would best be put in a mutual learning doc, rather than in the README of one package...?
+
+The [SchemaUnitProvider]($ecschema-metadata) is another example, used to load unit definitions of schemas from an iModel.
+#### How a value is formatted
+
 
 TODO: Keep spelunking the workflow, document on when UnitsProvider comes into the start of the workflow
+
+#### How a string is parsed into a value
 
 ### What holds and/or creates Unit Conversions
 When FormatterSpec and ParserSpec are initialized, they ask for the unit conversions of each unit passed into the single created `Format` object. These unit conversions typically come from an implemented `UnitsProvider`.
