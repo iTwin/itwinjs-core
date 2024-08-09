@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-    BriefcaseConnection,
+  BriefcaseConnection,
   FeatureSymbology, IModelApp, IModelConnection, SceneContext, TiledGraphicsProvider, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
