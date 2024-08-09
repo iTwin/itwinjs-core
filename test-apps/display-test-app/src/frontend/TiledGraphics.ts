@@ -17,6 +17,9 @@ class Provider implements TiledGraphicsProvider {
 
   private constructor(view: ViewState) {
     this._view = view;
+
+    // These overrides ensure that all of the categories and subcategories in the secondary iModel are displayed.
+    // Any symbology overrides applied to the viewport are ignored.
     this._ovrs = new FeatureSymbology.Overrides(view);
   }
 
@@ -25,6 +28,7 @@ class Provider implements TiledGraphicsProvider {
   }
 
   public addToScene(context: SceneContext): void {
+    // We only need to override this so that we can apply our symbology overrides.
     this._view.forEachTileTreeRef((ref) => {
       const tree = ref.treeOwner.load();
       if (!tree) {
@@ -53,7 +57,7 @@ class Provider implements TiledGraphicsProvider {
 
 const providersByViewport = new Map<Viewport, Provider>();
 
-//* A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport.
+/** A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport. */
 export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise<void> {
   const existing = providersByViewport.get(vp);
   if (undefined !== existing) {
