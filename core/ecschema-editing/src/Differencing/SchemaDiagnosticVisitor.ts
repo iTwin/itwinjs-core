@@ -27,6 +27,7 @@ import {
   type SchemaDifference,
   SchemaOtherTypes,
   type SchemaReferenceDifference,
+  type SchemaType,
 } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 
@@ -52,7 +53,7 @@ function derivedFrom(ecClass: ECClass | undefined, baseClassName: string): boole
  */
 export class SchemaDiagnosticVisitor {
 
-  public readonly schemaDifferences: Array<SchemaDifference|SchemaReferenceDifference>;
+  public readonly schemaDifferences: Array<SchemaDifference | SchemaReferenceDifference>;
   public readonly schemaItemDifferences: Array<AnySchemaItemDifference>;
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
@@ -190,6 +191,7 @@ export class SchemaDiagnosticVisitor {
         source: sourceValue,
         target: targetValue,
         description: "Target schema already contains a schema item with the name but different type.",
+        difference: schemaItem.toJSON(),
       });
     }
 
@@ -257,6 +259,15 @@ export class SchemaDiagnosticVisitor {
         && change.itemName === item
         && change.path === "$enumerators"
         && change.difference.name === enumeratorName;
+    });
+  }
+
+  private lookupConflictEntry(code: ConflictCode, schemaType: SchemaType, itemName: string, path: string) {
+    return this.conflicts.find((change) => {
+      return change.code === code
+        && change.schemaType === schemaType
+        && change.itemName === itemName
+        && change.path === path;
     });
   }
 
@@ -347,17 +358,23 @@ export class SchemaDiagnosticVisitor {
   }
 
   private validatePropertyChange(ecProperty: Property, propertyName: string, sourceValue: unknown, targetValue: unknown): boolean {
-    if (propertyName === "primitiveType") {
-      this.addConflict({
-        code: ConflictCode.ConflictingPropertyName,
-        schemaType: ecProperty.class.schemaItemType,
-        itemName: ecProperty.class.name,
-        path: ecProperty.name,
-        source: sourceValue,
-        target: targetValue,
-        description: "Target class already contains a property with a different type.",
-      });
-      return false;
+    if (propertyName === "type"
+      || propertyName === "primitiveType"
+      || (propertyName === "enumeration" && (sourceValue === undefined || targetValue === undefined))) {
+      if (!this.lookupConflictEntry(ConflictCode.ConflictingPropertyName, ecProperty.class.schemaItemType,
+        ecProperty.class.name, ecProperty.name)) {
+        this.addConflict({
+          code: ConflictCode.ConflictingPropertyName,
+          schemaType: ecProperty.class.schemaItemType,
+          itemName: ecProperty.class.name,
+          path: ecProperty.name,
+          source: sourceValue,
+          target: targetValue,
+          description: "Target class already contains a property with a different type.",
+          difference: ecProperty.toJSON(),
+        });
+        return false;
+      }
     }
     return true;
   }

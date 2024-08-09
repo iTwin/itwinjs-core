@@ -7,12 +7,12 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
-} from "@itwin/core-frontend";
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, OnScreenTarget, TileLoadPriority } from "@itwin/core-frontend";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
+import { testOnScreenViewport } from "../TestViewport";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -385,5 +385,62 @@ describe("GraphicalEditingScope", () => {
         await expectTreeState(tree, "disposed", 0, modelRange);
       }
     });
+
+    it("edited elements should be updated by scheduling scripts", async () => {
+      imodel = await openWritable();
+
+      const modelId = "0x17";
+      const elementId = "0x27";
+
+      const scope = await imodel.enterEditingScope();
+
+      // Move the element up by 1 unit to place it in the dynamic state.
+      await transformElements(imodel, [elementId], Transform.createTranslationXYZ(0, 0, 1));
+      await imodel.saveChanges();
+
+      // Define a script that changes the color of the element to red at time 1.
+      const props: RenderSchedule.ScriptProps = [{
+        modelId,
+        elementTimelines: [{
+          batchId: 1,
+          elementIds: [elementId],
+          colorTimeline: [
+            {
+              interpolation: 1,
+              time: 1,
+              value: {
+                red: 255,
+                green: 0,
+                blue: 0,
+              },
+            }],
+        }],
+      }];
+
+      const views = await imodel.views.getViewList({ wantPrivate: true });
+
+      await testOnScreenViewport(views[0].id, imodel, 1000, 1000, async (viewport) => {
+        // Set the animation frame to 1 and render the frame.
+        viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
+        viewport.timePoint = 1;
+
+        await viewport.waitForAllTilesToRender();
+
+        const onScreenTarget = viewport.target as OnScreenTarget;
+        const featureAppearance = onScreenTarget.uniforms.branch.stack.top.symbologyOverrides.animationNodeOverrides.get(1);
+
+        // Make sure the feature appearance overrides was applied.
+        expect(featureAppearance).to.not.be.undefined;
+        expect(featureAppearance?.overridesRgb).to.be.true;
+        expect(featureAppearance?.rgb).to.eql({ r: 255, g: 0, b: 0 });
+      });
+
+      // Restore the element to its original position.
+      await transformElements(imodel, [elementId], Transform.createTranslationXYZ(0, 0, -1));
+      await imodel.saveChanges();
+
+      await scope.exit();
+    });
   }
+
 });

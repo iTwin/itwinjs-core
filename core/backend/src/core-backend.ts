@@ -47,6 +47,7 @@ export * from "./IpcHost";
 export * from "./LineStyle";
 export * from "./LocalhostIpcHost";
 export * from "./LocalHub";
+export * from "./LockControl";
 export * from "./Material";
 export * from "./Model";
 export * from "./NativeAppStorage";
@@ -60,7 +61,12 @@ export * from "./SchemaUtils";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./TextAnnotationElement";
-export { computeLayoutTextBlockResult, LayoutTextBlockArgs } from "./TextAnnotationLayout";
+export {
+  computeGraphemeOffsets,
+  computeLayoutTextBlockResult,
+  ComputeGraphemeOffsetsArgs,
+  LayoutTextBlockArgs,
+} from "./TextAnnotationLayout";
 export * from "./TextAnnotationGeometry";
 export * from "./Texture";
 export * from "./TileStorage";

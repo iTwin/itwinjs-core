@@ -11,7 +11,6 @@ import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-ge
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
-import { AnimationNodeId } from "../../common/render/AnimationNodeId";
 import { ViewRect } from "../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
@@ -63,6 +62,8 @@ import { TargetGraphics } from "./TargetGraphics";
 import { VisibleTileFeatures } from "./VisibleTileFeatures";
 import { FrameStatsCollector } from "../FrameStats";
 import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
+import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
+import { _implementationProhibited } from "../../common/internal/Symbols";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -98,6 +99,7 @@ interface ReadPixelResources {
 
 /** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
+  protected override readonly [_implementationProhibited] = undefined;
   public readonly graphics = new TargetGraphics();
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;

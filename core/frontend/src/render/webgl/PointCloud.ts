@@ -9,7 +9,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { FeatureIndexType } from "@itwin/core-common";
-import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { PointCloudArgs } from "../../common/internal/render/PointCloudPrimitive";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry } from "./CachedGeometry";

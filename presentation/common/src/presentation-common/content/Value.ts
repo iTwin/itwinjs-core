@@ -193,7 +193,7 @@ export interface NestedContentValue {
   /** Names of fields whose values are merged */
   mergedFieldNames: string[];
   /** Label of the ECInstance that this `NestedContentValue` is based on. */
-  label?: string;
+  labelDefinition?: LabelDefinition;
 }
 
 /**

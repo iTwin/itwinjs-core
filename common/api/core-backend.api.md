@@ -190,6 +190,7 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
+import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -1321,6 +1322,16 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
+
+// @beta
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+    graphemeCharIndexes: number[];
+    paragraphIndex: number;
+    runLayoutResult: RunLayoutResult;
+}
+
+// @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @public
@@ -1445,6 +1456,16 @@ export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, 
 
 // @beta
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
+
+// @beta
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+
+// @beta
+export interface DeleteElementTreeArgs {
+    iModel: IModelDb;
+    maxPasses?: number;
+    topElement: Id64String;
+}
 
 // @public
 export class DetailCallout extends Callout {
@@ -3969,6 +3990,28 @@ export class LockConflict extends IModelError {
     readonly briefcaseId: BriefcaseId;
 }
 
+// @public
+export interface LockControl {
+    // @internal
+    [_close]: () => void;
+    // @internal
+    [_elementWasCreated]: (id: Id64String) => void;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    [_releaseAllLocks]: () => Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
+    checkExclusiveLock(id: Id64String, type: string, operation: string): void;
+    checkSharedLock(id: Id64String, type: string, operation: string): void;
+    holdsExclusiveLock(id: Id64String): boolean;
+    holdsSharedLock(id: Id64String): boolean;
+    readonly isServerBased: boolean;
+    releaseAllLocks(): Promise<void>;
+}
+
 // @internal (undocumented)
 export type LockMap = Map<Id64String, LockState_2>;
 
@@ -4696,6 +4739,10 @@ export namespace SchemaSync {
         operationName: string;
         openMode?: OpenMode;
         user?: string;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    withReadonlyAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
