@@ -196,6 +196,9 @@
     },
     "CreateSectionDrawing": {
       "keyin": "dta create section drawing"
+    },
+    "ToggleSecondaryIModel": {
+      "keyin": "dta imodel attach"
     }
   }
 }

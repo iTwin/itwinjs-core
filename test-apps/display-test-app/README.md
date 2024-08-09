@@ -303,6 +303,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
 * `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
 * `dta record tilesize [on|off|toggle]` - When turned on, begins recording the encoded size of every subsequently requested iMdl tile's content. When turned off, copies the tile sizes in CSV format to the clipboard. See TileSizeRecorder.ts for details. If no argument is supplied, it defaults to `toggle`.
+* `dta imodel attach` - Toggles a secondary IModelConnection to be displayed in the active viewport. The first time it is invoked, it opens a file open dialog from which you can select the iModel. All of the 3d models in the secondary iModel will be displayed in the viewport. Invoke it again to remove the secondary iModel from the view.
 
 ## Editing
 
