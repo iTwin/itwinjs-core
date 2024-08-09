@@ -54,7 +54,7 @@
     "@itwin/itwins-client": "^1.2.0",
     "@itwin/oidc-signin-tool": "^4.3.5",
     "@itwin/perf-tools": "workspace:*",
-    "azurite": "^3.29.0",
+    "azurite": "^3.31.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
