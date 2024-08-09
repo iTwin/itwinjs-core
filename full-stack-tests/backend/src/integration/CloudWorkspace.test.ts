@@ -9,7 +9,7 @@ import * as fs from "fs-extra";
 import { join } from "path";
 import {
   CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps,
-  WorkspaceDbCloudProps,  WorkspaceDbLoadError,  WorkspaceDbLoadErrors,  WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
+  WorkspaceDbCloudProps, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
 } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -63,6 +63,19 @@ describe("Cloud workspace containers", () => {
     styles1 = await editor.createNewCloudContainer({ metadata: { label: "styles 1 container", description: "styles definitions 1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 1 ws" } });
     styles2 = await editor.createNewCloudContainer({ metadata: { label: "styles 2 container", description: "styles definitions 2" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 2 ws" } });
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+
+    const makeV1 = async (container: EditableWorkspaceContainer) => {
+      container.acquireWriteLock("before-user");
+      const copied = (await container.createNewWorkspaceDbVersion({ versionType: "major" })).newDb;
+      const wsDbEdit = container.getEditableDb(copied);
+      wsDbEdit.open();
+      wsDbEdit.close();
+      container.releaseWriteLock();
+      return container;
+    };
+
+    // Make v1.0.0
+    await Promise.all([orgContainer, itwin2Container, branchContainer, styles1, styles2].map(async (container) => makeV1(container)));
 
     itwin2ContainerProps = itwin2Container.cloudProps!;
     orgContainerProps = orgContainer.cloudProps!;
@@ -133,10 +146,27 @@ describe("Cloud workspace containers", () => {
     // after abandoning changes, the patch version we just made is gone
     expect(() => orgContainer.getEditableDb(newVer.newDb)).throws("No version of 'workspace-db' available");
 
+    // Attempting to get a released db version for edit should throw
+    orgContainer.acquireWriteLock(user);
+    expect(() => orgContainer.getEditableDb({ version: "2.0.0" })).throws("workspace-db:2.0.0 has been published and is not editable. Make a new version first.");
+    orgContainer.releaseWriteLock();
+
+    // Pre-release dbs can be edited
+    orgContainer.acquireWriteLock(user);
+    const preReleaseDb = orgContainer.getEditableDb({ version: "3.0.0-beta.0" });
+    preReleaseDb.open();
+    preReleaseDb.updateString("string 1", "new string 1 - admins are still working on this ver");
+    preReleaseDb.close();
+    orgContainer.releaseWriteLock();
+
     // make sure we can read the workspace from another CloudCache
     const wsDb = await IModelHost.appWorkspace.getWorkspaceDb({ ...orgContainerProps, version: "~2.0" });
     expect(wsDb.manifest.workspaceName).equal(orgWsName);
     expect(wsDb.getString("myVersion")).equal("2.0.0");
+
+    // verify the edit in the pre-release version
+    const preReleaseDbs = await IModelHost.appWorkspace.getWorkspaceDb({ ...orgContainerProps, version: "3.0.0-beta.0" });
+    expect(preReleaseDbs.getString("string 1")).equal("new string 1 - admins are still working on this ver");
   });
 
   const withPatchVersion = async (container: EditableWorkspaceContainer, fn: (db: EditableWorkspaceDb) => void) => {

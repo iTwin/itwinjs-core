@@ -2,6 +2,30 @@
   "name": "@itwin/ecschema-editing",
   "entries": [
     {
+      "version": "4.8.0",
+      "tag": "@itwin/ecschema-editing_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Introduced Schema Merging Changes API"
+          },
+          {
+            "comment": "Removed SchemaDifference namspace; difference method and typeguards are now exported functions of the package. SchemaDifferences has been renamed to SchemaDifferenceResult"
+          },
+          {
+            "comment": "Added SchemaItem name editing in the schema editing API."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.8",
+      "tag": "@itwin/ecschema-editing_v4.7.8",
+      "date": "Wed, 31 Jul 2024 13:38:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.7.7",
       "tag": "@itwin/ecschema-editing_v4.7.7",
       "date": "Fri, 19 Jul 2024 14:52:42 GMT",

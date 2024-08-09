@@ -2,6 +2,36 @@
   "name": "@itwin/frontend-tiles",
   "entries": [
     {
+      "version": "4.8.0",
+      "tag": "@itwin/frontend-tiles_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add iTwinjs version and Tile version tracking to query params"
+          },
+          {
+            "comment": "Fixed planar masks when using new tiles"
+          },
+          {
+            "comment": "Improve resolution of planar clip masks"
+          },
+          {
+            "comment": "Return undefined in getGeoscienceTilesetUrl() if the response is invalid and log error message."
+          },
+          {
+            "comment": "Add optional Nop fallback to frontend tiles. When a tileset.json is not found or cannot be deserialized we will return an empty Tile Tree instead of using default tiles."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.8",
+      "tag": "@itwin/frontend-tiles_v4.7.8",
+      "date": "Wed, 31 Jul 2024 13:38:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.7.7",
       "tag": "@itwin/frontend-tiles_v4.7.7",
       "date": "Fri, 19 Jul 2024 14:52:42 GMT",

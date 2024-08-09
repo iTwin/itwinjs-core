@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Fri, 19 Jul 2024 14:54:06 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Aug 2024 17:40:25 GMT and should not be manually modified.
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:37 GMT
+
+### Updates
+
+- 3-pt ellipse constructor
+- linestring global->local fraction map fix
+- fix linestring Frenet frame bug
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
 
 ## 4.7.7
 Fri, 19 Jul 2024 14:52:42 GMT
