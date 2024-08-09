@@ -8,9 +8,11 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { InstancedGraphicProps } from "./InstancedGraphicParams";
+import { OvrFlags } from "../internal/render/OvrFlags";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { Feature, FeatureAppearance, FeatureTable, LinePixels, RgbColorProps } from "@itwin/core-common";
+import { Feature, FeatureTable, LinePixels, RgbColorProps } from "@itwin/core-common";
 import { _implementationProhibited } from "../internal/Symbols";
+import { lineCodeFromLinePixels } from "../internal/render/LineCode";
 
 export interface InstancedFeaturesParams {
   /** @internal */
@@ -112,11 +114,56 @@ class PropsBuilder {
         featureIds[i * 3 + 2] = (featureIndex & 0xff0000) >> 16;
       }
 
-      if (symbologyOverrides && instance.symbology) {
-        // ###TODO
+      const symb = instance.symbology;
+      if (symbologyOverrides && symb) {
+        const ovrIdx = i * 8;
+        let flags = OvrFlags.None;
+
+        const weight = symb.weight;
+        if (undefined !== weight) {
+          symbologyOverrides[ovrIdx + 1] = Math.max(1, Math.min(31, weight));
+          flags |= OvrFlags.Weight;
+        }
+
+        if (undefined !== symb.linePixels) {
+          symbologyOverrides[ovrIdx + 2] = lineCodeFromLinePixels(symb.linePixels);
+          flags |= OvrFlags.LineCode;
+        }
+
+        if (undefined !== symb.color) {
+          symbologyOverrides[ovrIdx + 4] = Math.max(0, Math.min(symb.color.r, 255));
+          symbologyOverrides[ovrIdx + 5] = Math.max(0, Math.min(symb.color.g, 255));
+          symbologyOverrides[ovrIdx + 6] = Math.max(0, Math.min(symb.color.b, 255));
+          flags |= OvrFlags.Rgb;
+        }
+
+        if (undefined !== symb.transparency) {
+          const transp = Math.max(0, Math.min(255, symb.transparency));
+          symbologyOverrides[ovrIdx + 7] = 255 - transp;
+          flags |= OvrFlags.Alpha;
+        }
+
+        symbologyOverrides[ovrIdx] = flags;
       }
 
-      // ###TODO transform
+      const tf = instance.transform;
+      tf.origin.subtractInPlace(transformCenter);
+      const tfIdx = i * 12;
+
+      transforms[tfIdx + 0] = tf.matrix.coffs[0];
+      transforms[tfIdx + 1] = tf.matrix.coffs[1];
+      transforms[tfIdx + 2] = tf.matrix.coffs[2];
+      transforms[tfIdx + 3] = tf.origin.x;
+      
+      transforms[tfIdx + 4] = tf.matrix.coffs[3];
+      transforms[tfIdx + 5] = tf.matrix.coffs[4];
+      transforms[tfIdx + 6] = tf.matrix.coffs[5];
+      transforms[tfIdx + 7] = tf.origin.y;
+
+      transforms[tfIdx + 8] = tf.matrix.coffs[6];
+      transforms[tfIdx + 9] = tf.matrix.coffs[7];
+      transforms[tfIdx + 10] = tf.matrix.coffs[8];
+      transforms[tfIdx + 11] = tf.origin.z;
     }
 
     return {
@@ -172,3 +219,11 @@ class Builder implements RenderInstancesParamsBuilder {
     };
   }
 }
+
+    // if (SharedGeom::SymbologyOverrides::None != ovrFlags)
+    //     {
+    //     Utf8String ovrBufferId("bv");
+    //     ovrBufferId.append("InstanceOverrides").append(idStr);
+    //     AddBufferView(ovrBufferId.c_str(), ovrs);
+    //     primitiveJson["instances"]["symbologyOverrides"] = ovrBufferId;
+    //     }
