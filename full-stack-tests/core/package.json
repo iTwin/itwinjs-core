@@ -27,7 +27,7 @@
   },
   "repository": {},
   "dependencies": {
-    "@azure/storage-blob": "^12.7.0",
+    "@azure/storage-blob": "^12.24.0",
     "@itwin/browser-authorization": "^1.0.1",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
@@ -64,7 +64,7 @@
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
     "@itwin/itwins-client": "^1.2.0",
-    "@itwin/object-storage-core": "^2.2.2",
+    "@itwin/object-storage-core": "^2.2.4",
     "@itwin/oidc-signin-tool": "^4.3.5",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
