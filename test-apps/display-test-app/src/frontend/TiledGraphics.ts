@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  FeatureSymbology, IModelApp, IModelConnection, SceneContext, SnapshotConnection, TiledGraphicsProvider, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
+    BriefcaseConnection,
+  FeatureSymbology, IModelApp, IModelConnection, SceneContext, TiledGraphicsProvider, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
@@ -62,13 +63,13 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
     return;
   }
 
-  const filename = await DisplayTestApp.surface.selectFileName();
-  if (undefined === filename)
+  const fileName = await DisplayTestApp.surface.selectFileName();
+  if (undefined === fileName)
     return;
 
   let iModel;
   try {
-    iModel = await SnapshotConnection.openFile(filename);
+    iModel = await BriefcaseConnection.openFile( { fileName, key: fileName });
     const provider = await Provider.create(iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);
