@@ -33,6 +33,30 @@ function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): 
  * @alpha
  */
 export class AccuDrawShortcuts {
+  /** Disable/Enable AccuDraw for the session */
+  public static sessionToggle(): void {
+    const accudraw = IModelApp.accuDraw;
+
+    if (accudraw.isEnabled)
+      accudraw.disableForSession();
+    else
+      accudraw.enableForSession();
+  }
+
+  /** Suspend/Unsuspend AccuDraw for the active tool */
+  public static suspendToggle(): void {
+    const accudraw = IModelApp.accuDraw;
+    if (!accudraw.isEnabled)
+      return;
+
+    if (accudraw.isActive)
+      accudraw.deactivate();
+    else
+      accudraw.activate();
+
+    accudraw.refreshDecorationsAndDynamics();
+  }
+
   public static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
@@ -483,6 +507,53 @@ export class AccuDrawShortcuts {
       }
     }
     accudraw.refreshDecorationsAndDynamics();
+  }
+
+  /** Disable indexing when not currently indexed; if indexed, enable respective lock. */
+  public static lockIndex(): void {
+    const accudraw = IModelApp.accuDraw;
+    if (!accudraw.isEnabled)
+      return;
+
+    if (accudraw.flags.indexLocked) {
+      if (accudraw.locked)
+        this.lockSmart();
+
+      accudraw.flags.indexLocked = false;
+    } else {
+      if (CompassMode.Polar === accudraw.compassMode) {
+        if (accudraw.indexed & LockedStates.XY_BM) {
+          accudraw.setFieldLock(ItemField.ANGLE_Item, true);
+          accudraw.angleLock();
+        }
+
+        if (accudraw.indexed & LockedStates.DIST_BM)
+          this.lockDistance();
+      } else {
+        if (accudraw.indexed & LockedStates.X_BM) {
+          this.lockX();
+
+          if (accudraw.indexed & LockedStates.DIST_BM)
+            this.lockY();
+        }
+
+        if (accudraw.indexed & LockedStates.Y_BM) {
+          this.lockY();
+
+          if (accudraw.indexed & LockedStates.DIST_BM)
+            this.lockX();
+        }
+
+        if (accudraw.indexed & LockedStates.DIST_BM && !(accudraw.indexed & LockedStates.XY_BM)) {
+          if (accudraw.locked & LockedStates.X_BM)
+            this.lockY();
+          else
+            this.lockX();
+        }
+      }
+
+      accudraw.flags.indexLocked = true;
+    }
   }
 
   public static lockX(): void {
@@ -972,6 +1043,12 @@ export class AccuDrawShortcuts {
       case "d":
         AccuDrawShortcuts.lockDistance();
         return true;
+      case "h":
+        AccuDrawShortcuts.suspendToggle();
+        return true;
+      case "l":
+        AccuDrawShortcuts.lockIndex();
+        return true;
       case "m":
         AccuDrawShortcuts.changeCompassMode();
         return true;
@@ -1006,6 +1083,24 @@ export class AccuDrawShortcuts {
 }
 
 /** @internal */
+export class AccuDrawSessionToggleTool extends Tool {
+  public static override toolId = "AccuDraw.SessionToggle";
+  public override async run() {
+    AccuDrawShortcuts.sessionToggle();
+    return true;
+  }
+}
+
+/** @internal */
+export class AccuDrawSuspendToggleTool extends Tool {
+  public static override toolId = "AccuDraw.SuspendToggle";
+  public override async run() {
+    AccuDrawShortcuts.suspendToggle();
+    return true;
+  }
+}
+
+/** @internal */
 export class AccuDrawSetOriginTool extends Tool {
   public static override toolId = "AccuDraw.SetOrigin";
   public override async run() {
@@ -1019,6 +1114,15 @@ export class AccuDrawSetLockSmartTool extends Tool {
   public static override toolId = "AccuDraw.LockSmart";
   public override async run() {
     AccuDrawShortcuts.lockSmart();
+    return true;
+  }
+}
+
+/** @internal */
+export class AccuDrawSetLockIndexTool extends Tool {
+  public static override toolId = "AccuDraw.LockIndex";
+  public override async run() {
+    AccuDrawShortcuts.lockIndex();
     return true;
   }
 }

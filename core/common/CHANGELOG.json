@@ -2,6 +2,42 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "4.8.0",
+      "tag": "@itwin/core-common_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed planar masks when using new tiles"
+          },
+          {
+            "comment": "Added new LayoutResult classes, containing information about the result of laying out the lines of a TextBlock."
+          },
+          {
+            "comment": "Add RPC method queryAllUsedSpatialSubCategories() to fetch all subcategories of used spatial categories and 3D elements."
+          },
+          {
+            "comment": "Remove ThirdPartyNotices.md"
+          },
+          {
+            "comment": "add ConflictingLocksError"
+          },
+          {
+            "comment": "TextAnnotation.computeTransform aligns the anchor point with the origin."
+          },
+          {
+            "comment": "Add IModel.onChangesetChanged event."
+          },
+          {
+            "comment": "Begin deprecating @internal APis."
+          },
+          {
+            "comment": "Fix bugs with TextAnnotation wrapping and justification."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.7.8",
       "tag": "@itwin/core-common_v4.7.8",
       "date": "Wed, 31 Jul 2024 13:38:04 GMT",

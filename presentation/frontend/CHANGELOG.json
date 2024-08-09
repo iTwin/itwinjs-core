@@ -2,6 +2,24 @@
   "name": "@itwin/presentation-frontend",
   "entries": [
     {
+      "version": "4.8.0",
+      "tag": "@itwin/presentation-frontend_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "API promotions"
+          },
+          {
+            "comment": "Removed usage of `require` as it is not supported in ES modules"
+          },
+          {
+            "comment": "Fix `Presentation.selection.selectionChange` event not being emitted for `BlankConnection`."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.7.8",
       "tag": "@itwin/presentation-frontend_v4.7.8",
       "date": "Wed, 31 Jul 2024 13:38:04 GMT",
