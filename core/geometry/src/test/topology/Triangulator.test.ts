@@ -1144,11 +1144,11 @@ describe("Triangulation", () => {
     );
   });
 
-  it.only("TriangulatorHang", () => {
-    const ck = new Checker(true, true, true);
+  it("TriangulatorHang", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const skipTranslate = false; // whether to align output to in-memory coordinates for debugging
-    const drawCircles = false;   // whether to output a circle at each point for debugging
+    const skipTranslate = false; // false: non-overlapping output meshes; true: output as-is for debugging
+    const drawCircles = false;   // true: output a circle at each point for debugging
     const xMargin = 10;
     const yMargin = 10;
     let x0 = 0;
@@ -1157,7 +1157,7 @@ describe("Triangulation", () => {
 
     const testTriangulation = (points: Point3d[], range: Range3d, tol: number | undefined, name: string): number => {
       const delta = Point3d.create(x0, y0, z0);
-      let numSharpEdges = Geometry.largeCoordinateResult;
+      let numSharpEdges = 0;
       const options = new StrokeOptions();
       options.chordTol = tol;
       if (!skipTranslate)
@@ -1168,7 +1168,6 @@ describe("Triangulation", () => {
         Point3dArray.computeConvexHullXY(points, hull, interior, true);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hull, 0.2, delta.x, delta.y, delta.z);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior, 0.1, delta.x, delta.y, delta.z);
-        // GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang"); // save now before hang!
       }
       const mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(points, options);
       if (ck.testDefined(mesh, `computed triangulation of ${name}`)) {
@@ -1187,7 +1186,7 @@ describe("Triangulation", () => {
     };
     const data: Dataset[] = [];
 
-    // Minimal subset of dtmPointsSmall.imjs reproducing infinite loop:
+    // Minimal subset of dtmPointsSmall.imjs that reproduced an infinite loop:
     // * Numbered points are on the convex hull
     // * All points are essentially xy-colinear except 2
     // * B and D are xy-near the hull
@@ -1218,7 +1217,7 @@ describe("Triangulation", () => {
         ck.testLE(numSharpEdges, minNumSharpEdges, "larger tolerance should reduce sharp edge count");
         minNumSharpEdges = Math.min(numSharpEdges, minNumSharpEdges);
         if (!skipTranslate)
-          x0 += datum.range.xLength() + xMargin;
+          x0 += datum.range.xLength() + xMargin;  // as meshes progress left to right, more skirt points vanish
       }
       if (!skipTranslate) {
         x0 = z0 = 0;

@@ -44,6 +44,16 @@ export class PointSearchContext {
     return new PointSearchContext(tol);
   }
   private panic(): HalfEdgePositionDetail {
+    // A note on "unexpectedly" found in comments in this file:
+    // Though this class assumes all edges of the graph have length at least tolerance, the tests below account for
+    // edges with smaller length. This is because we are using two different metrics: Euclidean for distinguishing
+    // points matching user expectation, and Chebyshev, aka "max component", for efficiently testing ray-sector
+    // inclusion in the reAimXXX methods. In particular, epsilon-balls in the former metric are smaller than in the
+    // latter. Thus an edge can be inserted into the graph with Euclidean length (barely) greater than epsilon, but
+    // the edge's parallel and perpendicular components with respect to a ray can have Euclidean length *less* than
+    // epsilon, yielding a Chebyshev edge length less than epsilon. This discrepancy requires careful analysis below,
+    // and if this method is invoked, it is probably because we've missed a case where a dot/cross product lies just
+    // beyond the tolerance.
     return HalfEdgePositionDetail.create();
   }
   /**
@@ -63,8 +73,7 @@ export class PointSearchContext {
     const sideA = -dataA.classifyV(0.0, this._tol);
     const sideB = -dataB.classifyV(0.0, this._tol);
     let result;
-    if (sideA * sideB < 0) {
-      // simple crossing; just aim into a face
+    if (sideA * sideB < 0) { // simple crossing; just aim into a face
       if (sideA > 0) {
         result = edgeHit.resetAsFace(dataA.node);
       } else {
@@ -73,13 +82,13 @@ export class PointSearchContext {
     } else if (sideA === 0 || sideB === 0) {
       const alongA = dataA.classifyU(targetDistance, this._tol);
       const alongB = dataB.classifyU(targetDistance, this._tol);
-      if (sideA === 0 && alongA === 0) {
+      if (sideA === 0 && alongA === 0) { // hit start vertex
         result = edgeHit.resetAsVertex(dataA.node);
         result.setITag(1);
-      } else if (sideB === 0 && alongB === 0) {
+      } else if (sideB === 0 && alongB === 0) { // hit end vertex
         result = edgeHit.resetAsVertex(dataB.node);
         result.setITag(1);
-      } else if (sideA === 0 && sideB === 0) { // the usual case: ray is clearly along the edge
+      } else if (sideA === 0 && sideB === 0) { // ray is clearly along the edge
         if (alongA * alongB < 0) {
           // target is within edge
           const edgeFraction = (targetDistance - dataA.u) / (dataB.u - dataA.u);
@@ -96,15 +105,17 @@ export class PointSearchContext {
           edgeHit.resetAsUnknown();
           result = this.panic();
         }
-      } else { // one side of the edge is miniscule but the other is NOT parallel to the ray: reset as vertex hit
-        if (sideA === 0 && Math.abs(dataA.u) <= this._tol) {
+      } else if (sideA === 0) { // ray near start vertex but NOT parallel to the edge
+        if (0 === dataA.classifyU(0.0, this._tol))
           result = edgeHit.resetAsVertex(dataA.node);
-        } else if (sideB === 0 && Math.abs(dataB.u) <= this._tol) {
+        else
+          result = edgeHit.resetAsFace(sideB > 0 ? dataB.node : dataA.node);
+      } else { // ray near end vertex but NOT parallel to the edge
+        assert(sideB === 0);
+        if (0 === dataB.classifyU(0.0, this._tol))
           result = edgeHit.resetAsVertex(dataB.node);
-        } else {
-          edgeHit.resetAsUnknown();
-          result = this.panic();
-        }
+        else
+          result = edgeHit.resetAsFace(sideA > 0 ? dataA.node : dataB.node);
       }
     } else {
       // both vertices are to same side of the ray; shouldn't happen for edgeHit between nodes
@@ -178,14 +189,6 @@ export class PointSearchContext {
       // vertex in order to handle the case where the target lies in the direction of an exterior outboundEdge.
       outboundEdge = outboundEdge.vertexSuccessor;
     } while (outboundEdge !== vertexNode);
-
-    // * Note on "unexpectedly": this is because we are using two different metrics to triangulate: Euclidean
-    // for distinguishing points (to match user expectation), and Chebyshev aka "max component", for efficiently
-    // testing ray-sector inclusion. Epsilon-balls in the former are smaller than in the latter. Thus an edge
-    // can be inserted into the graph with Euclidean length (barely) greater than epsilon, but the edge's
-    // parallel/perpendicular components with respect to a ray can have Euclidean length less than epsilon,
-    // yielding a Chebyshev length less than epsilon for the edge. This discrepancy requires careful analysis
-    // of the cases here.
     return this.panic();
   }
   /**
