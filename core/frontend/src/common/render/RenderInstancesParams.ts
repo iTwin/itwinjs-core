@@ -10,7 +10,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { InstancedGraphicProps } from "./InstancedGraphicParams";
 import { OvrFlags } from "../internal/render/OvrFlags";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { Feature, FeatureTable, LinePixels, RgbColorProps } from "@itwin/core-common";
+import { Feature, FeatureTable, LinePixels, PackedFeatureTable, RgbColorProps } from "@itwin/core-common";
 import { _implementationProhibited } from "../internal/Symbols";
 import { lineCodeFromLinePixels } from "../internal/render/LineCode";
 
@@ -212,18 +212,20 @@ class Builder implements RenderInstancesParamsBuilder {
       }
     }
 
-    return {
-      opaque: this._opaque.finish(featureTable),
-      translucent: this._translucent.finish(featureTable),
-      // ###TODO features
-    };
+    const opaque = this._opaque.finish(featureTable);
+    const translucent = this._translucent.finish(featureTable);
+
+    let features: InstancedFeaturesParams | undefined;
+    if (featureTable) {
+      const packedTable = PackedFeatureTable.pack(featureTable);
+      features = {
+        [_implementationProhibited]: undefined,
+        data: packedTable.data,
+        modelId: packedTable.batchModelId,
+        count: packedTable.numFeatures,
+      };
+    }
+
+    return { opaque, translucent, features };
   }
 }
-
-    // if (SharedGeom::SymbologyOverrides::None != ovrFlags)
-    //     {
-    //     Utf8String ovrBufferId("bv");
-    //     ovrBufferId.append("InstanceOverrides").append(idStr);
-    //     AddBufferView(ovrBufferId.c_str(), ovrs);
-    //     primitiveJson["instances"]["symbologyOverrides"] = ovrBufferId;
-    //     }
