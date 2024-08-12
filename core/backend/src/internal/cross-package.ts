@@ -5,3 +5,6 @@
 
 export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export { IModelNative } from "./NativePlatform";
+export {
+  _nativeDb,
+} from "./Symbols";

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Exposing a new function `computeGraphemeOffsets` that calculates the grapheme offsets for a RunLayoutResult.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

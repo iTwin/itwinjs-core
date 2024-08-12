@@ -7,10 +7,10 @@ import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
-import { createEdgeParams } from "../../../render/primitives/EdgeParams";
-import { EdgeTable } from "../../../common/render/primitives/EdgeParams";
-import { VertexIndices } from "../../../common/render/primitives/VertexIndices";
+import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
+import { VertexIndices } from "../../../common/internal/render/VertexIndices";
+import { createEdgeParams, EdgeParams, EdgeTable } from "../../../common/internal/render/EdgeParams";
+import { MeshArgs } from "../../../render/MeshArgs";
 
 function makeNormalPair(n0: number, n1: number): OctEncodedNormalPair {
   return new OctEncodedNormalPair(new OctEncodedNormal(n0), new OctEncodedNormal(n1));
@@ -45,6 +45,14 @@ function expectIndices(indices: VertexIndices, expected: number[]): void {
   const stream = ByteStream.fromUint8Array(indices.data);
   for (const expectedIndex of expected)
     expect(stream.readUint24()).to.equal(expectedIndex);
+}
+
+function makeEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
+  return createEdgeParams({
+    meshArgs,
+    maxWidth: maxWidth ?? IModelApp.renderSystem.maxTextureSize,
+    createIndexed: "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type,
+  });
 }
 
 // expectedSegments = 2 indices per segment edge.
@@ -92,7 +100,7 @@ describe("IndexedEdgeParams", () => {
       expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("non-indexed");
 
       const args = createMeshArgs();
-      const edges = createEdgeParams(args)!;
+      const edges = makeEdgeParams(args)!;
       expect(edges).not.to.be.undefined;
       expect(edges.segments).not.to.be.undefined;
       expect(edges.silhouettes).not.to.be.undefined;
@@ -114,13 +122,13 @@ describe("IndexedEdgeParams", () => {
     it("are not produced if MeshArgs supplies no edges", () => {
       const args = createMeshArgs();
       args.edges?.clear();
-      expect(createEdgeParams(args)).to.be.undefined;
+      expect(makeEdgeParams(args)).to.be.undefined;
     });
 
     it("are not produced for polylines in 2d", () => {
       const args = createMeshArgs({ is2d: true });
 
-      const edges = createEdgeParams(args)!;
+      const edges = makeEdgeParams(args)!;
       expect(edges).not.to.be.undefined;
       expect(edges.polylines).not.to.be.undefined;
       expect(edges.indexed).not.to.be.undefined;
@@ -133,7 +141,7 @@ describe("IndexedEdgeParams", () => {
       expect(args.edges).not.to.be.undefined;
       args.edges!.width = 4;
 
-      const edges = createEdgeParams(args)!;
+      const edges = makeEdgeParams(args)!;
       expect(edges).not.to.be.undefined;
       expect(edges.polylines).not.to.be.undefined;
       expect(edges.indexed).not.to.be.undefined;
@@ -143,7 +151,7 @@ describe("IndexedEdgeParams", () => {
 
     it("are created from MeshArgs", () => {
       const args = createMeshArgs();
-      const edges = createEdgeParams(args)!;
+      const edges = makeEdgeParams(args)!;
       expect(edges).not.to.be.undefined;
       expect(edges.indexed).not.to.be.undefined;
       expect(edges.polylines).to.be.undefined;
@@ -177,7 +185,7 @@ describe("IndexedEdgeParams", () => {
 
     it("inserts padding between segments and silhouettes when required", () => {
       const args = createMeshArgs();
-      const edges = createEdgeParams(args, 15)!;
+      const edges = makeEdgeParams(args, 15)!;
       expect(edges).not.to.be.undefined;
       expect(edges.indexed).not.to.be.undefined;
       expectIndices(edges.indexed!.indices, [
@@ -223,7 +231,7 @@ describe("IndexedEdgeParams", () => {
           edgs.silhouettes.normals.push(makeNormalPair(4, 5));
         }
 
-        const edgeParams = createEdgeParams(meshargs, 15)!;
+        const edgeParams = makeEdgeParams(meshargs, 15)!;
         expect(edgeParams).not.to.be.undefined;
         expect(edgeParams.indexed).not.to.be.undefined;
         return edgeParams.indexed!.edges;

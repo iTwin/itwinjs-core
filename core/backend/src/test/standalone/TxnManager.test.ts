@@ -10,6 +10,7 @@ import {
   Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@itwin/core-common";
 import {
+  _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
   IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
@@ -65,7 +66,7 @@ describe("TxnManager", () => {
     };
 
     imodel.saveChanges("schema change");
-    imodel.nativeDb.deleteAllTxns();
+    imodel[_nativeDb].deleteAllTxns();
     roImodel = StandaloneDb.openFile(testFileName, OpenMode.Readonly);
   });
 
@@ -76,7 +77,7 @@ describe("TxnManager", () => {
   });
 
   function makeEntity(id: string, classFullName: string): EntityIdAndClassId {
-    const classId = imodel.nativeDb.classNameToId(classFullName);
+    const classId = imodel[_nativeDb].classNameToId(classFullName);
     expect(Id64.isValid(classId)).to.be.true;
     return { id, classId };
   }
@@ -131,13 +132,13 @@ describe("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
-    expect(imodel.nativeDb.getCurrentTxnId()).not.equal(roImodel.nativeDb.getCurrentTxnId());
-    roImodel.nativeDb.restartDefaultTxn();
-    expect(imodel.nativeDb.getCurrentTxnId()).equal(roImodel.nativeDb.getCurrentTxnId());
+    expect(imodel[_nativeDb].getCurrentTxnId()).not.equal(roImodel[_nativeDb].getCurrentTxnId());
+    roImodel[_nativeDb].restartDefaultTxn();
+    expect(imodel[_nativeDb].getCurrentTxnId()).equal(roImodel[_nativeDb].getCurrentTxnId());
 
-    const classId = imodel.nativeDb.classNameToId(props.classFullName);
+    const classId = imodel[_nativeDb].classNameToId(props.classFullName);
     assert.isTrue(Id64.isValid(classId));
-    const class2 = imodel.nativeDb.classIdToName(classId);
+    const class2 = imodel[_nativeDb].classIdToName(classId);
     assert.equal(class2, props.classFullName);
     model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);
@@ -545,7 +546,7 @@ describe("TxnManager", () => {
     });
 
     EventAccumulator.testModels(roImodel, (accum) => {
-      roImodel.nativeDb.restartDefaultTxn();
+      roImodel[_nativeDb].restartDefaultTxn();
       accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
     });
 
@@ -581,7 +582,7 @@ describe("TxnManager", () => {
     });
 
     EventAccumulator.testModels(roImodel, (accum) => {
-      roImodel.nativeDb.restartDefaultTxn();
+      roImodel[_nativeDb].restartDefaultTxn();
       accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
     });
 
@@ -722,7 +723,7 @@ describe("TxnManager", () => {
       expect(changes[0].id).to.equal(modelId);
       expect(changes[0].guid).to.equal(guid1);
     });
-    roImodel.nativeDb.restartDefaultTxn();
+    roImodel[_nativeDb].restartDefaultTxn();
     expect(numRoEvents).equal(4);
     dropper();
   });
@@ -838,7 +839,7 @@ describe("TxnManager", () => {
 
   // This bug occurred in one of the authoring apps. This test reproduced the problem, and now serves as a regression test.
   it("doesn't crash when reversing a single txn that inserts a model and a contained element while geometric model tracking is enabled", () => {
-    imodel.nativeDb.setGeometricModelTrackingEnabled(true);
+    imodel[_nativeDb].setGeometricModelTrackingEnabled(true);
 
     const model = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
     expect(Id64.isValidId64(model)).to.be.true;
@@ -848,7 +849,7 @@ describe("TxnManager", () => {
     imodel.saveChanges("insert model and element");
     imodel.txns.reverseSingleTxn();
 
-    imodel.nativeDb.setGeometricModelTrackingEnabled(false);
+    imodel[_nativeDb].setGeometricModelTrackingEnabled(false);
   });
   it("get local changes", async () => {
     const elements = imodel.elements;

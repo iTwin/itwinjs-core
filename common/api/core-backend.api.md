@@ -190,6 +190,7 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
+import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -1321,6 +1322,16 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
+
+// @beta
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+    graphemeCharIndexes: number[];
+    paragraphIndex: number;
+    runLayoutResult: RunLayoutResult;
+}
+
+// @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @public
@@ -1445,6 +1456,16 @@ export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, 
 
 // @beta
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
+
+// @beta
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+
+// @beta
+export interface DeleteElementTreeArgs {
+    iModel: IModelDb;
+    maxPasses?: number;
+    topElement: Id64String;
+}
 
 // @public
 export class DetailCallout extends Callout {
@@ -1696,6 +1717,8 @@ export abstract class DriverBundleElement extends InformationContentElement {
 
 // @public
 export class ECDb implements IDisposable {
+    // @internal (undocumented)
+    get [_nativeDb](): IModelJsNative.ECDb;
     constructor();
     abandonChanges(): void;
     // @internal
@@ -1709,7 +1732,7 @@ export class ECDb implements IDisposable {
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
@@ -3000,6 +3023,8 @@ export type IModelCloneContext = IModelElementCloneContext;
 
 // @public
 export abstract class IModelDb extends IModel {
+    // @internal (undocumented)
+    readonly [_nativeDb]: IModelJsNative.DgnDb;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
@@ -3091,8 +3116,8 @@ export abstract class IModelDb extends IModel {
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
-    // @internal (undocumented)
-    readonly nativeDb: IModelJsNative.DgnDb;
+    // @internal @deprecated (undocumented)
+    get nativeDb(): IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -3965,6 +3990,28 @@ export class LockConflict extends IModelError {
     readonly briefcaseId: BriefcaseId;
 }
 
+// @public
+export interface LockControl {
+    // @internal
+    [_close]: () => void;
+    // @internal
+    [_elementWasCreated]: (id: Id64String) => void;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    [_releaseAllLocks]: () => Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
+    checkExclusiveLock(id: Id64String, type: string, operation: string): void;
+    checkSharedLock(id: Id64String, type: string, operation: string): void;
+    holdsExclusiveLock(id: Id64String): boolean;
+    holdsSharedLock(id: Id64String): boolean;
+    readonly isServerBased: boolean;
+    releaseAllLocks(): Promise<void>;
+}
+
 // @internal (undocumented)
 export type LockMap = Map<Id64String, LockState_2>;
 
@@ -4118,6 +4165,9 @@ export class NativeAppStorage {
 }
 
 export { NativeCloudSqlite }
+
+// @internal (undocumented)
+export const _nativeDb: unique symbol;
 
 // @public
 export class NativeHost {
@@ -4690,6 +4740,10 @@ export namespace SchemaSync {
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    withReadonlyAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
@@ -5106,6 +5160,8 @@ export interface SqliteChangesetReaderArgs {
 
 // @public
 export class SQLiteDb {
+    // @internal (undocumented)
+    readonly [_nativeDb]: IModelJsNative.SQLiteDb;
     abandonChanges(): void;
     closeDb(saveChanges?: boolean): void;
     // @internal (undocumented)
@@ -5124,8 +5180,8 @@ export class SQLiteDb {
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @internal (undocumented)
-    readonly nativeDb: IModelJsNative.SQLiteDb;
+    // @internal @deprecated (undocumented)
+    get nativeDb(): IModelJsNative.SQLiteDb;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
     // @beta (undocumented)
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;

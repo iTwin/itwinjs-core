@@ -5,9 +5,13 @@
 import { assert, expect } from "chai";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import {
-  DisplayParams, Geometry, GeometryAccumulator, GraphicType, IModelApp, IModelConnection, PrimitiveBuilder, ScreenViewport, SnapshotConnection,
-  SpatialViewState, StandardViewId, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
+  GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection,
+  SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
+import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/internal/render/PrimitiveBuilder";
+import { DisplayParams } from "@itwin/core-frontend/lib/cjs/common/internal/render/DisplayParams";
+import { _accumulator } from "@itwin/core-frontend/lib/cjs/common/internal/Symbols";
+import { Geometry } from "@itwin/core-frontend/lib/cjs/common/internal/render/GeometryPrimitives";
 import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
@@ -50,23 +54,23 @@ describe("PrimitiveBuilder", () => {
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
+    let strokesPrimList = arcGeom.getStrokes(0.22);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined)
       return;
 
     expect(strokesPrimList.length).to.be.greaterThan(0);
-    let strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
+    let strksPrims = strokesPrimList[0].strokes;
     expect(strksPrims.length).to.be.greaterThan(0);
-    let strks: StrokesPrimitivePointList = strksPrims[0];
+    let strks = strksPrims[0];
 
     // check that first and last point of stroking match first and last point of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
@@ -109,14 +113,14 @@ describe("PrimitiveBuilder", () => {
 
     primBuilder.addPolyface(polyFace);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const firstGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const firstGeom = primBuilder[_accumulator].geometries.first;
     assert(firstGeom !== undefined);
     if (firstGeom === undefined)
       return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined = firstGeom.getStrokes(0.22);
+    let strokesPrimList = firstGeom.getStrokes(0.22);
     assert(strokesPrimList === undefined);
 
     strokesPrimList = firstGeom.getStrokes(0.12);
@@ -130,14 +134,14 @@ describe("PrimitiveBuilder", () => {
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     primBuilder.addShape([pointA, pointB, pointC]);
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
+    let strokesPrimList = arcGeom.getStrokes(0.22);
     assert(strokesPrimList === undefined || strokesPrimList.length === 0);
 
     strokesPrimList = arcGeom.getStrokes(0.12);
@@ -151,14 +155,14 @@ describe("PrimitiveBuilder", () => {
     const pointB = new Point2d(0, 100);
     const pointC = new Point2d(100, 0);
     primBuilder.addShape2d([pointA, pointB, pointC], 5);
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined = arcGeom.getStrokes(0.22);
+    let strokesPrimList = arcGeom.getStrokes(0.22);
     assert(strokesPrimList === undefined || strokesPrimList.length === 0);
 
     strokesPrimList = arcGeom.getStrokes(0.12);
@@ -175,23 +179,23 @@ describe("PrimitiveBuilder", () => {
 
     primBuilder.addLineString(pointList);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const pointGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const pointGeom = primBuilder[_accumulator].geometries.first;
     assert(pointGeom !== undefined);
     if (pointGeom === undefined)
       return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined = pointGeom.getStrokes(0.0);
+    let strokesPrimList = pointGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined)
       return;
 
     expect(strokesPrimList.length).to.be.greaterThan(0);
-    let strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
+    let strksPrims = strokesPrimList[0].strokes;
     expect(strksPrims.length).to.be.greaterThan(0);
-    let strks: StrokesPrimitivePointList = strksPrims[0];
+    let strks = strksPrims[0];
 
     // check that points of stroking match points of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
@@ -229,23 +233,23 @@ describe("PrimitiveBuilder", () => {
 
     primBuilder.addPointString(pointList);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const pointGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const pointGeom = primBuilder[_accumulator].geometries.first;
     assert(pointGeom !== undefined);
     if (pointGeom === undefined)
       return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined = pointGeom.getStrokes(0.0);
+    let strokesPrimList = pointGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined)
       return;
 
     expect(strokesPrimList.length).to.be.greaterThan(0);
-    let strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
+    let strksPrims = strokesPrimList[0].strokes;
     expect(strksPrims.length).to.be.greaterThan(0);
-    let strks: StrokesPrimitivePointList = strksPrims[0];
+    let strks = strksPrims[0];
 
     // check that points of stroking match points of original points
     expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
@@ -283,23 +287,23 @@ describe("PrimitiveBuilder", () => {
 
     primBuilder.addPointString2d(pointList, 5);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const pointGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const pointGeom = primBuilder[_accumulator].geometries.first;
     assert(pointGeom !== undefined);
     if (pointGeom === undefined)
       return;
 
-    let strokesPrimList: StrokesPrimitiveList | undefined = pointGeom.getStrokes(0.0);
+    let strokesPrimList = pointGeom.getStrokes(0.0);
 
     assert(strokesPrimList !== undefined);
     if (strokesPrimList === undefined)
       return;
 
     expect(strokesPrimList.length).to.be.greaterThan(0);
-    let strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
+    let strksPrims = strokesPrimList[0].strokes;
     expect(strksPrims.length).to.be.greaterThan(0);
-    let strks: StrokesPrimitivePointList = strksPrims[0];
+    let strks = strksPrims[0];
 
     // check that points of stroking match points of original points
     expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be.true;
@@ -329,7 +333,7 @@ describe("PrimitiveBuilder", () => {
 
   it("should be able to finish graphics", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
-    const accum = new GeometryAccumulator();
+    const accum = primBuilder[_accumulator];
 
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;
@@ -363,7 +367,7 @@ describe("PrimitiveBuilder", () => {
     accum.addPolyface(loopGeom.getPolyfaces(0.22)![0].indexedPolyface, displayParams, Transform.createIdentity());
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
-    const graphic = primBuilder.finishGraphic(accum);
+    const graphic = primBuilder.finish();
     expect(primBuilder.primitives.length).to.equal(0); // if only 1 entry (a branch), the list of primitives is popped.
     expect(graphic instanceof Branch).to.be.true;
     expect((graphic as Branch).branch.entries.length).to.equal(2);

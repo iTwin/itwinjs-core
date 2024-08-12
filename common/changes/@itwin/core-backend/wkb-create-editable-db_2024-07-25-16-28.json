@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Newly created WorkspaceDbs will have version 0.0.0. All prerelease (0.x.x or x.x.x-identifier) WorkspaceDbs can be edited. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

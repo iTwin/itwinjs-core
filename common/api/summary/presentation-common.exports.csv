@@ -1,466 +1,466 @@
 sep=;
-Release Tag;API Item
-public;addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void
-public;ArrayPropertiesField 
-public;ArrayPropertiesFieldJSON
-public;ArrayTypeDescription 
-internal;AsyncTasksTracker
-public;BaseFieldJSON
-public;BaseNodeKey
-public;BaseNodeKeyJSON
-deprecated;BaseNodeKeyJSON
-public;BaseTypeDescription
-public;BooleanRulesetVariable 
-public;BooleanRulesetVariableJSON 
-deprecated;BooleanRulesetVariableJSON 
-public;CalculatedPropertiesSpecification
-public;CategoryDescription
-public;CategoryDescription
-public;CategoryDescriptionJSON
-public;CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier
-public;CheckBoxRule 
-deprecated;CheckBoxRule 
-public;ChildNodeRule 
-public;ChildNodeSpecification = CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification
-public;ChildNodeSpecificationBase
-public;ChildNodeSpecificationTypes
-public;ClassGroup 
-public;ClassId = Id64String
-public;ClassInfo
-public;ClassInfo
-public;ClassInfoJSON
-deprecated;ClassInfoJSON
-public;ClientDiagnostics 
-public;ClientDiagnosticsAttribute
-public;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
-public;ClientDiagnosticsOptions 
-internal;combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined
-public;combineFieldNames(fieldName: string, parentFieldName?: string): string
-internal;CommonIpcParams
-internal;compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): 0 | 1 | -1
-public;CompressedClassInfoJSON
-public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
-public;ComputeSelectionRequestOptions
-public;ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions
-public;ConditionContainer
-deprecated;ConditionContainer
-public;Content
-public;ContentDescriptorRequestOptions
-public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
-public;ContentFlags
-internal;ContentFormatter
-public;ContentInstanceKeysRequestOptions
-public;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
-public;ContentInstancesOfSpecificClassesSpecification 
-public;ContentJSON
-public;ContentModifier 
-public;ContentModifiersList
-internal;ContentPropertyValueFormatter
-public;ContentRelatedInstancesSpecification 
-public;ContentRequestOptions
-public;ContentRpcRequestOptions = PresentationRpcRequestOptions
-public;ContentRule 
-public;ContentSourcesRequestOptions
-public;ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions
-public;ContentSourcesRpcResult
-public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
-public;ContentSpecificationBase 
-public;ContentSpecificationTypes
-public;ContentUpdateInfo = typeof UPDATE_FULL
-public;createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[]
-public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
-public;CustomNodeSpecification 
-public;CustomQueryInstanceNodesSpecification 
-public;CustomRendererSpecification
-public;DEFAULT_KEYS_BATCH_SIZE = 5000
-public;DefaultContentDisplayTypes
-public;DefaultGroupingPropertiesContainer
-public;DefaultPropertyCategoryOverride 
-public;Descriptor 
-public;DescriptorJSON
-public;DescriptorOverrides
-public;DescriptorSource
-public;Diagnostics
-public;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
-public;DiagnosticsLogEntry
-public;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
-public;DiagnosticsLogMessage
-public;DiagnosticsOptions
-public;DiagnosticsScopeLogs
-public;DisabledSortingRule 
-public;DisplayLabelRequestOptions
-public;DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions
-public;DisplayLabelsRequestOptions
-public;DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions
-public;DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray
-public;DisplayValue
-public;DisplayValueGroup
-public;DisplayValueGroup
-public;DisplayValueGroupJSON
-deprecated;DisplayValueGroupJSON
-public;DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON
-deprecated;DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON
-public;DisplayValuesArray 
-public;DisplayValuesArrayJSON 
-deprecated;DisplayValuesArrayJSON 
-public;DisplayValuesMap 
-public;DisplayValuesMapJSON 
-deprecated;DisplayValuesMapJSON 
-public;DistinctValuesRequestOptions
-public;DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions
-public;ECClassGroupingNodeKey 
-public;ECClassGroupingNodeKeyJSON 
-deprecated;ECClassGroupingNodeKeyJSON 
-public;ECInstancesNodeKey 
-public;ECInstancesNodeKeyJSON 
-deprecated;ECInstancesNodeKeyJSON 
-public;ECPropertyGroupingNodeKey 
-public;ECPropertyGroupingNodeKeyJSON 
-deprecated;ECPropertyGroupingNodeKeyJSON 
-public;ECPropertyValueQuerySpecification 
-public;ECValueBinding
-public;ECValueSetBinding
-public;EditorDescription
-public;ElementProperties
-public;ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem
-public;ElementPropertiesArrayPropertyItemBase 
-public;ElementPropertiesCategoryItem 
-public;ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem
-public;ElementPropertiesItemBase
-public;ElementPropertiesPrimitiveArrayPropertyItem 
-public;ElementPropertiesPrimitivePropertyItem 
-public;ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem
-public;ElementPropertiesPropertyItemBase 
-public;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
-public;ElementPropertiesRequestOptions
-deprecated;ElementPropertiesRequestOptions
-public;ElementPropertiesStructArrayPropertyItem 
-public;ElementPropertiesStructPropertyItem 
-public;ElementSelectionScopeProps
-public;EnumerationChoice
-public;EnumerationInfo
-public;ExtendedDataRule 
-public;Field
-internal;FIELD_NAMES_SEPARATOR = "$"
-public;FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor
-public;FieldDescriptor
-public;FieldDescriptorBase
-public;FieldDescriptorType
-public;FieldHierarchy
-public;FieldJSON
-public;FilterByInstancePathsHierarchyRequestOptions
-public;FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestOptions
-public;FilterByTextHierarchyRequestOptions
-public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
-public;FormatOptions
-public;FormatsMap
-internal;getFieldByDescriptor: (fields: Field[], fieldDescriptor: FieldDescriptor, recurse?: boolean) => Field | undefined
-internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean) => Field | undefined
-public;getInstancesCount: (keys: Readonly
-public;GroupingNodeKey 
-public;GroupingNodeKeyJSON 
-deprecated;GroupingNodeKeyJSON 
-public;GroupingRule 
-public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup
-public;GroupingSpecificationBase
-public;GroupingSpecificationTypes
-public;HierarchyCompareInfo
-public;HierarchyCompareInfo
-public;HierarchyCompareInfoJSON
-deprecated;HierarchyCompareInfoJSON
-public;HierarchyCompareOptions
-public;HierarchyLevel
-public;HierarchyLevel
-beta;fromJSON(json: HierarchyLevelJSON): HierarchyLevel
-deprecated;fromJSON(json: HierarchyLevelJSON): HierarchyLevel
-public;HierarchyLevelDescriptorRequestOptions
-public;HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions
-beta;HierarchyLevelJSON
-deprecated;HierarchyLevelJSON
-public;HierarchyRequestOptions
-public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
-public;HierarchyUpdateInfo = typeof UPDATE_FULL
-public;IContentVisitor
-public;Id64RulesetVariable 
-public;Id64RulesetVariableJSON 
-deprecated;Id64RulesetVariableJSON 
-public;Id64sRulesetVariable 
-public;Id64sRulesetVariableJSON 
-public;IdBinding
-public;IdCategoryIdentifier
-public;IdSetBinding
-public;ImageIdOverride 
-deprecated;ImageIdOverride 
-public;InstanceFilterDefinition
-public;InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias)
-public;InstanceFilterRelatedInstancePath
-public;InstanceFilterRelatedInstanceRelationshipAlias
-public;InstanceFilterRelatedInstanceTargetAlias
-public;InstanceId = Id64String
-public;InstanceKey
-public;InstanceKey
-public;InstanceKeyJSON
-deprecated;InstanceKeyJSON
-public;InstanceLabelOverride 
-public;InstanceLabelOverrideBriefcaseIdSpecification 
-public;InstanceLabelOverrideClassLabelSpecification 
-public;InstanceLabelOverrideClassNameSpecification 
-public;InstanceLabelOverrideCompositeValueSpecification 
-public;InstanceLabelOverrideLocalIdSpecification 
-public;InstanceLabelOverridePropertyValueSpecification 
-public;InstanceLabelOverrideRelatedInstanceLabelSpecification 
-public;InstanceLabelOverrideStringValueSpecification 
-public;InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification | InstanceLabelOverrideRelatedInstanceLabelSpecification
-public;InstanceLabelOverrideValueSpecificationBase
-public;InstanceLabelOverrideValueSpecificationType
-public;InstanceNodesOfSpecificClassesSpecification 
-public;IntRulesetVariable 
-public;IntRulesetVariableJSON 
-deprecated;IntRulesetVariableJSON 
-public;IntsRulesetVariable 
-public;IntsRulesetVariableJSON 
-deprecated;IntsRulesetVariableJSON 
-internal;isComputeSelectionRequestOptions
-internal;isSingleElementPropertiesRequestOptions
-public;Item
-public;ItemJSON
-public;Key = Readonly
-public;Key
-public;Keys = ReadonlyArray
-public;KeySet
-public;KeySetJSON
-public;KindOfQuantityInfo
-public;KoqPropertyValueFormatter
-public;LabelCompositeValue
-public;LabelCompositeValue
-public;LabelCompositeValueJSON
-deprecated;LabelCompositeValueJSON
-public;LabelDefinition
-public;LabelDefinition
-public;LabelDefinitionJSON
-deprecated;LabelDefinitionJSON
-public;LabelGroupingNodeKey 
-public;LabelGroupingNodeKeyJSON 
-deprecated;LabelGroupingNodeKeyJSON 
-public;LabelOverride 
-deprecated;LabelOverride 
-public;LabelRawValue = string | number | boolean | LabelCompositeValue
-public;LabelRawValueJSON = LabelRawValue
-deprecated;LabelRawValueJSON = LabelRawValue
-internal;LocalizationHelper
-internal;LocalizationHelperProps
-public;MultiElementPropertiesRequestOptions
-public;MultiSchemaClassesSpecification
-public;NamedFieldDescriptor 
-public;NavigationPropertyInfo
-public;NavigationPropertyInfo
-public;NavigationPropertyInfoJSON
-public;NavigationPropertyValue
-public;NavigationRule = RootNodeRule | ChildNodeRule
-public;NavigationRuleBase 
-public;NestedContentField 
-public;NestedContentFieldJSON
-public;NestedContentValue
-public;NestedContentValue
-public;NestedContentValueJSON
-deprecated;NestedContentValueJSON
-public;NoCategoryIdentifier
-public;NodeArtifactsRule 
-public;NodeDeletionInfo
-public;NodeDeletionInfoJSON
-deprecated;NodeDeletionInfoJSON
-public;NodeInsertionInfo
-public;NodeInsertionInfoJSON
-deprecated;NodeInsertionInfoJSON
-public;NodeJSON
-deprecated;NodeJSON
-public;NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
-public;NodeKey
-public;NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON
-deprecated;NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON
-public;NodeKeyPath = NodeKey[]
-public;NodePathElement
-public;NodePathElement
-internal;listFromJSON(json: NodePathElementJSON[] | string): NodePathElement[]
-internal;listReviver(key: string, value: any): any
-internal;reviver(key: string, value: any): any
-public;NodePathElementJSON
-deprecated;NodePathElementJSON
-public;NodePathFilteringData
-public;NodePathFilteringData
-public;NodePathFilteringDataJSON
-deprecated;NodePathFilteringDataJSON
-public;NodeUpdateInfo
-public;NodeUpdateInfoJSON
-deprecated;NodeUpdateInfoJSON
-public;Paged
-public;PagedResponse
-public;PageOptions
-public;ParentCategoryIdentifier
-public;parseCombinedFieldNames(combinedName: string): string[]
-public;PartialBy
-public;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
-public;PartialHierarchyModification
-public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
-deprecated;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
-public;PartialNode = AllOrNone
-public;PartialNodeJSON = AllOrNone
-deprecated;PartialNodeJSON = AllOrNone
-internal;PRESENTATION_IPC_CHANNEL_NAME = "itwinjs-presentation/ipc-interface"
-public;PresentationError 
-internal;PresentationIpcEvents
-internal;PresentationIpcInterface
-public;PresentationQuery
-public;PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding
-public;PresentationRpcInterface 
-public;PresentationRpcRequestOptions
-public;PresentationRpcResponse
-public;PresentationRpcResponseData
-public;PresentationStatus
-public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
-public;PrimitiveTypeDescription 
-public;Prioritized
-public;ProcessFieldHierarchiesProps
-public;ProcessMergedValueProps
-public;ProcessPrimitiveValueProps
-public;PropertiesField 
-public;PropertiesFieldDescriptor 
-public;PropertiesFieldJSON
-public;Property
-public;Property
-public;PropertyAccessor
-public;PropertyAccessorPath = PropertyAccessor[]
-public;PropertyCategorySpecification
-public;PropertyEditorJsonParameters 
-public;PropertyEditorMultilineParameters 
-public;PropertyEditorParameters = PropertyEditorJsonParameters | PropertyEditorMultilineParameters | PropertyEditorRangeParameters | PropertyEditorSliderParameters
-public;PropertyEditorParametersBase
-public;PropertyEditorParameterTypes
-public;PropertyEditorRangeParameters 
-public;PropertyEditorSliderParameters 
-public;PropertyEditorSpecification
-public;PropertyGroup 
-public;PropertyGroupingValue
-deprecated;PropertyGroupingValue
-public;PropertyInfo
-public;PropertyInfo
-public;PropertyInfoJSON
-public;PropertyJSON
-public;PropertyOverrides
-public;PropertyRangeGroupSpecification
-public;PropertySortingRule 
-public;PropertySpecification 
-public;PropertyValueFormat
-public;QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification
-public;QuerySpecificationBase
-public;QuerySpecificationTypes
-public;RegisteredRuleset 
-public;RelatedClassInfo
-public;RelatedClassInfo
-public;RelatedClassInfoJSON
-public;RelatedClassInfoWithOptionalRelationship = PartialBy
-public;RelatedClassInfoWithOptionalRelationship
-public;RelatedClassInfoWithOptionalRelationshipJSON
-public;RelatedInstanceByPathSpecification 
-public;RelatedInstanceByTargetInstancesSpecification 
-public;RelatedInstanceNodesSpecification 
-public;RelatedInstanceSpecification = RelatedInstanceByPathSpecification | RelatedInstanceByTargetInstancesSpecification
-public;RelatedInstanceSpecificationBase
-public;RelatedPropertiesSpecialValues
-public;RelatedPropertiesSpecification
-public;RelationshipDirection
-public;RelationshipMeaning
-public;RelationshipPath = RelatedClassInfo[]
-public;RelationshipPath
-public;RelationshipPathJSON
-public;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
-public;RelationshipStepSpecification
-public;RendererDescription
-public;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[]
-public;RepeatableRelationshipStepSpecification 
-public;RequestOptions
-public;RequestOptionsWithRuleset
-public;RequiredSchemaSpecification
-public;RootCategoryIdentifier
-public;RootNodeRule 
-public;RpcDiagnosticsOptions = Omit_2
-internal;RpcRequestsHandler
-internal;RpcRequestsHandlerProps
-public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride
-public;RuleBase
-public;Ruleset
-public;RulesetsFactory
-public;RulesetVariable = BooleanRulesetVariable | StringRulesetVariable | IntRulesetVariable | IntsRulesetVariable | Id64RulesetVariable | Id64sRulesetVariable
-public;RulesetVariable
-public;RulesetVariableBase
-public;RulesetVariableBaseJSON
-public;RulesetVariableJSON = BooleanRulesetVariableJSON | StringRulesetVariableJSON | IntRulesetVariableJSON | IntsRulesetVariableJSON | Id64RulesetVariableJSON | Id64sRulesetVariableJSON
-public;RuleTypes
-public;SameLabelInstanceGroup 
-public;SameLabelInstanceGroupApplicationStage
-public;SchemasSpecification
-public;SelectClassInfo
-public;SelectClassInfo
-internal;listFromCompressedJSON(json: SelectClassInfoJSON
-public;SelectClassInfoJSON
-public;SelectedNodeInstancesSpecification 
-public;SelectionInfo
-public;SelectionScope
-public;SelectionScopeProps = ElementSelectionScopeProps |
-public;SelectionScopeRequestOptions
-public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
-internal;SetRulesetVariableParams
-public;SingleElementPropertiesRequestOptions
-public;SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
-public;SingleSchemaClassSpecification
-public;SortDirection
-public;SortingRule = PropertySortingRule | DisabledSortingRule
-public;SortingRuleBase 
-public;StandardNodeTypes
-public;StartArrayProps
-public;StartCategoryProps
-public;StartContentProps
-public;StartFieldProps
-public;StartItemProps
-public;StartStructProps
-public;StringQuerySpecification 
-public;StringRulesetVariable 
-public;StringRulesetVariableJSON 
-deprecated;StringRulesetVariableJSON 
-public;StrippedRelatedClassInfo
-public;StrippedRelationshipPath = StrippedRelatedClassInfo[]
-public;StructFieldMemberDescription
-public;StructPropertiesField 
-public;StructPropertiesFieldJSON
-public;StructTypeDescription 
-public;StyleOverride 
-deprecated;StyleOverride 
-public;SubCondition
-public;Subtract
-public;SupplementationInfo
-public;traverseContent(visitor: IContentVisitor, content: Content): void
-public;traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void
-public;traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy) => boolean): void
-public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
-public;UnitSystemFormat
-internal;UnsetRulesetVariableParams 
-public;UPDATE_FULL = "FULL"
-public;UpdateInfo
-public;Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NavigationPropertyValue | NestedContentValue[]
-public;Value
-public;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NavigationPropertyValue | NestedContentValueJSON[]
-deprecated;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NavigationPropertyValue | NestedContentValueJSON[]
-public;ValuesArray 
-public;ValuesArrayJSON 
-deprecated;ValuesArrayJSON 
-public;ValuesDictionary
-public;ValuesMap 
-public;ValuesMapJSON 
-deprecated;ValuesMapJSON 
-public;Variable
-public;VariablesGroup
-public;VariableValue = boolean | string | number | number[] | Id64String | Id64String[]
-public;VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set
-public;VariableValueType
-public;VariableValueTypes
-public;WithCancelEvent
+Release Tag;API Item Type;API Item Name
+public;function;addFieldHierarchy
+public;class;ArrayPropertiesField
+public;interface;ArrayPropertiesFieldJSON
+public;interface;ArrayTypeDescription
+internal;class;AsyncTasksTracker
+public;interface;BaseFieldJSON
+public;interface;BaseNodeKey
+public;interface;BaseNodeKeyJSON
+deprecated;interface;BaseNodeKeyJSON
+public;interface;BaseTypeDescription
+public;interface;BooleanRulesetVariable
+public;interface;BooleanRulesetVariableJSON
+deprecated;interface;BooleanRulesetVariableJSON
+public;interface;CalculatedPropertiesSpecification
+public;interface;CategoryDescription
+public;namespace;CategoryDescription
+public;interface;CategoryDescriptionJSON
+public;type;CategoryIdentifier
+public;interface;CheckBoxRule
+deprecated;interface;CheckBoxRule
+public;interface;ChildNodeRule
+public;type;ChildNodeSpecification
+public;interface;ChildNodeSpecificationBase
+public;enum;ChildNodeSpecificationTypes
+public;interface;ClassGroup
+public;type;ClassId
+public;interface;ClassInfo
+public;namespace;ClassInfo
+public;interface;ClassInfoJSON
+deprecated;interface;ClassInfoJSON
+public;interface;ClientDiagnostics
+public;interface;ClientDiagnosticsAttribute
+public;type;ClientDiagnosticsHandler
+public;interface;ClientDiagnosticsOptions
+internal;function;combineDiagnosticsSeverities
+public;function;combineFieldNames
+internal;interface;CommonIpcParams
+internal;function;compareDiagnosticsSeverities
+public;interface;CompressedClassInfoJSON
+public;type;ComputeDisplayValueCallback
+public;interface;ComputeSelectionRequestOptions
+public;type;ComputeSelectionRpcRequestOptions
+public;interface;ConditionContainer
+deprecated;interface;ConditionContainer
+public;class;Content
+public;interface;ContentDescriptorRequestOptions
+public;type;ContentDescriptorRpcRequestOptions
+public;enum;ContentFlags
+internal;class;ContentFormatter
+public;interface;ContentInstanceKeysRequestOptions
+public;type;ContentInstanceKeysRpcRequestOptions
+public;interface;ContentInstancesOfSpecificClassesSpecification
+public;interface;ContentJSON
+public;interface;ContentModifier
+public;interface;ContentModifiersList
+internal;class;ContentPropertyValueFormatter
+public;interface;ContentRelatedInstancesSpecification
+public;interface;ContentRequestOptions
+public;type;ContentRpcRequestOptions
+public;interface;ContentRule
+public;interface;ContentSourcesRequestOptions
+public;type;ContentSourcesRpcRequestOptions
+public;interface;ContentSourcesRpcResult
+public;type;ContentSpecification
+public;interface;ContentSpecificationBase
+public;enum;ContentSpecificationTypes
+public;type;ContentUpdateInfo
+public;function;createFieldHierarchies
+public;type;CustomizationRule
+public;interface;CustomNodeSpecification
+public;interface;CustomQueryInstanceNodesSpecification
+public;interface;CustomRendererSpecification
+public;const;DEFAULT_KEYS_BATCH_SIZE
+public;enum;DefaultContentDisplayTypes
+public;interface;DefaultGroupingPropertiesContainer
+public;interface;DefaultPropertyCategoryOverride
+public;class;Descriptor
+public;interface;DescriptorJSON
+public;interface;DescriptorOverrides
+public;interface;DescriptorSource
+public;interface;Diagnostics
+public;type;DiagnosticsLogEntry
+public;namespace;DiagnosticsLogEntry
+public;type;DiagnosticsLoggerSeverity
+public;interface;DiagnosticsLogMessage
+public;interface;DiagnosticsOptions
+public;interface;DiagnosticsScopeLogs
+public;interface;DisabledSortingRule
+public;interface;DisplayLabelRequestOptions
+public;type;DisplayLabelRpcRequestOptions
+public;interface;DisplayLabelsRequestOptions
+public;type;DisplayLabelsRpcRequestOptions
+public;type;DisplayValue
+public;namespace;DisplayValue
+public;interface;DisplayValueGroup
+public;namespace;DisplayValueGroup
+public;interface;DisplayValueGroupJSON
+deprecated;interface;DisplayValueGroupJSON
+public;type;DisplayValueJSON
+deprecated;type;DisplayValueJSON
+public;interface;DisplayValuesArray
+public;interface;DisplayValuesArrayJSON
+deprecated;interface;DisplayValuesArrayJSON
+public;interface;DisplayValuesMap
+public;interface;DisplayValuesMapJSON
+deprecated;interface;DisplayValuesMapJSON
+public;interface;DistinctValuesRequestOptions
+public;type;DistinctValuesRpcRequestOptions
+public;interface;ECClassGroupingNodeKey
+public;interface;ECClassGroupingNodeKeyJSON
+deprecated;interface;ECClassGroupingNodeKeyJSON
+public;interface;ECInstancesNodeKey
+public;interface;ECInstancesNodeKeyJSON
+deprecated;interface;ECInstancesNodeKeyJSON
+public;interface;ECPropertyGroupingNodeKey
+public;interface;ECPropertyGroupingNodeKeyJSON
+deprecated;interface;ECPropertyGroupingNodeKeyJSON
+public;interface;ECPropertyValueQuerySpecification
+public;interface;ECValueBinding
+public;interface;ECValueSetBinding
+public;interface;EditorDescription
+public;interface;ElementProperties
+public;type;ElementPropertiesArrayPropertyItem
+public;interface;ElementPropertiesArrayPropertyItemBase
+public;interface;ElementPropertiesCategoryItem
+public;type;ElementPropertiesItem
+public;interface;ElementPropertiesItemBase
+public;interface;ElementPropertiesPrimitiveArrayPropertyItem
+public;interface;ElementPropertiesPrimitivePropertyItem
+public;type;ElementPropertiesPropertyItem
+public;interface;ElementPropertiesPropertyItemBase
+public;type;ElementPropertiesPropertyValueType
+public;type;ElementPropertiesRequestOptions
+deprecated;type;ElementPropertiesRequestOptions
+public;interface;ElementPropertiesStructArrayPropertyItem
+public;interface;ElementPropertiesStructPropertyItem
+public;interface;ElementSelectionScopeProps
+public;interface;EnumerationChoice
+public;interface;EnumerationInfo
+public;interface;ExtendedDataRule
+public;class;Field
+internal;const;FIELD_NAMES_SEPARATOR
+public;type;FieldDescriptor
+public;namespace;FieldDescriptor
+public;interface;FieldDescriptorBase
+public;enum;FieldDescriptorType
+public;interface;FieldHierarchy
+public;type;FieldJSON
+public;interface;FilterByInstancePathsHierarchyRequestOptions
+public;type;FilterByInstancePathsHierarchyRpcRequestOptions
+public;interface;FilterByTextHierarchyRequestOptions
+public;type;FilterByTextHierarchyRpcRequestOptions
+public;interface;FormatOptions
+public;interface;FormatsMap
+internal;const;getFieldByDescriptor
+internal;const;getFieldByName
+public;const;getInstancesCount
+public;interface;GroupingNodeKey
+public;interface;GroupingNodeKeyJSON
+deprecated;interface;GroupingNodeKeyJSON
+public;interface;GroupingRule
+public;type;GroupingSpecification
+public;interface;GroupingSpecificationBase
+public;enum;GroupingSpecificationTypes
+public;interface;HierarchyCompareInfo
+public;namespace;HierarchyCompareInfo
+public;interface;HierarchyCompareInfoJSON
+deprecated;interface;HierarchyCompareInfoJSON
+public;interface;HierarchyCompareOptions
+public;interface;HierarchyLevel
+public;namespace;HierarchyLevel
+beta;function;fromJSON
+deprecated;function;fromJSON
+public;interface;HierarchyLevelDescriptorRequestOptions
+public;type;HierarchyLevelDescriptorRpcRequestOptions
+beta;interface;HierarchyLevelJSON
+deprecated;interface;HierarchyLevelJSON
+public;interface;HierarchyRequestOptions
+public;type;HierarchyRpcRequestOptions
+public;type;HierarchyUpdateInfo
+public;interface;IContentVisitor
+public;interface;Id64RulesetVariable
+public;interface;Id64RulesetVariableJSON
+deprecated;interface;Id64RulesetVariableJSON
+public;interface;Id64sRulesetVariable
+public;interface;Id64sRulesetVariableJSON
+public;interface;IdBinding
+public;interface;IdCategoryIdentifier
+public;interface;IdSetBinding
+public;interface;ImageIdOverride
+deprecated;interface;ImageIdOverride
+public;interface;InstanceFilterDefinition
+public;type;InstanceFilterRelatedInstanceDefinition
+public;interface;InstanceFilterRelatedInstancePath
+public;interface;InstanceFilterRelatedInstanceRelationshipAlias
+public;interface;InstanceFilterRelatedInstanceTargetAlias
+public;type;InstanceId
+public;interface;InstanceKey
+public;namespace;InstanceKey
+public;interface;InstanceKeyJSON
+deprecated;interface;InstanceKeyJSON
+public;interface;InstanceLabelOverride
+public;interface;InstanceLabelOverrideBriefcaseIdSpecification
+public;interface;InstanceLabelOverrideClassLabelSpecification
+public;interface;InstanceLabelOverrideClassNameSpecification
+public;interface;InstanceLabelOverrideCompositeValueSpecification
+public;interface;InstanceLabelOverrideLocalIdSpecification
+public;interface;InstanceLabelOverridePropertyValueSpecification
+public;interface;InstanceLabelOverrideRelatedInstanceLabelSpecification
+public;interface;InstanceLabelOverrideStringValueSpecification
+public;type;InstanceLabelOverrideValueSpecification
+public;interface;InstanceLabelOverrideValueSpecificationBase
+public;enum;InstanceLabelOverrideValueSpecificationType
+public;interface;InstanceNodesOfSpecificClassesSpecification
+public;interface;IntRulesetVariable
+public;interface;IntRulesetVariableJSON
+deprecated;interface;IntRulesetVariableJSON
+public;interface;IntsRulesetVariable
+public;interface;IntsRulesetVariableJSON
+deprecated;interface;IntsRulesetVariableJSON
+internal;function;isComputeSelectionRequestOptions
+internal;function;isSingleElementPropertiesRequestOptions
+public;class;Item
+public;interface;ItemJSON
+public;type;Key
+public;namespace;Key
+public;type;Keys
+public;class;KeySet
+public;interface;KeySetJSON
+public;interface;KindOfQuantityInfo
+public;class;KoqPropertyValueFormatter
+public;interface;LabelCompositeValue
+public;namespace;LabelCompositeValue
+public;interface;LabelCompositeValueJSON
+deprecated;interface;LabelCompositeValueJSON
+public;interface;LabelDefinition
+public;namespace;LabelDefinition
+public;interface;LabelDefinitionJSON
+deprecated;interface;LabelDefinitionJSON
+public;interface;LabelGroupingNodeKey
+public;interface;LabelGroupingNodeKeyJSON
+deprecated;interface;LabelGroupingNodeKeyJSON
+public;interface;LabelOverride
+deprecated;interface;LabelOverride
+public;type;LabelRawValue
+public;type;LabelRawValueJSON
+deprecated;type;LabelRawValueJSON
+internal;class;LocalizationHelper
+internal;interface;LocalizationHelperProps
+public;interface;MultiElementPropertiesRequestOptions
+public;interface;MultiSchemaClassesSpecification
+public;interface;NamedFieldDescriptor
+public;interface;NavigationPropertyInfo
+public;namespace;NavigationPropertyInfo
+public;interface;NavigationPropertyInfoJSON
+public;interface;NavigationPropertyValue
+public;type;NavigationRule
+public;interface;NavigationRuleBase
+public;class;NestedContentField
+public;interface;NestedContentFieldJSON
+public;interface;NestedContentValue
+public;namespace;NestedContentValue
+public;interface;NestedContentValueJSON
+deprecated;interface;NestedContentValueJSON
+public;interface;NoCategoryIdentifier
+public;interface;NodeArtifactsRule
+public;interface;NodeDeletionInfo
+public;interface;NodeDeletionInfoJSON
+deprecated;interface;NodeDeletionInfoJSON
+public;interface;NodeInsertionInfo
+public;interface;NodeInsertionInfoJSON
+deprecated;interface;NodeInsertionInfoJSON
+public;interface;NodeJSON
+deprecated;interface;NodeJSON
+public;type;NodeKey
+public;namespace;NodeKey
+public;type;NodeKeyJSON
+deprecated;type;NodeKeyJSON
+public;type;NodeKeyPath
+public;interface;NodePathElement
+public;namespace;NodePathElement
+internal;function;listFromJSON
+internal;function;listReviver
+internal;function;reviver
+public;interface;NodePathElementJSON
+deprecated;interface;NodePathElementJSON
+public;interface;NodePathFilteringData
+public;namespace;NodePathFilteringData
+public;interface;NodePathFilteringDataJSON
+deprecated;interface;NodePathFilteringDataJSON
+public;interface;NodeUpdateInfo
+public;interface;NodeUpdateInfoJSON
+deprecated;interface;NodeUpdateInfoJSON
+public;type;Paged
+public;interface;PagedResponse
+public;interface;PageOptions
+public;interface;ParentCategoryIdentifier
+public;function;parseCombinedFieldNames
+public;type;PartialBy
+public;type;PartialHierarchyModification
+public;namespace;PartialHierarchyModification
+public;type;PartialHierarchyModificationJSON
+deprecated;type;PartialHierarchyModificationJSON
+public;type;PartialNode
+public;type;PartialNodeJSON
+deprecated;type;PartialNodeJSON
+internal;const;PRESENTATION_IPC_CHANNEL_NAME
+public;class;PresentationError
+internal;enum;PresentationIpcEvents
+internal;interface;PresentationIpcInterface
+public;interface;PresentationQuery
+public;type;PresentationQueryBinding
+public;class;PresentationRpcInterface
+public;type;PresentationRpcRequestOptions
+public;type;PresentationRpcResponse
+public;interface;PresentationRpcResponseData
+public;enum;PresentationStatus
+public;type;PrimitivePropertyValue
+public;interface;PrimitiveTypeDescription
+public;type;Prioritized
+public;interface;ProcessFieldHierarchiesProps
+public;interface;ProcessMergedValueProps
+public;interface;ProcessPrimitiveValueProps
+public;class;PropertiesField
+public;interface;PropertiesFieldDescriptor
+public;interface;PropertiesFieldJSON
+public;interface;Property
+public;namespace;Property
+public;interface;PropertyAccessor
+public;type;PropertyAccessorPath
+public;interface;PropertyCategorySpecification
+public;interface;PropertyEditorJsonParameters
+public;interface;PropertyEditorMultilineParameters
+public;type;PropertyEditorParameters
+public;interface;PropertyEditorParametersBase
+public;enum;PropertyEditorParameterTypes
+public;interface;PropertyEditorRangeParameters
+public;interface;PropertyEditorSliderParameters
+public;interface;PropertyEditorSpecification
+public;interface;PropertyGroup
+public;enum;PropertyGroupingValue
+deprecated;enum;PropertyGroupingValue
+public;interface;PropertyInfo
+public;namespace;PropertyInfo
+public;interface;PropertyInfoJSON
+public;interface;PropertyJSON
+public;interface;PropertyOverrides
+public;interface;PropertyRangeGroupSpecification
+public;interface;PropertySortingRule
+public;interface;PropertySpecification
+public;enum;PropertyValueFormat
+public;type;QuerySpecification
+public;interface;QuerySpecificationBase
+public;enum;QuerySpecificationTypes
+public;class;RegisteredRuleset
+public;interface;RelatedClassInfo
+public;namespace;RelatedClassInfo
+public;interface;RelatedClassInfoJSON
+public;type;RelatedClassInfoWithOptionalRelationship
+public;namespace;RelatedClassInfoWithOptionalRelationship
+public;type;RelatedClassInfoWithOptionalRelationshipJSON
+public;interface;RelatedInstanceByPathSpecification
+public;interface;RelatedInstanceByTargetInstancesSpecification
+public;interface;RelatedInstanceNodesSpecification
+public;type;RelatedInstanceSpecification
+public;interface;RelatedInstanceSpecificationBase
+public;enum;RelatedPropertiesSpecialValues
+public;interface;RelatedPropertiesSpecification
+public;enum;RelationshipDirection
+public;enum;RelationshipMeaning
+public;type;RelationshipPath
+public;namespace;RelationshipPath
+public;type;RelationshipPathJSON
+public;type;RelationshipPathSpecification
+public;interface;RelationshipStepSpecification
+public;interface;RendererDescription
+public;type;RepeatableRelationshipPathSpecification
+public;interface;RepeatableRelationshipStepSpecification
+public;interface;RequestOptions
+public;interface;RequestOptionsWithRuleset
+public;interface;RequiredSchemaSpecification
+public;interface;RootCategoryIdentifier
+public;interface;RootNodeRule
+public;type;RpcDiagnosticsOptions
+internal;class;RpcRequestsHandler
+internal;interface;RpcRequestsHandlerProps
+public;type;Rule
+public;interface;RuleBase
+public;interface;Ruleset
+public;class;RulesetsFactory
+public;type;RulesetVariable
+public;namespace;RulesetVariable
+public;interface;RulesetVariableBase
+public;interface;RulesetVariableBaseJSON
+public;type;RulesetVariableJSON
+public;enum;RuleTypes
+public;interface;SameLabelInstanceGroup
+public;enum;SameLabelInstanceGroupApplicationStage
+public;interface;SchemasSpecification
+public;interface;SelectClassInfo
+public;namespace;SelectClassInfo
+internal;function;listFromCompressedJSON
+public;interface;SelectClassInfoJSON
+public;interface;SelectedNodeInstancesSpecification
+public;interface;SelectionInfo
+public;interface;SelectionScope
+public;type;SelectionScopeProps
+public;interface;SelectionScopeRequestOptions
+public;type;SelectionScopeRpcRequestOptions
+internal;interface;SetRulesetVariableParams
+public;interface;SingleElementPropertiesRequestOptions
+public;type;SingleElementPropertiesRpcRequestOptions
+public;interface;SingleSchemaClassSpecification
+public;enum;SortDirection
+public;type;SortingRule
+public;interface;SortingRuleBase
+public;enum;StandardNodeTypes
+public;interface;StartArrayProps
+public;interface;StartCategoryProps
+public;interface;StartContentProps
+public;interface;StartFieldProps
+public;interface;StartItemProps
+public;interface;StartStructProps
+public;interface;StringQuerySpecification
+public;interface;StringRulesetVariable
+public;interface;StringRulesetVariableJSON
+deprecated;interface;StringRulesetVariableJSON
+public;interface;StrippedRelatedClassInfo
+public;type;StrippedRelationshipPath
+public;interface;StructFieldMemberDescription
+public;class;StructPropertiesField
+public;interface;StructPropertiesFieldJSON
+public;interface;StructTypeDescription
+public;interface;StyleOverride
+deprecated;interface;StyleOverride
+public;interface;SubCondition
+public;type;Subtract
+public;interface;SupplementationInfo
+public;function;traverseContent
+public;function;traverseContentItem
+public;function;traverseFieldHierarchy
+public;type;TypeDescription
+public;interface;UnitSystemFormat
+internal;interface;UnsetRulesetVariableParams
+public;const;UPDATE_FULL
+public;interface;UpdateInfo
+public;type;Value
+public;namespace;Value
+public;type;ValueJSON
+deprecated;type;ValueJSON
+public;interface;ValuesArray
+public;interface;ValuesArrayJSON
+deprecated;interface;ValuesArrayJSON
+public;interface;ValuesDictionary
+public;interface;ValuesMap
+public;interface;ValuesMapJSON
+deprecated;interface;ValuesMapJSON
+public;interface;Variable
+public;interface;VariablesGroup
+public;type;VariableValue
+public;type;VariableValueJSON
+public;enum;VariableValueType
+public;enum;VariableValueTypes
+public;type;WithCancelEvent

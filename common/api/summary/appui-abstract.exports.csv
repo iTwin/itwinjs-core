@@ -1,202 +1,204 @@
 sep=;
-Release Tag;API Item
-public;AbstractActionItemProps 
-public;AbstractMenuItemProps 
-public;AbstractStatusBarActionItem 
-deprecated;AbstractStatusBarActionItem 
-public;AbstractStatusBarCustomItem 
-deprecated;AbstractStatusBarCustomItem 
-public;AbstractStatusBarItem 
-deprecated;AbstractStatusBarItem 
-public;AbstractStatusBarItemUtilities
-deprecated;AbstractStatusBarItemUtilities
-public;AbstractStatusBarLabelItem 
-deprecated;AbstractStatusBarLabelItem 
-public;AbstractToolbarProps
-public;AbstractWidgetProps 
-deprecated;AbstractWidgetProps 
-public;AbstractZoneLocation
-deprecated;AbstractZoneLocation
-public;ActionButton 
-public;AllowedUiItemProviderOverrides
-deprecated;AllowedUiItemProviderOverrides
-public;AlternateDateFormats
-public;ArrayValue 
-public;BackstageActionItem 
-deprecated;BackstageActionItem 
-public;BackstageItem = BackstageActionItem | BackstageStageLauncher
-deprecated;BackstageItem = BackstageActionItem | BackstageStageLauncher
-internal;BackstageItemsChangedArgs
-internal;BackstageItemsManager
-public;BackstageItemType
-deprecated;BackstageItemType
-public;BackstageItemUtilities
-deprecated;BackstageItemUtilities
-public;BackstageStageLauncher 
-deprecated;BackstageStageLauncher 
-public;BadgeType
-public;BaseDialogItem
-public;BasePropertyEditorParams
-public;BasePropertyValue
-beta;class BaseQuantityDescription 
-public;BaseUiItemsProvider 
-deprecated;BaseUiItemsProvider 
-public;ButtonGroupEditorParams 
-public;ColorEditorParams 
-public;CommandHandler
-public;CommonBackstageItem 
-deprecated;CommonBackstageItem 
-public;CommonItemProps
-public;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
-deprecated;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
-public;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
-public;ConditionalBooleanValue
-public;ConditionalStringValue
-public;ContentLayoutProps 
-public;CustomButtonDefinition 
-public;CustomFormattedNumberParams 
-public;DateFormatter
-public;DialogButtonDef
-public;DialogButtonStyle
-public;DialogButtonType
-public;DialogItem 
-public;DialogItemValue
-public;class DialogLayoutDataProvider 
-public;DialogProperty
-public;DialogPropertyItem
-public;DialogPropertySyncItem 
-public;DialogProps
-public;DialogRow
-public;DisplayMessageType
-public;EditorPosition
-public;EnumerationChoice
-public;EnumerationChoicesInfo
-public;FunctionKey
-deprecated;FunctionKey
-public;GenericUiEvent 
-public;GenericUiEventArgs
-internal;getClassName: (obj: any) => string
-deprecated;getClassName: (obj: any) => string
-public;GroupButton 
-public;IconDefinition
-public;IconEditorParams 
-public;IconListEditorParams 
-public;IconSpecUtilities
-deprecated;IconSpecUtilities
-public;ImageCheckBoxParams 
-public;IMatch
-deprecated;IMatch
-public;InputEditorSizeParams 
-public;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
-deprecated;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
-public;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
-deprecated;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
-public;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
-deprecated;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
-public;isActionItem: (item: BackstageItem) => item is BackstageActionItem
-deprecated;isActionItem: (item: BackstageItem) => item is BackstageActionItem
-public;isArrowKey(key: string): boolean
-deprecated;isArrowKey(key: string): boolean
-public;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
-public;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
-public;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
-public;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
-public;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
-public;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
-deprecated;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
-public;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
-public;LayoutFragmentProps
-public;LayoutHorizontalSplitProps 
-public;LayoutSplitPropsBase
-public;LayoutVerticalSplitProps 
-public;LinkElementsInfo
-internal;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
-deprecated;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
-public;MessagePresenter
-public;MessageSeverity
-public;MultilineTextEditorParams 
-public;OnCancelFunc = () => void
-public;OnItemExecutedFunc = (item: any) => void
-public;OnNumberCommitFunc = (value: number) => void
-public;OnValueCommitFunc = (value: Primitives.Value) => void
-public;ParseResults
-public;PointProps
-deprecated;PointProps
-public;Primitives
-public;PrimitiveValue 
-public;PropertyChangeResult
-public;PropertyChangeStatus
-public;PropertyConverterInfo
-public;PropertyDescription
-public;PropertyDescriptionHelper
-public;PropertyEditorInfo
-public;PropertyEditorParams = BasePropertyEditorParams
-public;PropertyEditorParamTypes
-public;PropertyRecord
-public;PropertyRendererInfo
-public;PropertyValue = PrimitiveValue | StructValue | ArrayValue
-public;PropertyValueFormat
-public;ProvidedItem
-deprecated;ProvidedItem
-public;RangeEditorParams 
-public;RelativePosition
-public;SliderEditorParams 
-public;SpecialKey
-deprecated;SpecialKey
-public;StagePanelLocation
-deprecated;StagePanelLocation
-public;StagePanelSection
-deprecated;StagePanelSection
-public;StageUsage
-deprecated;StageUsage
-public;StandardContentLayouts
-public;StandardEditorNames
-public;StandardTypeNames
-public;StatusBarItemId = CommonStatusBarItem["id"]
-deprecated;StatusBarItemId = CommonStatusBarItem["id"]
-internal;StatusBarItemsChangedArgs
-internal;StatusBarItemsManager
-public;StatusBarLabelSide
-deprecated;StatusBarLabelSide
-public;StatusBarSection
-deprecated;StatusBarSection
-public;StringGetter = () => string
-public;StructValue 
-public;SuppressLabelEditorParams 
-public;SyncPropertiesChangeEvent 
-public;SyncPropertiesChangeEventArgs
-public;TimeDisplay
-public;ToolbarItem 
-public;ToolbarItemId = CommonToolbarItem["id"]
-deprecated;ToolbarItemId = CommonToolbarItem["id"]
-internal;ToolbarItemsChangedArgs
-internal;ToolbarItemsManager
-public;ToolbarItemUtilities
-public;ToolbarOrientation
-deprecated;ToolbarOrientation
-public;ToolbarUsage
-deprecated;ToolbarUsage
-public;UiAdmin
-public;class UiDataProvider
-public;UiError 
-deprecated;UiError 
-public;UiEvent
-deprecated;UiEvent
-public;UiEventDispatcher
-deprecated;UiEventDispatcher
-public;UiFlags
-public;UiItemProviderRegisteredEventArgs
-deprecated;UiItemProviderRegisteredEventArgs
-public;UiItemsApplicationAction
-deprecated;UiItemsApplicationAction
-public;UiItemsManager
-deprecated;UiItemsManager
-public;UiItemsProvider
-deprecated;UiItemsProvider
-public;class UiLayoutDataProvider 
-public;UiSyncEvent 
-deprecated;UiSyncEvent 
-public;UiSyncEventArgs
-deprecated;UiSyncEventArgs
-public;WidgetState
-deprecated;WidgetState
+Release Tag;API Item Type;API Item Name
+public;interface;AbstractActionItemProps
+public;interface;AbstractMenuItemProps
+public;interface;AbstractStatusBarActionItem
+deprecated;interface;AbstractStatusBarActionItem
+public;interface;AbstractStatusBarCustomItem
+deprecated;interface;AbstractStatusBarCustomItem
+public;interface;AbstractStatusBarItem
+deprecated;interface;AbstractStatusBarItem
+public;class;AbstractStatusBarItemUtilities
+deprecated;class;AbstractStatusBarItemUtilities
+public;interface;AbstractStatusBarLabelItem
+deprecated;interface;AbstractStatusBarLabelItem
+public;interface;AbstractToolbarProps
+public;interface;AbstractWidgetProps
+deprecated;interface;AbstractWidgetProps
+public;enum;AbstractZoneLocation
+deprecated;enum;AbstractZoneLocation
+public;interface;ActionButton
+public;interface;AllowedUiItemProviderOverrides
+deprecated;interface;AllowedUiItemProviderOverrides
+public;enum;AlternateDateFormats
+public;interface;ArrayValue
+public;interface;BackstageActionItem
+deprecated;interface;BackstageActionItem
+public;type;BackstageItem
+deprecated;type;BackstageItem
+internal;interface;BackstageItemsChangedArgs
+internal;class;BackstageItemsManager
+public;enum;BackstageItemType
+deprecated;enum;BackstageItemType
+public;class;BackstageItemUtilities
+deprecated;class;BackstageItemUtilities
+public;interface;BackstageStageLauncher
+deprecated;interface;BackstageStageLauncher
+public;enum;BadgeType
+public;interface;BaseDialogItem
+public;interface;BasePropertyEditorParams
+public;interface;BasePropertyValue
+beta;class;BaseQuantityDescription
+public;class;BaseUiItemsProvider
+deprecated;class;BaseUiItemsProvider
+public;interface;ButtonGroupEditorParams
+public;interface;ColorEditorParams
+public;interface;CommandHandler
+public;interface;CommonBackstageItem
+deprecated;interface;CommonBackstageItem
+public;interface;CommonItemProps
+public;type;CommonStatusBarItem
+deprecated;type;CommonStatusBarItem
+public;type;CommonToolbarItem
+public;class;ConditionalBooleanValue
+public;class;ConditionalStringValue
+public;interface;ContentLayoutProps
+public;interface;CustomButtonDefinition
+public;interface;CustomFormattedNumberParams
+public;interface;DateFormatter
+public;interface;DialogButtonDef
+public;enum;DialogButtonStyle
+public;enum;DialogButtonType
+public;interface;DialogItem
+public;interface;DialogItemValue
+public;class;DialogLayoutDataProvider
+public;class;DialogProperty
+public;interface;DialogPropertyItem
+public;interface;DialogPropertySyncItem
+public;interface;DialogProps
+public;interface;DialogRow
+public;enum;DisplayMessageType
+public;interface;EditorPosition
+public;interface;EnumerationChoice
+public;interface;EnumerationChoicesInfo
+public;enum;FunctionKey
+deprecated;enum;FunctionKey
+public;class;GenericUiEvent
+public;interface;GenericUiEventArgs
+internal;const;getClassName
+deprecated;const;getClassName
+public;interface;GroupButton
+public;interface;IconDefinition
+public;interface;IconEditorParams
+public;interface;IconListEditorParams
+public;class;IconSpecUtilities
+deprecated;class;IconSpecUtilities
+public;interface;ImageCheckBoxParams
+public;interface;IMatch
+deprecated;interface;IMatch
+public;interface;InputEditorSizeParams
+public;const;isAbstractStatusBarActionItem
+deprecated;const;isAbstractStatusBarActionItem
+public;const;isAbstractStatusBarCustomItem
+deprecated;const;isAbstractStatusBarCustomItem
+public;const;isAbstractStatusBarLabelItem
+deprecated;const;isAbstractStatusBarLabelItem
+public;const;isActionItem
+deprecated;const;isActionItem
+public;function;isArrowKey
+deprecated;function;isArrowKey
+public;const;isButtonGroupEditorParams
+public;const;isColorEditorParams
+public;const;isCustomFormattedNumberParams
+public;const;isIconListEditorParams
+public;const;isInputEditorSizeParams
+public;const;isStageLauncher
+deprecated;const;isStageLauncher
+public;const;isSuppressLabelEditorParams
+public;interface;LayoutFragmentProps
+public;interface;LayoutHorizontalSplitProps
+public;interface;LayoutSplitPropsBase
+public;interface;LayoutVerticalSplitProps
+public;interface;LinkElementsInfo
+internal;function;matchesWords
+deprecated;function;matchesWords
+public;interface;MessagePresenter
+public;enum;MessageSeverity
+public;interface;MultilineTextEditorParams
+public;type;OnCancelFunc
+public;type;OnItemExecutedFunc
+public;type;OnNumberCommitFunc
+public;type;OnValueCommitFunc
+public;interface;ParseResults
+public;interface;PointProps
+deprecated;interface;PointProps
+public;namespace;Primitives
+public;interface;PrimitiveValue
+public;interface;PropertyChangeResult
+public;enum;PropertyChangeStatus
+public;interface;PropertyConverterInfo
+public;interface;PropertyDescription
+public;class;PropertyDescriptionHelper
+public;interface;PropertyEditorInfo
+public;type;PropertyEditorParams
+public;enum;PropertyEditorParamTypes
+public;class;PropertyRecord
+public;interface;PropertyRendererInfo
+public;type;PropertyValue
+public;enum;PropertyValueFormat
+public;interface;ProvidedItem
+deprecated;interface;ProvidedItem
+public;interface;RangeEditorParams
+public;enum;RelativePosition
+public;interface;SliderEditorParams
+public;enum;SpecialKey
+deprecated;enum;SpecialKey
+public;enum;StagePanelLocation
+deprecated;enum;StagePanelLocation
+public;enum;StagePanelSection
+deprecated;enum;StagePanelSection
+public;enum;StageUsage
+deprecated;enum;StageUsage
+public;class;StandardContentLayouts
+public;enum;StandardEditorNames
+public;enum;StandardTypeNames
+public;type;StatusBarItemId
+deprecated;type;StatusBarItemId
+internal;interface;StatusBarItemsChangedArgs
+internal;class;StatusBarItemsManager
+public;enum;StatusBarLabelSide
+deprecated;enum;StatusBarLabelSide
+public;enum;StatusBarSection
+deprecated;enum;StatusBarSection
+public;type;StringGetter
+public;interface;StructValue
+public;interface;SuppressLabelEditorParams
+public;class;SyncPropertiesChangeEvent
+public;interface;SyncPropertiesChangeEventArgs
+public;enum;TimeDisplay
+public;interface;ToolbarItem
+public;type;ToolbarItemId
+deprecated;type;ToolbarItemId
+internal;interface;ToolbarItemsChangedArgs
+internal;class;ToolbarItemsManager
+public;class;ToolbarItemUtilities
+public;enum;ToolbarOrientation
+deprecated;enum;ToolbarOrientation
+public;enum;ToolbarUsage
+deprecated;enum;ToolbarUsage
+public;class;UiAdmin
+public;class;UiDataProvider
+public;class;UiError
+deprecated;class;UiError
+public;class;UiEvent
+deprecated;class;UiEvent
+public;class;UiEventDispatcher
+deprecated;class;UiEventDispatcher
+public;interface;UiFlags
+public;type;UiItemProviderOverrides
+deprecated;type;UiItemProviderOverrides
+public;interface;UiItemProviderRegisteredEventArgs
+deprecated;interface;UiItemProviderRegisteredEventArgs
+public;enum;UiItemsApplicationAction
+deprecated;enum;UiItemsApplicationAction
+public;class;UiItemsManager
+deprecated;class;UiItemsManager
+public;interface;UiItemsProvider
+deprecated;interface;UiItemsProvider
+public;class;UiLayoutDataProvider
+public;class;UiSyncEvent
+deprecated;class;UiSyncEvent
+public;interface;UiSyncEventArgs
+deprecated;interface;UiSyncEventArgs
+public;enum;WidgetState
+deprecated;enum;WidgetState

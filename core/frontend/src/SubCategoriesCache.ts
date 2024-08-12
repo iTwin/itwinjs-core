@@ -129,7 +129,7 @@ export class SubCategoriesCache {
       this._byCategoryId.set(categoryId, set = new Set<string>());
 
     set.add(subCategoryId);
-    if (override)
+    if (override || !this._appearances.has(subCategoryId))
       this._appearances.set(subCategoryId, appearance);
   }
 
