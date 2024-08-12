@@ -8,7 +8,7 @@ import {
   assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
-  BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
+  BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewFlagProps, ViewStateProps,
 } from "@itwin/core-common";
 import {
   CheckpointConnection,
@@ -191,6 +191,8 @@ export class TestRunner {
     // Subsequently pushed configs can override this if desired.
     const defaultTileProps: TileAdmin.Props = { minimumSpatialTolerance: 0 };
     props.tileProps = props.tileProps ? { ...defaultTileProps, ...props.tileProps } : defaultTileProps;
+    const defaultViewFlags: ViewFlagProps = { ambientOcclusion: true };
+    props.viewFlags = props.viewFlags ? { ...defaultViewFlags, ...props.viewFlags } : defaultViewFlags;
 
     this._config = new TestConfigStack(new TestConfig(props));
     this._lastRestartConfig = this.curConfig;
