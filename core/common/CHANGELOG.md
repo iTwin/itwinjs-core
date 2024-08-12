@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 08 Aug 2024 16:15:37 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Aug 2024 14:05:54 GMT and should not be manually modified.
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+### Updates
+
+- Fix GeometryStreamBuilder.appendTextBlock producing incorrect geometry for black text.
 
 ## 4.8.0
 Thu, 08 Aug 2024 16:15:37 GMT
