@@ -26,7 +26,7 @@
     "perftest:schemaloader": "mocha \"./lib/cjs/perftest/SchemaLoader.test.js\""
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.7.0",
+    "@azure/storage-blob": "^12.24.0",
     "@bentley/aec-units-schema": "^1.0.3",
     "@bentley/cif-bridge-schema": "^1.0.5",
     "@bentley/cif-common-schema": "^1.0.3",
@@ -54,7 +54,7 @@
     "@itwin/itwins-client": "^1.2.0",
     "@itwin/oidc-signin-tool": "^4.3.5",
     "@itwin/perf-tools": "workspace:*",
-    "azurite": "^3.29.0",
+    "azurite": "^3.31.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
