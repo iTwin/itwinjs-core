@@ -1397,7 +1397,9 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/core-webpack-tools': workspace:*
       '@itwin/eslint-plugin': ^4.0.2
+      '@itwin/oidc-signin-tool': ^4.3.5
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
@@ -1407,7 +1409,9 @@ importers:
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
+      dotenv-webpack: ^8.1.0
       eslint: ^8.56.0
+      file-loader: ^6.2.0
       glob: ^10.3.12
       mocha: ^10.2.0
       rimraf: ^3.0.2
@@ -1422,7 +1426,9 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
+      '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
@@ -1432,7 +1438,9 @@ importers:
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
+      dotenv-webpack: 8.1.0_webpack@5.76.0
       eslint: 8.56.0
+      file-loader: 6.2.0_webpack@5.76.0
       glob: 10.3.12
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -5742,7 +5750,7 @@ packages:
       ajv:
         optional: true
     dependencies:
-      ajv: 8.13.0
+      ajv: 8.17.1
     dev: false
 
   /ajv-keywords/3.5.2_ajv@6.12.6:
@@ -7373,8 +7381,24 @@ packages:
       is-obj: 2.0.0
     dev: false
 
+  /dotenv-defaults/2.0.2:
+    resolution: {integrity: sha512-iOIzovWfsUHU91L5i8bJce3NYK5JXeAwH50Jh6+ARUdLiiGlYWfGw6UkzsYqaXZH/hjE/eCd/PlfM/qqyK0AMg==}
+    dependencies:
+      dotenv: 8.2.0
+    dev: true
+
   /dotenv-expand/5.1.0:
     resolution: {integrity: sha512-YXQl1DSa4/PQyRfgrv6aoNjhasp/p4qs9FjJ4q4cQk+8m4r6k4ZSiEyytKG8f8W9gi8WsQtIObNmKd+tMzNTmA==}
+
+  /dotenv-webpack/8.1.0_webpack@5.76.0:
+    resolution: {integrity: sha512-owK1JcsPkIobeqjVrk6h7jPED/W6ZpdFsMPR+5ursB7/SdgDyO+VzAU+szK8C8u3qUhtENyYnj8eyXMR5kkGag==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      webpack: ^4 || ^5
+    dependencies:
+      dotenv-defaults: 2.0.2
+      webpack: 5.76.0
+    dev: true
 
   /dotenv/10.0.0:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
@@ -8369,7 +8393,6 @@ packages:
       loader-utils: 2.0.4
       schema-utils: 3.3.0
       webpack: 5.76.0
-    dev: false
 
   /file-saver/2.0.2:
     resolution: {integrity: sha512-Wz3c3XQ5xroCxd1G8b7yL0Ehkf0TC9oYC6buPFkNnU9EnaPlifeAFCyCh+iewXTyFRcg0a6j3J7FmJsIhlhBdw==}

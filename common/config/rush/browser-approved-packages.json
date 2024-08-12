@@ -216,7 +216,7 @@
     },
     {
       "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-editing",
@@ -320,7 +320,7 @@
     },
     {
       "name": "@itwin/oidc-signin-tool",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/perf-tools",
@@ -523,6 +523,10 @@
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
+      "name": "dotenv-webpack",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "electron",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -564,7 +568,7 @@
     },
     {
       "name": "file-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "file-saver",

@@ -1,0 +1,25 @@
+{
+  "testBundle": "../../../lib/cjs/test/webpack/bundled-integration-tests.js",
+  "backendInitModule": "../../../node_modules/@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend.js",
+  "ports": {
+    "frontend": 3000,
+    "frontendDebugging": 9223
+  },
+  "mochaOptions": {
+    "timeout": 50000,
+    "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
+    "reporterOptions": {
+      "mochaFile": "lib/test/junit_results.xml"
+    }
+  },
+  "chromeOptions": {
+    "publicDirs": [
+      "src/public",
+      "src/test/public"
+    ],
+    "args": [
+      "--disable-web-security",
+      "--no-sandbox"
+    ]
+  }
+}
