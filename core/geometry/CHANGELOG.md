@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Thu, 08 Aug 2024 17:40:25 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Aug 2024 14:08:06 GMT and should not be manually modified.
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+### Updates
+
+- avoid null ref in buildAverageNormals
 
 ## 4.8.0
 Thu, 08 Aug 2024 16:15:37 GMT
