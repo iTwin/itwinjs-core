@@ -9,10 +9,10 @@
 
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -51,6 +51,7 @@ import { Sphere } from "../solid/Sphere";
 import { SweepContour } from "../solid/SweepContour";
 import { TorusPipe } from "../solid/TorusPipe";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/Graph";
+import { InsertedVertexZOptions } from "../topology/InsertAndRetriangulateContext";
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
@@ -1953,16 +1954,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Create a polyface from a triangulation of the points.
    * * The triangulation is computed as seen in the top view: z-coordinates are ignored.
+   * * The highest z-coordinate is preserved for points that are separated by a vertical distance.
    * @param points an array of points.
    * @param options (optional) stroke options:
-   * * `options.chordTol`: xy-distance for equating points. For DTM points, 1-2mm may suffice.
-   * Default is `Geometry.smallMetricDistance`.
+   * * `options.chordTol`: xy-distance for equating points. For DTM points, 1-2mm may suffice. Default value is
+   * `Geometry.smallMetricDistance`.
    * * `options.needNormals`: whether to assign 001 to all facets (rarely useful).
    * * `options.needParams`: whether to assign all vertices uv-parameters equal to their xy-coordinates (rarely useful).
    * @returns triangulated polyface or `undefined` if triangulation was not possible.
    */
   public static pointsToTriangulatedPolyface(points: Point3d[], options?: StrokeOptions): IndexedPolyface | undefined {
-    const graph = Triangulator.createTriangulatedGraphFromPoints(points, undefined, options?.chordTol);
+    const graph = Triangulator.createTriangulatedGraphFromPoints(points, InsertedVertexZOptions.ReplaceIfLarger, options?.chordTol);
     if (graph)
       return PolyfaceBuilder.graphToPolyface(graph, options);
     return undefined;
