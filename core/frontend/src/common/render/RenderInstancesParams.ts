@@ -181,7 +181,8 @@ class Builder implements RenderInstancesParamsBuilder {
   private readonly _opaque = new PropsBuilder();
   private readonly _translucent = new PropsBuilder();
   private readonly _modelId?: Id64String;
-  private _numFeatures = 0;
+  private _containsFeatures = false;
+  private _containsNonFeatures = false;
   
   public constructor(modelId?: Id64String) {
     this._modelId = modelId;
@@ -193,7 +194,9 @@ class Builder implements RenderInstancesParamsBuilder {
     list.add(instance);
     
     if (undefined !== instance.feature) {
-      this._numFeatures++;
+      this._containsFeatures = true;
+    } else {
+      this._containsNonFeatures = true;
     }
   }
 
@@ -204,9 +207,9 @@ class Builder implements RenderInstancesParamsBuilder {
     }
 
     let featureTable;
-    if (this._numFeatures > 0) {
+    if (this._containsFeatures) {
       featureTable = new FeatureTable(numInstances, this._modelId);
-      if (this._numFeatures < numInstances) {
+      if (this._containsNonFeatures) {
         // Some instances don't correspond to a Feature. They'll use feature index zero.
         featureTable.insert(new Feature());
       }
