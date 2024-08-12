@@ -11,13 +11,13 @@ import { expect } from "chai";
 import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { Id64String } from "@itwin/core-bentley";
 
-function build(instances: Instance[]): InstancedGraphicProps {
+function build(instances: Instance[], haveFeatures = false): InstancedGraphicProps {
   const builder = new InstancedGraphicPropsBuilder();
   for (const instance of instances) {
     builder.add(instance);
   }
 
-  const featureTable = new FeatureTable(1000);
+  const featureTable = haveFeatures ? new FeatureTable(1000) : undefined;
   const props = builder.finish(featureTable);
   expect(props).not.to.be.undefined;
   return props!;
@@ -30,19 +30,10 @@ function makeInstance(tf: Transform | XYZProps = [1, 2, 3], feature?: Id64String
 
 describe.only("InstancedGraphicPropsBuilder", () => {
   it("only populates feature indices if features are provided", () => {
-    expect(build([
-      makeInstance(),
-      makeInstance([4, 5, 6]),
-      makeInstance([7, 8, 9], undefined, { weight: 5 }),
-    ]).featureIds).to.be.undefined;
+    const instances = [makeInstance(), makeInstance(), makeInstance(), makeInstance()];
+    expect(build(instances).featureIds).to.be.undefined;
 
-    const props = build([
-      makeInstance(),
-      makeInstance([4, 5, 6], "0x456"),
-      makeInstance([7, 8, 9], undefined, { weight: 5 }),
-      makeInstance([-1, -1, -1], undefined, { transparency: 0.5 }),
-    ]);
-    expect(props.featureIds).not.to.be.undefined;
+    const props = build(instances, true);
     expect(props.featureIds!.byteLength).to.equal(3 * 4);
   });
 
