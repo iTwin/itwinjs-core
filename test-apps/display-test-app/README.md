@@ -303,6 +303,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
 * `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
 * `dta record tilesize [on|off|toggle]` - When turned on, begins recording the encoded size of every subsequently requested iMdl tile's content. When turned off, copies the tile sizes in CSV format to the clipboard. See TileSizeRecorder.ts for details. If no argument is supplied, it defaults to `toggle`.
+* `dta imodel attach` - Toggles a secondary IModelConnection to be displayed in the active viewport. The first time it is invoked, it opens a file open dialog from which you can select the iModel. All of the 3d models in the secondary iModel will be displayed in the viewport. Invoke it again to remove the secondary iModel from the view.
 
 ## Editing
 
@@ -323,6 +324,7 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
+* `dta move element *elementId* *x* *y* *z*` - Move an element, given an element Id and an x y z offset (in world space, relative to its current). If Y and/or Z are not specified they will default to 0.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
 * `dta create section drawing *drawingName*` - insert a spatial view matching the active viewport's current view and a section drawing referencing that view, then switch to a non-persistent drawing view to visualize the spatial view in a 2d context. Requires the camera to be turned off.

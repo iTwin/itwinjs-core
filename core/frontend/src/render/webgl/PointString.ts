@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, QParams3d } from "@itwin/core-common";
-import { PointStringParams } from "../../common/render/primitives/PointStringParams";
+import { PointStringParams } from "../../common/internal/render/PointStringParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { LUTGeometry } from "./CachedGeometry";

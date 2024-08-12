@@ -1,6 +1,30 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Fri, 12 Jul 2024 14:44:31 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Aug 2024 14:08:06 GMT and should not be manually modified.
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+_Version update only_
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:38 GMT
+
+### Updates
+
+- Introduced Schema Merging Changes API
+- Removed SchemaDifference namspace; difference method and typeguards are now exported functions of the package. SchemaDifferences has been renamed to SchemaDifferenceResult
+- Added SchemaItem name editing in the schema editing API.
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
+
+## 4.7.7
+Fri, 19 Jul 2024 14:52:42 GMT
+
+_Version update only_
 
 ## 4.7.6
 Fri, 12 Jul 2024 14:42:55 GMT

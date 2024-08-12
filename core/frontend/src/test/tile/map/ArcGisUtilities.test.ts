@@ -125,7 +125,8 @@ describe ("ArcGisUtilities", () => {
 
     expect(fetchStub.calledOnce).to.be.true;
     const firstCall = fetchStub.getCalls()[0];
-    expect(firstCall.args[0]).to.equals(`${source.url}?f=json&${saved.toString()}&${unsaved.toString()}`);
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    expect(firstCall.args[0].toString()).to.equals(`${source.url}?f=json&${saved.toString()}&${unsaved.toString()}`);
 
   });
 

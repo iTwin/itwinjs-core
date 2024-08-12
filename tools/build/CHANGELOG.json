@@ -2,6 +2,42 @@
   "name": "@itwin/build-tools",
   "entries": [
     {
+      "version": "4.8.1",
+      "tag": "@itwin/build-tools_v4.8.1",
+      "date": "Mon, 12 Aug 2024 14:05:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.0",
+      "tag": "@itwin/build-tools_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "extract-api-summary: Improve regex so that includes all exports with improved output."
+          },
+          {
+            "comment": "Update ThirdPartyNotices.md"
+          },
+          {
+            "comment": "Update api-extractor to 7.47."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.8",
+      "tag": "@itwin/build-tools_v4.7.8",
+      "date": "Wed, 31 Jul 2024 13:38:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.7",
+      "tag": "@itwin/build-tools_v4.7.7",
+      "date": "Fri, 19 Jul 2024 14:52:42 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.7.6",
       "tag": "@itwin/build-tools_v4.7.6",
       "date": "Fri, 12 Jul 2024 14:42:55 GMT",

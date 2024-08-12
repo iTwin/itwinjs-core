@@ -190,6 +190,7 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
+import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -1321,6 +1322,16 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
+
+// @beta
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+    graphemeCharIndexes: number[];
+    paragraphIndex: number;
+    runLayoutResult: RunLayoutResult;
+}
+
+// @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @public
@@ -1445,6 +1456,16 @@ export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, 
 
 // @beta
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
+
+// @beta
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+
+// @beta
+export interface DeleteElementTreeArgs {
+    iModel: IModelDb;
+    maxPasses?: number;
+    topElement: Id64String;
+}
 
 // @public
 export class DetailCallout extends Callout {

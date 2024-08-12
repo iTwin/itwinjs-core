@@ -5,21 +5,22 @@
 import { assert, expect } from "chai";
 import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { MeshPrimitiveType } from "../../../common/render/primitives/MeshPrimitive";
-import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
-import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
-import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
-import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
-import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
-import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { GraphicType } from "../../../common/render/GraphicType";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { MeshBuilder, MeshEdgeCreationOptions } from "../../../common/internal/render/MeshBuilder";
+import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive";
+import { ToleranceRatio, Triangle } from "../../../common/internal/render/Primitives";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
+import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface";
+import { Mesh } from "../../../common/internal/render/MeshPrimitives";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { _accumulator } from "../../../common/internal/Symbols";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {
@@ -74,9 +75,9 @@ describe("Mesh Builder Tests", () => {
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!(primBuilder[_accumulator].geometries.isEmpty));
 
-    const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
+    const arcGeom: Geometry | undefined = primBuilder[_accumulator].geometries.first;
     assert(arcGeom !== undefined);
     if (arcGeom === undefined)
       return;
@@ -407,7 +408,7 @@ describe("Mesh Builder Tests", () => {
     function expectAuxChannelTable(mesh: Mesh, expectedUint16Data: number[]): void {
       const args = mesh.toMeshArgs()!;
       expect(args).not.to.be.undefined;
-      const meshParams = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+      const meshParams = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
       const aux = meshParams.auxChannels!;
       expect(aux).not.to.be.undefined;
       expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(expectedUint16Data);
