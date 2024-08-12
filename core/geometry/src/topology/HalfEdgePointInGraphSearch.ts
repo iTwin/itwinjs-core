@@ -156,6 +156,8 @@ export class PointSearchContext {
       // examine the sector at the outboundEdge node; if ray lies in this sector, return updated detail
       const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
       const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray);
+      // u0 is the length of projection of faceSuccessor to the ray and v0 is the length of projection of
+      // faceSuccessor to the ray perp line (90 degrees CCW). Similarly for u1 and v1 with facePredecessor.
       const u0 = data0.u;
       const u1 = data1.u;
       const v0 = data0.v;
@@ -223,6 +225,7 @@ export class PointSearchContext {
     const data0 = NodeXYZUV.createNodeAndRayOrigin(faceNode, ray);
     let data1;
     let node0 = faceNode;
+    // find the intersection of the ray with each edge of the face to classify the ray hit
     do {
       const node1 = node0.faceSuccessor;
       data1 = NodeXYZUV.createNodeAndRayOrigin(node1, ray, data1);
