@@ -5142,6 +5142,9 @@ export class SqliteChangesetReader implements IDisposable {
     static openFile(args: {
         readonly fileName: string;
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openGroup(args: {
+        readonly changesetFiles: string[];
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     static openLocalChanges(args: {
         iModel: IModelJsNative.DgnDb;
         includeInMemoryChanges?: true;
@@ -5149,6 +5152,11 @@ export class SqliteChangesetReader implements IDisposable {
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
+    writeToFile(args: {
+        fileName: string;
+        containsSchemaChanges: boolean;
+        overrideFile?: boolean;
+    }): void;
 }
 
 // @beta
