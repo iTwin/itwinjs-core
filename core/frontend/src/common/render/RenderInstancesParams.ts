@@ -79,6 +79,7 @@ class Builder implements RenderInstancesParamsBuilder {
   private readonly _translucent = new InstancedGraphicPropsBuilder();
   private readonly _modelId?: Id64String;
   private _containsFeatures = false;
+  private _containsNonFeatures = false;
   
   public constructor(modelId?: Id64String) {
     this._modelId = modelId;
@@ -91,6 +92,8 @@ class Builder implements RenderInstancesParamsBuilder {
     
     if (undefined !== instance.feature) {
       this._containsFeatures = true;
+    } else {
+      this._containsNonFeatures = true;
     }
   }
 
@@ -103,8 +106,6 @@ class Builder implements RenderInstancesParamsBuilder {
     let featureTable;
     if (this._containsFeatures) {
       featureTable = new FeatureTable(numInstances, this._modelId);
-      this._opaque.addFeatures(featureTable);
-      this._translucent.addFeatures(featureTable);
     }
 
     const opaque = this._opaque.finish(featureTable);
