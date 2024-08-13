@@ -1,11 +1,13 @@
+/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
+  createWorkerProxy,
   IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
   PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
@@ -29,8 +31,77 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
+import { Calculator, CreateCirclesArgs, GraphicCreator } from "./workers/ExampleWorker";
 
 // cspell:ignore savedata topdiv savedview viewtop
+
+// __PUBLISH_EXTRACT_START__ Worker_CalculatorProxy
+interface CalculatorProxy {
+  pi(transfer?: Transferable[]): Promise<number>;
+  squareRoot(num: number, transfer?: Transferable[]): Promise<number>;
+  add(args: [a: number, b: number], transfer?: Transferable[]): Promise<number>;
+  divideAll(args: [numbers: Float64Array, divisor: number], transfer?: Transferable[]): Promise<Float64Array>;
+  /** From WorkerProxy, terminates the Worker. */
+  terminate(): void;
+  /** From WorkerProxy, true if `terminate` has been called. */
+  readonly isTerminated: boolean;
+}
+// __PUBLISH_EXTRACT_END__
+
+async function testGraphicCreator(vp: Viewport) {
+  // Instantiate a reusable WorkerProxy for use by the createCircleGraphic function.
+  const worker = createWorkerProxy<GraphicCreator>("./lib/scripts/ExampleWorker.js");
+
+  // Create a render graphic from a description of a large number of circles, using a WorkerProxy.
+  async function createCircleGraphic(xyzRadius: Float64Array, color: Uint32Array, chordTolerance: number, iModel: IModelConnection): Promise<RenderGraphic | undefined> {
+    // Package up the RenderSystem's context to be sent to the Worker.
+    const workerContext = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
+
+    // Transfer the ArrayBuffers to the Worker, instead of making copies.
+    const transfer: Transferable[] = [xyzRadius.buffer, color.buffer];
+
+    // Obtain a GraphicDescription from the Worker.
+    const args: CreateCirclesArgs = {
+      xyzRadius,
+      color,
+      chordTolerance,
+      context: workerContext,
+    };
+    const result = await worker.createCircles(args, transfer);
+
+    // Unpackage the context from the Worker.
+    const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(result.context, iModel);
+
+    // Convert the GraphicDescription into a RenderGraphic.
+    return IModelApp.renderSystem.createGraphicFromDescription({
+      description: result.description,
+      context,
+    });
+  }
+
+  await createCircleGraphic(new Float64Array(), new Uint32Array(), 1, vp.iModel);
+}
+
+export async function testCalculator() {
+  const calculator: CalculatorProxy = createWorkerProxy<Calculator>("./lib/scripts/ExampleWorker.js");
+
+  const pi = await calculator.pi();
+  console.log(`**************** ${pi}`);
+
+  const three = await calculator.squareRoot(9);
+  assert(three === 3);
+
+  const five = await calculator.add([2, 3]);
+  assert(five === 5);
+
+  const numbers = new Float64Array([1, 2, 3, 4, 5, 6, 7]);
+  const result = await calculator.divideAll([numbers, 2], [numbers.buffer]);
+  assert(result.length === 7);
+  assert(result[0] === 0.5);
+
+  calculator.terminate();
+  assert(calculator.isTerminated);
+}
 
 async function zoomToSelectedElements(vp: Viewport, options?: MarginOptions) {
   const elems = vp.iModel.selectionSet.elements;
@@ -258,6 +329,15 @@ export class Viewer extends Window {
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
     this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
+
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue9fc",
+      click: async () => {
+        await testCalculator();
+        await testGraphicCreator(this.viewport);
+      },
+      tooltip: "Test Worker",
+    }));
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90b", // "model"

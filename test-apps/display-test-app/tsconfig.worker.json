@@ -1,0 +1,12 @@
+{
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "module": "ES2020",
+    "outDir": "./lib/workers",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "./src/frontend/workers/*.ts"
+  ]
+}
