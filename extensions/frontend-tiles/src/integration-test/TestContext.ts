@@ -29,7 +29,6 @@ export class TestContext {
     };
 
     const user = {
-    // const user = {
       email: process.env.TEST_USERNAME || "",
       password: process.env.TEST_PASSWORD || "",
     };
@@ -44,8 +43,6 @@ export class TestContext {
         if (numRetries === 2) {
           throw err;
         }
-
-        console.log("Retrying to get access token");
         numRetries++;
         continue;
       }
@@ -53,12 +50,8 @@ export class TestContext {
       break;
     }
 
-    // Generate access token
-    // this._accessToken = await getTestAccessToken(oidcConfig, user);
     if (!this._accessToken || this._accessToken === "") {
-      console.log("Could not generate OAuth token!");
       throw new Error("Could not generate OAuth token!");
     }
-    console.log("TestSetup complete");
   }
 }
