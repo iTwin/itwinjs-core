@@ -5,8 +5,9 @@
 import { expect } from "chai";
 import { Transform } from "@itwin/core-geometry";
 import { Instance, RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
+import { Id64 } from "@itwin/core-bentley";
 
-describe.only("RenderInstancesParamsBuilder", () => {
+describe("RenderInstancesParamsBuilder", () => {
   it("is empty if no instances supplied", () => {
     const builder = RenderInstancesParamsBuilder.create({});
     const params = builder.finish();
@@ -41,15 +42,28 @@ describe.only("RenderInstancesParamsBuilder", () => {
   });
 
   it("populates feature table IFF features are present", () => {
-    
-  });
+    let builder = RenderInstancesParamsBuilder.create({});
+    const reset = () => { builder = RenderInstancesParamsBuilder.create({}); }
+    const addInstance = (feature?: string) => {
+      builder.add({ transform: Transform.createIdentity(), feature });
+    }
 
-  it("uses supplied model Id or defaults to invalid model Id", () => {
-    
-  });
+    addInstance();
+    expect(builder.finish().features).to.be.undefined;
 
-  it("collects transferables", () => {
-    
+    reset();
+    addInstance(Id64.invalid);
+    expect(builder.finish().features).not.to.be.undefined;
+
+    reset();
+    addInstance("0x123");
+    expect(builder.finish().features).not.to.be.undefined;
+
+    reset();
+    addInstance();
+    addInstance("0x123");
+    addInstance(Id64.invalid);
+    expect(builder.finish().features).not.to.be.undefined;
   });
 });
 
