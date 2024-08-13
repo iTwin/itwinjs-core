@@ -9,16 +9,21 @@ import { Feature, FeatureTable } from "@itwin/core-common";
 import { InstancedGraphicProps } from "../../render/InstancedGraphicParams";
 import { OvrFlags } from "./OvrFlags";
 import { lineCodeFromLinePixels } from "./LineCode";
+import { assert } from "@itwin/core-bentley";
 
 const invalidFeature = new Feature();
 
+type BuilderInstance = Omit<Instance, "feature"> & { feature: Feature };
+
 export class InstancedGraphicPropsBuilder {
-  private readonly _instances: Instance[] = [];
+  private readonly _instances: BuilderInstance[] = [];
   private readonly _transformRange = new Range3d();
   private _haveSymbology = false;
   
   public add(instance: Instance): void {
-    this._instances.push(instance);
+    let feature = typeof instance.feature === "string" ? new Feature(instance.feature) : instance.feature;
+    feature = feature ?? invalidFeature;
+    this._instances.push({ ...instance, feature });
     this._transformRange.extendXYZ(instance.transform.origin.x, instance.transform.origin.y, instance.transform.origin.z);
     if (instance.symbology) {
       this._haveSymbology = true;
@@ -26,6 +31,13 @@ export class InstancedGraphicPropsBuilder {
   }
 
   public get length() { return this._instances.length; }
+
+  public addFeatures(featureTable: FeatureTable): void {
+    for (const instance of this._instances) {
+      const feature = typeof instance.feature === "string" ? new Feature(instance.feature) : instance.feature;
+      featureTable.insert(feature ?? invalidFeature);
+    }
+  }
 
   public finish(featureTable: FeatureTable | undefined): InstancedGraphicProps | undefined {
     const count = this.length;
@@ -43,8 +55,8 @@ export class InstancedGraphicPropsBuilder {
     for (let i = 0; i < count; i++) {
       const instance = this._instances[i];
       if (featureIds) {
-        const feature = typeof instance.feature === "string" ? new Feature(instance.feature) : instance.feature;
-        const featureIndex = featureTable!.insert(feature ?? invalidFeature);
+        const featureIndex = featureTable!.indexOf(instance.feature);
+        assert(featureIndex >= 0);
         featureIds[i * 3 + 0] = featureIndex & 0xff;
         featureIds[i * 3 + 1] = (featureIndex & 0xff00) >> 8;
         featureIds[i * 3 + 2] = (featureIndex & 0xff0000) >> 16;
