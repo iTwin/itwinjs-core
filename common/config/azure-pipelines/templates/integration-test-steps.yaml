@@ -1,16 +1,8 @@
 parameters:
   - name: nodeVersion # name of the parameter; required
     type: string # data type of the parameter; required
-  - name: nativePrVal
-    type: boolean
-    default: false
 
 steps:
-  - checkout: self
-    clean: true
-    fetchDepth: 1
-    condition: eq('${{ parameters.nativePrVal }}', 'false')
-
   - template: setup-integration-users.yaml
 
   - task: NodeTool@0
