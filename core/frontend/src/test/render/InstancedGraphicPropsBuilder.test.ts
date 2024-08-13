@@ -29,7 +29,7 @@ function makeInstance(tf: Transform | XYZProps = [1, 2, 3], feature?: Id64String
   return { transform, feature, symbology };
 }
 
-describe.only("InstancedGraphicPropsBuilder", () => {
+describe("InstancedGraphicPropsBuilder", () => {
   it("only populates feature indices if features are provided", () => {
     const instances = [makeInstance(), makeInstance(), makeInstance(), makeInstance()];
     expect(build(instances).featureIds).to.be.undefined;
