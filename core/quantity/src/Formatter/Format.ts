@@ -9,9 +9,11 @@
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
-import { DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
+import {
+  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
   getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, ScientificType,
-  scientificTypeToString, ShowSignOption, showSignOptionToString } from "./FormatEnums";
+  scientificTypeToString, ShowSignOption, showSignOptionToString,
+} from "./FormatEnums";
 import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
@@ -32,16 +34,14 @@ export class BaseFormat {
   protected _stationSeparator = "+"; // optional; default is "+"
   protected _formatTraits: FormatTraits = FormatTraits.Uninitialized;
   protected _spacer: string = " "; // optional; default is " "
-  protected _separator: string = " "; // optional; default is " "
   protected _includeZero: boolean = true; // optional; default is true
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
   protected _azimuthBase?: number; // value always in radians clockwise from north
-  protected _northLabel?: string; // used when formatting angles; default is 'N'
-  protected _eastLabel?: string; // used when formatting angles; default is 'E'
-  protected _southLabel?: string; // used when formatting angles; default is 'S'
-  protected _westLabel?: string; // used when formatting angles; default is '
+  protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
+  protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
+  protected _revolutionUnit?: UnitProps; // unit that represents a revolution, required for bearing or azimuth types
 
   constructor(name: string) {
     this._name = name;
@@ -80,7 +80,7 @@ export class BaseFormat {
   public set stationSeparator(stationSeparator: string) { this._stationSeparator = stationSeparator; }
 
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
-  public set stationOffsetSize(stationOffsetSize: number | undefined) {stationOffsetSize =  this._stationOffsetSize = stationOffsetSize; }
+  public set stationOffsetSize(stationOffsetSize: number | undefined) { stationOffsetSize = this._stationOffsetSize = stationOffsetSize; }
 
   public get formatTraits(): FormatTraits { return this._formatTraits; }
   public set formatTraits(formatTraits: FormatTraits) { this._formatTraits = formatTraits; }
@@ -88,26 +88,20 @@ export class BaseFormat {
   public get spacer(): string | undefined { return this._spacer; }
   public set spacer(spacer: string | undefined) { this._spacer = spacer ?? this._spacer; }
 
-  public get separator(): string | undefined { return this._separator; }
-  public set separator(separator: string | undefined) { this._separator = separator ?? this._separator; }
-
   public get includeZero(): boolean | undefined { return this._includeZero; }
   public set includeZero(includeZero: boolean | undefined) { this._includeZero = includeZero ?? this._includeZero; }
 
   public get azimuthBase(): number | undefined { return this._azimuthBase; }
   public set azimuthBase(azimuthBase: number | undefined) { this._azimuthBase = azimuthBase; }
 
-  public get northLabel(): string | undefined { return this._northLabel; }
-  public set northLabel(northLabel: string | undefined) { this._northLabel = northLabel ?? this._northLabel; }
+  public get azimuthBaseUnit(): UnitProps | undefined { return this._azimuthBaseUnit; }
+  public set azimuthBaseUnit(azimuthBaseUnit: UnitProps | undefined) { this._azimuthBaseUnit = azimuthBaseUnit; }
 
-  public get eastLabel(): string | undefined { return this._eastLabel; }
-  public set eastLabel(eastLabel: string | undefined) { this._eastLabel = eastLabel ?? this._eastLabel; }
+  public get azimuthCounterClockwise(): boolean | undefined { return this._azimuthCounterClockwise; }
+  public set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined) { this._azimuthCounterClockwise = azimuthCounterClockwise; }
 
-  public get southLabel(): string | undefined { return this._southLabel; }
-  public set southLabel(southLabel: string | undefined) { this._southLabel = southLabel ?? this._southLabel; }
-
-  public get westLabel(): string | undefined { return this._westLabel; }
-  public set westLabel(westLabel: string | undefined) { this._westLabel = westLabel ?? this._westLabel; }
+  public get revolutionUnit(): UnitProps | undefined { return this._revolutionUnit; }
+  public set revolutionUnit(revolutionUnit: UnitProps | undefined) { this._revolutionUnit = revolutionUnit; }
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid FormatType. Throws exception if not valid. */
   public parseFormatTraits(formatTraitsFromJson: string | string[]) {
@@ -207,28 +201,10 @@ export class BaseFormat {
       this._azimuthBase = formatProps.azimuthBase;
     }
 
-    if (undefined !== formatProps.northLabel) { // optional; default is "N"
-      if (typeof (formatProps.northLabel) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'northLabel' attribute. It should be of type 'string'.`);
-      this._northLabel = formatProps.northLabel;
-    }
-
-    if (undefined !== formatProps.eastLabel) { // optional; default is "E"
-      if (typeof (formatProps.eastLabel) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'eastLabel' attribute. It should be of type 'string'.`);
-      this._eastLabel = formatProps.eastLabel;
-    }
-
-    if (undefined !== formatProps.southLabel) { // optional; default is "S"
-      if (typeof (formatProps.southLabel) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'southLabel' attribute. It should be of type 'string'.`);
-      this._southLabel = formatProps.southLabel;
-    }
-
-    if (undefined !== formatProps.westLabel) { // optional; default is "W"
-      if (typeof (formatProps.westLabel) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'westLabel' attribute. It should be of type 'string'.`);
-      this._westLabel = formatProps.westLabel;
+    if (undefined !== formatProps.azimuthCounterClockwise) { // optional; default is false
+      if (typeof (formatProps.azimuthCounterClockwise) !== "boolean")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthCounterClockwise' attribute. It should be of type 'boolean'.`);
+      this._azimuthCounterClockwise = formatProps.azimuthCounterClockwise;
     }
   }
 }
@@ -293,10 +269,9 @@ export class Format extends BaseFormat {
     newFormat._spacer = this._spacer;
     newFormat._includeZero = this._includeZero;
     newFormat._azimuthBase = this._azimuthBase;
-    newFormat._northLabel = this._northLabel;
-    newFormat._eastLabel = this._eastLabel;
-    newFormat._southLabel = this._southLabel;
-    newFormat._westLabel = this._westLabel;
+    newFormat._azimuthBaseUnit = this._azimuthBaseUnit;
+    newFormat._azimuthCounterClockwise = this._azimuthCounterClockwise;
+    newFormat._revolutionUnit = this._revolutionUnit;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
 
@@ -355,13 +330,6 @@ export class Format extends BaseFormat {
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
         this._spacer = jsonObj.composite.spacer;
       }
-      if(jsonObj.composite.separator !== undefined) { // separator must be a string if it is defined
-        if (typeof (jsonObj.composite.separator) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'separator' attribute. It must be of type 'string'.`);
-        if (jsonObj.composite.separator.length > 1)
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'separator' attribute. It should be an empty or one character string.`);
-        this._separator = jsonObj.composite.separator;
-      }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
         if (!Array.isArray(jsonObj.composite.units)) { // must be an array
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
@@ -381,6 +349,37 @@ export class Format extends BaseFormat {
       }
       if (undefined === this.units || this.units.length === 0)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
+    }
+
+    if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
+      // these units cannot be loaded from loadFormatProperties() because they require an async call, and the method signature is already public
+
+      if (undefined !== jsonObj.azimuthBaseUnit) {
+        if (typeof (jsonObj.azimuthBaseUnit) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'number'.`);
+
+        const baseUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.azimuthBaseUnit);
+        if (!baseUnit || !baseUnit.isValid)
+          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.azimuthBaseUnit}' for azimuthBaseUnit in Format '${this.name}'.`);
+
+        this._azimuthBaseUnit = baseUnit;
+      }
+
+      if (undefined !== jsonObj.revolutionUnit) {
+        if (typeof (jsonObj.revolutionUnit) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'revolutionUnit' attribute. It should be of type 'string'.`);
+
+        const revolutionUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.revolutionUnit);
+        if (!revolutionUnit || !revolutionUnit.isValid)
+          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.revolutionUnit}' for revolutionUnit in Format '${this.name}'.`);
+
+        this._revolutionUnit = revolutionUnit;
+      }
+
+      if (this._revolutionUnit === undefined)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
+      if (this._azimuthBase !== undefined && this._azimuthBaseUnit === undefined)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
     }
   }
 
