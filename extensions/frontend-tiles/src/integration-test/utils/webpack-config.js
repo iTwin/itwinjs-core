@@ -8,10 +8,8 @@ const path = require('path');
 const {globSync} = require('glob');
 const frontendLib = path.resolve(__dirname, '../../../lib/cjs');
 const Dotenv = require('dotenv-webpack');
-// const webpack = require('webpack');
 const copyExternalsPlugin =
     require('@itwin/core-webpack-tools').CopyExternalsPlugin;
-// const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 function createConfig(shouldInstrument) {
   const config = {
@@ -34,19 +32,11 @@ function createConfig(shouldInstrument) {
         /draco_decoder_nodejs.js$/, /draco_encoder_nodejs.js$/
       ],
       rules: [
-        {test: /\.js$/, use: 'source-map-loader', enforce: 'pre'}, {
+        {test: /\.js$/, use: 'source-map-loader', enforce: 'pre'},
+        {
           test: /azure-storage|AzureFileHandler|UrlFileHandler/,
           use: 'null-loader'
         },
-        {test: /\.css$/, use: ['style-loader', 'css-loader']}, {
-          test: /\.(png|jpe?g|gif|svg|html|ttf)$/i,
-          use: [{
-            loader: 'file-loader',
-            options: {
-              esModule: false,
-            },
-          }]
-        }
       ]
     },
     stats: 'errors-only',
@@ -56,7 +46,6 @@ function createConfig(shouldInstrument) {
     },
     plugins: [
       new Dotenv(),
-      // new NodePolyfillPlugin(),
       new copyExternalsPlugin(),
     ],
   };

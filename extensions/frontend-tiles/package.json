@@ -68,7 +68,6 @@
     "source-map-loader": "^4.0.0",
     "typescript": "~5.3.3",
     "webpack": "^5.76.0",
-    "dotenv-webpack": "^8.1.0",
-    "file-loader": "^6.2.0"
+    "dotenv-webpack": "^8.1.0"
   }
 }
