@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Feature, FeatureTable, LinePixels } from "@itwin/core-common";
+import { Feature, FeatureTable, GeometryClass, LinePixels } from "@itwin/core-common";
 import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
 import { InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
 import { Instance, InstanceSymbology } from "../../common/render/RenderInstancesParams";
@@ -164,11 +164,51 @@ describe.only("InstancedGraphicPropsBuilder", () => {
   });
 
   it("allocates features and feature indices", () => {
-    
-  });
+    type FeatureProps = [elem: string, subcat: string, cls: GeometryClass];
+    function expectFeatures(instances: Instance[], expectedFeatures: FeatureProps[], expectedIndices: number[]): void {
+      const builder = new InstancedGraphicPropsBuilder();
+      for (const instance of instances) {
+        builder.add(instance);
+      }
 
-  it("defaults to feature index zero for instances with no feature", () => {
-    
+      const ft = new FeatureTable(9999);
+      const props = builder.finish(ft)!;
+
+      expect(ft.length).to.equal(expectedFeatures.length);
+      const actualFeatures = ft.getArray().map((x) => [x.value.elementId, x.value.subCategoryId, x.value.geometryClass]);
+      expect(actualFeatures).to.deep.equal(expectedFeatures);
+
+      const ftIds = props.featureIds!;
+      expect(ftIds.byteLength).to.equal(3 * instances.length);
+      const actualIndices = [];
+      for (let i = 0; i < ftIds.byteLength; i += 3) {
+        actualIndices.push(ftIds[i] | (ftIds[i + 1] << 8) | (ftIds[i + 2] << 16));
+      }
+
+      expect(actualIndices).to.deep.equal(expectedIndices);
+    }
+
+    expectFeatures([
+      makeInstance(undefined, "0x123"),
+      makeInstance(),
+      makeInstance(undefined, "0x123"),
+      makeInstance(undefined, new Feature("0x123", "0x456")),
+      makeInstance(undefined, new Feature("0x123", undefined, GeometryClass.Pattern)),
+      makeInstance(undefined, new Feature("0x789", "0xabc", GeometryClass.Construction)),
+      makeInstance(),
+      makeInstance(undefined, "0x123"),
+      makeInstance(undefined, new Feature("0x789", "0xabc", GeometryClass.Construction)),
+    ], [
+      // Ordering of Feature in FeatureTable is sorted first by GeometryClass, then element Id, and finally subcategory Id.
+      ["0", "0", GeometryClass.Primary],
+      ["0x123", "0", GeometryClass.Primary],
+      ["0x123", "0x456", GeometryClass.Primary],
+      ["0x789", "0xabc", GeometryClass.Construction],
+      ["0x123", "0", GeometryClass.Pattern],
+    ], [
+      // But feature Ids are assigned at insertion time.
+      0, 1, 0, 2, 3, 4, 1, 0, 4,
+    ]);
   });
 });
 
