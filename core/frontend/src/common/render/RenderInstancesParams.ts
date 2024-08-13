@@ -106,10 +106,6 @@ class Builder implements RenderInstancesParamsBuilder {
     let featureTable;
     if (this._containsFeatures) {
       featureTable = new FeatureTable(numInstances, this._modelId);
-      if (this._containsNonFeatures) {
-        // Some instances don't correspond to a Feature. They'll use feature index zero.
-        featureTable.insert(new Feature());
-      }
     }
 
     const opaque = this._opaque.finish(featureTable);

@@ -10,6 +10,8 @@ import { InstancedGraphicProps } from "../../render/InstancedGraphicParams";
 import { OvrFlags } from "./OvrFlags";
 import { lineCodeFromLinePixels } from "./LineCode";
 
+const invalidFeature = new Feature();
+
 export class InstancedGraphicPropsBuilder {
   private readonly _instances: Instance[] = [];
   private readonly _transformRange = new Range3d();
@@ -42,7 +44,7 @@ export class InstancedGraphicPropsBuilder {
       const instance = this._instances[i];
       if (featureIds) {
         const feature = typeof instance.feature === "string" ? new Feature(instance.feature) : instance.feature;
-        const featureIndex = feature ? featureTable!.insert(feature) : 0;
+        const featureIndex = featureTable!.insert(feature ?? invalidFeature);
         featureIds[i * 3 + 0] = featureIndex & 0xff;
         featureIds[i * 3 + 1] = (featureIndex & 0xff00) >> 8;
         featureIds[i * 3 + 2] = (featureIndex & 0xff0000) >> 16;
@@ -81,23 +83,23 @@ export class InstancedGraphicPropsBuilder {
       }
 
       const tf = instance.transform;
-      tf.origin.subtractInPlace(transformCenter);
+      const org = [tf.origin.x - tfc.x, tf.origin.y - tfc.y, tf.origin.z - tfc.z];
       const tfIdx = i * 12;
 
       transforms[tfIdx + 0] = tf.matrix.coffs[0];
       transforms[tfIdx + 1] = tf.matrix.coffs[1];
       transforms[tfIdx + 2] = tf.matrix.coffs[2];
-      transforms[tfIdx + 3] = tf.origin.x;
+      transforms[tfIdx + 3] = org[0];
       
       transforms[tfIdx + 4] = tf.matrix.coffs[3];
       transforms[tfIdx + 5] = tf.matrix.coffs[4];
       transforms[tfIdx + 6] = tf.matrix.coffs[5];
-      transforms[tfIdx + 7] = tf.origin.y;
+      transforms[tfIdx + 7] = org[1];
 
       transforms[tfIdx + 8] = tf.matrix.coffs[6];
       transforms[tfIdx + 9] = tf.matrix.coffs[7];
       transforms[tfIdx + 10] = tf.matrix.coffs[8];
-      transforms[tfIdx + 11] = tf.origin.z;
+      transforms[tfIdx + 11] = org[2];
     }
 
     return {
