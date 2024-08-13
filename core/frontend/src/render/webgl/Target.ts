@@ -63,6 +63,7 @@ import { VisibleTileFeatures } from "./VisibleTileFeatures";
 import { FrameStatsCollector } from "../FrameStats";
 import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
 import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
+import { _implementationProhibited } from "../../common/internal/Symbols";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -98,6 +99,7 @@ interface ReadPixelResources {
 
 /** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
+  protected override readonly [_implementationProhibited] = undefined;
   public readonly graphics = new TargetGraphics();
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
