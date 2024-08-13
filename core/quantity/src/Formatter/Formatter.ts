@@ -10,6 +10,8 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./FormatterSpec";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
+import { UnitProps } from "../Interfaces";
+import { Quantity } from "../Quantity";
 
 /**  rounding additive
  * @internal
@@ -444,7 +446,7 @@ export class Formatter {
     if (type !== FormatType.Bearing && type !== FormatType.Azimuth)
       return {magnitude};
 
-    const perigon = this.getPerigon(spec.persistenceUnit.name);
+    const perigon = this.calculateRevolution(spec);
     magnitude = this.normalizeAngle(magnitude, spec, perigon);
 
     if (type === FormatType.Bearing) {
@@ -464,16 +466,16 @@ export class Formatter {
         magnitude = rightAngle - magnitude;
 
       if (quadrant === 0 || quadrant === 3)
-        prefix = spec.format.northLabel ?? "N";
+        prefix = "N";
 
       if (quadrant === 1 || quadrant === 2)
-        prefix = spec.format.southLabel ?? "S";
+        prefix = "S";
 
       if (quadrant === 0 || quadrant === 1)
-        suffix = spec.format.eastLabel ?? "E";
+        suffix = "E";
 
       if (quadrant === 2 || quadrant === 3)
-        suffix = spec.format.westLabel ?? "W";
+        suffix = "W";
 
       return {magnitude, prefix, suffix: suffix!};
     }
@@ -490,7 +492,7 @@ export class Formatter {
       while (magnitude > perigon)
         magnitude -= perigon;
 
-      if (spec.format.hasFormatTraitSet(FormatTraits.CounterClockwiseAngle))
+      if (spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
         magnitude = perigon - magnitude;
     }
 
@@ -510,12 +512,17 @@ export class Formatter {
     return magnitude;
   }
 
-  private static getPerigon(unitName: string): number {
-    if (unitName.toLowerCase() === "units.arc_deg") {
-      return 360;
-    } else if (unitName.toLowerCase() === "units.rad") {
-      return 2 * Math.PI;
+  private static calculateRevolution(spec: FormatterSpec): number {
+    if (spec.revolutionConversion === undefined) {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing revolution unit conversion for calculating ${spec.name}'s revolution.`);
     }
-    throw new QuantityError(QuantityStatus.UnsupportedUnit, `Unsupported unit for angle math: ${unitName}`);
+
+    const revolution: Quantity = new Quantity(spec.format.revolutionUnit, 1.0);
+    const converted = revolution.convertTo(spec.persistenceUnit, spec.revolutionConversion);
+    if (converted === undefined || !converted.isValid) {
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert revolution unit to ${spec.persistenceUnit.name}.`);
+    }
+
+    return converted.magnitude;
   }
 }

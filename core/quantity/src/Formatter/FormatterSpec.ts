@@ -22,6 +22,8 @@ export class FormatterSpec {
   protected _conversions: UnitConversionSpec[] = [];  // max four entries
   protected _format: Format;
   protected _persistenceUnit: UnitProps;
+  protected _azimuthBaseConversion?: UnitConversionProps; // converts azimuth base unit to persistence unit
+  protected _revolutionConversion?: UnitConversionProps; // converts revolution unit to persistence unit
 
   /** Constructor
    *  @param name     The name of a format specification.
@@ -51,6 +53,8 @@ export class FormatterSpec {
   public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
   public get format(): Format { return this._format; }
   public get persistenceUnit(): UnitProps { return this._persistenceUnit; }
+  public get azimuthBaseConversion(): UnitConversionProps | undefined { return this._azimuthBaseConversion; }
+  public get revolutionConversion(): UnitConversionProps | undefined { return this._revolutionConversion; }
 
   /** Get an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
   public static async getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]> {
@@ -100,7 +104,24 @@ export class FormatterSpec {
    */
   public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
     const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
-    return new FormatterSpec(name, format, conversions, inputUnit);
+    const spec = new FormatterSpec(name, format, conversions, inputUnit);
+
+    if (format.azimuthBaseUnit !== undefined) {
+      if (inputUnit !== undefined) {
+        spec._azimuthBaseConversion = await unitsProvider.getConversion(format.azimuthBaseUnit, inputUnit);
+      } else {
+        spec._azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
+      }
+    }
+    if (format.revolutionUnit !== undefined) {
+      if (inputUnit !== undefined) {
+        spec._revolutionConversion = await unitsProvider.getConversion(format.revolutionUnit, inputUnit);
+      } else {
+        spec._revolutionConversion = { factor: 1.0, offset: 0.0 };
+      }
+
+    }
+    return spec;
   }
 
   /** Format a quantity value. */

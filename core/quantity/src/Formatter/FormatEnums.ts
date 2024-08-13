@@ -63,10 +63,6 @@ export enum FormatTraits {
   Use1000Separator = 1 << 8,
   /** Indicates that if an exponent value is positive to not include a `+`. By default a sign, `+` or `-`, is always shown. Not yet supported */
   ExponentOnlyNegative = 1 << 9,
-  /** Indicates the use of a counter clockwise angles. Affects Azimuth only. */
-  CounterClockwiseAngle = 1 << 10,
-  /** Causes the angle on a bearing to be omitted where possible e.g. N45°E turns into NE. And N0°E turns into N. */
-  OmitAngleOnCardinalBearing = 1 << 11,
 }
 
 /** Precision for Fractional formatted value types. Range from Whole (1/1) through 1/256.
@@ -193,7 +189,6 @@ export function parseFormatTrait(formatTraitsString: string, formatName: string)
     case "prependunitlabel": return FormatTraits.PrependUnitLabel;
     case "use1000separator": return FormatTraits.Use1000Separator;
     case "exponentonlynegative": return FormatTraits.ExponentOnlyNegative;
-    case "counterclockwiseangle": return FormatTraits.CounterClockwiseAngle;
     default:
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'formatTraits' attribute.`);
   }
@@ -220,8 +215,6 @@ export function getTraitString(trait: FormatTraits) {
       return "prependUnitLabel";
     case FormatTraits.Use1000Separator:
       return "use1000Separator";
-    case FormatTraits.CounterClockwiseAngle:
-      return "counterClockwiseAngle";
     case FormatTraits.ExponentOnlyNegative:
     default:
       return "exponentOnlyNegative";
@@ -251,8 +244,6 @@ export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] 
     formatTraitsArr.push("Use1000Separator");
   if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative)
     formatTraitsArr.push("ExponentOnlyNegative");
-  if ((currentFormatTrait & FormatTraits.CounterClockwiseAngle) === FormatTraits.CounterClockwiseAngle)
-    formatTraitsArr.push("CounterClockwiseAngle");
   return formatTraitsArr;
 }
 

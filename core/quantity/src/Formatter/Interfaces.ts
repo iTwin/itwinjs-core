@@ -25,14 +25,12 @@ export interface FormatProps {
   readonly scientificType?: string; // conditionally required
   readonly stationOffsetSize?: number; // conditionally required
   readonly stationSeparator?: string;
-  readonly azimuthBase?: number; // value always in radians clockwise from north
-  readonly northLabel?: string; // label used when formatting direction. default 'N'
-  readonly eastLabel?: string; // label used when formatting direction. default 'E'
-  readonly southLabel?: string; // label used when formatting direction. default 'S'
-  readonly westLabel?: string; // label used when formatting direction. default 'W'
+  readonly azimuthBase?: number; // value is specified from east counter-clockwise
+  readonly azimuthBaseUnit?: string; // name of unit for azimuthBase value
+  readonly azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
+  readonly revolutionUnit?: string; // name of unit that represents a revolution/perigon, required for bearing or azimuth types
   readonly composite?: {
-    readonly spacer?: string; // separates value and unit label
-    readonly separator?: string; // separates values
+    readonly spacer?: string; // separates values when formatting composite strings
     readonly includeZero?: boolean; // not currently used in Native formatter
     readonly units: Array<{
       readonly name: string;

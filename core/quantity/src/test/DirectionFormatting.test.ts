@@ -9,7 +9,7 @@ import { Formatter } from "../Formatter/Formatter";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatProps, UnitProps } from "../core-quantity";
 
-describe("Bearing direction tests:", () => {
+describe.only("Bearing direction tests:", () => {
 
   it("Format radian", async () => {
     const unitsProvider = new TestUnitsProvider();
@@ -18,6 +18,7 @@ describe("Bearing direction tests:", () => {
       minWidth: 2,
       precision: 0,
       type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
       composite: {
         includeZero: true,
         spacer: ":",
@@ -33,6 +34,7 @@ describe("Bearing direction tests:", () => {
       minWidth: 2,
       precision: 0,
       type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
       formatTraits: ["showUnitLabel"],
       uomSeparator: "",
       composite: {
@@ -52,6 +54,7 @@ describe("Bearing direction tests:", () => {
       precision: 3,
       type: "Bearing",
       uomSeparator: "",
+      revolutionUnit: "Units.REVOLUTION",
       composite: {
         includeZero: true,
         spacer: "",
@@ -121,7 +124,7 @@ describe("Bearing direction tests:", () => {
   });
 });
 
-describe("Azimuth direction tests:", () => {
+describe.only("Azimuth direction tests:", () => {
 
   it("Format radian", async () => {
     const unitsProvider = new TestUnitsProvider();
@@ -130,6 +133,7 @@ describe("Azimuth direction tests:", () => {
       minWidth: 2,
       precision: 0,
       type: "Azimuth",
+      revolutionUnit: "Units.REVOLUTION",
       composite: {
         includeZero: true,
         spacer: ":",
@@ -147,6 +151,7 @@ describe("Azimuth direction tests:", () => {
       precision: 3,
       type: "Azimuth",
       uomSeparator: "",
+      revolutionUnit: "Units.REVOLUTION",
       composite: {
         includeZero: true,
         spacer: "",
@@ -214,7 +219,10 @@ describe("Azimuth direction tests:", () => {
       minWidth: 4,
       precision: 1,
       type: "Azimuth",
+      azimuthCounterClockwise: false,
       uomSeparator: "",
+      revolutionUnit: "Units.REVOLUTION",
+      azimuthBaseUnit: "Units.ARC_DEG",
       composite: {
         includeZero: true,
         spacer: "",
@@ -228,21 +236,16 @@ describe("Azimuth direction tests:", () => {
       const props = {
         ...azimuthDecimalJson,
         azimuthBase: baseInDegrees,
-        formatTraits: Array.isArray(azimuthDecimalJson.formatTraits) ? [...azimuthDecimalJson.formatTraits] : [], // Deep copy with type guard
+        azimuthCounterClockwise: counterClockwise,
       };
-
-      if(counterClockwise && Array.isArray(props.formatTraits)) {
-        props.formatTraits.push("counterClockwiseAngle");
-      }
 
       const format = new Format(`azimuthWith${baseInDegrees}Base`);
       await format.fromJSON(unitsProvider, props);
       assert.isTrue(format.hasUnits);
-      return FormatterSpec.create(`DegreeToAzimuthWith${baseInDegrees}Base`, format, unitsProvider);
+      const deg: UnitProps = await unitsProvider.findUnitByName("Units.ARC_DEG");
+      assert.isTrue(deg.isValid);
+      return FormatterSpec.create(`DegreeToAzimuthWith${baseInDegrees}Base`, format, unitsProvider, deg);
     };
-
-    const unit: UnitProps = await unitsProvider.findUnitByName("Units.ARC_DEG");
-    assert.isTrue(unit.isValid);
 
     interface TestData {
       input: number;
