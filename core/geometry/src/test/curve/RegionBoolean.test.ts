@@ -736,6 +736,21 @@ describe("RegionBoolean", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  // how to recover the constituent loops formed by a self-intersecting polygon
+  it("SelfIntersectingPolygon", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const bowTie = Loop.createPolygon([Point3d.create(0,0), Point3d.create(10,0), Point3d.create(0,10), Point3d.create(10,10)]);
+    const signedLoops = RegionOps.constructAllXYRegionLoops(bowTie);
+    ck.testExactNumber(1, signedLoops.length, "only one connected component");
+    if (ck.testExactNumber(2, signedLoops[0].positiveAreaLoops.length, "two constituent ccw loops from intersections"))
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].positiveAreaLoops);
+    if (ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "one cw outer loop"))
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SelfIntersectingPolygon");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("OverlappingArcs", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
