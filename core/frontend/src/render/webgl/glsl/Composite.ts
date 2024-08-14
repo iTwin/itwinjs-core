@@ -72,6 +72,8 @@ vec4 computeOpaqueColor() {
   vec4 opaque = TEXTURE(u_opaque, v_texCoord);
   opaque.rgb *= computeAmbientOcclusion();
   return opaque;
+  // float temp = computeAmbientOcclusion();
+  // return vec4(temp, temp, temp, 1.0);
 }
 `;
 
