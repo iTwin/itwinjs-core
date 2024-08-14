@@ -1042,7 +1042,7 @@ export class SheetIndexReference extends SheetIndexEntry {
   protected constructor(props: SheetIndexReferenceProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.sheetIndex) {
-      const sheetIndex = iModel.elements.tryGetElement<SheetIndex>(props.sheetIndex, SheetIndex);
+      const sheetIndex = iModel.elements.tryGetElement<SheetIndex>(props.sheetIndex.id);
       if (!sheetIndex)
         throw new IModelError(IModelStatus.NotFound, "SheetIndex not found");
 
@@ -1102,9 +1102,9 @@ export class SheetIndexReference extends SheetIndexEntry {
     parentId: Id64String,
     name: string,
     priority: number,
-    sheetIndex?: Id64String,
+    sheetIndexId?: Id64String,
   ): Id64String {
-    const instance = this.create(iModelDb, sheetIndexModel, parentId, name, priority, sheetIndex);
+    const instance = this.create(iModelDb, sheetIndexModel, parentId, name, priority, sheetIndexId);
     const elements = iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
     return instance.id;
@@ -1129,7 +1129,7 @@ export class SheetReference extends SheetIndexEntry {
   protected constructor(props: SheetReferenceProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.sheet) {
-      const sheet = iModel.elements.tryGetElement<Sheet>(props.sheet);
+      const sheet = iModel.elements.tryGetElement<Sheet>(props.sheet.id);
       if (!sheet)
         throw new IModelError(IModelStatus.NotFound, "Sheet not found");
 
