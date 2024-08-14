@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/workspace-editor",
+      "comment": "allow prereleased workspace db to be versioned",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/workspace-editor"
+}
