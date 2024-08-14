@@ -33,6 +33,12 @@ module.exports = [{
         test: /@itwin/,
         sideEffects: false,
       },
+      {
+        test: /core-geometry/,
+        // Enable side effects for core-geometry.
+        // Otherwise, Path and Loop which both extend CurveChain get defined before CurveChain is defined.
+        sideEffects: true,
+      }
     ],
   },
   stats: "errors-only",
