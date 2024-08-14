@@ -1054,6 +1054,13 @@ export class SheetIndexReference extends SheetIndexEntry {
     return { id, relClassName: SheetIndexReferenceRefersToSheetIndex.classFullName };
   }
 
+  public override toJSON(): SheetIndexReferenceProps { // This override only specializes the return type
+    return {
+      ...super.toJSON(),
+      sheetIndex: this.sheetIndex ? this.sheetIndex.toJSON() : undefined,
+    } as SheetIndexReferenceProps;
+  }
+
   /** Create a new SheetIndexReference
    * @param iModelDb The iModel
    * @param sheetIndexModel The [[SheetIndexModel]]
@@ -1132,6 +1139,13 @@ export class SheetReference extends SheetIndexEntry {
 
   protected static createReferenceRelationshipProps(id: Id64String): RelatedElementProps {
     return { id, relClassName: SheetIndexReferenceRefersToSheetIndex.classFullName };
+  }
+
+  public override toJSON(): SheetReferenceProps { // This override only specializes the return type
+    return {
+      ...super.toJSON(),
+      sheet: this.sheet ? this.sheet.toJSON() : undefined,
+    } as SheetReferenceProps;
   }
 
   /** Create a new SheetReference
