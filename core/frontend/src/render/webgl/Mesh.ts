@@ -28,6 +28,7 @@ import { MeshData } from "./MeshData";
 export class MeshRenderGeometry implements RenderGeometry {
   public readonly renderGeometryType: "mesh" = "mesh";
   public readonly isInstanceable: boolean;
+  public noDispose = false;
   public readonly data: MeshData;
   public readonly surface?: SurfaceGeometry;
   public readonly segmentEdges?: EdgeGeometry;
@@ -64,6 +65,10 @@ export class MeshRenderGeometry implements RenderGeometry {
   }
 
   public dispose() {
+    if (this.noDispose) {
+      return;
+    }
+
     dispose(this.data);
     dispose(this.surface);
     dispose(this.segmentEdges);

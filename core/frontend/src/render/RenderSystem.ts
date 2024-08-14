@@ -220,6 +220,7 @@ export interface PlanarGridProps {
 export interface RenderGeometry extends IDisposable, RenderMemory.Consumer {
   readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
   readonly isInstanceable: boolean
+  noDispose: boolean;
 }
 
 /** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].

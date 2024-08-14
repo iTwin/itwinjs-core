@@ -27,6 +27,7 @@ import { RenderGeometry } from "../RenderSystem";
 export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
   public readonly renderGeometryType: "point-string" = "point-string";
   public readonly isInstanceable: boolean;
+  public noDispose = false;
   public readonly buffers: BuffersContainer;
   public readonly vertexParams: QParams3d;
   private readonly _hasFeatures: boolean;
@@ -89,9 +90,11 @@ export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
   }
 
   public dispose() {
-    dispose(this.buffers);
-    dispose(this.lut);
-    dispose(this.indices);
+    if (!this.noDispose) {
+      dispose(this.buffers);
+      dispose(this.lut);
+      dispose(this.indices);
+    }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

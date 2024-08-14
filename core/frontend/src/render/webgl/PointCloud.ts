@@ -26,6 +26,7 @@ import { RenderGeometry } from "../RenderSystem";
 export class PointCloudGeometry extends CachedGeometry implements RenderGeometry {
   public readonly renderGeometryType: "point-cloud" = "point-cloud";
   public readonly isInstanceable = false;
+  public noDispose = false;
   public readonly buffers: BuffersContainer;
   private readonly _vertices: QBufferHandle3d;
   private readonly _vertexCount: number;
@@ -41,8 +42,10 @@ export class PointCloudGeometry extends CachedGeometry implements RenderGeometry
   public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
 
   public dispose() {
-    dispose(this.buffers);
-    dispose(this._vertices);
+    if (!this.noDispose) {
+      dispose(this.buffers);
+      dispose(this._vertices);
+    }
   }
 
   constructor(pointCloud: PointCloudArgs) {

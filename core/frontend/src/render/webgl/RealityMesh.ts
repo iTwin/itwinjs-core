@@ -230,6 +230,7 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 export class RealityMeshGeometry extends IndexedGeometry implements RenderGeometry {
   public readonly renderGeometryType: "reality-mesh" = "reality-mesh";
   public readonly isInstanceable = false;
+  public noDispose = false;
   public readonly hasTextures: boolean;
   public override get asRealityMesh(): RealityMeshGeometry | undefined { return this; }
   public override get isDisposed(): boolean { return this._realityMeshParams.isDisposed; }
@@ -272,6 +273,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
   }
 
   public override dispose() {
+    if (this.noDispose) {
+      return;
+    }
+
     super.dispose();
     dispose(this._realityMeshParams);
     if (true !== this._disableTextureDisposal)

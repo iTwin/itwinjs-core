@@ -28,6 +28,7 @@ import { RenderGeometry } from "../RenderSystem";
 export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
   public readonly renderGeometryType: "polyline" = "polyline";
   public readonly isInstanceable: boolean;
+  public noDispose = false;
   public vertexParams: QParams3d;
   private readonly _hasFeatures: boolean;
   public lineWeight: number;
@@ -57,8 +58,10 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
   public get isDisposed(): boolean { return this._buffers.isDisposed && this.lut.isDisposed; }
 
   public dispose() {
-    dispose(this.lut);
-    dispose(this._buffers);
+    if (!this.noDispose) {
+      dispose(this.lut);
+      dispose(this._buffers);
+    }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

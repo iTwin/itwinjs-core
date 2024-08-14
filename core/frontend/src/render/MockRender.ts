@@ -122,7 +122,9 @@ export namespace MockRender {
 
   /** @internal */
   export class Geometry implements RenderGeometry {
-    public constructor(public readonly renderGeometryType: "mesh" | "polyline" | "point-string", public readonly isInstanceable = true) {
+    public noDispose = false;
+    public readonly isInstanceable = true;
+    public constructor(public readonly renderGeometryType: "mesh" | "polyline" | "point-string") {
       
     }
     public dispose(): void { }
