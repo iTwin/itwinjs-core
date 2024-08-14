@@ -278,4 +278,36 @@ describe.only("Azimuth direction tests:", () => {
       expect(result, formatter.name).to.be.eql(entry.result);
     }
   });
+
+  it("Format various units to azimuth", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatJson: FormatProps = {
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      minWidth: 4,
+      precision: 1,
+      type: "Azimuth",
+      uomSeparator: "",
+      revolutionUnit: "Units.REVOLUTION",
+      azimuthBase: 180.0,
+      azimuthBaseUnit: "Units.ARC_DEG",
+      azimuthCounterClockwise: false,
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+        ],
+      },
+    };
+
+    const format = new Format(`azimuth`);
+    await format.fromJSON(unitsProvider, formatJson);
+    assert.isTrue(format.hasUnits);
+    const minutes: UnitProps = await unitsProvider.findUnitByName("Units.ARC_MINUTE");
+    assert.isTrue(minutes.isValid);
+    const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, minutes);
+    const result = Formatter.formatQuantity(300, formatter); // 85 degrees (5° ccw from east) angle with a South base
+    expect(result).to.be.eql("265.0°");
+  });
 });
