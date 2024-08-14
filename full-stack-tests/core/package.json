@@ -64,11 +64,7 @@
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
     "@itwin/itwins-client": "^1.2.0",
-<<<<<<< HEAD
-    "@itwin/object-storage-core": "^2.2.2",
-=======
     "@itwin/object-storage-core": "^2.2.5",
->>>>>>> 30584ce0c3 (Update @itwin/object-storage to 2.2.5 (#7082))
     "@itwin/oidc-signin-tool": "^4.3.5",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
