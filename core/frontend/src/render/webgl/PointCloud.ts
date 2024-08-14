@@ -20,9 +20,12 @@ import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { RenderGeometry } from "../RenderSystem";
 
 /** @internal */
-export class PointCloudGeometry extends CachedGeometry {
+export class PointCloudGeometry extends CachedGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "point-cloud" = "point-cloud";
+  public readonly isInstanceable = false;
   public readonly buffers: BuffersContainer;
   private readonly _vertices: QBufferHandle3d;
   private readonly _vertexCount: number;

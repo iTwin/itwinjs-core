@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { MeshParams } from "../../common/internal/render/MeshParams";
@@ -25,7 +25,9 @@ import { SurfaceGeometry } from "./SurfaceGeometry";
 import { MeshData } from "./MeshData";
 
 /** @internal */
-export class MeshRenderGeometry {
+export class MeshRenderGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "mesh" = "mesh";
+  public readonly isInstanceable: boolean;
   public readonly data: MeshData;
   public readonly surface?: SurfaceGeometry;
   public readonly segmentEdges?: EdgeGeometry;
@@ -36,6 +38,7 @@ export class MeshRenderGeometry {
 
   private constructor(data: MeshData, params: MeshParams) {
     this.data = data;
+    this.isInstanceable = data.viewIndependentOrigin === undefined;
     this.range = params.vertices.qparams.computeRange();
     this.surface = SurfaceGeometry.create(data, params.surface.indices);
     const edges = params.edges;
@@ -105,11 +108,10 @@ export class MeshGraphic extends Graphic {
     return new MeshGraphic(geometry, buffers);
   }
 
-  private addPrimitive(geometry: RenderGeometry | undefined) {
+  private addPrimitive(geometry: CachedGeometry | undefined) {
     if (!geometry)
       return;
 
-    assert(geometry instanceof CachedGeometry);
     const primitive = Primitive.createShared(geometry, this._instances);
     if (primitive)
       this._primitives.push(primitive);

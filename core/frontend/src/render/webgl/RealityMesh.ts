@@ -16,7 +16,7 @@ import { RealityMeshParams } from "../RealityMeshParams";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
-import { RenderSystem, TerrainTexture } from "../RenderSystem";
+import { RenderGeometry, RenderSystem, TerrainTexture } from "../RenderSystem";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
@@ -227,7 +227,9 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 }
 
 /** @internal */
-export class RealityMeshGeometry extends IndexedGeometry implements IDisposable, RenderMemory.Consumer {
+export class RealityMeshGeometry extends IndexedGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "reality-mesh" = "reality-mesh";
+  public readonly isInstanceable = false;
   public readonly hasTextures: boolean;
   public override get asRealityMesh(): RealityMeshGeometry | undefined { return this; }
   public override get isDisposed(): boolean { return this._realityMeshParams.isDisposed; }

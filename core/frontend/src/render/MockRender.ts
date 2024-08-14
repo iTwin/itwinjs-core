@@ -122,6 +122,9 @@ export namespace MockRender {
 
   /** @internal */
   export class Geometry implements RenderGeometry {
+    public constructor(public readonly renderGeometryType: "mesh" | "polyline" | "point-string", public readonly isInstanceable = true) {
+      
+    }
     public dispose(): void { }
     public collectStatistics(): void { }
   }
@@ -166,11 +169,11 @@ export namespace MockRender {
     public override createRenderGraphic() { return new Graphic(); }
 
     /** @internal */
-    public override createMeshGeometry() { return new Geometry(); }
+    public override createMeshGeometry() { return new Geometry("mesh"); }
     /** @internal */
-    public override createPolylineGeometry() { return new Geometry(); }
+    public override createPolylineGeometry() { return new Geometry("polyline"); }
     /** @internal */
-    public override createPointStringGeometry() { return new Geometry(); }
+    public override createPointStringGeometry() { return new Geometry("point-string"); }
     /** @internal */
     public override createAreaPattern() { return new AreaPattern(); }
   }

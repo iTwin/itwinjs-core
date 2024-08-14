@@ -22,9 +22,12 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { VertexLUT } from "./VertexLUT";
+import { RenderGeometry } from "../RenderSystem";
 
 /** @internal */
-export class PolylineGeometry extends LUTGeometry {
+export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "polyline" = "polyline";
+  public readonly isInstanceable: boolean;
   public vertexParams: QParams3d;
   private readonly _hasFeatures: boolean;
   public lineWeight: number;
@@ -39,6 +42,7 @@ export class PolylineGeometry extends LUTGeometry {
 
   private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams, viOrigin: Point3d | undefined) {
     super(viOrigin);
+    this.isInstanceable = undefined === viOrigin;
     this.vertexParams = params.vertices.qparams;
     this._hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     this.lineWeight = params.weight;
