@@ -38,7 +38,7 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
-  protected _azimuthBase?: number; // value always in radians clockwise from north
+  protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
   protected _revolutionUnit?: UnitProps; // unit that represents a revolution, required for bearing or azimuth types
@@ -356,7 +356,7 @@ export class Format extends BaseFormat {
 
       if (undefined !== jsonObj.azimuthBaseUnit) {
         if (typeof (jsonObj.azimuthBaseUnit) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'number'.`);
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.`);
 
         const baseUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.azimuthBaseUnit);
         if (!baseUnit || !baseUnit.isValid)
