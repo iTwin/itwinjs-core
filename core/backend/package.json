@@ -98,13 +98,8 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@bentley/imodeljs-native": "4.8.40",
-    "@itwin/cloud-agnostic-core": "^2.1.0",
-=======
     "@bentley/imodeljs-native": "4.9.4",
     "@itwin/cloud-agnostic-core": "^2.2.4",
->>>>>>> 7405304a5c (`rush update --full` (#7072))
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.4",
     "@itwin/object-storage-core": "^2.2.4",
