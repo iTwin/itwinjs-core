@@ -5155,7 +5155,7 @@ export class SqliteChangesetReader implements IDisposable {
     writeToFile(args: {
         fileName: string;
         containsSchemaChanges: boolean;
-        overrideFile?: boolean;
+        overwriteFile?: boolean;
     }): void;
 }
 
