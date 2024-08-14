@@ -5310,7 +5310,7 @@ packages:
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare: 1.4.0
-      semver: 7.6.3
+      semver: 7.5.4
       ts-api-utils: 1.3.0_typescript@5.3.3
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -6142,7 +6142,7 @@ packages:
       tslib: 2.6.3
       uri-templates: 0.2.0
       uuid: 3.4.0
-      winston: 3.14.2
+      winston: 3.14.1
       xml2js: 0.6.2
     transitivePeerDependencies:
       - debug
@@ -11918,7 +11918,6 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
-    dev: false
 
   /semver/7.6.3:
     resolution: {integrity: sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==}
@@ -13238,7 +13237,7 @@ packages:
       perfect-debounce: 1.0.0
       picocolors: 1.0.1
       sirv: 2.0.4
-      vite: 5.3.3
+      vite: 5.3.3_@types+node@18.16.20
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -13625,8 +13624,8 @@ packages:
       triple-beam: 1.4.1
     dev: false
 
-  /winston/3.14.2:
-    resolution: {integrity: sha512-CO8cdpBB2yqzEf8v895L+GNKYJiEq8eKlHU38af3snQBQ+sdAIUepjMSguOIJC7ICbzm0ZI+Af2If4vIJrtmOg==}
+  /winston/3.14.1:
+    resolution: {integrity: sha512-CJi4Il/msz8HkdDfXOMu+r5Au/oyEjFiOZzbX2d23hRLY0narGjqfE5lFlrT5hfYJhPtM8b85/GNFsxIML/RVA==}
     engines: {node: '>= 12.0.0'}
     dependencies:
       '@colors/colors': 1.6.0
