@@ -181,8 +181,8 @@ The Quantity Package `@itwinjs\core-quantity` defines interfaces and classes use
 Common Terms:
 
 - Unit/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label.
-- [UnitsProvider]($quantity) - A class that will also locate the UnitProps for a unit given name or label. This class will also provide a [UnitConversion]($quantity) to convert from one unit to another.
-- Unit Family/[Phenomenon]($ecschema-metadata) - The physical quantity that this unit measures (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
+- [UnitsProvider]($quantity) - A class that locates the UnitProps for a unit given name or label. This class also provides a [UnitConversion]($quantity) to convert from one unit to another.
+- Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
 - Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel.
 - Format/FormatProp - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
   - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
