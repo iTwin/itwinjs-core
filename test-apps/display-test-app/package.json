@@ -67,12 +67,16 @@
     "@itwin/frontend-devtools": "workspace:*",
     "@itwin/frontend-tiles": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
-    "@itwin/imodels-access-backend": "^5.1.2",
-    "@itwin/imodels-access-frontend": "^5.1.2",
-    "@itwin/imodels-client-authoring": "^5.6.0",
-    "@itwin/imodels-client-management": "^5.6.0",
+    "@itwin/imodels-access-backend": "^5.2.1",
+    "@itwin/imodels-access-frontend": "^5.2.1",
+    "@itwin/imodels-client-authoring": "^5.8.1",
+    "@itwin/imodels-client-management": "^5.8.1",
     "@itwin/map-layers-formats": "workspace:*",
+<<<<<<< HEAD
     "@itwin/object-storage-core": "^2.2.2",
+=======
+    "@itwin/object-storage-core": "^2.2.5",
+>>>>>>> 30584ce0c3 (Update @itwin/object-storage to 2.2.5 (#7082))
     "@itwin/reality-data-client": "^1.2.1",
     "@itwin/webgl-compatibility": "workspace:*",
     "body-parser": "^1.20.2",
