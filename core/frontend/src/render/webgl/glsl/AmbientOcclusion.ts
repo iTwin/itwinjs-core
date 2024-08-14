@@ -68,7 +68,7 @@ void SliceSample(vec2 tc_base, vec2 aoDir, int i, float targetMip, vec3 ray, vec
     float depth = textureLod(u_depthBuffer, uv, targetMip).x;
     vec3 p = GetCameraVec(uv) * depth - ray;
     float current = dot(v, normalize(p));
-    float falloff = clamp((2.5 - length(p)) / 1.5, 0.0, 1.0);
+    float falloff = clamp((2.5 - length(p)) / 4.5, 0.0, 1.0);
     if (current > closest)
         closest = mix(closest, current, falloff);
     closest = mix(closest, current, 0.2 * falloff);
@@ -144,11 +144,11 @@ const computeAmbientOcclusion = `
 
   float targetMip = floor(clamp(pow(stride, 1.3) * mipScale, minMip, maxMip));
 
-  for(int i = -1; i >= -4; i--)
+  for(int i = -1; i >= -6; i--)
   {
       SliceSample(tc_base, aoDir, i, targetMip, ray, v, c1);
   }
-  for(int i = 1; i <= 4; i++)
+  for(int i = 1; i <= 6; i++)
   {
       SliceSample(tc_base, aoDir, i, targetMip, ray, v, c2);
   }
