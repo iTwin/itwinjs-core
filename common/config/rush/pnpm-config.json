@@ -3,7 +3,11 @@
   "useWorkspaces": true,
   "strictPeerDependencies": false,
   "globalPeerDependencyRules": {
-    "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
+    "ignoreMissing": [
+      "@babel/core",
+      "@types/node",
+      "@typescript-eslint/parser"
+    ]
   },
   "globalOverrides": {},
   // A list of temporary advisories excluded from the High and Critical list.
@@ -15,9 +19,7 @@
   "unsupportedPackageJsonSettings": {
     "pnpm": {
       "auditConfig": {
-        "ignoreCves": [
-          "CVE-2024-39338" // https://github.com/advisories/GHSA-8hc4-vh64-cxmj @itwin/object-storage-core@2.2.4 > axios@1.7.3
-        ]
+        "ignoreCves": []
       }
     }
   }
