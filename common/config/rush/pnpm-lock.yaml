@@ -1,8 +1,5 @@
 lockfileVersion: 5.4
 
-overrides:
-  jsdom@19>ws: ^8.17.1
-
 importers:
 
   .:
@@ -10,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.8.40
+      '@bentley/imodeljs-native': 4.9.4
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.2.4
       '@itwin/core-bentley': workspace:*
@@ -61,7 +58,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
-      '@bentley/imodeljs-native': 4.8.40
+      '@bentley/imodeljs-native': 4.9.4
       '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
@@ -1320,7 +1317,7 @@ importers:
 
   ../../example-code/snippets:
     specifiers:
-      '@azure/storage-blob': ^12.7.0
+      '@azure/storage-blob': ^12.24.0
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1342,7 +1339,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@xmldom/xmldom': ~0.8.5
-      azurite: ^3.29.0
+      azurite: ^3.31.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1354,7 +1351,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~5.3.3
     dependencies:
-      '@azure/storage-blob': 12.7.0
+      '@azure/storage-blob': 12.24.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -1368,7 +1365,7 @@ importers:
       '@itwin/itwins-client': 1.2.0
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       '@xmldom/xmldom': 0.8.5
-      azurite: 3.29.0
+      azurite: 3.31.0
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1583,7 +1580,7 @@ importers:
 
   ../../full-stack-tests/backend:
     specifiers:
-      '@azure/storage-blob': ^12.7.0
+      '@azure/storage-blob': ^12.24.0
       '@bentley/aec-units-schema': ^1.0.3
       '@bentley/cif-bridge-schema': ^1.0.5
       '@bentley/cif-common-schema': ^1.0.3
@@ -1618,7 +1615,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
-      azurite: ^3.29.0
+      azurite: ^3.31.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1635,7 +1632,7 @@ importers:
       sinon: ^17.0.1
       typescript: ~5.3.3
     dependencies:
-      '@azure/storage-blob': 12.7.0
+      '@azure/storage-blob': 12.24.0
       '@bentley/aec-units-schema': 1.0.3
       '@bentley/cif-bridge-schema': 1.0.5
       '@bentley/cif-common-schema': 1.0.3
@@ -1663,7 +1660,7 @@ importers:
       '@itwin/itwins-client': 1.2.0
       '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
       '@itwin/perf-tools': link:../../tools/perf-tools
-      azurite: 3.29.0
+      azurite: 3.31.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
@@ -1690,7 +1687,7 @@ importers:
 
   ../../full-stack-tests/core:
     specifiers:
-      '@azure/storage-blob': ^12.7.0
+      '@azure/storage-blob': ^12.24.0
       '@itwin/browser-authorization': ^1.0.1
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
@@ -1728,7 +1725,7 @@ importers:
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
-      azurite: ^3.29.0
+      azurite: ^3.31.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       browserify-zlib: ^0.2.0
@@ -1759,7 +1756,7 @@ importers:
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
-      '@azure/storage-blob': 12.7.0
+      '@azure/storage-blob': 12.24.0
       '@itwin/browser-authorization': 1.0.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -1783,7 +1780,7 @@ importers:
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
-      azurite: 3.29.0
+      azurite: 3.31.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       electron: 31.0.0
@@ -3308,29 +3305,6 @@ packages:
       - supports-color
     dev: false
 
-  /@azure/core-http/2.3.2:
-    resolution: {integrity: sha512-Z4dfbglV9kNZO177CNx4bo5ekFuYwwsvjLiKdZI4r84bYGv3irrbQz7JC3/rUfFH2l4T/W6OFleJaa2X0IaQqw==}
-    engines: {node: '>=14.0.0'}
-    dependencies:
-      '@azure/abort-controller': 1.1.0
-      '@azure/core-auth': 1.7.2
-      '@azure/core-tracing': 1.0.0-preview.13
-      '@azure/core-util': 1.9.2
-      '@azure/logger': 1.1.4
-      '@types/node-fetch': 2.6.11
-      '@types/tunnel': 0.0.3
-      form-data: 4.0.0
-      node-fetch: 2.7.0
-      process: 0.11.10
-      tough-cookie: 4.1.4
-      tslib: 2.6.3
-      tunnel: 0.0.6
-      uuid: 8.3.2
-      xml2js: 0.5.0
-    transitivePeerDependencies:
-      - encoding
-    dev: false
-
   /@azure/core-lro/2.7.2:
     resolution: {integrity: sha512-0YIpccoX8m/k00O7mDDMdJpbr6mf1yWo2dfmxt5A8XVZVVMz2SSKaEbMCeJRvgQ0IaSlqhjT47p4hVIRRy90xw==}
     engines: {node: '>=18.0.0'}
@@ -3362,14 +3336,6 @@ packages:
       tslib: 2.6.3
     transitivePeerDependencies:
       - supports-color
-    dev: false
-
-  /@azure/core-tracing/1.0.0-preview.13:
-    resolution: {integrity: sha512-KxDlhXyMlh2Jhj2ykX6vNEU0Vou4nHr025KoSEiz7cS3BNiHNaZcdECk/DmLkEB0as5T7b/TpRcehJ5yV6NeXQ==}
-    engines: {node: '>=12.0.0'}
-    dependencies:
-      '@opentelemetry/api': 1.0.4
-      tslib: 2.6.3
     dev: false
 
   /@azure/core-tracing/1.1.2:
@@ -3498,22 +3464,6 @@ packages:
       tslib: 2.6.3
     transitivePeerDependencies:
       - supports-color
-    dev: false
-
-  /@azure/storage-blob/12.7.0:
-    resolution: {integrity: sha512-7YEWEx03Us/YBxthzBv788R7jokwpCD5KcIsvtE5xRaijNX9o80KXpabhEwLR9DD9nmt/AlU/c1R+aXydgCduQ==}
-    engines: {node: '>=8.0.0'}
-    dependencies:
-      '@azure/abort-controller': 1.1.0
-      '@azure/core-http': 2.3.2
-      '@azure/core-lro': 2.7.2
-      '@azure/core-paging': 1.6.2
-      '@azure/core-tracing': 1.0.0-preview.13
-      '@azure/logger': 1.1.4
-      events: 3.3.0
-      tslib: 2.6.3
-    transitivePeerDependencies:
-      - encoding
     dev: false
 
   /@babel/code-frame/7.24.7:
@@ -3766,8 +3716,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.8.40:
-    resolution: {integrity: sha512-+Vj8apJ6BN5HqvgGN6cZDXbrIjrlaxnTSNF0reoXlhKY+6sMCW6l3jdvIiNzkeEqChsS+n/TtX6QSgQpXEcfxw==}
+  /@bentley/imodeljs-native/4.9.4:
+    resolution: {integrity: sha512-fZmpdN2VOs5vesBw14QGfNd420KvqIvzcP0S+yt+R85QjhT/n2pvCUzfHOrEslRhcd6KlaGBQMRFfNJb4NpXFg==}
     requiresBuild: true
     dev: false
 
@@ -4271,7 +4221,6 @@ packages:
       axios: 1.7.4
     transitivePeerDependencies:
       - debug
-      - encoding
       - inversify
       - reflect-metadata
       - supports-color
@@ -4309,13 +4258,12 @@ packages:
   /@itwin/imodels-client-authoring/5.8.1:
     resolution: {integrity: sha512-iRjzQ7xbp9bjEBFTOSYPjUergw9gwB7MAXr7n/VvOkL4UMan6VuQTqgGKDHamelUFbPcXu8ujU225F7QWRUlCQ==}
     dependencies:
-      '@azure/storage-blob': 12.7.0
+      '@azure/storage-blob': 12.24.0
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/object-storage-azure': 2.2.5
       '@itwin/object-storage-core': 2.2.5
     transitivePeerDependencies:
       - debug
-      - encoding
       - inversify
       - reflect-metadata
       - supports-color
@@ -4629,6 +4577,7 @@ packages:
   /@opentelemetry/api/1.0.4:
     resolution: {integrity: sha512-BuJuXRSJNQ3QoKA6GWWDyuLpOUck+9hAXNMCnrloc1aWVoy6Xq6t9PUV08aBZ4Lutqq2LEHM486bpZqoViScog==}
     engines: {node: '>=8.0.0'}
+    dev: true
 
   /@panva/asn1.js/1.0.0:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}
@@ -5192,13 +5141,6 @@ packages:
       '@types/node': 18.16.20
     dev: true
 
-  /@types/node-fetch/2.6.11:
-    resolution: {integrity: sha512-24xFj9R5+rfQJLRyM56qh+wnVSYhyXC2tkoBndtY0U+vubqNsYXGjufB2nn8Q6gt0LrARwL6UBtMCSVCwl4B1g==}
-    dependencies:
-      '@types/node': 18.16.20
-      form-data: 4.0.0
-    dev: false
-
   /@types/node/16.18.105:
     resolution: {integrity: sha512-w2d0Z9yMk07uH3+Cx0N8lqFyi3yjXZxlbYappPj+AsOlT02OyxyiuNoNHdGt6EuiSm8Wtgp2YV7vWg+GMFrvFA==}
     dev: true
@@ -5315,12 +5257,6 @@ packages:
 
   /@types/triple-beam/1.3.5:
     resolution: {integrity: sha512-6WaYesThRMCl19iryMYP7/x2OVgCtbIVflDGFpWnb9irXI3UjYE4AzmYuiUKY1AJstGijoY+MgUszMgRxIYTYw==}
-    dev: false
-
-  /@types/tunnel/0.0.3:
-    resolution: {integrity: sha512-sOUTGn6h1SfQ+gbgqC364jLFBw2lnFqkgF3q0WovEHRLMrVD1sd5aufqi/aJObLekJO+Aq5z646U4Oxy6shXMA==}
-    dependencies:
-      '@types/node': 18.16.20
     dev: false
 
   /@types/validator/13.12.0:
@@ -6181,8 +6117,8 @@ packages:
     dependencies:
       deep-equal: 2.2.3
 
-  /azurite/3.29.0:
-    resolution: {integrity: sha512-gzl8+LqereINQ45BuED4DNq9w3ipw0DCYAkGz8xwOFAlwjWey6C3JpolaIjrYNeX4r52bRCt53tPQ2fVCaNcYA==}
+  /azurite/3.31.0:
+    resolution: {integrity: sha512-sH7y0/QBeNlu3Keyq6zXyRoobqgEl+jOIic3NiC9jXeXnKHDxjqdp1Qohi6Q1ES2Up85qx+2LNZZgz5LBSineA==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:
@@ -6206,7 +6142,7 @@ packages:
       tslib: 2.6.3
       uri-templates: 0.2.0
       uuid: 3.4.0
-      winston: 3.14.2
+      winston: 3.14.1
       xml2js: 0.6.2
     transitivePeerDependencies:
       - debug
@@ -10637,18 +10573,6 @@ packages:
     dependencies:
       whatwg-url: 5.0.0
 
-  /node-fetch/2.7.0:
-    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
-    engines: {node: 4.x || >=6.0.0}
-    peerDependencies:
-      encoding: ^0.1.0
-    peerDependenciesMeta:
-      encoding:
-        optional: true
-    dependencies:
-      whatwg-url: 5.0.0
-    dev: false
-
   /node-preload/0.2.1:
     resolution: {integrity: sha512-RM5oyBy45cLEoHqCeh+MNuFAxO0vTFBLskvQbOKnEE7YTTSN4tbN8QWDIPQ6L+WvKsB/qLEGpYe2ZZ9d4W9OIQ==}
     engines: {node: '>=8'}
@@ -11476,6 +11400,7 @@ packages:
 
   /querystringify/2.2.0:
     resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
+    dev: true
 
   /queue-microtask/1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
@@ -11675,6 +11600,7 @@ packages:
 
   /requires-port/1.0.0:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
+    dev: true
 
   /resolve-alpn/1.2.1:
     resolution: {integrity: sha512-0a1F4l73/ZFZOakJnQ3FvkJ2+gSTQWz/r2KE5OdDY0TxPm5h4GkqkWWfM47T7HsbnOtcJVEF4epCVy6u7Q3K+g==}
@@ -12778,6 +12704,7 @@ packages:
       punycode: 2.3.1
       universalify: 0.2.0
       url-parse: 1.5.10
+    dev: true
 
   /tr46/0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
@@ -13148,6 +13075,7 @@ packages:
   /universalify/0.2.0:
     resolution: {integrity: sha512-CJ1QgKmNg3CwvAv/kOFmtnEN05f0D/cn9QntgNOQlQF9dgvVTHj3t+8JPdjqawCHk7V/KA+fbUqzZ9XWhcqPUg==}
     engines: {node: '>= 4.0.0'}
+    dev: true
 
   /universalify/2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
@@ -13207,6 +13135,7 @@ packages:
     dependencies:
       querystringify: 2.2.0
       requires-port: 1.0.0
+    dev: true
 
   /url/0.11.0:
     resolution: {integrity: sha512-kbailJa29QrtXnxgq+DdCEGlbTeYM2eJUxsz6vjZavrCYPMIFHMKQmSKYAIuUK2i7hgPm28a8piX5NTUtM/LKQ==}
@@ -13695,8 +13624,8 @@ packages:
       triple-beam: 1.4.1
     dev: false
 
-  /winston/3.14.2:
-    resolution: {integrity: sha512-CO8cdpBB2yqzEf8v895L+GNKYJiEq8eKlHU38af3snQBQ+sdAIUepjMSguOIJC7ICbzm0ZI+Af2If4vIJrtmOg==}
+  /winston/3.14.1:
+    resolution: {integrity: sha512-CJi4Il/msz8HkdDfXOMu+r5Au/oyEjFiOZzbX2d23hRLY0narGjqfE5lFlrT5hfYJhPtM8b85/GNFsxIML/RVA==}
     engines: {node: '>= 12.0.0'}
     dependencies:
       '@colors/colors': 1.6.0
@@ -13824,14 +13753,6 @@ packages:
 
   /xml2js/0.4.23:
     resolution: {integrity: sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==}
-    engines: {node: '>=4.0.0'}
-    dependencies:
-      sax: 1.4.1
-      xmlbuilder: 11.0.1
-    dev: false
-
-  /xml2js/0.5.0:
-    resolution: {integrity: sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==}
     engines: {node: '>=4.0.0'}
     dependencies:
       sax: 1.4.1
