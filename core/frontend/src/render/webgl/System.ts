@@ -65,6 +65,7 @@ import { Techniques } from "./Technique";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../common/render/BatchOptions";
+import { MeshGeometry } from "./MeshGeometry";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -74,6 +75,8 @@ export const enum ContextState {
   Success,
   Error,
 }
+
+type RenderGeometryImpl = MeshRenderGeometry | RealityMeshGeometry | PolylineGeometry | PointStringGeometry | PointCloudGeometry;
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
@@ -485,16 +488,18 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
-    if (!(geometry instanceof MeshRenderGeometry)) {
-      if (geometry instanceof PolylineGeometry || geometry instanceof PointStringGeometry)
-        return Primitive.create(geometry, instances);
+    assert(!instances || instances instanceof PatternBuffers || isInstancedGraphicParams(instances));
 
-      assert(false, "Invalid RenderGeometry for System.createRenderGraphic");
-      return undefined;
+    if (instances && !geometry.isInstanceable) {
+      throw new Error("RenderGeometry is not instanceable");
     }
 
-    assert(!instances || instances instanceof PatternBuffers || isInstancedGraphicParams(instances));
-    return MeshGraphic.create(geometry, instances);
+    const geom = geometry as RenderGeometryImpl;
+    if (geom.renderGeometryType === "mesh") {
+      return MeshGraphic.create(geom, instances);
+    }
+    
+    return Primitive.create(geom, instances);
   }
 
   public override createPointCloud(args: PointCloudArgs): RenderGraphic | undefined {
