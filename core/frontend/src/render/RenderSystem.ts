@@ -220,6 +220,8 @@ export interface PlanarGridProps {
  */
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
+export type RenderInstances = IDisposable & { [_implementationProhibited]: "renderInstances" };
+
 /** @internal */
 export interface RenderSkyGradientParams {
   type: "gradient";
