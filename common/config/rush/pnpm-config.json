@@ -3,10 +3,13 @@
   "useWorkspaces": true,
   "strictPeerDependencies": false,
   "globalPeerDependencyRules": {
-    "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
+    "ignoreMissing": [
+      "@babel/core",
+      "@types/node",
+      "@typescript-eslint/parser"
+    ]
   },
   "globalOverrides": {
-    "jsdom@19>ws": "^8.17.1" // https://github.com/advisories/GHSA-3h5v-q93c-6h6q > jsdom@19.0.0 > ws@8.16.0
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
