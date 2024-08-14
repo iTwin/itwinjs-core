@@ -20,7 +20,7 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
-import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SubjectOwnsSubjects } from "./NavigationRelationship";
+import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet, SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _elementWasCreated, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Element.onXxx` static methods
@@ -1118,14 +1118,15 @@ export class SheetReference extends SheetIndexEntry {
     return "SheetReference";
   }
   /** The bis:Sheet that this bis:SheetReference is pointing to. */
-  public sheet: Sheet | undefined;
+  public sheet: SheetReferenceRefersToSheet | undefined;
   protected constructor(props: SheetReferenceProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.sheet) {
       const sheet = iModel.elements.tryGetElement<Sheet>(props.sheet);
       if (!sheet)
         throw new IModelError(IModelStatus.NotFound, "Sheet not found");
-      this.sheet = sheet;
+
+      this.sheet = new SheetReferenceRefersToSheet(sheet.id);
     }
   }
 
