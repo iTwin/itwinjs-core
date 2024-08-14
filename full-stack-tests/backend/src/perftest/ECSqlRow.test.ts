@@ -113,20 +113,24 @@ function measureGetRowTime(imodel: IModelDb, className: string): number {
   return totalTime;
 }
 
+function ensureDirectoryExists(dir: string) {
+  if (!IModelJsFs.existsSync(dir)) {
+    IModelJsFs.mkdirSync(dir);
+  }
+}
+
 describe("ECSqlRowPerformance", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ECSqlRowPerformance");
   const reporter = new Reporter();
-  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-var-requires
+  const eCSqlRowConfig = require(path.join(__dirname, "ECSqlRowConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-var-requires
 
   before(async () => {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-    if (!IModelJsFs.existsSync(outDir))
-      IModelJsFs.mkdirSync(outDir);
+    ensureDirectoryExists(KnownTestLocations.outputDir);
+    ensureDirectoryExists(outDir);
 
     // Create all of the seed iModels
-    for (const name of crudConfig.classNames) {
-      for (const size of crudConfig.dbSizes) {
+    for (const name of eCSqlRowConfig.classNames) {
+      for (const size of eCSqlRowConfig.dbSizes) {
         const fileName = `Performance_seed_${name}_${size}.bim`;
         const pathname = path.join(outDir, fileName);
 
@@ -168,8 +172,8 @@ describe("ECSqlRowPerformance", () => {
   });
 
   it("GetElements", async () => {
-    for (const name of crudConfig.classNames) {
-      for (const size of crudConfig.dbSizes) {
+    for (const name of eCSqlRowConfig.classNames) {
+      for (const size of eCSqlRowConfig.dbSizes) {
         const seedFileName = path.join(outDir, `Performance_seed_${name}_${size}.bim`);
         // eslint-disable-next-line no-console
         console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements`);
@@ -188,17 +192,15 @@ describe("ECSqlRowPerformance", () => {
 describe("ECSqlRowPerformanceTests2d", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ECSqlRowPerformance2d");
   const reporter = new Reporter();
-  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-var-requires
+  const eCSqlRowConfig = require(path.join(__dirname, "ECSqlRowConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-var-requires
 
   before(async () => {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-    if (!IModelJsFs.existsSync(outDir))
-      IModelJsFs.mkdirSync(outDir);
+    ensureDirectoryExists(KnownTestLocations.outputDir);
+    ensureDirectoryExists(outDir);
 
     // Create all of the seed iModels
-    for (const name of crudConfig.classNames) {
-      for (const size of crudConfig.dbSizes) {
+    for (const name of eCSqlRowConfig.classNames) {
+      for (const size of eCSqlRowConfig.dbSizes) {
         const fileName = `Performance2d_seed_${name}_${size}.bim`;
         const pathname = path.join(outDir, fileName);
 
@@ -242,8 +244,8 @@ describe("ECSqlRowPerformanceTests2d", () => {
   });
 
   it("GetElements2d", async () => {
-    for (const name of crudConfig.classNames) {
-      for (const size of crudConfig.dbSizes) {
+    for (const name of eCSqlRowConfig.classNames) {
+      for (const size of eCSqlRowConfig.dbSizes) {
         const seedFileName = path.join(outDir, `Performance2d_seed_${name}_${size}.bim`);
         // eslint-disable-next-line no-console
         console.log(`Executing Element Read for the class ${name} on an iModel with ${size} elements`);
