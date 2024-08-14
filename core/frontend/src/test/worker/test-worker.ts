@@ -24,6 +24,8 @@ export interface TestWorker {
   throwString(): never;
   setTransfer(wantTransfer: boolean): undefined;
   createGraphic(context: WorkerGraphicDescriptionContextProps): WorkerGraphic;
+  someLongRunningAsyncOperation(): Promise<number>;
+  someFastSynchronousOperation(): number;
 }
 
 let doTransfer = false;
@@ -84,5 +86,13 @@ registerWorker<TestWorker>({
       },
       transfer: Array.from(transferables),
     };
+  },
+
+  someLongRunningAsyncOperation: async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    return new Date().getTime();
+  },
+  someFastSynchronousOperation: () => {
+    return new Date().getTime();
   },
 });

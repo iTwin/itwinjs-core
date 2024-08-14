@@ -45,4 +45,13 @@ describe("WorkerProxy", () => {
 
     worker.terminate();
   });
+
+  it("awaits on worker proxy async operation", async () => {
+    const worker = createWorker();
+    const asyncOpTime = await worker.someLongRunningAsyncOperation();
+    const syncOpTime = await worker.someFastSynchronousOperation();
+
+    expect(asyncOpTime).to.be.lessThan(syncOpTime);
+    worker.terminate();
+  });
 });
