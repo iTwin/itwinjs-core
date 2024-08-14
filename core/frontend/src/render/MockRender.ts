@@ -25,10 +25,11 @@ import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "./RenderPlan";
-import { RenderAreaPattern, RenderGeometry, RenderSystem } from "./RenderSystem";
+import { RenderAreaPattern, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
 import { _implementationProhibited } from "../common/internal/Symbols";
+import { RenderGeometry } from "../internal/render/RenderGeometry";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:

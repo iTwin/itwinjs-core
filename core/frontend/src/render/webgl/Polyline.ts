@@ -22,7 +22,7 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { VertexLUT } from "./VertexLUT";
-import { RenderGeometry } from "../RenderSystem";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class PolylineGeometry extends LUTGeometry implements RenderGeometry {

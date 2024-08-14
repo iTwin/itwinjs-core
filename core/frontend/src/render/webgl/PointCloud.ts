@@ -20,7 +20,7 @@ import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { RenderGeometry } from "../RenderSystem";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class PointCloudGeometry extends CachedGeometry implements RenderGeometry {

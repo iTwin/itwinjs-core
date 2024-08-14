@@ -12,7 +12,6 @@ import { InstancedGraphicParams } from "../../common/render/InstancedGraphicPara
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
 import { RenderMemory } from "../RenderMemory";
-import { RenderGeometry } from "../RenderSystem";
 import { CachedGeometry } from "./CachedGeometry";
 import { Graphic } from "./Graphic";
 import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry";
@@ -23,6 +22,7 @@ import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./Ed
 import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";
 import { MeshData } from "./MeshData";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class MeshRenderGeometry implements RenderGeometry {
