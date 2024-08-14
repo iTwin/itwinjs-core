@@ -220,6 +220,10 @@ export interface PlanarGridProps {
 export interface RenderGeometry extends IDisposable, RenderMemory.Consumer {
   readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
   readonly isInstanceable: boolean
+  /** If true, this geometry is intended for reuse. Its `dispose` method will do nothing. Instead, we will rely on the JS garbage collector
+   * to dispose of any WebGL resources it contains.
+   * When creating a reusable `GraphicTemplate`, we set this to `true` for all geometry in the template. We never set it to `false`.
+   */
   noDispose: boolean;
 }
 
@@ -424,6 +428,10 @@ export abstract class RenderSystem implements IDisposable {
   public createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
   /** @internal */
   public createPointStringGeometry(_params: PointStringParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
+  /** @internal */
+  public createPointCloudGeometry(_args: PointCloudArgs): RenderGeometry | undefined { return undefined; }
+  /** @internal */
+  public createRealityMeshGeometry(_params: RealityMeshParams, _disableTextureDisposal = false): RenderGeometry | undefined { return undefined; }
 
   /** @internal */
   public createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined { return undefined; }
@@ -470,11 +478,18 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RenderGraphic | undefined {
+    const geom = this.createRealityMeshGeometry(realityMesh, disableTextureDisposal);
+    return geom ? this.createRenderGraphic(geom) : undefined;
+  }
+  
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */
-  public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  public createPointCloud(args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined {
+    const geom = this.createPointCloudGeometry(args);
+    return geom ? this.createRenderGraphic(geom) : undefined;
+  }
 
   /** Create a clip volume to clip geometry.
    * @note The clip volume takes ownership of the ClipVector, which must not be subsequently mutated.

@@ -466,9 +466,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal = false): RenderGraphic | undefined {
     return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal);
   }
-  public override createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RenderGraphic | undefined {
-    const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal);
-    return geom ? Primitive.create(geom) : undefined;
+  public override createRealityMeshGeometry(realityMesh: RealityMeshParams, disableTextureDisposal = false): RealityMeshGeometry | undefined {
+    return RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal);
   }
 
   public override createMeshGeometry(params: MeshParams, viOrigin?: Point3d): MeshRenderGeometry | undefined {
@@ -502,8 +501,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return Primitive.create(geom, instances);
   }
 
-  public override createPointCloud(args: PointCloudArgs): RenderGraphic | undefined {
-    return Primitive.create(new PointCloudGeometry(args));
+  public override createPointCloudGeometry(args: PointCloudArgs): PointCloudGeometry {
+    return new PointCloudGeometry(args);
   }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic {
