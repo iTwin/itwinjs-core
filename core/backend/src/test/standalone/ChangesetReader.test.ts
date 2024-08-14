@@ -655,7 +655,7 @@ describe("Changeset Reader API", async () => {
         classFullName: "BisCore:DrawingModel"
       });
 
-      reader.writeToFile({ fileName: groupCsFile, containsSchemaChanges: false, overrideFile: true });
+      reader.writeToFile({ fileName: groupCsFile, containsSchemaChanges: false, overwriteFile: true });
     }
     if ("writeToFile() test") {
       const reader = SqliteChangesetReader.openFile({ fileName: groupCsFile, db: rwIModel, disableSchemaCheck: true });

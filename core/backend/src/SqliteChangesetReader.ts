@@ -124,10 +124,10 @@ export class SqliteChangesetReader implements IDisposable {
    * @param args - The arguments for writing to the file.
    * @param args.fileName - The name of the file to write to.
    * @param args.containsSchemaChanges - Indicates whether the changeset contains schema changes.
-   * @param args.overrideFile - Indicates whether to override the file if it already exists. Default is false.
+   * @param args.overwriteFile - Indicates whether to override the file if it already exists. Default is false.
    */
-  public writeToFile(args: { fileName: string, containsSchemaChanges: boolean, overrideFile?: boolean }): void {
-    this._nativeReader.writeToFile(args.fileName, args.containsSchemaChanges, args.overrideFile ?? false);
+  public writeToFile(args: { fileName: string, containsSchemaChanges: boolean, overwriteFile?: boolean }): void {
+    this._nativeReader.writeToFile(args.fileName, args.containsSchemaChanges, args.overwriteFile ?? false);
   }
   /**
    * Open local changes in iModel.
