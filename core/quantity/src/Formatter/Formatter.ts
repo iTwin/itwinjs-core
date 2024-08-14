@@ -446,68 +446,82 @@ export class Formatter {
     if (type !== FormatType.Bearing && type !== FormatType.Azimuth)
       return {magnitude};
 
-    const perigon = this.calculateRevolution(spec);
-    magnitude = this.normalizeAngle(magnitude, spec, perigon);
+    const revolution = this.calculateRevolution(spec);
+    magnitude = this.normalizeAngle(magnitude, revolution);
+    const quarterRevolution = revolution / 4;
 
     if (type === FormatType.Bearing) {
-      const rightAngle = perigon / 4;
       let quadrant = 0;
-      while (magnitude > rightAngle) {
-        magnitude -= rightAngle;
+      while (magnitude > quarterRevolution) {
+        magnitude -= quarterRevolution;
         quadrant++;
       }
       let prefix, suffix: string;
 
       // Quadrants are
-      // 3 0
-      // 2 1
-      // For quadrants 1 and 3 we have to subtract the angle from 90 degrees because they go counter clockwise
-      if (quadrant === 1 || quadrant === 3)
-        magnitude = rightAngle - magnitude;
-
-      if (quadrant === 0 || quadrant === 3)
-        prefix = "N";
-
-      if (quadrant === 1 || quadrant === 2)
-        prefix = "S";
+      // 1 0
+      // 2 3
+      // For quadrants 0 and 2 we have to subtract the angle from quarterRevolution degrees because they go clockwise
+      if (quadrant === 0 || quadrant === 2)
+        magnitude = quarterRevolution - magnitude;
 
       if (quadrant === 0 || quadrant === 1)
-        suffix = "E";
+        prefix = "N";
 
       if (quadrant === 2 || quadrant === 3)
+        prefix = "S";
+
+      if (quadrant === 0 || quadrant === 3)
+        suffix = "E";
+
+      if (quadrant === 1 || quadrant === 2)
         suffix = "W";
+
+      // special case, if in quadrant 2 and value is very small, turn suffix to E because S00E is preferred over S00W
+      if (quadrant === 2 && magnitude < 0.00000000001) // 1e-11 is a small value that is close to 0
+        suffix = "E";
 
       return {magnitude, prefix, suffix: suffix!};
     }
 
     if (type === FormatType.Azimuth) {
-      const azimuthBase = spec.format.azimuthBase ?? 0;
-      if (azimuthBase === 0.0)
-        return {magnitude}; // no conversion necessary
+      let azimuthBase = 0.0;
+      if (spec.format.azimuthBase !== undefined) {
+        if (spec.azimuthBaseConversion === undefined) {
+          throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.name}'s azimuth base.`);
+        }
+        const azBaseQuan: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
+        const azBaseConverted = azBaseQuan.convertTo(spec.persistenceUnit, spec.azimuthBaseConversion);
+        if (azBaseConverted === undefined || !azBaseConverted.isValid) {
+          throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.persistenceUnit.name}.`);
+        }
+        azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
+      }
 
+      if (azimuthBase === quarterRevolution && spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
+        return {magnitude}; // no conversion necessary, the input is already using the result parameters (east base and counter clockwise)
+
+      // move magnitude from east counter-clockwise to north base (azimuthBase's value is specified from north clockwise)
+      magnitude = revolution - magnitude;
+      magnitude += quarterRevolution;
+
+      // subtract the base
       magnitude -= azimuthBase;
-      while (magnitude < 0)
-        magnitude += perigon;
-
-      while (magnitude > perigon)
-        magnitude -= perigon;
-
+      // normalize the result as it may have become negative or exceed the revolution
+      magnitude = this.normalizeAngle(magnitude, revolution);
+      // if result is desired as counter clockwise, convert it
       if (spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
-        magnitude = perigon - magnitude;
+        magnitude = revolution - magnitude;
     }
 
     return {magnitude};
   }
 
-  private static normalizeAngle(magnitude: number, spec: FormatterSpec, perigon: number): number {
-    if (spec.persistenceUnit.phenomenon.toLowerCase() !== "units.angle") {
-      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Invalid unit for ${spec.format.name} format. Phenomenon must be 'Angle'. Unit used: ${spec.persistenceUnit.name} with phenomenon: ${spec.persistenceUnit.phenomenon}`);
-    }
+  private static normalizeAngle(magnitude: number, revolution: number): number {
+    magnitude = magnitude % revolution; // Strip anything that goes around more than once
 
-    magnitude = magnitude % perigon; // Strip anything that goes around more than once
-
-    if (magnitude < 0) // If the value is negative, representing a counter-clockwise angle, we want to normalize it to a positive angle
-      magnitude += perigon;
+    if (magnitude < 0) // If the value is negative, we want to normalize it to a positive angle
+      magnitude += revolution;
 
     return magnitude;
   }
