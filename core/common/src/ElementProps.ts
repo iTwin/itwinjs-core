@@ -98,45 +98,6 @@ export class RelatedElement implements RelatedElementProps {
 export class TypeDefinition extends RelatedElement {
 }
 
-/** Relates a [[SheetIndexFolder]] and [[Entries]] that it owns.
- * @beta
- */
-export class SheetIndexFolderOwnsEntries extends RelatedElement {
-  public static classFullName = "BisCore:SheetIndexFolderOwnsEntries";
-  public constructor(parentId: Id64String, relClassName: string = SheetIndexFolderOwnsEntries.classFullName) {
-    super({ id: parentId, relClassName });
-  }
-}
-
-/** Relates a [[SheetIndex]] and [[Entries]] that it owns.
- * @beta
- */
-export class SheetIndexOwnsEntries extends RelatedElement {
-  public static classFullName = "BisCore:SheetIndexOwnsEntries";
-  public constructor(parentId: Id64String, relClassName: string = SheetIndexOwnsEntries.classFullName) {
-    super({ id: parentId, relClassName });
-  }
-}
-
-/** Relates a [[SheetReference]] and [[Sheet]] that it owns.
- * @beta
- */
-export class SheetReferenceRefersToSheet extends RelatedElement {
-  public static classFullName = "BisCore:SheetReferenceRefersToSheet";
-  public constructor(parentId: Id64String, relClassName: string = SheetReferenceRefersToSheet.classFullName) {
-    super({ id: parentId, relClassName });
-  }
-}
-
-/** Relates a [[SheetIndexReference]] to a [[SheetIndex]] it refers.
- * @beta
- */
-export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
-  public static classFullName = "BisCore:SheetIndexReferenceRefersToSheetIndex";
-  public constructor(parentId: Id64String, relClassName: string = SheetIndexReferenceRefersToSheetIndex.classFullName) {
-    super({ id: parentId, relClassName });
-  }
-}
 /** Properties of a [GeometricElement]($backend)
  * @public
  * @extensions
@@ -645,7 +606,7 @@ export type SheetIndexFolderProps = SheetIndexEntryProps;
  */
 export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
   /** The bis:SheetIndex that this bis:SheetIndexReference is pointing to. */
-  sheetIndex?: Id64String;
+  sheetIndex?: RelatedElementProps;
 }
 
 /** Properties of a [SheetReference]($backend)
@@ -653,5 +614,5 @@ export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
  */
 export interface SheetReferenceProps extends SheetIndexEntryProps {
   /** The bis:Sheet that this bis:SheetReference is pointing to. */
-  sheet?: Id64String;
+  sheet?: RelatedElementProps;
 }
