@@ -73,7 +73,7 @@ export interface ArcBlendData {
 }
 
 /**
- * Enumeration of methods used to sample an elliptical arc.
+ * Enumeration of methods used to sample an elliptical arc in [[Arc3d.constructCircularArcChainApproximation]].
  * * Because ellipses have two axes of symmetry, samples are computed for one quadrant and reflected across each
  * axis to the other quadrants. Any samples that fall outside the arc sweep are filtered out.
  * @public
@@ -84,8 +84,8 @@ export enum EllipticalArcSampleMethod {
   /** Generate n samples uniformly interpolated between the min and max curvatures of a full ellipse quadrant. */
   UniformCurvature = 1,
   /**
-   * Generate n samples interpolated between the min and max curvatures of a full ellipse quadrant, using a monotone
-   * callback function from [0,1]->[0,1] to generate the interpolation weights.
+   * Generate n samples interpolated between the min and max curvatures of a full ellipse quadrant, using a
+   * [[FractionMapper]] callback to generate the interpolation weights.
    */
   NonUniformCurvature = 2,
   /**
@@ -96,14 +96,14 @@ export enum EllipticalArcSampleMethod {
 }
 
 /**
- * A monotone function that maps [0,1] onto [0,1].
+ * A function that maps [0,1]->[0,1].
  * @public
  */
 export type FractionMapper = (f: number) => number;
 
 /**
  * Options for generating samples for the construction of an approximation to an elliptical arc.
- * Used by [[Arc3d.]]
+ * * Used by [[Arc3d.constructCircularArcChainApproximation]].
  * @public
  */
 export class EllipticalArcApproximationOptions {
@@ -131,16 +131,16 @@ export class EllipticalArcApproximationOptions {
   }
   /**
    * Construct options with optional defaults.
-   * @param method sample method, default [[EllipticalArcSampleMethod.NonUniformCurvature]].
+   * @param method sample method, default [[EllipticalArcSampleMethod.AdaptiveSubdivision]].
    * @param numSamplesInQuadrant samples in each full quadrant for interpolation methods, default 4.
    * @param maxError positive maximum distance to ellipse for the subdivision method, default 1cm.
    * @param remapFunction optional callback to remap fraction space for [[EllipticalArcSampleMethod.NonUniformCurvature]],
-   * default quadratic.
+   * default quadratic. For best results, this function should be a bijection.
    * @param forcePath whether to return a [[Path]] instead of a [[Loop]] when approximating a full elliptical arc,
    * default false.
    */
   public static create(
-    method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.NonUniformCurvature,
+    method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.AdaptiveSubdivision,
     numSamplesInQuadrant: number = 4,
     maxError: number = this.defaultMaxError,
     remapFunction: FractionMapper = (x: number) => x * x,
@@ -168,7 +168,8 @@ export class EllipticalArcApproximationOptions {
   /**
    * Number of samples to return in each full quadrant, including endpoint(s).
    * * Used by interpolation sample methods.
-   * * In general, for n samples, the approximating chain consists of n-1 primitives.
+   * * In general, for n samples, the approximating [[Path]] consists of n-1 primitives,
+   * and the approximating [[Loop]] consists of n primitives.
    * * Minimum value is 2.
    */
   public get numSamplesInQuadrant(): number {
@@ -178,7 +179,7 @@ export class EllipticalArcApproximationOptions {
     this._numSamplesInQuadrant = numSamples;
   }
   /**
-   * Maximum distance (in meters) of an approximation based on the sample points to the elliptical arc.
+   * Maximum distance (in meters) of the computed approximation to the elliptical arc.
    * * Used by [[EllipticalArcSampleMethod.AdaptiveSubdivision]].
    */
   public get maxError(): number {
