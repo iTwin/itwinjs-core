@@ -7,10 +7,10 @@ import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, UnitProps } from "../core-quantity";
+import { FormatProps, Parser, ParserSpec, UnitProps } from "../core-quantity";
 
-describe.only("Bearing direction tests:", () => {
-  it("Format radian", async () => {
+describe("Bearing format tests:", () => {
+  it("Format radian as bearing", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const bearingDMSJson: FormatProps = {
@@ -123,9 +123,9 @@ describe.only("Bearing direction tests:", () => {
   });
 });
 
-describe.only("Azimuth direction tests:", () => {
+describe.only("Azimuth format tests:", () => {
 
-  it("Format radian", async () => {
+  it("Format radian as azimuth", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const azimuthDMSJson: FormatProps = {
@@ -160,18 +160,18 @@ describe.only("Azimuth direction tests:", () => {
       },
     };
 
-    const azimuthDMS = new Format("BearingDMS");
+    const azimuthDMS = new Format("azimuthDMS");
     await azimuthDMS.fromJSON(unitsProvider, azimuthDMSJson).catch(() => { });
     assert.isTrue(azimuthDMS.hasUnits);
 
-    const azimuthDecimal = new Format("BearingDecimal");
+    const azimuthDecimal = new Format("azimuthDecimal");
     await azimuthDecimal.fromJSON(unitsProvider, azimuthDecimalJson).catch(() => { });
     assert.isTrue(azimuthDecimal.hasUnits);
 
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");
     assert.isTrue(rad.isValid);
-    const azimuthDMSFormatter = await FormatterSpec.create("RadToBearingDMS", azimuthDMS, unitsProvider, rad);
-    const azimuthDecimalFormatter = await FormatterSpec.create("RadToBearingDecimal", azimuthDecimal, unitsProvider, rad);
+    const azimuthDMSFormatter = await FormatterSpec.create("RadToAzimuthDMS", azimuthDMS, unitsProvider, rad);
+    const azimuthDecimalFormatter = await FormatterSpec.create("RadToAzimuthDecimal", azimuthDecimal, unitsProvider, rad);
 
     interface TestData {
       input: number;
@@ -254,22 +254,24 @@ describe.only("Azimuth direction tests:", () => {
     }
 
     const testData: TestData[] = [
-      { input: 90.0,   base: 0.0,   counterClockwise: false, result: "00.0°" },
-      { input: 190.0,   base: 180.0, counterClockwise: false, result: "80.0°" },
-      { input: 90.0,   base: 185.0, counterClockwise: false, result: "175.0°" },
-      { input: 90.0,   base: 185.0, counterClockwise: true,  result: "185.0°" },
-      { input: 90.0,   base: 95.0,  counterClockwise: false, result: "265.0°" },
-      { input: 90.0,   base: 85.0,  counterClockwise: false, result: "275.0°" },
-      { input: 90.0,   base: 270.0, counterClockwise: false, result: "90.0°" },
-      { input: 90.0,   base: 270.0, counterClockwise: true,  result: "270.0°" },
-      { input: 0.0,  base: 0.0,   counterClockwise: false, result: "90.0°" },
-      { input: 0.0,  base: 180.0, counterClockwise: false, result: "270.0°" },
-      { input: 0.0,  base: 185.0, counterClockwise: false, result: "265.0°" },
-      { input: 0.0,  base: 185.0, counterClockwise: true,  result: "95.0°" },
-      { input: 0.0,  base: 95.0,  counterClockwise: false, result: "355.0°" },
-      { input: 0.0,  base: 85.0,  counterClockwise: false, result: "05.0°" },
-      { input: 0.0,  base: 270.0, counterClockwise: false, result: "180.0°" },
-      { input: 0.0,  base: 270.0, counterClockwise: true,  result: "180.0°" },
+      { input: 90.0, base: 90.0,   counterClockwise: false, result: "00.0°" },
+      { input: 190.0, base: 270.0, counterClockwise: false, result: "80.0°" },
+      { input: 90.0, base: 275.0, counterClockwise: false, result: "185.0°" },
+      { input: 90.0, base: 275.0, counterClockwise: true, result: "175.0°" },
+      { input: 90.0, base: 265.0, counterClockwise: true,  result: "185.0°" },
+      { input: 90.0, base: 355.0,  counterClockwise: false, result: "265.0°" },
+      { input: 90.0, base: 5.0,  counterClockwise: false, result: "275.0°" },
+      { input: 90.0, base: 180.0, counterClockwise: false, result: "90.0°" },
+      { input: 90.0, base: 180.0, counterClockwise: true,  result: "270.0°" },
+      { input: 0.0,  base: 90.0,   counterClockwise: false, result: "90.0°" },
+      { input: 0.0,  base: 270.0, counterClockwise: false, result: "270.0°" },
+      { input: 0.0,  base: 275.0, counterClockwise: false, result: "275.0°" },
+      { input: 10.0, base: 275.0, counterClockwise: false, result: "265.0°" },
+      { input: 0.0,  base: 265.0, counterClockwise: true,  result: "95.0°" },
+      { input: 0.0,  base: 355.0,  counterClockwise: false, result: "355.0°" },
+      { input: 0.0,  base: 5.0,  counterClockwise: false, result: "05.0°" },
+      { input: 0.0,  base: 180.0, counterClockwise: false, result: "180.0°" },
+      { input: 0.0,  base: 180.0, counterClockwise: true,  result: "180.0°" },
     ];
 
     for (const entry of testData) {
@@ -289,7 +291,7 @@ describe.only("Azimuth direction tests:", () => {
       type: "Azimuth",
       uomSeparator: "",
       revolutionUnit: "Units.REVOLUTION",
-      azimuthBase: 180.0,
+      azimuthBase: 270.0,
       azimuthBaseUnit: "Units.ARC_DEG",
       azimuthCounterClockwise: false,
       composite: {
@@ -309,5 +311,43 @@ describe.only("Azimuth direction tests:", () => {
     const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, minutes);
     const result = Formatter.formatQuantity(300, formatter); // 85 degrees (5° ccw from east) angle with a South base
     expect(result).to.be.eql("265.0°");
+  });
+
+  it("Parse azimuth to quantity", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatJson: FormatProps = {
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      minWidth: 4,
+      precision: 1,
+      type: "Azimuth",
+      uomSeparator: "",
+      revolutionUnit: "Units.REVOLUTION",
+      azimuthBase: 270.0,
+      azimuthBaseUnit: "Units.ARC_DEG",
+      azimuthCounterClockwise: false,
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+        ],
+      },
+    };
+
+    const format = new Format(`azimuth`);
+    await format.fromJSON(unitsProvider, formatJson);
+    assert.isTrue(format.hasUnits);
+    const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");
+    assert.isTrue(rad.isValid);
+    const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, rad);
+    const parser = await ParserSpec.create(format, unitsProvider, rad, unitsProvider);
+    const parseResult = Parser.parseQuantityString("265.0°", parser);
+    if (!Parser.isParsedQuantity(parseResult)) {
+      assert.fail("Expected a parsed quantity");
+    }
+    expect(parseResult.value).closeTo(0.0872665, 0.0001);
+    const formattedValue = Formatter.formatQuantity(parseResult.value, formatter);
+    expect(formattedValue).to.be.eql("265.0°");
   });
 });
