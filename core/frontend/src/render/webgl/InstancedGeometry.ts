@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 import { InstancedGraphicParams, InstancedGraphicProps, PatternGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
@@ -176,6 +176,11 @@ export class InstanceBuffers {
     return data ? new InstanceBuffers(data, range) : undefined;
   }
 
+  public static fromReusableBuffers(data: ReusableInstanceBuffersData, transformCenter: XYAndZ, reprRange: Range3d): InstanceBuffers {
+    const range = this.computeRange(reprRange, data.transforms, transformCenter);
+    return new InstanceBuffers(data.buffers, range);
+  }
+
   public get isDisposed(): boolean {
     return this.transforms.isDisposed
       && (undefined === this.featureIds || this.featureIds.isDisposed)
@@ -200,7 +205,7 @@ export class InstanceBuffers {
       tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z);
   }
 
-  public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: Point3d, out?: Range3d): Range3d {
+  public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: XYAndZ, out?: Range3d): Range3d {
     const range = out ?? new Range3d();
 
     const numFloatsPerTransform = 3 * 4;
