@@ -50,6 +50,8 @@ import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphi
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
+import { GraphicTemplate } from "./GraphicTemplate";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -426,6 +428,21 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined { return undefined; }
 
+  /** ###TODO
+   * @beta
+   */
+  public createRenderInstances(_params: RenderInstancesParams): RenderInstances | undefined { return undefined; }
+
+  /** ###TODO
+   * @beta
+   */
+  public createGraphicFromTemplate(args: { template: GraphicTemplate, instances: RenderInstances }): RenderGraphic | undefined;
+
+  /** @internal */
+  public createGraphicFromTemplate(_args: { template: GraphicTemplate, instances?: RenderInstances }): RenderGraphic | undefined {
+    return undefined;
+  }
+  
   /** Create a RenderGraphic from a RenderGeometry produced by this RenderSystem.
    * @internal
    */

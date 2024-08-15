@@ -31,7 +31,7 @@ import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 import { RenderMemory } from "../RenderMemory";
 import { RealityMeshParams } from "../RealityMeshParams";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderInstances, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "../CreateTextureArgs";
@@ -45,7 +45,7 @@ import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
-import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
+import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers, RenderInstancesImpl } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -66,6 +66,7 @@ import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../common/render/BatchOptions";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
+import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -484,6 +485,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public override createAreaPattern(params: PatternGraphicParams): PatternBuffers | undefined {
     return PatternBuffers.create(params);
+  }
+
+  public override createRenderInstances(params: RenderInstancesParams): RenderInstances | undefined {
+    return RenderInstancesImpl.create(params);
   }
 
   public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
