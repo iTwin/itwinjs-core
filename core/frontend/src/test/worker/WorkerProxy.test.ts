@@ -46,7 +46,7 @@ describe("WorkerProxy", () => {
     worker.terminate();
   });
 
-  it.only("returns results out of sequence if caller does not await each operation", async () => {
+  it("returns results out of sequence if caller does not await each operation", async () => {
     const worker = createWorker();
 
     const [slowest, slow, fast] = await Promise.all([
@@ -60,7 +60,7 @@ describe("WorkerProxy", () => {
     worker.terminate();
   });
 
-  it.only("returns results in sequence if caller awaits each operation", async () => {
+  it("returns results in sequence if caller awaits each operation", async () => {
     const worker = createWorker();
 
     const first = await worker.someVeryLongRunningAsyncOperation();
