@@ -719,7 +719,7 @@ describe("Arc3d", () => {
   });
 });
 
-describe.only("ApproximateArc3d", () => {
+describe("ApproximateArc3d", () => {
   const remaps: FractionMapper[] = [];
   remaps.push((x: number) => x);                // identity
   remaps.push((x: number) => {                  // piecewise linear (under)
