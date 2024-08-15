@@ -22,6 +22,7 @@ export interface InstancedFeaturesParams {
 }
 
 export interface RenderInstancesParams {
+  [_implementationProhibited]?: "renderInstancesParams";
   opaque?: InstancedGraphicProps;
   translucent?: InstancedGraphicProps;
   features?: InstancedFeaturesParams;
