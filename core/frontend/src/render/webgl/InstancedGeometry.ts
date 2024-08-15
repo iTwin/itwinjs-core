@@ -120,6 +120,52 @@ export class InstanceBuffersData extends InstanceData {
 }
 
 /** @internal */
+export interface ReusableInstanceBuffersData {
+  readonly transformCenter: XYAndZ;
+  readonly transforms: Float32Array;
+  readonly buffers: InstanceBuffersData
+}
+
+function createReusableInstanceBuffers(props: InstancedGraphicProps): ReusableInstanceBuffersData | undefined {
+  const buffers = InstanceBuffersData.create(props, true);
+  return buffers ? { buffers, transforms: props.transforms, transformCenter: props.transformCenter } : undefined;
+}
+
+/** @internal */
+export interface RenderInstancesImpl extends RenderInstances {
+  readonly opaque?: ReusableInstanceBuffersData;
+  readonly translucent?: ReusableInstanceBuffersData;
+  readonly featureTable?: PackedFeatureTable;
+}
+
+/** @internal */
+export namespace RenderInstancesImpl {
+  export function create(params: RenderInstancesParams): RenderInstancesImpl | undefined {
+    let opaque, translucent;
+    if (params.opaque && !(opaque = createReusableInstanceBuffers(params.opaque))) {
+      return undefined;
+    }
+
+    if (params.translucent && !(translucent = createReusableInstanceBuffers(params.translucent))) {
+      return undefined;
+    }
+
+    let featureTable;
+    if (params.features) {
+      // ###TODO permit user to specify batch type and other batch options...
+      featureTable = new PackedFeatureTable(params.features.data, params.features.modelId, params.features.count, BatchType.Primary);
+    }
+
+    return {
+      [_implementationProhibited]: "renderInstances",
+      opaque,
+      translucent,
+      featureTable,
+    };
+  }
+}
+
+/** @internal */
 export class InstanceBuffers {
   private static readonly _patternParams = new Float32Array([0, 0, 0, 0]);
   private readonly _data: InstanceBuffersData;
@@ -181,8 +227,8 @@ export class InstanceBuffers {
     return new InstanceBuffers(data, range);
   }
 
-  public static fromReusableBuffers(data: ReusableInstanceBuffersData, transformCenter: XYAndZ, reprRange: Range3d): InstanceBuffers {
-    const range = this.computeRange(reprRange, data.transforms, transformCenter);
+  public static fromReusableBuffers(data: ReusableInstanceBuffersData, reprRange: Range3d): InstanceBuffers {
+    const range = this.computeRange(reprRange, data.transforms, data.transformCenter);
     return new InstanceBuffers(data.buffers, range);
   }
 
@@ -234,50 +280,6 @@ export class InstanceBuffers {
   }
 }
 
-/** @internal */
-export interface ReusableInstanceBuffersData {
-  readonly transforms: Float32Array;
-  readonly buffers: InstanceBuffersData
-}
-
-function createReusableInstanceBuffers(props: InstancedGraphicProps): ReusableInstanceBuffersData | undefined {
-  const buffers = InstanceBuffersData.create(props, true);
-  return buffers ? { buffers, transforms: props.transforms } : undefined;
-}
-
-/** @internal */
-export interface RenderInstancesImpl extends RenderInstances {
-  readonly opaque?: ReusableInstanceBuffersData;
-  readonly translucent?: ReusableInstanceBuffersData;
-  readonly featureTable?: PackedFeatureTable;
-}
-
-/** @internal */
-export namespace RenderInstancesImpl {
-  export function create(params: RenderInstancesParams): RenderInstancesImpl | undefined {
-    let opaque, translucent;
-    if (params.opaque && !(opaque = createReusableInstanceBuffers(params.opaque))) {
-      return undefined;
-    }
-
-    if (params.translucent && !(translucent = createReusableInstanceBuffers(params.translucent))) {
-      return undefined;
-    }
-
-    let featureTable;
-    if (params.features) {
-      // ###TODO permit user to specify batch type and other batch options...
-      featureTable = new PackedFeatureTable(params.features.data, params.features.modelId, params.features.count, BatchType.Primary);
-    }
-
-    return {
-      [_implementationProhibited]: "renderInstances",
-      opaque,
-      translucent,
-      featureTable,
-    };
-  }
-}
 /** @internal */
 export class PatternBuffers extends InstanceData {
   private readonly _featureId?: Float32Array;
