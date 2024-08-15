@@ -10,7 +10,6 @@ import { assert, dispose } from "@itwin/core-bentley";
 import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
-import { RenderAreaPattern } from "../RenderSystem";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
@@ -33,7 +32,7 @@ export class Primitive extends Graphic {
     this.cachedGeometry = cachedGeom;
   }
 
-  public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
+  public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | PatternBuffers): Primitive | undefined {
     if (!geom)
       return undefined;
 
