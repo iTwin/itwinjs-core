@@ -18,6 +18,10 @@ import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuf
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Matrix4 } from "./Matrix";
+import { RenderInstances } from "../RenderSystem";
+import { _implementationProhibited, _renderSystem } from "../../common/internal/Symbols";
+import { BatchType, PackedFeatureTable } from "@itwin/core-common";
+import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
 
 /** @internal */
 export function isInstancedGraphicParams(params: any): params is InstancedGraphicParams {
@@ -71,15 +75,17 @@ export class InstanceBuffersData extends InstanceData {
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;
   public readonly symbology?: BufferHandle;
+  private _noDispose = false;
 
-  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, symbology?: BufferHandle, featureIds?: BufferHandle, disableDisposal = false) {
     super(count, rtcCenter);
     this.transforms = transforms;
     this.featureIds = featureIds;
     this.symbology = symbology;
+    this._noDispose = disableDisposal;
   }
 
-  public static create(params: InstancedGraphicParams | InstancedGraphicProps): InstanceBuffersData | undefined {
+  public static create(params: InstancedGraphicParams | InstancedGraphicProps, disableDisposal = false): InstanceBuffersData | undefined {
     const { count, featureIds, symbologyOverrides, transforms } = params;
 
     assert(count > 0 && Math.floor(count) === count);
@@ -97,9 +103,20 @@ export class InstanceBuffersData extends InstanceData {
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
     const transformCenter = params.transformCenter instanceof Point3d ? params.transformCenter : Point3d.fromJSON(params.transformCenter);
-    return undefined !== tfBuf ? new InstanceBuffersData(count, tfBuf, transformCenter, symBuf, idBuf) : undefined;
+    if (!tfBuf) {
+      return undefined;
+    }
+
+    return undefined !== tfBuf ? new InstanceBuffersData(count, tfBuf, transformCenter, symBuf, idBuf, disableDisposal) : undefined;
   }
 
+  public dispose(): void {
+    if (!this._noDispose) {
+      dispose(this.transforms);
+      dispose(this.featureIds);
+      dispose(this.symbology);
+    }
+  }
 }
 
 /** @internal */
@@ -166,9 +183,7 @@ export class InstanceBuffers {
   }
 
   public dispose() {
-    dispose(this.transforms);
-    dispose(this.featureIds);
-    dispose(this.symbology);
+    dispose(this._data);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -209,6 +224,50 @@ export class InstanceBuffers {
   }
 }
 
+/** @internal */
+export interface ReusableInstanceBuffersData {
+  readonly transforms: Float32Array;
+  readonly buffers: InstanceBuffersData
+}
+
+function createReusableInstanceBuffers(props: InstancedGraphicProps): ReusableInstanceBuffersData | undefined {
+  const buffers = InstanceBuffersData.create(props, true);
+  return buffers ? { buffers, transforms: props.transforms } : undefined;
+}
+
+/** @internal */
+export interface RenderInstancesImpl extends RenderInstances {
+  readonly opaque?: ReusableInstanceBuffersData;
+  readonly translucent?: ReusableInstanceBuffersData;
+  readonly featureTable?: PackedFeatureTable;
+}
+
+/** @internal */
+export namespace RenderInstancesImpl {
+  export function create(params: RenderInstancesParams): RenderInstancesImpl | undefined {
+    let opaque, translucent;
+    if (params.opaque && !(opaque = createReusableInstanceBuffers(params.opaque))) {
+      return undefined;
+    }
+
+    if (params.translucent && !(translucent = createReusableInstanceBuffers(params.translucent))) {
+      return undefined;
+    }
+
+    let featureTable;
+    if (params.features) {
+      // ###TODO permit user to specify batch type and other batch options...
+      featureTable = new PackedFeatureTable(params.features.data, params.features.modelId, params.features.count, BatchType.Primary);
+    }
+
+    return {
+      [_implementationProhibited]: "renderInstances",
+      opaque,
+      translucent,
+      featureTable,
+    };
+  }
+}
 /** @internal */
 export class PatternBuffers extends InstanceData {
   private readonly _featureId?: Float32Array;
