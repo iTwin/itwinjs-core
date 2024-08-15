@@ -67,24 +67,61 @@ export interface PatternTransforms {
 }
 
 /** @internal */
-export class InstanceBuffers extends InstanceData {
-  private static readonly _patternParams = new Float32Array([0, 0, 0, 0]);
-
+export class InstanceBuffersData extends InstanceData {
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;
-  public readonly hasFeatures: boolean;
   public readonly symbology?: BufferHandle;
+
+  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+    super(count, rtcCenter);
+    this.transforms = transforms;
+    this.featureIds = featureIds;
+    this.symbology = symbology;
+  }
+
+  public static create(params: InstancedGraphicParams): InstanceBuffersData | undefined {
+    const { count, featureIds, symbologyOverrides, transforms } = params;
+
+    assert(count > 0 && Math.floor(count) === count);
+    assert(count === transforms.length / 12);
+    assert(undefined === featureIds || count === featureIds.length / 3);
+    assert(undefined === symbologyOverrides || count * 8 === symbologyOverrides.length);
+
+    let idBuf: BufferHandle | undefined;
+    if (undefined !== featureIds && undefined === (idBuf = BufferHandle.createArrayBuffer(featureIds)))
+      return undefined;
+
+    let symBuf: BufferHandle | undefined;
+    if (undefined !== symbologyOverrides && undefined === (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides)))
+      return undefined;
+
+    const tfBuf = BufferHandle.createArrayBuffer(transforms);
+    return undefined !== tfBuf ? new InstanceBuffersData(count, tfBuf, params.transformCenter, symBuf, idBuf) : undefined;
+  }
+
+}
+
+/** @internal */
+export class InstanceBuffers {
+  private static readonly _patternParams = new Float32Array([0, 0, 0, 0]);
+  private readonly _data: InstanceBuffersData;
   public readonly patternParams = InstanceBuffers._patternParams;
   public readonly patternTransforms = undefined;
   public readonly viewIndependentOrigin = undefined;
   public readonly range: Range3d;
 
-  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
-    super(count, rtcCenter);
-    this.transforms = transforms;
-    this.featureIds = featureIds;
-    this.hasFeatures = undefined !== featureIds;
-    this.symbology = symbology;
+  public get numInstances() { return this._data.numInstances; }
+  public get transforms() { return this._data.transforms; }
+  public get featureIds() { return this._data.featureIds; }
+  public get symbology() { return this._data.symbology; }
+  public get hasFeatures() { return undefined !== this.featureIds; }
+  public get patternFeatureId() { return this._data.patternFeatureId; }
+
+  public getRtcModelTransform(modelMatrix: Transform) { return this._data.getRtcModelTransform(modelMatrix); }
+  public getRtcOnlyTransform() { return this._data.getRtcOnlyTransform(); }
+
+  private constructor(data: InstanceBuffersData, range: Range3d) {
+    this._data = data;
     this.range = range;
   }
 
@@ -117,23 +154,8 @@ export class InstanceBuffers extends InstanceData {
   }
 
   public static create(params: InstancedGraphicParams, range: Range3d): InstanceBuffers | undefined {
-    const { count, featureIds, symbologyOverrides, transforms } = params;
-
-    assert(count > 0 && Math.floor(count) === count);
-    assert(count === transforms.length / 12);
-    assert(undefined === featureIds || count === featureIds.length / 3);
-    assert(undefined === symbologyOverrides || count * 8 === symbologyOverrides.length);
-
-    let idBuf: BufferHandle | undefined;
-    if (undefined !== featureIds && undefined === (idBuf = BufferHandle.createArrayBuffer(featureIds)))
-      return undefined;
-
-    let symBuf: BufferHandle | undefined;
-    if (undefined !== symbologyOverrides && undefined === (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides)))
-      return undefined;
-
-    const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffers(count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
+    const data = InstanceBuffersData.create(params);
+    return data ? new InstanceBuffers(data, range) : undefined;
   }
 
   public get isDisposed(): boolean {
