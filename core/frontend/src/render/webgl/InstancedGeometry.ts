@@ -26,7 +26,6 @@ export function isInstancedGraphicParams(params: any): params is InstancedGraphi
 
 class InstanceData {
   public readonly numInstances: number;
-  public readonly range: Range3d;
   // A transform including only rtcCenter.
   private readonly _rtcOnlyTransform: Transform;
   // A transform from _rtcCenter including model matrix
@@ -34,9 +33,8 @@ class InstanceData {
   // The model matrix from which _rtcModelTransform was previously computed. If it changes, _rtcModelTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
 
-  protected constructor(numInstances: number, rtcCenter: Point3d, range: Range3d) {
+  protected constructor(numInstances: number, rtcCenter: Point3d) {
     this.numInstances = numInstances;
-    this.range = range;
     this._rtcOnlyTransform = Transform.createTranslation(rtcCenter);
     this._rtcModelTransform = this._rtcOnlyTransform.clone();
   }
@@ -79,13 +77,15 @@ export class InstanceBuffers extends InstanceData {
   public readonly patternParams = InstanceBuffers._patternParams;
   public readonly patternTransforms = undefined;
   public readonly viewIndependentOrigin = undefined;
+  public readonly range: Range3d;
 
   private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
-    super(count, rtcCenter, range);
+    super(count, rtcCenter);
     this.transforms = transforms;
     this.featureIds = featureIds;
     this.hasFeatures = undefined !== featureIds;
     this.symbology = symbology;
+    this.range = range;
   }
 
   public static createTransformBufferParameters(techniqueId: TechniqueId): BufferParameters[] {
@@ -193,7 +193,7 @@ export class PatternBuffers extends InstanceData {
   private constructor(
     count: number,
     rtcCenter: Point3d,
-    range: Range3d,
+    public readonly range: Range3d,
     public readonly patternParams: Float32Array, // [ isAreaPattern, spacingX, spacingY, scale ]
     public readonly origin: Float32Array, // [ x, y ]
     public readonly orgTransform: Matrix4,
@@ -203,7 +203,7 @@ export class PatternBuffers extends InstanceData {
     featureId: number | undefined,
     public readonly viewIndependentOrigin: Point3d | undefined,
   ) {
-    super(count, rtcCenter, range);
+    super(count, rtcCenter);
     this.patternTransforms = this;
     if (undefined !== featureId) {
       this._featureId = new Float32Array([
