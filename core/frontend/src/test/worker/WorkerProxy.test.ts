@@ -45,4 +45,29 @@ describe("WorkerProxy", () => {
 
     worker.terminate();
   });
+
+  it("returns results out of sequence if caller does not await each operation", async () => {
+    const worker = createWorker();
+
+    const [slowest, slow, fast] = await Promise.all([
+      worker.someVeryLongRunningAsyncOperation(),
+      worker.someLongRunningAsyncOperation(),
+      worker.someFastSynchronousOperation(),
+    ]);
+
+    expect(fast).to.be.lessThan(slow);
+    expect(slow).to.be.lessThan(slowest);
+    worker.terminate();
+  });
+
+  it("returns results in sequence if caller awaits each operation", async () => {
+    const worker = createWorker();
+
+    const first = await worker.someVeryLongRunningAsyncOperation();
+    const second = await worker.someLongRunningAsyncOperation();
+    const third = await worker.someFastSynchronousOperation();
+
+    expect(first).to.be.lessThan(second);
+    expect(second).to.be.lessThan(third);
+  });
 });
