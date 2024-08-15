@@ -4940,6 +4940,7 @@ export class Range1d extends RangeBase {
     cloneTranslated(delta: number, result?: Range1d): Range1d;
     containsRange(other: Range1d): boolean;
     containsX(x: number): boolean;
+    containsXOpen(x: number): boolean;
     static createArray<T extends Range1d>(values: Float64Array | number[], result?: T): T;
     static createFrom<T extends Range1d>(other: T, result?: T): T;
     static createNull<T extends Range1d>(result?: T): T;
