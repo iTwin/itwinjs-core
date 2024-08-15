@@ -485,13 +485,13 @@ export class Formatter {
     }
 
     if (type === FormatType.Azimuth) {
-      let azimuthBase = 0.0;
+      let azimuthBase = quarterRevolution; // default base is North
       if (spec.format.azimuthBase !== undefined) {
         if (spec.azimuthBaseConversion === undefined) {
           throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.name}'s azimuth base.`);
         }
-        const azBaseQuan: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
-        const azBaseConverted = azBaseQuan.convertTo(spec.persistenceUnit, spec.azimuthBaseConversion);
+        const azBaseQuantity: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
+        const azBaseConverted = azBaseQuantity.convertTo(spec.persistenceUnit, spec.azimuthBaseConversion);
         if (azBaseConverted === undefined || !azBaseConverted.isValid) {
           throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.persistenceUnit.name}.`);
         }
@@ -501,17 +501,15 @@ export class Formatter {
       if (azimuthBase === quarterRevolution && spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
         return {magnitude}; // no conversion necessary, the input is already using the result parameters (east base and counter clockwise)
 
-      // move magnitude from east counter-clockwise to north base (azimuthBase's value is specified from north clockwise)
-      magnitude = revolution - magnitude;
-      magnitude += quarterRevolution;
-
-      // subtract the base
+      // subtract the base from the actual value
       magnitude -= azimuthBase;
+      if (spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
+        return {magnitude: this.normalizeAngle(magnitude, revolution)};
+
+      // turn it into a clockwise angle
+      magnitude = revolution - magnitude;
       // normalize the result as it may have become negative or exceed the revolution
       magnitude = this.normalizeAngle(magnitude, revolution);
-      // if result is desired as counter clockwise, convert it
-      if (spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
-        magnitude = revolution - magnitude;
     }
 
     return {magnitude};
