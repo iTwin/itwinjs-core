@@ -32,6 +32,7 @@ import { InvertedUnitProps } from '@itwin/ecschema-metadata';
 import { ISchemaPartVisitor } from '@itwin/ecschema-metadata';
 import { KindOfQuantity } from '@itwin/ecschema-metadata';
 import { KindOfQuantityProps } from '@itwin/ecschema-metadata';
+import { LazyLoadedKindOfQuantity } from '@itwin/ecschema-metadata';
 import { LazyLoadedPropertyCategory } from '@itwin/ecschema-metadata';
 import { Localization } from '@itwin/core-common';
 import { Mixin } from '@itwin/ecschema-metadata';
@@ -742,7 +743,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "SchemaItem" | "Property" | "RelationshipConstraint" | "None" | "CustomAttributeContainer";
 
 // @alpha
 export type DifferenceType = "add" | "modify";
@@ -761,15 +762,15 @@ export enum ECEditingStatus {
     // (undocumented)
     AddCustomAttributeToProperty = 196639,
     // (undocumented)
-    AddEnumerator = 196659,
+    AddEnumerator = 196660,
     // (undocumented)
-    AddMixin = 196658,
+    AddMixin = 196659,
     // (undocumented)
-    AddPresentationOverride = 196663,
+    AddPresentationOverride = 196664,
     // (undocumented)
-    AddPresentationUnit = 196662,
+    AddPresentationUnit = 196663,
     // (undocumented)
-    AddSchemaReference = 196681,
+    AddSchemaReference = 196682,
     // (undocumented)
     BaseClassIsNotElement = 196616,
     // (undocumented)
@@ -783,49 +784,49 @@ export enum ECEditingStatus {
     // (undocumented)
     CreateElementUniqueAspect = 196630,
     // (undocumented)
-    CreateEnumerationArrayProperty = 196672,
+    CreateEnumerationArrayProperty = 196673,
     // (undocumented)
-    CreateEnumerationArrayPropertyFromProps = 196673,
+    CreateEnumerationArrayPropertyFromProps = 196674,
     // (undocumented)
-    CreateEnumerationProperty = 196668,
+    CreateEnumerationProperty = 196669,
     // (undocumented)
-    CreateEnumerationPropertyFromProps = 196669,
+    CreateEnumerationPropertyFromProps = 196670,
     // (undocumented)
-    CreateFormatOverride = 196664,
+    CreateFormatOverride = 196665,
     // (undocumented)
     CreateNavigationProperty = 196641,
     // (undocumented)
     CreateNavigationPropertyFromProps = 196642,
     // (undocumented)
-    CreatePrimitiveArrayProperty = 196670,
+    CreatePrimitiveArrayProperty = 196671,
     // (undocumented)
-    CreatePrimitiveArrayPropertyFromProps = 196671,
+    CreatePrimitiveArrayPropertyFromProps = 196672,
     // (undocumented)
-    CreatePrimitiveProperty = 196666,
+    CreatePrimitiveProperty = 196667,
     // (undocumented)
-    CreatePrimitivePropertyFromProps = 196667,
+    CreatePrimitivePropertyFromProps = 196668,
     // (undocumented)
     CreateSchemaItemFailed = 196627,
     // (undocumented)
     CreateSchemaItemFromProps = 196628,
     // (undocumented)
-    CreateStructArrayProperty = 196676,
+    CreateStructArrayProperty = 196677,
     // (undocumented)
-    CreateStructArrayPropertyFromProps = 196677,
+    CreateStructArrayPropertyFromProps = 196678,
     // (undocumented)
-    CreateStructProperty = 196674,
+    CreateStructProperty = 196675,
     // (undocumented)
-    CreateStructPropertyFromProps = 196675,
+    CreateStructPropertyFromProps = 196676,
     // (undocumented)
-    DeleteClass = 196679,
+    DeleteClass = 196680,
     // (undocumented)
-    DeleteProperty = 196678,
+    DeleteProperty = 196679,
     // (undocumented)
     EC_EDITING_ERROR_BASE = 196608,
     // (undocumented)
     EnumeratorDoesNotExist = 196624,
     // (undocumented)
-    IncrementSchemaMinorVersion = 196683,
+    IncrementSchemaMinorVersion = 196684,
     // (undocumented)
     InvalidBaseClass = 196623,
     // (undocumented)
@@ -863,41 +864,43 @@ export enum ECEditingStatus {
     // (undocumented)
     SetCategory = 196649,
     // (undocumented)
-    SetClassName = 196680,
+    SetClassName = 196681,
     // (undocumented)
     SetDescription = 196645,
     // (undocumented)
-    SetEnumeratorDescription = 196661,
+    SetEnumeratorDescription = 196662,
     // (undocumented)
-    SetEnumeratorLabel = 196660,
+    SetEnumeratorLabel = 196661,
     // (undocumented)
-    SetExtendedTypeName = 196652,
+    SetExtendedTypeName = 196653,
     // (undocumented)
     SetInvertsUnit = 196643,
     // (undocumented)
     SetIsReadOnly = 196647,
     // (undocumented)
+    SetKindOfQuantity = 196650,
+    // (undocumented)
     SetLabel = 196646,
     // (undocumented)
-    SetMaxLength = 196654,
+    SetMaxLength = 196655,
     // (undocumented)
-    SetMaxOccurs = 196651,
+    SetMaxOccurs = 196652,
     // (undocumented)
-    SetMaxValue = 196656,
+    SetMaxValue = 196657,
     // (undocumented)
-    SetMinLength = 196653,
+    SetMinLength = 196654,
     // (undocumented)
-    SetMinOccurs = 196650,
+    SetMinOccurs = 196651,
     // (undocumented)
-    SetMinValue = 196655,
+    SetMinValue = 196656,
     // (undocumented)
     SetPriority = 196648,
     // (undocumented)
-    SetPropertyCategoryPriority = 196665,
+    SetPropertyCategoryPriority = 196666,
     // (undocumented)
-    SetPropertyName = 196657,
+    SetPropertyName = 196658,
     // (undocumented)
-    SetSchemaVersion = 196682,
+    SetSchemaVersion = 196683,
     // (undocumented)
     SetSourceConstraint = 196633,
     // (undocumented)
@@ -1894,25 +1897,25 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     FormatUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [InvertedUnit | Unit], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
-            messageArgs?: [Unit | InvertedUnit] | undefined;
+            messageArgs?: [InvertedUnit | Unit] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
     UnitLabelOverrideDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [InvertedUnit | Unit, string | undefined, string | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
-            messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
+            messageArgs?: [InvertedUnit | Unit, string | undefined, string | undefined] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;

@@ -997,7 +997,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1237,6 +1237,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     protected setDescription(description: string): void;
     // @internal
     protected setIsReadOnly(isReadOnly: boolean): void;
+    // @internal
+    protected setKindOfQuantity(kindOfQuantity: LazyLoadedKindOfQuantity): void;
     // @internal
     protected setLabel(label: string): void;
     // (undocumented)
