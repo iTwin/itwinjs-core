@@ -22,7 +22,7 @@ export interface InstancedFeaturesParams {
 }
 
 export interface RenderInstancesParams {
-  [_implementationProhibited]?: "renderInstancesParams";
+  readonly [_implementationProhibited]: unknown;
   opaque?: InstancedGraphicProps;
   translucent?: InstancedGraphicProps;
   features?: InstancedFeaturesParams;
@@ -96,9 +96,10 @@ class Builder implements RenderInstancesParamsBuilder {
   }
 
   public finish(): RenderInstancesParams {
+    const result: RenderInstancesParams = { [_implementationProhibited]: undefined };
     const numInstances = this._opaque.length + this._translucent.length;
     if (numInstances === 0) {
-      return { };
+      return result;
     }
 
     let featureTable;
@@ -106,13 +107,12 @@ class Builder implements RenderInstancesParamsBuilder {
       featureTable = new FeatureTable(numInstances, this._modelId);
     }
 
-    const opaque = this._opaque.finish(featureTable);
-    const translucent = this._translucent.finish(featureTable);
+    result.opaque = this._opaque.finish(featureTable);
+    result.translucent = this._translucent.finish(featureTable);
 
-    let features: InstancedFeaturesParams | undefined;
     if (featureTable) {
       const packedTable = PackedFeatureTable.pack(featureTable);
-      features = {
+      result.features = {
         [_implementationProhibited]: undefined,
         data: packedTable.data,
         modelId: packedTable.batchModelId,
@@ -120,6 +120,6 @@ class Builder implements RenderInstancesParamsBuilder {
       };
     }
 
-    return { opaque, translucent, features };
+    return result;
   }
 }
