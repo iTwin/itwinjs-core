@@ -66,7 +66,7 @@ describe("WorkerProxy", () => {
     const first = await worker.someVeryLongRunningAsyncOperation();
     const second = await worker.someLongRunningAsyncOperation();
     const third = await worker.someFastSynchronousOperation();
-    
+
     expect(first).to.be.lessThan(second);
     expect(second).to.be.lessThan(third);
   });
