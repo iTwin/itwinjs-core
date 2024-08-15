@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { InstancedGraphicParams, PatternGraphicParams } from "../../common/render/InstancedGraphicParams";
+import { InstancedGraphicParams, InstancedGraphicProps, PatternGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
@@ -79,7 +79,7 @@ export class InstanceBuffersData extends InstanceData {
     this.symbology = symbology;
   }
 
-  public static create(params: InstancedGraphicParams): InstanceBuffersData | undefined {
+  public static create(params: InstancedGraphicParams | InstancedGraphicProps): InstanceBuffersData | undefined {
     const { count, featureIds, symbologyOverrides, transforms } = params;
 
     assert(count > 0 && Math.floor(count) === count);
@@ -96,7 +96,8 @@ export class InstanceBuffersData extends InstanceData {
       return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffersData(count, tfBuf, params.transformCenter, symBuf, idBuf) : undefined;
+    const transformCenter = params.transformCenter instanceof Point3d ? params.transformCenter : Point3d.fromJSON(params.transformCenter);
+    return undefined !== tfBuf ? new InstanceBuffersData(count, tfBuf, transformCenter, symBuf, idBuf) : undefined;
   }
 
 }
