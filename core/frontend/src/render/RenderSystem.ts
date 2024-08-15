@@ -45,7 +45,7 @@ import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
-import { _implementationProhibited, _textures } from "../common/internal/Symbols";
+import { _implementationProhibited, _renderSystem, _textures } from "../common/internal/Symbols";
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
@@ -220,7 +220,7 @@ export interface PlanarGridProps {
  */
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
-export type RenderInstances = IDisposable & { [_implementationProhibited]: "renderInstances" };
+export type RenderInstances = IDisposable & { [_renderSystem]: RenderSystem };
 
 /** @internal */
 export interface RenderSkyGradientParams {
