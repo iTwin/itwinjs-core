@@ -23,14 +23,17 @@ interface WorkerRequest {
  * @beta
  */
 export function registerWorker<T>(impl: WorkerImplementation<T>): void {
-  onmessage = (e: MessageEvent) => {
+  onmessage = async (e: MessageEvent) => {
     const req = e.data as WorkerRequest;
     const msgId = req.msgId;
     try {
       assert(typeof req === "object" && "operation" in req && "payload" in req && "msgId" in req);
       const func = (impl as any)[req.operation];
       assert(typeof func === "function");
-      const ret = func(req.payload);
+      let ret = func(req.payload);
+      if (ret instanceof Promise) {
+        ret = await ret;
+      }
       if (typeof ret === "object" && "transfer" in ret)
         postMessage({ result: ret.result, msgId }, { transfer: ret.transfer });
       else
