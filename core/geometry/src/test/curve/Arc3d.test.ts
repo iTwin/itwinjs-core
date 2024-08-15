@@ -5,6 +5,7 @@
 
 import { assert, expect } from "chai";
 import { compareNumbers, OrderedSet } from "@itwin/core-bentley";
+import { Constant } from "../../Constant";
 import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -718,7 +719,7 @@ describe("Arc3d", () => {
   });
 });
 
-describe("ApproximateArc3d", () => {
+describe.only("ApproximateArc3d", () => {
   const remaps: FractionMapper[] = [];
   remaps.push((x: number) => x);                // identity
   remaps.push((x: number) => {                  // piecewise linear (under)
@@ -752,6 +753,8 @@ describe("ApproximateArc3d", () => {
     samples: QuadrantFractions[] | number[],
     x?: number, y?: number, z?: number,
   ): void {
+    if (!GeometryCoreTestIO.enableSave)
+      return;
     if (samples[0] instanceof QuadrantFractions) {
       for (let i = 0; i < samples.length; ++i) {
         const quadrant = samples[i] as QuadrantFractions;
@@ -774,30 +777,40 @@ describe("ApproximateArc3d", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
-    for (let sweep = 360; sweep > 0; sweep -= 30) {
-      const arc = Arc3d.create(
-        Point3d.create(0, 0), Vector3d.create(5, 0), Vector3d.create(0, 8), AngleSweep.createStartEndDegrees(0, sweep),
-      );
-      let dy = 0;
-      for (let angle = 0; angle < 360; angle += 30) {
-        const rotationAxis: Vector3d = Vector3d.create(0, 0, 1);
-        const rotationMatrix = Matrix3d.createRotationAroundVector(rotationAxis, Angle.createDegrees(angle))!;
+    let dy = 0;
+
+    const computeDefaultChainError = (arc: Arc3d, display: boolean): number => {
+      const defaultContext = EllipticalArcApproximationContext.create(arc);
+      const defaultOptions = EllipticalArcApproximationOptions.create();
+      const samples = defaultContext.computeSampleFractions(defaultOptions, true) as QuadrantFractions[];
+      if (display)
+        displaySamples(allGeometry, defaultContext.ellipticalArc, samples, dx, dy);
+      const defaultChainErrorDetail = defaultContext.computeApproximationError(samples);
+      let error = -1;
+      if (ck.testDefined(defaultChainErrorDetail, "cover arc chain approximation error computation"))
+        error = defaultChainErrorDetail.detailA.a;
+      return error;
+    };
+
+    for (let endAngle = 360; endAngle > -360; endAngle -= 83) {
+      const sweep = AngleSweep.createStartEndDegrees(0, endAngle);
+      const arc = Arc3d.create(Point3d.createZero(), Vector3d.create(5, 0), Vector3d.create(0, 8), sweep);
+      dy = 0;
+      const error0 = computeDefaultChainError(arc, false);
+      for (let rotation = 0; rotation < 360; rotation += 73) {
+        const rotationAxis: Vector3d = Vector3d.createNormalized(endAngle, rotation, endAngle + rotation)!; // "random" normal
+        const rotationMatrix = Matrix3d.createRotationAroundVector(rotationAxis, Angle.createDegrees(rotation))!;
         const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), rotationMatrix);
         arc.tryTransformInPlace(rotationTransform);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx, dy);
 
-        const chain = arc.constructCircularArcChainApproximation();
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, dx, dy);
+        const defaultChain = arc.constructCircularArcChainApproximation();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, defaultChain, dx, dy);
 
-        const context = EllipticalArcApproximationContext.create(arc);
-        const options = EllipticalArcApproximationOptions.create();
-        const samples = context.computeSampleFractions(options, true) as QuadrantFractions[];
-        displaySamples(allGeometry, context.ellipticalArc, samples, 0, dy, 0);
-        const chainError = context.computeApproximationError(samples);
-        ck.testDefined(chainError, "cover arc chain approximation error computation");
-        const error = chainError!.detailA.a;
-        ck.testTrue(error > Geometry.smallFraction, "computed a nonzero arc chain approximation error");
-        ck.testTrue(error < 0.1, "computed a small arc chain approximation error");
+        const error = computeDefaultChainError(arc, true);
+        ck.testCoordinate(error0, error, "approximation error is invariant under arc rotation");
+        ck.testLT(Geometry.smallFraction, error, "computed a nonzero arc chain approximation error");
+        ck.testLE(error, Constant.oneCentimeter, "computed arc chain approximation error less than default tolerance");
         dy += 20;
       }
       dx += 20;
@@ -837,9 +850,7 @@ describe("ApproximateArc3d", () => {
     const arc3 = arc0.clone();
     arc3.sweep = AngleSweep.createStartEndDegrees(100, 120);  // tiny sweep
     arcs.push(arc3);
-    const arc4 = Arc3d.createStartMiddleEnd(
-      Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2),
-    );
+    const arc4 = Arc3d.createStartMiddleEnd(Point3d.create(-1, -1, -2), Point3d.create(0.5, 0.5, 1.7), Point3d.create(1, 1, 2));
     if (ck.testDefined(arc4, "use 3pt elliptical arc ctor"))
       arcs.push(arc4);
 
@@ -995,7 +1006,11 @@ describe("ApproximateArc3d", () => {
           y0 += yDelta(yWidth);
         }
 
-        if (ck.testDefined(eMin, "Have best approx error") && ck.testDefined(iMin, "Have best approx method id") && ck.testDefined(nMin, "Have best approx segment count")) {
+        if (
+          ck.testDefined(eMin, "Have best approx error") &&
+          ck.testDefined(iMin, "Have best approx method id") &&
+          ck.testDefined(nMin, "Have best approx segment count")
+        ) {
           GeometryCoreTestIO.consoleLog(`Arc ${iArc} min error is ${eMin} using ${iMethodToString(iMin)} on ${n} Q1 samples with chain count ${nMin}.`);
           const numWins = methodWins.get(iMin) ?? 0;
           methodWins.set(iMin, numWins + 1);
@@ -1015,7 +1030,9 @@ describe("ApproximateArc3d", () => {
       }
       GeometryCoreTestIO.consoleLog(`Method ${iMethodToString(iMethod)} won ${winCount} times (${Math.round(100 * winCount / nTrials)}%).`);
     });
-    ck.testExactNumber(iWinner, 7, `expect ${iMethodToString(7)} method to have best approximation more often than other methods`);
+    // Observed: subdivision is most accurate method in 76% of ellipses tested
+    if (ck.testExactNumber(iWinner, 7, `expect ${iMethodToString(7)} method to have best approximation more often than other methods`))
+      ck.testLE(70, 100 * maxWins / nTrials, `expect ${iMethodToString(7)} to have best approximation over 70% of the time`);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "EllipseSampler");
     expect(ck.getNumErrors()).equals(0);
@@ -1099,12 +1116,12 @@ describe("ApproximateArc3d", () => {
     };
 
     // test default-maxError subdivision against other methods on ellipses of various eccentricities
-    const eccentricities = [
+    const eccentricities: number[] = [
       0.000001, 0.00001, 0.0001,  // these are essentially circular thus invalid for approximating (not drawn below)
       0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99, 0.999,
       0.9999, 0.99999, 0.999999,  // these are essentially flat
     ];
-    const optionsA = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.AdaptiveSubdivision);
+    const optionsA = EllipticalArcApproximationOptions.create(EllipticalArcSampleMethod.AdaptiveSubdivision); // default maxError
     const optionsC = EllipticalArcApproximationOptions.create();
     for (const e of eccentricities) {
       const b = a * Math.sqrt((1 - e) * (1 + e));
@@ -1153,11 +1170,13 @@ describe("ApproximateArc3d", () => {
       x += delta;
     }
 
-    const winPct = 100 * nSubdivisionComparisonWins / nComparisons;
+    // Observed: subdivision wins 95.67% of comparisons to n-sample methods
+    const winPct = 100 * Geometry.safeDivideFraction(nSubdivisionComparisonWins, nComparisons, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins ${nSubdivisionComparisonWins} of ${nComparisons} comparisons (${winPct}%).`);
     ck.testTrue(winPct > 90, "Subdivision is more accurate than another n-sample method over 90% of the time.");
 
-    const winOverallPct = 100 * (nEllipses - nSubdivisionLosses) / nEllipses;
+    // Observed: subdivision is most accurate method in 82.76% of ellipses tested
+    const winOverallPct = 100 * Geometry.safeDivideFraction(nEllipses - nSubdivisionLosses, nEllipses, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins overall for ${nEllipses - nSubdivisionLosses} of ${nEllipses} ellipses (${winOverallPct}%).`);
     ck.testTrue(winOverallPct > 80, "Subdivision is more accurate than all other n-sample methods over 80% of the time.");
 
@@ -1173,6 +1192,7 @@ describe("ApproximateArc3d", () => {
     // previously, these arcs' approximations exceeded the desired max error
     interface AnomalousArc { arc: Arc3d, maxError: number };
     const anomalousArcs: AnomalousArc[] = [];
+    anomalousArcs.push({ arc: Arc3d.create(Point3d.createZero(), Vector3d.create(5, 0), Vector3d.create(0, 8), AngleSweep.createStartEndDegrees(0, -63)), maxError: 0.01 });
     anomalousArcs.push({ arc: Arc3d.createXYEllipse(Point3d.createZero(), 10, 8, AngleSweep.createStartEndDegrees(90, 0)), maxError: 0.001836772806889095 });
     anomalousArcs.push({ arc: Arc3d.create(Point3d.createZero(), Vector3d.create(2, 4, -1), Vector3d.create(3, 2, -3)), maxError: 0.004891996419172132 });
     anomalousArcs.push({ arc: Arc3d.create(Point3d.createZero(), Vector3d.create(2, 4, -1), Vector3d.create(3, 2, -3), AngleSweep.createStartEndDegrees(-15, 345)), maxError: 0.0005076837030701749 });
