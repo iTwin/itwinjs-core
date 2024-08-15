@@ -84,6 +84,10 @@ export class MeshRenderGeometry implements RenderGeometry {
     this.polylineEdges?.collectStatistics(stats);
     this.indexedEdges?.collectStatistics(stats);
   }
+
+  public computeRange(out?: Range3d): Range3d {
+    return this.range.clone(out);
+  }
 }
 
 /** @internal */

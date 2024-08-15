@@ -8,7 +8,7 @@
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
-import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -45,7 +45,7 @@ import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
-import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers, RenderInstancesImpl } from "./InstancedGeometry";
+import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers, RenderInstancesImpl, ReusableInstanceBuffersData } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -67,6 +67,8 @@ import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../common/render/BatchOptions";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
+import { GraphicTemplate } from "../GraphicTemplate";
+import { _nodes } from "../../common/internal/Symbols";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -491,6 +493,74 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return RenderInstancesImpl.create(params);
   }
 
+  private createInstancedGraphic(geometry: RenderGeometry, buffers: ReusableInstanceBuffersData | undefined): RenderGraphic | undefined {
+    if (!buffers) {
+      return undefined;
+    }
+
+    const geom = geometry as RenderGeometryImpl;
+    return this.createRenderGraphic(geom, InstanceBuffers.fromReusableBuffers(buffers, geom.computeRange()));
+  }
+
+  public override createGraphicFromTemplate(args: { template: GraphicTemplate, instances?: RenderInstances }): RenderGraphic | undefined {
+    const template = args.template;
+    const instances = args.instances as RenderInstancesImpl | undefined;
+    if (instances) {
+      if (!template.isInstanceable) {
+        throw new Error("GraphicTemplate is not instanceable");
+      } else if (!instances.opaque && !instances.translucent) {
+        return undefined;
+      }
+    }
+
+    const graphics: RenderGraphic[] = [];
+    for (const node of template[_nodes]) {
+      for (const geometry of node.geometry) {
+        const nodeGraphics: RenderGraphic[] = [];
+        if (instances) {
+          const opaque = this.createInstancedGraphic(geometry, instances.opaque);
+          if (opaque) {
+            nodeGraphics.push(opaque);
+          }
+
+          const translucent = this.createInstancedGraphic(geometry, instances.translucent);
+          if (translucent) {
+            nodeGraphics.push(translucent);
+          }
+        } else {
+          const graphic = this.createRenderGraphic(geometry);
+          if (graphic) {
+            nodeGraphics.push(graphic);
+          }
+        }
+
+        if (nodeGraphics.length === 0) {
+          continue;
+        }
+
+        if (node.transform) {
+          const branch = new GraphicBranch();
+          for (const gf of nodeGraphics) {
+            branch.add(gf);
+          }
+
+          graphics.push(this.createGraphicBranch(branch, node.transform));
+        } else {
+          graphics.push(this.createGraphicList(nodeGraphics));
+        }
+      }
+    }
+
+    let graphic = this.createGraphicList(graphics);
+    if (instances?.featureTable) {
+      const range = new Range3d();
+      graphic.unionRange(range);
+      graphic = this.createBatch(graphic, instances.featureTable, range);
+    }
+
+    return graphic;
+  }
+
   public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
     const geom = geometry as RenderGeometryImpl;
 
@@ -504,8 +574,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         buffers = instances;
       } else {
         assert(isInstancedGraphicParams(instances));
-        const computeRange = geom.renderGeometryType === "mesh" ? () => geom.range : () => geom.computeRange();
-        buffers = InstanceBuffers.fromParams(instances, computeRange);
+        buffers = InstanceBuffers.fromParams(instances, () => geom.computeRange());
         if (!buffers) {
           return undefined;
         }
@@ -520,7 +589,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic {
-    return new GraphicsArray(primitives);
+    return primitives.length === 1 ? primitives[0] : new GraphicsArray(primitives);
   }
 
   public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
