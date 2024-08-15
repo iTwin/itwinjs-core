@@ -171,9 +171,14 @@ export class InstanceBuffers {
     return params;
   }
 
-  public static create(params: InstancedGraphicParams, range: Range3d): InstanceBuffers | undefined {
+  public static fromParams(params: InstancedGraphicParams, computeReprRange: () => Range3d): InstanceBuffers | undefined {
     const data = InstanceBuffersData.create(params);
-    return data ? new InstanceBuffers(data, range) : undefined;
+    if (!data) {
+      return undefined;
+    }
+
+    const range = params.range ?? this.computeRange(computeReprRange(), params.transforms, params.transformCenter);
+    return new InstanceBuffers(data, range);
   }
 
   public static fromReusableBuffers(data: ReusableInstanceBuffersData, transformCenter: XYAndZ, reprRange: Range3d): InstanceBuffers {

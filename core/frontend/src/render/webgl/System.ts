@@ -45,7 +45,7 @@ import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
-import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
+import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -487,18 +487,27 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
-    assert(!instances || instances instanceof PatternBuffers || isInstancedGraphicParams(instances));
-
-    if (instances && !geometry.isInstanceable) {
-      throw new Error("RenderGeometry is not instanceable");
-    }
-
     const geom = geometry as RenderGeometryImpl;
-    if (geom.renderGeometryType === "mesh") {
-      return MeshGraphic.create(geom, instances);
+
+    let buffers: InstanceBuffers | PatternBuffers | undefined;
+    if (instances) {
+      if (!geometry.isInstanceable) {
+        throw new Error("RenderGeometry is not instanceable");
+      }
+
+      if (instances instanceof PatternBuffers) {
+        buffers = instances;
+      } else {
+        assert(isInstancedGraphicParams(instances));
+        const computeRange = geom.renderGeometryType === "mesh" ? () => geom.range : () => geom.computeRange();
+        buffers = InstanceBuffers.fromParams(instances, computeRange);
+        if (!buffers) {
+          return undefined;
+        }
+      }
     }
-    
-    return Primitive.create(geom, instances);
+
+    return geom.renderGeometryType === "mesh" ? MeshGraphic.create(geom, buffers) : Primitive.create(geom, buffers);
   }
 
   public override createPointCloudGeometry(args: PointCloudArgs): PointCloudGeometry {

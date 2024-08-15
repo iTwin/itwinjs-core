@@ -8,7 +8,6 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
 import { RenderMemory } from "../RenderMemory";
@@ -97,20 +96,8 @@ export class MeshGraphic extends Graphic {
   public get primitives(): readonly Primitive[] { return this._primitives; }
   public get meshRange(): Readonly<Range3d> { return this._meshRange; }
 
-  public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternBuffers): MeshGraphic | undefined {
-    let buffers;
-    if (instances) {
-      if (instances instanceof PatternBuffers) {
-        buffers = instances;
-      } else {
-        const instancesRange = instances.range ?? InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
-        buffers = InstanceBuffers.create(instances, instancesRange);
-        if (!buffers)
-          return undefined;
-      }
-    }
-
-    return new MeshGraphic(geometry, buffers);
+  public static create(geometry: MeshRenderGeometry, instances?: InstanceBuffers | PatternBuffers): MeshGraphic | undefined {
+    return new MeshGraphic(geometry, instances);
   }
 
   private addPrimitive(geometry: CachedGeometry | undefined) {
