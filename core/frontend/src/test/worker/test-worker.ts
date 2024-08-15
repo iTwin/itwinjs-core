@@ -38,6 +38,15 @@ function maybeTransfer<T>(result: T): T | { result: T, transfer: Transferable[] 
   return { result, transfer: [] };
 }
 
+let globalTickCounter = 0;
+
+async function waitNTicks(nTicks: number): Promise<void> {
+  let counter = 0;
+  while (++counter < nTicks) {
+    await new Promise<void>((resolve: any) => setTimeout(resolve, 1));
+  }
+}
+
 registerWorker<TestWorker>({
   zero: () => maybeTransfer("zero"),
   one: (arg: string) => maybeTransfer(arg),
@@ -90,14 +99,14 @@ registerWorker<TestWorker>({
   },
 
   someVeryLongRunningAsyncOperation: async () => {
-    await new Promise<void>((resolve) => setTimeout(resolve, 10));
-    return new Date().getTime();
+    await waitNTicks(10);
+    return ++globalTickCounter;
   },
   someLongRunningAsyncOperation: async () => {
-    await new Promise<void>((resolve) => setTimeout(resolve, 5));
-    return new Date().getTime();
+    await waitNTicks(5);
+    return ++globalTickCounter;
   },
   someFastSynchronousOperation: () => {
-    return new Date().getTime();
+    return ++globalTickCounter;
   },
 });

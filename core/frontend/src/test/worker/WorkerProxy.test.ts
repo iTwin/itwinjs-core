@@ -46,15 +46,28 @@ describe("WorkerProxy", () => {
     worker.terminate();
   });
 
-  it.only("awaits on worker proxy async operation", async () => {
+  it.only("returns results out of sequence if caller does not await each operation", async () => {
     const worker = createWorker();
-    const asyncVeryLongOpPromise = worker.someVeryLongRunningAsyncOperation();
-    const asyncLongOpPromise = worker.someLongRunningAsyncOperation();
-    const syncOpPromise = worker.someFastSynchronousOperation();
 
-    const tasksEndDate = await Promise.all([asyncVeryLongOpPromise, asyncLongOpPromise, syncOpPromise]);
-    expect(tasksEndDate[2]).to.be.lessThan(tasksEndDate[1]);
-    expect(tasksEndDate[1]).to.be.lessThan(tasksEndDate[0]);
+    const [slowest, slow, fast] = await Promise.all([
+      worker.someVeryLongRunningAsyncOperation(),
+      worker.someLongRunningAsyncOperation(),
+      worker.someFastSynchronousOperation(),
+    ]);
+
+    expect(fast).to.be.lessThan(slow);
+    expect(slow).to.be.lessThan(slowest);
     worker.terminate();
+  });
+
+  it.only("returns results in sequence if caller awaits each operation", async () => {
+    const worker = createWorker();
+
+    const first = await worker.someVeryLongRunningAsyncOperation();
+    const second = await worker.someLongRunningAsyncOperation();
+    const third = await worker.someFastSynchronousOperation();
+    
+    expect(first).to.be.lessThan(second);
+    expect(second).to.be.lessThan(third);
   });
 });
