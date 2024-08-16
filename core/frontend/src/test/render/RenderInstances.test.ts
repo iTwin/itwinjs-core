@@ -15,33 +15,6 @@ describe("RenderInstancesParamsBuilder", () => {
     expect(params).to.deep.equal({});
   });
 
-  it("separates opaque and translucent instances", () => {
-    const builder = RenderInstancesParamsBuilder.create({});
-    const expectCounts = (opaque?: number, translucent?: number) => {
-      const params = builder.finish() as RenderInstancesParamsImpl;
-      expect(params.opaque?.count).to.equal(opaque);
-      expect(params.translucent?.count).to.equal(translucent);
-    }
-
-    function makeInstance(transparency?: number): Instance {
-      const symbology = undefined !== transparency ? { transparency } : undefined;
-      return { transform: Transform.createIdentity(), symbology };
-    }
-
-    builder.add(makeInstance());
-    expectCounts(1, undefined);
-    builder.add(makeInstance(0));
-    expectCounts(2, undefined);
-    builder.add(makeInstance(255));
-    expectCounts(2, 1);
-    builder.add(makeInstance(1));
-    expectCounts(2, 2);
-    builder.add(makeInstance(254));
-    expectCounts(2, 3);
-    builder.add(makeInstance(0));
-    expectCounts(3, 3);
-  });
-
   it("populates feature table IFF features are present", () => {
     let builder = RenderInstancesParamsBuilder.create({});
     const reset = () => { builder = RenderInstancesParamsBuilder.create({}); }

@@ -120,33 +120,18 @@ export class InstanceBuffersData extends InstanceData {
 }
 
 /** @internal */
-export interface ReusableInstanceBuffersData {
+export interface RenderInstancesImpl extends RenderInstances {
+  readonly buffers: InstanceBuffersData;
   readonly transformCenter: XYAndZ;
   readonly transforms: Float32Array;
-  readonly buffers: InstanceBuffersData
-}
-
-function createReusableInstanceBuffers(props: InstancedGraphicProps): ReusableInstanceBuffersData | undefined {
-  const buffers = InstanceBuffersData.create(props, true);
-  return buffers ? { buffers, transforms: props.transforms, transformCenter: props.transformCenter } : undefined;
-}
-
-/** @internal */
-export interface RenderInstancesImpl extends RenderInstances {
-  readonly opaque?: ReusableInstanceBuffersData;
-  readonly translucent?: ReusableInstanceBuffersData;
   readonly featureTable?: PackedFeatureTable;
 }
 
 /** @internal */
 export namespace RenderInstancesImpl {
   export function create(params: RenderInstancesParamsImpl): RenderInstancesImpl | undefined {
-    let opaque, translucent;
-    if (params.opaque && !(opaque = createReusableInstanceBuffers(params.opaque))) {
-      return undefined;
-    }
-
-    if (params.translucent && !(translucent = createReusableInstanceBuffers(params.translucent))) {
+    const buffers = InstanceBuffersData.create(params.instances, true);
+    if (!buffers) {
       return undefined;
     }
 
@@ -158,8 +143,9 @@ export namespace RenderInstancesImpl {
 
     return {
       [_implementationProhibited]: "renderInstances",
-      opaque,
-      translucent,
+      buffers,
+      transforms: params.instances.transforms,
+      transformCenter: params.instances.transformCenter,
       featureTable,
     };
   }
@@ -227,9 +213,10 @@ export class InstanceBuffers {
     return new InstanceBuffers(data, range);
   }
 
-  public static fromReusableBuffers(data: ReusableInstanceBuffersData, reprRange: Range3d): InstanceBuffers {
-    const range = this.computeRange(reprRange, data.transforms, data.transformCenter);
-    return new InstanceBuffers(data.buffers, range);
+  public static fromRenderInstances(arg: RenderInstances, reprRange: Range3d): InstanceBuffers {
+    const instances = arg as RenderInstancesImpl;
+    const range = this.computeRange(reprRange, instances.transforms, instances.transformCenter);
+    return new InstanceBuffers(instances.buffers, range);
   }
 
   public get isDisposed(): boolean {

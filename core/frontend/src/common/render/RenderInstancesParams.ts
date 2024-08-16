@@ -27,7 +27,6 @@ export interface InstanceSymbology {
   weight?: number;
   linePixels?: LinePixels;
   color?: RgbColorProps;
-  transparency?: number;
 }
 
 export interface Instance {

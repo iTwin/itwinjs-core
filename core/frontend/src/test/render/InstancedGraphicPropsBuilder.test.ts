@@ -41,7 +41,7 @@ describe("InstancedGraphicPropsBuilder", () => {
   it("only populates symbology overrides if symbology is overridden", () => {
     expect(build([makeInstance(), makeInstance(undefined, "0x123"), makeInstance()]).symbologyOverrides).to.be.undefined;
 
-    const props = build([makeInstance(), makeInstance(undefined, "0x123"), makeInstance(undefined, undefined, { transparency: 127 })]);
+    const props = build([makeInstance(), makeInstance(undefined, "0x123"), makeInstance(undefined, undefined, { weight: 12 })]);
     expect(props.symbologyOverrides!.byteLength).to.equal(3 * 8);
   });
 
@@ -72,17 +72,11 @@ describe("InstancedGraphicPropsBuilder", () => {
   it("computes symbology overrides", () => {
     const transform = Transform.createIdentity();
     const instances: Instance[] = [
-      { transform, symbology: { transparency: 100 } },
       { transform, symbology: { color: { r: 63, g: 127, b: 191 } } },
       { transform, symbology: { weight: 25 } },
       { transform, symbology: { linePixels: LinePixels.Code3 } },
       { transform },
-      { transform, symbology: { color: { r: 123, g: 255, b: 0 }, transparency: 200, weight: 15, linePixels: LinePixels.Code7 } },
-
-      { transform, symbology: { transparency: 0 } },
-      { transform, symbology: { transparency: 255 } },
-      { transform, symbology: { transparency: 900 } },
-      { transform, symbology: { transparency: -1 } },
+      { transform, symbology: { color: { r: 123, g: 255, b: 0 }, weight: 15, linePixels: LinePixels.Code7 } },
 
       { transform, symbology: { linePixels: LinePixels.Code0 } },
       { transform, symbology: { linePixels: -1 as LinePixels } },
@@ -104,16 +98,13 @@ describe("InstancedGraphicPropsBuilder", () => {
     expect(symbs).not.to.be.undefined;
     expect(symbs.byteLength).to.equal(8 * instances.length);
 
-    function expectOvrs(instanceIdx: number, expected: { alpha?: number, rgb?: [number, number, number], weight?: number, lineCode?: number, }): void {
+    function expectOvrs(instanceIdx: number, expected: { rgb?: [number, number, number], weight?: number, lineCode?: number, }): void {
       const i = instanceIdx * 8;
-      const alpha = expected.alpha ?? 0;
       const rgb = expected.rgb ?? [0, 0, 0];
       const weight = expected.weight ?? 0;
       const lineCode = expected.lineCode ?? 0;
 
       const flags = (
-        undefined !== expected.alpha ? OvrFlags.Alpha : 0
-      ) | (
         undefined !== expected.rgb ? OvrFlags.Rgb : 0
       ) | (
         undefined !== expected.weight ? OvrFlags.Weight : 0
@@ -129,38 +120,31 @@ describe("InstancedGraphicPropsBuilder", () => {
       expect(symbs[i + 4]).to.equal(rgb[0]);
       expect(symbs[i + 5]).to.equal(rgb[1]);
       expect(symbs[i + 6]).to.equal(rgb[2]);
-      expect(symbs[i + 7]).to.equal(alpha);
+      expect(symbs[i + 7]).to.equal(0);
     }
 
-    expectOvrs(0, { alpha: 155 });
-    expectOvrs(1, { rgb: [63, 127, 191]});
-    expectOvrs(2, { weight: 25 });
-    expectOvrs(3, { lineCode: 3 });
-    expectOvrs(4, { });
-    expectOvrs(5, { rgb: [123, 255, 0], alpha: 55, weight: 15, lineCode: 7 });
-
-    // Transparency gets clamped to [0,255] and inverted into alpha.
-    expectOvrs(6, { alpha: 255 });
-    expectOvrs(7, { alpha: 0 });
-    expectOvrs(8, { alpha: 0 });
-    expectOvrs(9, { alpha: 255 });
+    expectOvrs(0, { rgb: [63, 127, 191]});
+    expectOvrs(1, { weight: 25 });
+    expectOvrs(2, { lineCode: 3 });
+    expectOvrs(3, { });
+    expectOvrs(4, { rgb: [123, 255, 0], weight: 15, lineCode: 7 });
 
     // Any value that doesn't map to a LinePixels enum member is treated as line code zero (solid).
-    expectOvrs(10, { lineCode: 0 });
-    expectOvrs(11, { lineCode: 0 });
-    expectOvrs(12, { lineCode: 0 });
-    expectOvrs(13, { lineCode: 0 });
+    expectOvrs(5, { lineCode: 0 });
+    expectOvrs(6, { lineCode: 0 });
+    expectOvrs(7, { lineCode: 0 });
+    expectOvrs(8, { lineCode: 0 });
 
     // Weight gets clamped to [1,31] and floored.
-    expectOvrs(14, { weight: 1 });
-    expectOvrs(15, { weight: 31 });
-    expectOvrs(16, { weight: 31 });
-    expectOvrs(17, { weight: 1 });
-    expectOvrs(18, { weight: 12 });
+    expectOvrs(9, { weight: 1 });
+    expectOvrs(10, { weight: 31 });
+    expectOvrs(11, { weight: 31 });
+    expectOvrs(12, { weight: 1 });
+    expectOvrs(13, { weight: 12 });
 
     // r, g, and b get clamped to [0,255] and floored.
-    expectOvrs(19, { rgb: [0, 255, 127] });
-    expectOvrs(20, { rgb: [0, 255, 127] });
+    expectOvrs(14, { rgb: [0, 255, 127] });
+    expectOvrs(15, { rgb: [0, 255, 127] });
   });
 
   it("allocates features and feature indices", () => {

@@ -45,7 +45,7 @@ import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
-import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers, RenderInstancesImpl, ReusableInstanceBuffersData } from "./InstancedGeometry";
+import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers, RenderInstancesImpl } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -69,6 +69,7 @@ import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "../GraphicTemplate";
 import { _createGraphicFromTemplate, _nodes } from "../../common/internal/Symbols";
+import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -490,63 +491,43 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createRenderInstances(params: RenderInstancesParams): RenderInstances | undefined {
-    return RenderInstancesImpl.create(params);
+    return RenderInstancesImpl.create(params as RenderInstancesParamsImpl);
   }
 
-  private createInstancedGraphic(geometry: RenderGeometry, buffers: ReusableInstanceBuffersData | undefined): RenderGraphic | undefined {
-    if (!buffers) {
-      return undefined;
-    }
-
+  private createInstancedGraphic(geometry: RenderGeometry, instances: RenderInstances): RenderGraphic | undefined {
     const geom = geometry as RenderGeometryImpl;
-    return this.createRenderGraphic(geom, InstanceBuffers.fromReusableBuffers(buffers, geom.computeRange()));
+    return this.createRenderGraphic(geom, InstanceBuffers.fromRenderInstances(instances, geom.computeRange()));
   }
 
-  public override [_createGraphicFromTemplate](template: GraphicTemplate, renderInstances?: RenderInstances): RenderGraphic | undefined {
+  public override [_createGraphicFromTemplate](template: GraphicTemplate, renderInstances?: RenderInstances): RenderGraphic {
     const instances = renderInstances as RenderInstancesImpl | undefined;
-    if (instances) {
-      if (!template.isInstanceable) {
-        throw new Error("GraphicTemplate is not instanceable");
-      } else if (!instances.opaque && !instances.translucent) {
-        return undefined;
-      }
+    if (instances && !template.isInstanceable) {
+      throw new Error("GraphicTemplate is not instanceable");
     }
 
     const graphics: RenderGraphic[] = [];
     for (const node of template[_nodes]) {
+      const nodeGraphics: RenderGraphic[] = [];
       for (const geometry of node.geometry) {
-        const nodeGraphics: RenderGraphic[] = [];
-        if (instances) {
-          const opaque = this.createInstancedGraphic(geometry, instances.opaque);
-          if (opaque) {
-            nodeGraphics.push(opaque);
-          }
+        const graphic = instances ? this.createInstancedGraphic(geometry, instances) : this.createRenderGraphic(geometry);
+        if (graphic) {
+          nodeGraphics.push(graphic);
+        }
+      }
 
-          const translucent = this.createInstancedGraphic(geometry, instances.translucent);
-          if (translucent) {
-            nodeGraphics.push(translucent);
-          }
-        } else {
-          const graphic = this.createRenderGraphic(geometry);
-          if (graphic) {
-            nodeGraphics.push(graphic);
-          }
+      if (nodeGraphics.length === 0) {
+        continue;
+      }
+
+      if (node.transform) {
+        const branch = new GraphicBranch();
+        for (const gf of nodeGraphics) {
+          branch.add(gf);
         }
 
-        if (nodeGraphics.length === 0) {
-          continue;
-        }
-
-        if (node.transform) {
-          const branch = new GraphicBranch();
-          for (const gf of nodeGraphics) {
-            branch.add(gf);
-          }
-
-          graphics.push(this.createGraphicBranch(branch, node.transform));
-        } else {
-          graphics.push(this.createGraphicList(nodeGraphics));
-        }
+        graphics.push(this.createGraphicBranch(branch, node.transform));
+      } else {
+        graphics.push(this.createGraphicList(nodeGraphics));
       }
     }
 

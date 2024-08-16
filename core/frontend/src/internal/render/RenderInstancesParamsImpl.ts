@@ -21,15 +21,13 @@ export interface InstancedFeaturesParams {
 
 export interface RenderInstancesParamsImpl extends RenderInstancesParams {
   [_implementationProhibited]: "renderInstancesParams";
-  opaque?: InstancedGraphicProps;
-  translucent?: InstancedGraphicProps;
+  instances: InstancedGraphicProps;
   features?: InstancedFeaturesParams;
 }
 
 class Builder implements RenderInstancesParamsBuilder {
   public readonly [_implementationProhibited] = undefined;
-  private readonly _opaque = new InstancedGraphicPropsBuilder();
-  private readonly _translucent = new InstancedGraphicPropsBuilder();
+  private readonly _instances = new InstancedGraphicPropsBuilder();
   private readonly _modelId?: Id64String;
   private _containsFeatures = false;
   
@@ -38,9 +36,7 @@ class Builder implements RenderInstancesParamsBuilder {
   }
 
   public add(instance: Instance): void {
-    // If symbology.transparency is defined and non-zero, the instance goes in the translucent bucket.
-    const list = instance.symbology?.transparency ? this._translucent : this._opaque;
-    list.add(instance);
+    this._instances.add(instance);
     
     if (undefined !== instance.feature) {
       this._containsFeatures = true;
@@ -48,10 +44,9 @@ class Builder implements RenderInstancesParamsBuilder {
   }
 
   public finish(): RenderInstancesParams {
-    const result: RenderInstancesParamsImpl = { [_implementationProhibited]: "renderInstancesParams" };
-    const numInstances = this._opaque.length + this._translucent.length;
+    const numInstances = this._instances.length;
     if (numInstances === 0) {
-      return result;
+      throw new Error("No instances defined");
     }
 
     let featureTable;
@@ -59,8 +54,11 @@ class Builder implements RenderInstancesParamsBuilder {
       featureTable = new FeatureTable(numInstances, this._modelId);
     }
 
-    result.opaque = this._opaque.finish(featureTable);
-    result.translucent = this._translucent.finish(featureTable);
+    const instances = this._instances.finish(featureTable);
+    const result: RenderInstancesParamsImpl = {
+      [_implementationProhibited]: "renderInstancesParams",
+      instances,
+    };
 
     if (featureTable) {
       const packedTable = PackedFeatureTable.pack(featureTable);
@@ -79,13 +77,10 @@ export function createRenderInstancesParamsBuilder(args: CreateRenderInstancesPa
   return new Builder(args.modelId);
 }
 
-export function collectRenderInstancesParamsTransferables(xfers: Set<Transferable>, params: RenderInstancesParamsImpl): void {
-  if (params.opaque) {
-    InstancedGraphicProps.collectTransferables(xfers, params.opaque);
-  }
-
-  if (params.translucent) {
-    InstancedGraphicProps.collectTransferables(xfers, params.translucent);
+export function collectRenderInstancesParamsTransferables(xfers: Set<Transferable>, inParams: RenderInstancesParams): void {
+  const params = inParams as RenderInstancesParamsImpl;
+  if (params.instances) {
+    InstancedGraphicProps.collectTransferables(xfers, params.instances);
   }
 
   if (params.features) {

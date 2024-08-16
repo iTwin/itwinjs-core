@@ -27,10 +27,10 @@ export class InstancedGraphicPropsBuilder {
 
   public get length() { return this._instances.length; }
 
-  public finish(featureTable: FeatureTable | undefined): InstancedGraphicProps | undefined {
+  public finish(featureTable: FeatureTable | undefined): InstancedGraphicProps {
     const count = this.length;
     if (0 === count) {
-      return undefined;
+      throw new Error("No instances defined");
     }
 
     const tfc = this._transformRange.center;
@@ -71,12 +71,6 @@ export class InstancedGraphicPropsBuilder {
           symbologyOverrides[ovrIdx + 5] = Math.max(0, Math.min(symb.color.g, 255));
           symbologyOverrides[ovrIdx + 6] = Math.max(0, Math.min(symb.color.b, 255));
           flags |= OvrFlags.Rgb;
-        }
-
-        if (undefined !== symb.transparency) {
-          const transp = Math.max(0, Math.min(255, symb.transparency));
-          symbologyOverrides[ovrIdx + 7] = 255 - transp;
-          flags |= OvrFlags.Alpha;
         }
 
         symbologyOverrides[ovrIdx] = flags;
