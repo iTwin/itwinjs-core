@@ -15,6 +15,7 @@ import { GraphicType } from "../common/render/GraphicType";
 import type { PickableGraphicOptions} from "../common/render/BatchOptions";
 import { GraphicAssembler } from "../common/render/GraphicAssembler";
 import { _implementationProhibited } from "../common/internal/Symbols";
+import { GraphicTemplate } from "./GraphicTemplate";
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
@@ -190,4 +191,9 @@ export abstract class GraphicBuilder extends GraphicAssembler {
    * This function can only be called once; after the [[RenderGraphic]] has been extracted the [[GraphicBuilder]] should no longer be used.
    */
   public abstract finish(): RenderGraphic;
+
+  /** ###TODO
+   * @beta
+   */
+  public abstract finishTemplate(): GraphicTemplate;
 }

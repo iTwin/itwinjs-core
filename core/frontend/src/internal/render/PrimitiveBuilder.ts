@@ -84,6 +84,19 @@ export class PrimitiveBuilder extends GraphicBuilder {
     return graphic;
   }
 
+  public override finishTemplate(): GraphicTemplate {
+    const accum = this[_accumulator];
+    const tolerance = this.computeTolerance(accum);
+    const result = this.saveToTemplate(this, tolerance, this.pickable);
+    accum.clear();
+
+    return result?.template ?? {
+      [_implementationProhibited]: undefined,
+      [_nodes]: [],
+      isInstanceable: true,
+    };
+  }
+
   public computeTolerance(accum: GeometryAccumulator): number {
     return this._computeChordTolerance({
       graphic: this,
@@ -160,7 +173,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
     return meshes;
   }
 
-  private saveToTemplate(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string }): { meshes: MeshList, template: GraphicTemplate } | undefined {
+  private saveToTemplate(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): { meshes: MeshList, template: GraphicTemplate } | undefined {
     const meshes = this[_accumulator].toMeshes(options, tolerance, pickable);
     if (0 === meshes.length)
       return undefined;
