@@ -42,6 +42,7 @@ export class BaseFormat {
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
   protected _revolutionUnit?: UnitProps; // unit that represents a revolution, required for bearing or azimuth types
+  protected _allowMathematicOperations: boolean = false; // optional; enables calculating mathematic operations like addition and subtraction; default is false.
 
   constructor(name: string) {
     this._name = name;
@@ -81,6 +82,9 @@ export class BaseFormat {
 
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
   public set stationOffsetSize(stationOffsetSize: number | undefined) { stationOffsetSize = this._stationOffsetSize = stationOffsetSize; }
+
+  public get allowMathematicOperations(): boolean { return this._allowMathematicOperations; }
+  public set allowMathematicOperations(allowMathematicOperations: boolean) { this._allowMathematicOperations = allowMathematicOperations; }
 
   public get formatTraits(): FormatTraits { return this._formatTraits; }
   public set formatTraits(formatTraits: FormatTraits) { this._formatTraits = formatTraits; }
@@ -205,6 +209,10 @@ export class BaseFormat {
       if (typeof (formatProps.azimuthCounterClockwise) !== "boolean")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthCounterClockwise' attribute. It should be of type 'boolean'.`);
       this._azimuthCounterClockwise = formatProps.azimuthCounterClockwise;
+    if (undefined !== formatProps.allowMathematicOperations) { // optional; default is false
+      if (typeof (formatProps.allowMathematicOperations) !== "boolean")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'allowMathematicOperations' attribute. It should be of type 'boolean'.`);
+      this._allowMathematicOperations = formatProps.allowMathematicOperations;
     }
   }
 }

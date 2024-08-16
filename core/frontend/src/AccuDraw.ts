@@ -3275,7 +3275,7 @@ export class AccuDrawHintBuilder {
   public static get isEnabled(): boolean { return IModelApp.accuDraw.isEnabled; }
 
   /** Whether AccuDraw compass is currently displayed and points are being adjusted */
-  public static get isActive(): boolean { return IModelApp.accuDraw.isEnabled; }
+  public static get isActive(): boolean { return IModelApp.accuDraw.isActive; }
 
   /**
    * Provide hints to AccuDraw using the current builder state.

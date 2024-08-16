@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "avoid null ref in buildAverageNormals",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

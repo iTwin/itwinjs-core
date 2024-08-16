@@ -37,6 +37,12 @@ describe("ViewCreator3d", async () => {
     expect(testVp.numSelectedTiles).to.equal(1);
   });
 
+  it("should have subcategory be visible when default view is created", async () => {
+    const creator = new ViewCreator3d(imodel);
+    const view = await creator.createDefaultView();
+    expect(view.isSubCategoryVisible("0x18")).to.equal(true);
+  });
+
   it("should optionally enable display of all subcategories", async () => {
     // This test works by replacing subcategory appearances in the iModel's SubCategoriesCache to change the default visibility of a subcategory.
     // In a real scenario the visibility would be obtained from the persistent subcategory appearance - our test iModels don't contain any
