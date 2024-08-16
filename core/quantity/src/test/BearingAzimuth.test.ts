@@ -10,7 +10,7 @@ import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatProps, Parser, ParserSpec, UnitProps } from "../core-quantity";
 
 describe("Bearing format tests:", () => {
-  it("Format radian as bearing", async () => {
+  it.only("Roundtrip persisted radian to and from bearing", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const bearingDMSJson: FormatProps = {
@@ -81,6 +81,10 @@ describe("Bearing format tests:", () => {
     const bearingDMSWithLabelFormatter = await FormatterSpec.create("RadToBearingDMSWithLabel", bearingDMSWithLabel, unitsProvider, rad);
     const bearingDecimalFormatter = await FormatterSpec.create("RadToBearingDecimal", bearingDecimal, unitsProvider, rad);
 
+    const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, rad);
+    const bearingDMSWithLabelParser = await ParserSpec.create(bearingDMSWithLabel, unitsProvider, rad);
+    const bearingDecimalParser = await ParserSpec.create(bearingDecimal, unitsProvider, rad);
+
     interface TestData {
       input: number;
       unit: UnitProps;
@@ -111,19 +115,35 @@ describe("Bearing format tests:", () => {
 
     for (const entry of testData) {
       const radians = degreesToRadians(entry.input);
+
       const resultBearingDMS = Formatter.formatQuantity(radians, bearingDMSFormatter);
       expect(resultBearingDMS).to.be.eql(entry.dms);
+      const parseBearingDMSResult = Parser.parseQuantityString(resultBearingDMS, bearingDMSParser);
+      if (!Parser.isParsedQuantity(parseBearingDMSResult)) {
+        assert.fail(`Expected a parsed from bearing DMS input string ${resultBearingDMS}`);
+      }
+      expect(parseBearingDMSResult.value, `Parsed result for ${entry.input} from formatted ${resultBearingDMS}`).closeTo(radians, 0.0001);
 
       const resultBearingDMSWithLabel = Formatter.formatQuantity(radians, bearingDMSWithLabelFormatter);
       expect(resultBearingDMSWithLabel).to.be.eql(entry.dmsWithLabel);
+      const parseBearingDMSWithLabelResult = Parser.parseQuantityString(resultBearingDMSWithLabel, bearingDMSWithLabelParser);
+      if (!Parser.isParsedQuantity(parseBearingDMSWithLabelResult)) {
+        assert.fail(`Expected a parsed from bearing DMS with label input string ${resultBearingDMSWithLabel}`);
+      }
+      expect(parseBearingDMSWithLabelResult.value, `Parsed result for ${entry.input} from formatted ${resultBearingDMSWithLabel}`).closeTo(radians, 0.0001);
 
       const resultBearingDecimal = Formatter.formatQuantity(radians, bearingDecimalFormatter);
       expect(resultBearingDecimal).to.be.eql(entry.decimal);
+      const parseBearingDecimalResult = Parser.parseQuantityString(resultBearingDecimal, bearingDecimalParser);
+      if (!Parser.isParsedQuantity(parseBearingDecimalResult)) {
+        assert.fail(`Expected a parsed from bearing decimal input string ${resultBearingDecimal}`);
+      }
+      expect(parseBearingDecimalResult.value, `Parsed result for ${entry.input} from formatted ${resultBearingDecimal}`).closeTo(radians, 0.0001);
     }
   });
 });
 
-describe.only("Azimuth format tests:", () => {
+describe("Azimuth format tests:", () => {
 
   it("Format radian as azimuth", async () => {
     const unitsProvider = new TestUnitsProvider();
