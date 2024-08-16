@@ -75,7 +75,7 @@ The supported options are:
 
 **thousandSeparator** the character used to separate the integer part of a value in groups of 3 digits. If not defined a localized separator will be used.
 
-**uomSeparator** the character used to separate the magnitude and the Unit label. For composite formats applies to each component.
+**uomSeparator** the character used to separate the magnitude and the Unit label. For composite formats, this applies to each component.
 
 - Example: If set to `-`, the Quantity is now displayed as `4-in`. Default is a single space character `4 in`.
 
