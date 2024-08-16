@@ -9,9 +9,9 @@
 import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
   ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -45,7 +45,7 @@ import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
-import { _createGraphicFromTemplate, _implementationProhibited, _renderSystem, _textures } from "../common/internal/Symbols";
+import { _createGraphicFromTemplate, _featureTable, _implementationProhibited, _renderSystem, _textures, _transformCenter, _transforms } from "../common/internal/Symbols";
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
@@ -222,7 +222,12 @@ export interface PlanarGridProps {
  */
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
-export type RenderInstances = { [_implementationProhibited]: "renderInstances" };
+export interface RenderInstances {
+  readonly [_implementationProhibited]: "renderInstances";
+  readonly [_transformCenter]: XYAndZ;
+  readonly [_transforms]: Float32Array;
+  readonly [_featureTable]?: PackedFeatureTable;
+}
 
 /** @internal */
 export interface RenderSkyGradientParams {

@@ -19,7 +19,7 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Matrix4 } from "./Matrix";
 import { RenderInstances } from "../RenderSystem";
-import { _implementationProhibited, _renderSystem } from "../../common/internal/Symbols";
+import { _featureTable, _implementationProhibited, _renderSystem, _transformCenter, _transforms } from "../../common/internal/Symbols";
 import { BatchType, PackedFeatureTable } from "@itwin/core-common";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
@@ -122,9 +122,6 @@ export class InstanceBuffersData extends InstanceData {
 /** @internal */
 export interface RenderInstancesImpl extends RenderInstances {
   readonly buffers: InstanceBuffersData;
-  readonly transformCenter: XYAndZ;
-  readonly transforms: Float32Array;
-  readonly featureTable?: PackedFeatureTable;
 }
 
 /** @internal */
@@ -144,9 +141,9 @@ export namespace RenderInstancesImpl {
     return {
       [_implementationProhibited]: "renderInstances",
       buffers,
-      transforms: params.instances.transforms,
-      transformCenter: params.instances.transformCenter,
-      featureTable,
+      [_transforms]: params.instances.transforms,
+      [_transformCenter]: params.instances.transformCenter,
+      [_featureTable]: featureTable,
     };
   }
 }
@@ -215,7 +212,7 @@ export class InstanceBuffers {
 
   public static fromRenderInstances(arg: RenderInstances, reprRange: Range3d): InstanceBuffers {
     const instances = arg as RenderInstancesImpl;
-    const range = this.computeRange(reprRange, instances.transforms, instances.transformCenter);
+    const range = this.computeRange(reprRange, instances[_transforms], instances[_transformCenter]);
     return new InstanceBuffers(instances.buffers, range);
   }
 

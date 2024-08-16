@@ -16,7 +16,10 @@ export const _accumulator = Symbol.for(sym("accumulator"));
 /** @internal */
 export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
 export const _createGraphicFromTemplate = Symbol.for(sym("createGraphicFromTemplate"));
+export const _featureTable = Symbol.for(sym("featureTable"));
 export const _nodes = Symbol.for(sym("nodes"));
 export const _requestSnap = Symbol.for(sym("requestSnap"));
 export const _renderSystem = Symbol.for(sym("renderSystem"));
 export const _textures = Symbol.for(sym("textures"));
+export const _transformCenter = Symbol.for(sym("transformCenter"));
+export const _transforms = Symbol.for(sym("transforms"));

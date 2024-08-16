@@ -68,7 +68,7 @@ import { BatchOptions } from "../../common/render/BatchOptions";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "../GraphicTemplate";
-import { _createGraphicFromTemplate, _nodes } from "../../common/internal/Symbols";
+import { _createGraphicFromTemplate, _featureTable, _nodes } from "../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 /* eslint-disable no-restricted-syntax */
@@ -532,10 +532,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     }
 
     let graphic = this.createGraphicList(graphics);
-    if (instances?.featureTable) {
+    if (instances && instances[_featureTable]) {
       const range = new Range3d();
       graphic.unionRange(range);
-      graphic = this.createBatch(graphic, instances.featureTable, range);
+      graphic = this.createBatch(graphic, instances[_featureTable], range);
     }
 
     return graphic;
