@@ -8,6 +8,7 @@
 
 import { IDisposable } from "@itwin/core-bentley";
 import { RenderMemory } from "../../render/RenderMemory";
+import { Range3d } from "@itwin/core-geometry";
 
 /** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]]. */
 export interface RenderGeometry extends IDisposable, RenderMemory.Consumer {
@@ -18,5 +19,7 @@ export interface RenderGeometry extends IDisposable, RenderMemory.Consumer {
    * When creating a reusable `GraphicTemplate`, we set this to `true` for all geometry in the template. We never set it to `false`.
    */
   noDispose: boolean;
+  /** @internal */
+  computeRange(out?: Range3d): Range3d;
 }
 

@@ -25,9 +25,9 @@ import type { IModelConnection } from "../IModelConnection";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
 import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
-import { _createGraphicFromTemplate, _implementationProhibited, _nodes, _textures } from "../common/internal/Symbols";
+import { _batch, _createGraphicFromTemplate, _implementationProhibited, _nodes, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { GraphicTemplate } from "../render/GraphicTemplate";
+import { GraphicTemplate, GraphicTemplateBatch } from "../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -473,7 +473,7 @@ function remapGraphicDescription(descr: GraphicDescriptionImpl, context: Graphic
 }
 
 /** @internal */
-export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate | undefined {
+export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate {
   if (!isGraphicDescription(descr)) {
     throw new Error("Invalid GraphicDescription");
   }
@@ -505,23 +505,29 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
     }
   }
 
-  if (geometry.length === 0) {
-    return undefined;
+  let batch: GraphicTemplateBatch | undefined;
+  if (descr.batch) {
+    const featureTable = convertFeatureTable(descr.batch.featureTable, descr.batch.modelId);
+    const range = new Range3d();
+    const geomRange = new Range3d();
+    for (const geom of geometry) {
+      range.extendRange(geom.computeRange(geomRange));
+    }
+
+    batch = { range, featureTable };
   }
 
   return {
     [_implementationProhibited]: undefined,
     isInstanceable,
     [_nodes]: [{ geometry }],
-  }
+    [_batch]: batch,
+  };
 }
 
 /** @internal */
 export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined {
   const template = createGraphicTemplateFromDescription(descr, context, system);
-  if (!template) {
-    return undefined;
-  }
 
   let graphic = system[_createGraphicFromTemplate](template);
   if (!graphic) {
@@ -529,11 +535,6 @@ export function createGraphicFromDescription(descr: GraphicDescription, context:
   }
 
   assert(isGraphicDescription(descr));
-
-  if (descr.batch) {
-    const featureTable = convertFeatureTable(descr.batch.featureTable, descr.batch.modelId);
-    graphic = system.createBatch(graphic, featureTable, Range3d.fromJSON(descr.batch.range), descr.batch);
-  }
 
   if (descr.translation) {
     const branch = new GraphicBranch(true);

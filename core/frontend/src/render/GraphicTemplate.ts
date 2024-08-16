@@ -10,7 +10,7 @@ import { Range3d, Transform } from "@itwin/core-geometry";
 import { _batch, _implementationProhibited, _nodes } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { RenderInstances } from "./RenderSystem";
-import { PackedFeatureTable } from "@itwin/core-common";
+import { RenderFeatureTable } from "@itwin/core-common";
 import { BatchOptions } from "../common";
 
 /** @internal */
@@ -24,7 +24,7 @@ export interface GraphicTemplateNode {
 
 /** @internal */
 export interface GraphicTemplateBatch {
-  readonly featureTable: PackedFeatureTable;
+  readonly featureTable: RenderFeatureTable;
   readonly options?: BatchOptions;
   readonly range: Range3d;
 }

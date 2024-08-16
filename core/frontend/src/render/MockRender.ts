@@ -8,7 +8,7 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -130,6 +130,7 @@ export namespace MockRender {
     }
     public dispose(): void { }
     public collectStatistics(): void { }
+    public computeRange() { return new Range3d(); }
   }
 
   /** @internal */

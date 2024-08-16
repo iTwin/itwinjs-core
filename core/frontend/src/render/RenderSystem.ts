@@ -15,7 +15,7 @@ import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Ve
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { createGraphicFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
@@ -820,8 +820,15 @@ export abstract class RenderSystem implements IDisposable {
   /** Convert a [[GraphicDescription]] produced by a [[GraphicDescriptionBuilder]] into a [[RenderGraphic]].
    * @beta
    */
-  public async createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): Promise<RenderGraphic | undefined> {
+  public createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): RenderGraphic  | undefined {
     return createGraphicFromDescription(args.description, args.context, this);
+  }
+
+  /** ###TODO
+   * @beta
+   */
+  public createTemplateFromDescription(args: CreateGraphicFromDescriptionArgs): GraphicTemplate {
+    return createGraphicTemplateFromDescription(args.description, args.context, this);
   }
 
   /** Obtain the JSON representation of a [[WorkerGraphicDescriptionContext]] for the specified `iModel` that can be forwarded to a Worker for use with a [[GraphicDescriptionBuilder]].
