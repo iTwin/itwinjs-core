@@ -690,16 +690,17 @@ export class Parser {
       azimuthCounterClockwise = spec.format.azimuthCounterClockwise;
     }
 
-    if(azimuthCounterClockwise && azimuthBase === quarterRevolution) {
+    if(azimuthCounterClockwise && azimuthBase === 0) {
       // parsed result already has the same base and orientation as our desired output
       return parsedResult;
     }
 
-    magnitude -= azimuthBase;
+    if (azimuthCounterClockwise)
+      magnitude = azimuthBase + magnitude;
+    else
+      magnitude = azimuthBase - magnitude;
+
     magnitude = this.normalizeAngle(magnitude, revolution);
-    if (!azimuthCounterClockwise) {
-      magnitude = revolution - magnitude;
-    }
 
     return { ok: true, value: magnitude };
   }
