@@ -119,7 +119,6 @@ export class FormatterSpec {
       } else {
         spec._revolutionConversion = { factor: 1.0, offset: 0.0 };
       }
-
     }
     return spec;
   }

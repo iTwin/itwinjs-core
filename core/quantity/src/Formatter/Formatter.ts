@@ -446,7 +446,7 @@ export class Formatter {
     if (type !== FormatType.Bearing && type !== FormatType.Azimuth)
       return {magnitude};
 
-    const revolution = this.calculateRevolution(spec);
+    const revolution = this.getRevolution(spec);
     magnitude = this.normalizeAngle(magnitude, revolution);
     const quarterRevolution = revolution / 4;
 
@@ -465,6 +465,7 @@ export class Formatter {
       if (quadrant === 0 || quadrant === 2)
         magnitude = quarterRevolution - magnitude;
 
+      // TODO: at some point we will want to open this for localization, in the first release it's going to be hard coded
       if (quadrant === 0 || quadrant === 1)
         prefix = "N";
 
@@ -524,7 +525,7 @@ export class Formatter {
     return magnitude;
   }
 
-  private static calculateRevolution(spec: FormatterSpec): number {
+  private static getRevolution(spec: FormatterSpec): number {
     if (spec.revolutionConversion === undefined) {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing revolution unit conversion for calculating ${spec.name}'s revolution.`);
     }
