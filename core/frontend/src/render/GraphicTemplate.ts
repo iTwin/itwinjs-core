@@ -6,10 +6,12 @@
  * @module Rendering
  */
 
-import { Transform } from "@itwin/core-geometry";
-import { _implementationProhibited, _nodes } from "../common/internal/Symbols";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { _batch, _implementationProhibited, _nodes } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { RenderInstances } from "./RenderSystem";
+import { PackedFeatureTable } from "@itwin/core-common";
+import { BatchOptions } from "../common";
 
 /** @internal */
 export interface GraphicTemplateNode {
@@ -20,11 +22,20 @@ export interface GraphicTemplateNode {
   instances?: RenderInstances;
 }
 
+/** @internal */
+export interface GraphicTemplateBatch {
+  readonly featureTable: PackedFeatureTable;
+  readonly options?: BatchOptions;
+  readonly range: Range3d;
+}
+
 export interface GraphicTemplate {
   readonly [_implementationProhibited]: unknown;
 
   readonly isInstanceable: boolean;
 
   /** @internal */
-  [_nodes]: GraphicTemplateNode[];
+  readonly [_nodes]: GraphicTemplateNode[];
+  /** @internal */
+  readonly [_batch]?: GraphicTemplateBatch;
 }

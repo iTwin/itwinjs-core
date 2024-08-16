@@ -7,7 +7,7 @@
  */
 
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { FeatureTable, Gradient, PackedFeatureTable, QPoint3dList, RenderTexture } from "@itwin/core-common";
+import { Gradient, PackedFeatureTable, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderSystem } from "../../render/RenderSystem";
@@ -16,16 +16,13 @@ import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumu
 import { Mesh, MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
-import { _accumulator, _implementationProhibited, _nodes } from "../../common/internal/Symbols";
-import { GraphicTemplate } from "../../render/GraphicTemplate";
+import { _accumulator, _batch, _createGraphicFromTemplate, _implementationProhibited, _nodes } from "../../common/internal/Symbols";
+import { GraphicTemplate, GraphicTemplateBatch } from "../../render/GraphicTemplate";
 import { RenderGeometry } from "./RenderGeometry";
 import { createMeshParams } from "../../common/internal/render/VertexTableBuilder";
 import { IModelApp } from "../../IModelApp";
 import { createPointStringParams } from "../../common/internal/render/PointStringParams";
 import { createPolylineParams } from "../../common/internal/render/PolylineParams";
-
-// Set to true to add a range box to every graphic produced by PrimitiveBuilder.
-let addDebugRangeBox = false;
 
 /** @internal */
 export class PrimitiveBuilder extends GraphicBuilder {
@@ -43,45 +40,9 @@ export class PrimitiveBuilder extends GraphicBuilder {
   }
 
   public override finish(): RenderGraphic {
-    const graphic = this.finishGraphic(this[_accumulator]);
-    this[_accumulator].clear();
-    return graphic;
-  }
-
-  private finishGraphic(accum: GeometryAccumulator): RenderGraphic {
-    let meshes: MeshList | undefined;
-    let range: Range3d | undefined;
-    let featureTable: FeatureTable | undefined;
-    if (!accum.isEmpty) {
-      // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
-      // in that same order to produce correct results (e.g., a thin line rendered atop a thick line of another color).
-      // No point generating edges for graphics that are always rendered in smooth shade mode.
-      const tolerance = this.computeTolerance(accum);
-      meshes = this.saveToGraphicList(this.primitives, this, tolerance, this.pickable);
-      if (undefined !== meshes) {
-        if (meshes.features?.anyDefined)
-          featureTable = meshes.features;
-
-        range = meshes.range;
-      }
-    }
-
-    let graphic = (this.primitives.length !== 1) ? this.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
-    if (undefined !== featureTable) {
-      const batchRange = range ?? new Range3d();
-      const batchOptions = this._options.pickable;
-      graphic = this.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange, batchOptions);
-    }
-
-    if (addDebugRangeBox && range) {
-      addDebugRangeBox = false;
-      const builder = this.system.createGraphic({ ...this._options });
-      builder.addRangeBox(range);
-      graphic = this.system.createGraphicList([graphic, builder.finish()]);
-      addDebugRangeBox = true;
-    }
-
-    return graphic;
+    const template = this.finishTemplate();
+    const graphic = this.system[_createGraphicFromTemplate](template);
+    return graphic ?? this.system.createGraphicList([]);
   }
 
   public override finishTemplate(): GraphicTemplate {
@@ -90,7 +51,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
     const result = this.saveToTemplate(this, tolerance, this.pickable);
     accum.clear();
 
-    return result?.template ?? {
+    return result ?? {
       [_implementationProhibited]: undefined,
       [_nodes]: [],
       isInstanceable: true,
@@ -173,7 +134,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
     return meshes;
   }
 
-  private saveToTemplate(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): { meshes: MeshList, template: GraphicTemplate } | undefined {
+  private saveToTemplate(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): GraphicTemplate | undefined {
     const meshes = this[_accumulator].toMeshes(options, tolerance, pickable);
     if (0 === meshes.length)
       return undefined;
@@ -235,17 +196,24 @@ export class PrimitiveBuilder extends GraphicBuilder {
       }
     }
       
-    return {
-      meshes,
-      template: {
-        [_implementationProhibited]: undefined,
-        isInstanceable,
-        [_nodes]: [{
-          geometry,
-          transform,
-        }],
-      }
+    let batch: GraphicTemplateBatch | undefined;
+    if (meshes.features?.anyDefined) {
+      batch = {
+        featureTable: PackedFeatureTable.pack(meshes.features),
+        range: meshes.range ?? new Range3d(),
+        options: this._options.pickable,
+      };
     }
+
+    return {
+      [_implementationProhibited]: undefined,
+      isInstanceable,
+      [_nodes]: [{
+        geometry,
+        transform,
+      }],
+      [_batch]: batch,
+    };
   }
 }
 

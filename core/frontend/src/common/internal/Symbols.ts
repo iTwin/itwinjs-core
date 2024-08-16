@@ -13,6 +13,7 @@ function sym(name: string): string {
 }
 
 export const _accumulator = Symbol.for(sym("accumulator"));
+export const _batch = Symbol.for(sym("batch"));
 /** @internal */
 export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
 export const _createGraphicFromTemplate = Symbol.for(sym("createGraphicFromTemplate"));
