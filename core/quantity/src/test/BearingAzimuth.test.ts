@@ -120,11 +120,10 @@ describe("Bearing format tests:", () => {
       const resultBearingDMS = Formatter.formatQuantity(radians, bearingDMSFormatter);
       expect(resultBearingDMS).to.be.eql(entry.dms);
       const parseBearingDMSResult = Parser.parseQuantityString(resultBearingDMS, bearingDMSParser);
-      assert.isFalse(parseBearingDMSResult.ok); // right now the parser does not support bearing DMS
-      /* if (!Parser.isParsedQuantity(parseBearingDMSResult)) {
+      if (!Parser.isParsedQuantity(parseBearingDMSResult)) {
         assert.fail(`Expected a parsed from bearing DMS input string ${resultBearingDMS}`);
       }
-      expect(parseBearingDMSResult.value, `Parsed result for ${entry.input} from formatted ${resultBearingDMS}`).closeTo(normalizedAngle, 0.0001);*/
+      expect(parseBearingDMSResult.value, `Parsed result for ${entry.input} from formatted ${resultBearingDMS}`).closeTo(normalizedAngle, 0.0001);
 
       const resultBearingDMSWithLabel = Formatter.formatQuantity(radians, bearingDMSWithLabelFormatter);
       expect(resultBearingDMSWithLabel).to.be.eql(entry.dmsWithLabel);
