@@ -11,11 +11,17 @@ export class AmbientOcclusionEditor {
   private readonly _vp: Viewport;
   private readonly _scratchViewFlags = new ViewFlags();
   private readonly _update: (view: ViewState) => void;
-  private readonly _aoBias: Slider;
-  private readonly _aoZLengthCap: Slider;
+  private readonly _angleOffset: Slider;
+  private readonly _spacialOffset: Slider;
+  private readonly _c1: Slider;
+  private readonly _c2: Slider;
+  private readonly _ssaoLimit: Slider;
+  private readonly _ssaoSamples: Slider;
+  private readonly _ssaoRadius: Slider;
+  private readonly _ssaoFalloff: Slider;
+  private readonly _ssaoThicknessMix: Slider;
+  private readonly _ssaoMaxStride: Slider;
   private readonly _aoMaxDistance: Slider;
-  private readonly _aoIntensity: Slider;
-  private readonly _aoTexelStepSize: Slider;
   private readonly _aoBlurDelta: Slider;
   private readonly _aoBlurSigma: Slider;
   private readonly _aoBlurTexelStepSize: Slider;
@@ -50,31 +56,143 @@ export class AmbientOcclusionEditor {
     const checkbox = checkboxInterface.checkbox;
     const checkboxLabel = checkboxInterface.label;
 
-    this._aoBias = createSlider({
+    this._angleOffset = createSlider({
       parent: slidersDiv,
-      name: "Bias: ",
-      id: "viewAttr_AOBias",
+      name: "Angle Offset: ",
+      id: "viewAttr_AngleOffset",
       min: "0.0",
-      step: "0.025",
-      max: "1.0",
+      step: "0.1",
+      max: "6.283", // 2 * PI for full circle
       value: "0.0",
       readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.bias = parseFloat(slider.value);
+        aoProps.angleOffset = parseFloat(slider.value);
       }),
     });
 
-    this._aoZLengthCap = createSlider({
+    this._spacialOffset = createSlider({
       parent: slidersDiv,
-      name: "Length Cap: ",
-      id: "viewAttr_AOZLengthCap",
+      name: "Spacial Offset: ",
+      id: "viewAttr_SpacialOffset",
       min: "0.0",
-      step: "0.000025",
-      max: "0.25",
+      step: "0.1",
+      max: "10.0",
       value: "0.0",
       readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.zLengthCap = parseFloat(slider.value);
+        aoProps.spacialOffset = parseFloat(slider.value);
+      }),
+    });
+
+    this._c1 = createSlider({
+      parent: slidersDiv,
+      name: "C1: ",
+      id: "viewAttr_C1",
+      min: "-1.0",
+      step: "0.1",
+      max: "1.0",
+      value: "-1.0",
+      readout: "right",
+      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
+        aoProps.c1 = parseFloat(slider.value);
+      }),
+    });
+
+    this._c2 = createSlider({
+      parent: slidersDiv,
+      name: "C2: ",
+      id: "viewAttr_C2",
+      min: "-1.0",
+      step: "0.1",
+      max: "1.0",
+      value: "-1.0",
+      readout: "right",
+      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
+        aoProps.c2 = parseFloat(slider.value);
+      }),
+    });
+
+    this._ssaoLimit = createSlider({
+      parent: slidersDiv,
+      name: "SSAO Limit: ",
+      id: "viewAttr_SSAOLimit",
+      min: "10",
+      step: "10",
+      max: "500",
+      value: "100",
+      readout: "right",
+      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
+        aoProps.ssaoLimit = parseInt(slider.value, 10);
+      }),
+    });
+
+    this._ssaoSamples = createSlider({
+      parent: slidersDiv,
+      name: "SSAO Samples: ",
+      id: "viewAttr_SSAOSamples",
+      min: "1",
+      step: "1",
+      max: "16",
+      value: "4",
+      readout: "right",
+      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
+        aoProps.ssaoSamples = parseInt(slider.value, 10);
+      }),
+    });
+
+    this._ssaoRadius = createSlider({
+      parent: slidersDiv,
+      name: "SSAO Radius: ",
+      id: "viewAttr_SSAORadius",
+      min: "0.1",
+      step: "0.1",
+      max: "10.0",
+      value: "2.5",
+      readout: "right",
+      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
+        aoProps.ssaoRadius = parseFloat(slider.value);
+      }),
+    });
+
+    this._ssaoFalloff = createSlider({
+      parent: slidersDiv,
+      name: "SSAO Falloff: ",
+      id: "viewAttr_SSAOFalloff",
+      min: "0.1",
+      step: "0.1",
+      max: "5.0",
+      value: "1.5",
+      readout: "right",
+      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
+        aoProps.ssaoFalloff = parseFloat(slider.value);
+      }),
+    });
+
+    this._ssaoThicknessMix = createSlider({
+      parent: slidersDiv,
+      name: "SSAO Thickness Mix: ",
+      id: "viewAttr_SSAOThicknessMix",
+      min: "0.0",
+      step: "0.1",
+      max: "1.0",
+      value: "0.2",
+      readout: "right",
+      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
+        aoProps.ssaoThicknessMix = parseFloat(slider.value);
+      }),
+    });
+
+    this._ssaoMaxStride = createSlider({
+      parent: slidersDiv,
+      name: "SSAO Max Stride: ",
+      id: "viewAttr_SSAOMaxStride",
+      min: "1",
+      step: "1",
+      max: "100",
+      value: "1",
+      readout: "right",
+      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
+        aoProps.ssaoMaxStride = parseInt(slider.value, 10);
       }),
     });
 
@@ -89,34 +207,6 @@ export class AmbientOcclusionEditor {
       readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.maxDistance = parseFloat(slider.value);
-      }),
-    });
-
-    this._aoIntensity = createSlider({
-      parent: slidersDiv,
-      name: "Intensity: ",
-      id: "viewAttr_AOIntensity",
-      min: "0.1",
-      step: "0.1",
-      max: "16.0",
-      value: "0.0",
-      readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.intensity = parseFloat(slider.value);
-      }),
-    });
-
-    this._aoTexelStepSize = createSlider({
-      parent: slidersDiv,
-      name: "Step: ",
-      id: "viewAttr_AOTexelStepSize",
-      min: "1.0",
-      step: "0.005",
-      max: "50.0",
-      value: "0.0",
-      readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.texelStepSize = parseFloat(slider.value);
       }),
     });
 
@@ -201,11 +291,17 @@ export class AmbientOcclusionEditor {
 
     const aoSettings = getAOSettings(view);
 
-    this._aoBias.slider.value = this._aoBias.readout.innerText = aoSettings.bias.toString();
-    this._aoZLengthCap.slider.value = this._aoZLengthCap.readout.innerText = aoSettings.zLengthCap.toString();
+    this._angleOffset.slider.value = this._angleOffset.readout.innerText = aoSettings.angleOffset.toString();
+    this._spacialOffset.slider.value = this._spacialOffset.readout.innerText = aoSettings.spacialOffset.toString();
+    this._c1.slider.value = this._c1.readout.innerText = aoSettings.c1.toString();
+    this._c2.slider.value = this._c2.readout.innerText = aoSettings.c2.toString();
+    this._ssaoLimit.slider.value = this._ssaoLimit.readout.innerText = aoSettings.ssaoLimit.toString();
+    this._ssaoSamples.slider.value = this._ssaoSamples.readout.innerText = aoSettings.ssaoSamples.toString();
+    this._ssaoRadius.slider.value = this._ssaoRadius.readout.innerText = aoSettings.ssaoRadius.toString();
+    this._ssaoFalloff.slider.value = this._ssaoFalloff.readout.innerText = aoSettings.ssaoFalloff.toString();
+    this._ssaoThicknessMix.slider.value = this._ssaoThicknessMix.readout.innerText = aoSettings.ssaoThicknessMix.toString();
+    this._ssaoMaxStride.slider.value = this._ssaoMaxStride.readout.innerText = aoSettings.ssaoMaxStride.toString();
     this._aoMaxDistance.slider.value = this._aoMaxDistance.readout.innerText = aoSettings.maxDistance.toString();
-    this._aoIntensity.slider.value = this._aoIntensity.readout.innerText = aoSettings.intensity.toString();
-    this._aoTexelStepSize.slider.value = this._aoTexelStepSize.readout.innerText = aoSettings.texelStepSize.toString();
     this._aoBlurDelta.slider.value = this._aoBlurDelta.readout.innerText = aoSettings.blurDelta.toString();
     this._aoBlurSigma.slider.value = this._aoBlurSigma.readout.innerText = aoSettings.blurSigma.toString();
     this._aoBlurTexelStepSize.slider.value = this._aoBlurTexelStepSize.readout.innerText = aoSettings.blurTexelStepSize.toString();

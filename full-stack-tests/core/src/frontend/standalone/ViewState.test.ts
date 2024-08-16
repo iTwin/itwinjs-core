@@ -129,10 +129,16 @@ describe("ViewState", () => {
 
     const oldAOSettings = vs0DisplayStyle3d.settings.ambientOcclusionSettings;
     const vs0AOSettings = AmbientOcclusion.Settings.fromJSON({
-      bias: oldAOSettings.bias / 2.0,
-      zLengthCap: oldAOSettings.zLengthCap / 2.0,
-      intensity: oldAOSettings.intensity / 2.0,
-      texelStepSize: oldAOSettings.texelStepSize / 2.0,
+      angleOffset: oldAOSettings.angleOffset / 2.0,
+      spacialOffset: oldAOSettings.spacialOffset / 2.0,
+      c1: oldAOSettings.c1 / 2.0,
+      c2: oldAOSettings.c2 / 2.0,
+      ssaoLimit: oldAOSettings.ssaoLimit / 2.0,
+      ssaoSamples: oldAOSettings.ssaoSamples / 2.0,
+      ssaoRadius: oldAOSettings.ssaoRadius / 2.0,
+      ssaoFalloff: oldAOSettings.ssaoFalloff / 2.0,
+      ssaoThicknessMix: oldAOSettings.ssaoThicknessMix / 2.0,
+      ssaoMaxStride: oldAOSettings.ssaoMaxStride / 2.0,
       blurDelta: oldAOSettings.blurDelta / 2.0,
       blurSigma: oldAOSettings.blurSigma / 2.0,
       blurTexelStepSize: oldAOSettings.blurTexelStepSize / 2.0,
@@ -203,10 +209,16 @@ describe("ViewState", () => {
     assert.equal(vs0.viewFlags.transparency, vs1.viewFlags.transparency, "clone should copy viewFlags.transparency");
     assert.equal(vs0.viewFlags.visibleEdges, vs1.viewFlags.visibleEdges, "clone should copy viewFlags.visibleEdges");
     assert.equal(vs0.viewFlags.weights, vs1.viewFlags.weights, "clone should copy viewFlags.weights");
-    assert.equal(vs0AOSettings.bias, vs1AOSettings.bias, "clone should copy displayStyle.ambientOcclusionSettings.bias");
-    assert.equal(vs0AOSettings.zLengthCap, vs1AOSettings.zLengthCap, "clone should copy displayStyle.ambientOcclusionSettings.zLengthCap");
-    assert.equal(vs0AOSettings.intensity, vs1AOSettings.intensity, "clone should copy displayStyle.ambientOcclusionSettings.intensity");
-    assert.equal(vs0AOSettings.texelStepSize, vs1AOSettings.texelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.texelStepSize");
+    assert.equal(vs0AOSettings.angleOffset, vs1AOSettings.angleOffset, "clone should copy displayStyle.ambientOcclusionSettings.angleOffset");
+    assert.equal(vs0AOSettings.spacialOffset, vs1AOSettings.spacialOffset, "clone should copy displayStyle.ambientOcclusionSettings.spacialOffset");
+    assert.equal(vs0AOSettings.c1, vs1AOSettings.c1, "clone should copy displayStyle.ambientOcclusionSettings.c1");
+    assert.equal(vs0AOSettings.c2, vs1AOSettings.c2, "clone should copy displayStyle.ambientOcclusionSettings.c2");
+    assert.equal(vs0AOSettings.ssaoLimit, vs1AOSettings.ssaoLimit, "clone should copy displayStyle.ambientOcclusionSettings.ssaoLimit");
+    assert.equal(vs0AOSettings.ssaoSamples, vs1AOSettings.ssaoSamples, "clone should copy displayStyle.ambientOcclusionSettings.ssaoSamples");
+    assert.equal(vs0AOSettings.ssaoRadius, vs1AOSettings.ssaoRadius, "clone should copy displayStyle.ambientOcclusionSettings.ssaoRadius");
+    assert.equal(vs0AOSettings.ssaoFalloff, vs1AOSettings.ssaoFalloff, "clone should copy displayStyle.ambientOcclusionSettings.ssaoFalloff");
+    assert.equal(vs0AOSettings.ssaoThicknessMix, vs1AOSettings.ssaoThicknessMix, "clone should copy displayStyle.ambientOcclusionSettings.ssaoThicknessMix");
+    assert.equal(vs0AOSettings.ssaoMaxStride, vs1AOSettings.ssaoMaxStride, "clone should copy displayStyle.ambientOcclusionSettings.ssaoMaxStride");
     assert.equal(vs0AOSettings.blurDelta, vs1AOSettings.blurDelta, "clone should copy displayStyle.ambientOcclusionSettings.blurDelta");
     assert.equal(vs0AOSettings.blurSigma, vs1AOSettings.blurSigma, "clone should copy displayStyle.ambientOcclusionSettings.blurSigma");
     assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");

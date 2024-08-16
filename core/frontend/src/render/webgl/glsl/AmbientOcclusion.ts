@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-// portions adapted from Cesium.js Copyright 2011 - 2022 Cesium Contributors
+// portions adapted from code available at https://pastebin.com/bKxFnN5i
 
 import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
@@ -36,46 +36,53 @@ vec2 depthAndOrder = readDepthAndOrder(tc);
 float db = readDepth(tc);
 `;
 
-const GTAOFastAcos = `
-float GTAOFastAcos(float x)
+const gtaoFastAcos = `
+float gtaoFastAcos(float x)
 {
-    float res = -0.156583 * abs(x) + 1.5707963267948966192313216916398; // PI_HALF
-    res *= sqrt(1.0 - abs(x));
-    return x >= 0.0 ? res : 3.1415926535897932384626433832795 - res; // PI
+  float res = -0.156583 * abs(x) + 1.5707963267948966192313216916398; // PI_HALF
+  res *= sqrt(1.0 - abs(x));
+  return x >= 0.0 ? res : 3.1415926535897932384626433832795 - res; // PI
 }
 `;
 
-const IntegrateArc = `
-float IntegrateArc(float h1, float h2, float n)
+const integrateArc = `
+float integrateArc(float h1, float h2, float n)
 {
-    float cosN = cos(n);
-    float sinN = sin(n);
-    return 0.25 * (-cos(2.0 * h1 - n) + cosN + 2.0 * h1 * sinN - cos(2.0 * h2 - n) + cosN + 2.0 * h2 * sinN);
+  float cosN = cos(n);
+  float sinN = sin(n);
+  return 0.25 * (-cos(2.0 * h1 - n) + cosN + 2.0 * h1 * sinN - cos(2.0 * h2 - n) + cosN + 2.0 * h2 * sinN);
 }
 `;
 
-const GetCameraVec = `
-vec3 GetCameraVec(vec2 uv)
+const getCameraVec = `
+vec3 getCameraVec(vec2 uv)
 {
-    return vec3(uv.x * -2.0 + 1.0, uv.y * 2.0 * u_viewport.y / u_viewport.x - u_viewport.y / u_viewport.x, 1.0);
+  return vec3(uv.x * -2.0 + 1.0, uv.y * 2.0 * u_viewport.y / u_viewport.x - u_viewport.y / u_viewport.x, 1.0);
 }
 `;
 
-const SliceSample = `
-void SliceSample(vec2 tc_base, vec2 aoDir, int i, float targetMip, vec3 ray, vec3 v, inout float closest)
+const sliceSample = `
+void sliceSample(vec2 tc_base, vec2 aoDir, int i, float targetMip, vec3 ray, vec3 v, inout float closest)
 {
-    vec2 uv = tc_base + aoDir * float(i);
-    float depth = textureLod(u_depthBuffer, uv, targetMip).x;
-    vec3 p = GetCameraVec(uv) * depth - ray;
-    float current = dot(v, normalize(p));
-    float falloff = clamp((2.5 - length(p)) / 4.5, 0.0, 1.0);
-    if (current > closest)
-        closest = mix(closest, current, falloff);
-    closest = mix(closest, current, 0.2 * falloff);
+  float SSAO_RADIUS = u_aoSettings2.z;
+  float SSAO_FALLOFF = u_aoSettings2.w;
+  float SSAO_THICKNESSMIX = u_aoSettings3.x;
+  vec2 uv = tc_base + aoDir * float(i);
+  float depth = textureLod(u_depthBuffer, uv, targetMip).x;
+  vec3 p = getCameraVec(uv) * depth - ray;
+  float current = dot(v, normalize(p));
+  float falloff = clamp((SSAO_RADIUS - length(p)) / SSAO_FALLOFF, 0.0, 1.0);
+  if (current > closest)
+      closest = mix(closest, current, falloff);
+  closest = mix(closest, current, SSAO_THICKNESSMIX * falloff);
 }
 `;
 
 const computeAmbientOcclusion = `
+  float SSAO_LIMIT = u_aoSettings2.x;
+  float SSAO_SAMPLES = u_aoSettings2.y;
+  float SSAO_MAX_STRIDE = u_aoSettings3.y;
+
   depthAndOrder.y = unfinalizeLinearDepth(db);
   float order = depthAndOrder.x;
   if (order >= kRenderOrder_PlanarBit)
@@ -93,19 +100,19 @@ const computeAmbientOcclusion = `
 
   vec2 pixelSize = 1.0 / u_viewport;
   float depth = TEXTURE(u_depthBuffer, tc).r;
-  vec3 ray = GetCameraVec(tc) * depth;
+  vec3 ray = getCameraVec(tc) * depth;
 
   vec2 uv = tc + vec2(1.0 / u_viewport.x, 0.0);
-  vec3 p1 = ray - GetCameraVec(uv) * textureLod(u_depthBuffer, uv, 0.0).x;
+  vec3 p1 = ray - getCameraVec(uv) * textureLod(u_depthBuffer, uv, 0.0).x;
 
   uv = tc + vec2(0.0, 1.0 / u_viewport.y);
-  vec3 p2 = ray - GetCameraVec(uv) * textureLod(u_depthBuffer, uv, 0.0).x;
+  vec3 p2 = ray - getCameraVec(uv) * textureLod(u_depthBuffer, uv, 0.0).x;
 
   uv = tc + vec2(-1.0 / u_viewport.x, 0.0);
-  vec3 p3 = ray - GetCameraVec(uv) * textureLod(u_depthBuffer, uv, 0.0).x;
+  vec3 p3 = ray - getCameraVec(uv) * textureLod(u_depthBuffer, uv, 0.0).x;
 
   uv = tc + vec2(0.0, -1.0 / u_viewport.y);
-  vec3 p4 = ray - GetCameraVec(uv) * textureLod(u_depthBuffer, uv, 0.0).x;
+  vec3 p4 = ray - getCameraVec(uv) * textureLod(u_depthBuffer, uv, 0.0).x;
 
   vec3 normal1 = normalize(cross(p1, p2));
   vec3 normal2 = normalize(cross(p3, p4));
@@ -113,29 +120,29 @@ const computeAmbientOcclusion = `
   vec3 viewNormal = normalize(normal1 + normal2);
   // float depth = TEXTURE(u_depthBuffer, tc).r;
   // vec3 viewNormal = computeNormalFromDepth(viewPos, tc, pixelSize);
-  // vec3 ray = GetCameraVec(tc) * depth;
+  // vec3 ray = getCameraVec(tc) * depth;
 
   // viewNormal = computeNormalFromDepth(viewPos, tc, pixelSize);
   vec3 v = normalize(-ray);
-  float stride = min((1.0 / float(length(ray))) * 100.0, 32.0);
+  float stride = min((1.0 / float(length(ray))) * SSAO_LIMIT, SSAO_MAX_STRIDE);
   vec2 dirMult = pixelSize * stride;
 
-  float angleOffset = 0.05;
-  float spacialOffset = 0.05;
+  float angleOffset = u_aoSettings.x;
+  float spacialOffset = u_aoSettings.y;
 
   float dirAngle = (3.1415926535897932384626433832795 / 16.0) * float((((int(gl_FragCoord.x) + int(gl_FragCoord.y)) & 3) << 2) + (int(gl_FragCoord.x) & 3)) + angleOffset;
 
   vec2 aoDir = dirMult * vec2(sin(dirAngle), cos(dirAngle));
 
-  vec3 toDir = GetCameraVec(tc + aoDir);
+  vec3 toDir = getCameraVec(tc + aoDir);
   vec3 planeNormal = normalize(cross(v, -toDir));
   vec3 projectedNormal = viewNormal - planeNormal * dot(viewNormal, planeNormal);
 
   vec3 projectedDir = normalize(normalize(toDir) + v);
-  float n = GTAOFastAcos(dot(-projectedDir, normalize(projectedNormal))) - 1.5707963267948966192313216916398;
+  float n = gtaoFastAcos(dot(-projectedDir, normalize(projectedNormal))) - 1.5707963267948966192313216916398;
 
-  float c1 = -1.0;
-  float c2 = -1.0;
+  float c1 = u_aoSettings.z;
+  float c2 = u_aoSettings.w;
   vec2 tc_base = tc + aoDir * (0.25 * float((int(gl_FragCoord.y) - int(gl_FragCoord.x)) & 3) - 0.375 + spacialOffset);
 
   const float minMip = 0.0;
@@ -144,118 +151,25 @@ const computeAmbientOcclusion = `
 
   float targetMip = floor(clamp(pow(stride, 1.3) * mipScale, minMip, maxMip));
 
-  for(int i = -1; i >= -6; i--)
+  for(int i = -1; i >= -int(SSAO_SAMPLES); i--)
   {
-      SliceSample(tc_base, aoDir, i, targetMip, ray, v, c1);
+      sliceSample(tc_base, aoDir, i, targetMip, ray, v, c1);
   }
-  for(int i = 1; i <= 6; i++)
+  for(int i = 1; i <= int(SSAO_SAMPLES); i++)
   {
-      SliceSample(tc_base, aoDir, i, targetMip, ray, v, c2);
+      sliceSample(tc_base, aoDir, i, targetMip, ray, v, c2);
   }
 
-  float h1a = -GTAOFastAcos(c1);
-  float h2a = GTAOFastAcos(c2);
+  float h1a = -gtaoFastAcos(c1);
+  float h2a = gtaoFastAcos(c2);
 
   float h1 = n + max(h1a - n, -1.5707963267948966192313216916398);
   float h2 = n + min(h2a - n, 1.5707963267948966192313216916398);
 
-  float visibility = mix(1.0, IntegrateArc(h1, h2, n), length(projectedNormal));
+  float visibility = mix(1.0, integrateArc(h1, h2, n), length(projectedNormal));
   return vec4(visibility);
-  // float rayLength = length(ray);
-  // vec4 visualizeRay = vec4(rayLength / 1.0);
-  // return visualizeRay;
 ;
 `;
-
-// This outputs 1 for unlit surfaces, and for polylines and point strings.
-// Otherwise it computes ambient occlusion based on normal reconstructed from pick depth.
-// NB: This shader code actually begins with a `computeAmbientOcclusionPrefix` variation as shown above.
-// const computeAmbientOcclusion = `
-//   depthAndOrder.y = unfinalizeLinearDepth(db);
-//   float order = depthAndOrder.x;
-//   if (order >= kRenderOrder_PlanarBit)
-//     order = order - kRenderOrder_PlanarBit;
-
-//   if (order < kRenderOrder_LitSurface || order == kRenderOrder_Linear)
-//     return vec4(1.0);
-
-//   // NB: linearDepth: 1 == near, 0 == far
-
-//   float linearDepth = depthAndOrder.y;
-//   float nonLinearDepth = computeNonLinearDepth(db);
-//   if (nonLinearDepth > u_maxDistance)
-//     return vec4(1.0);
-
-//   vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
-
-//   vec2 pixelSize = 1.0 / u_viewport;
-//   vec3 viewNormal = computeNormalFromDepth(viewPos, tc, pixelSize);
-
-//   vec2 sampleDirection = vec2(1.0, 0.0);
-//   float gapAngle = 90.0 * 0.017453292519943295; // radians per degree
-
-//   // Grab some random noise
-//   // Multiply screen UV (range 0..1) with size of viewport divided by 4 in order to tile the 4x4 noise texture across the screen.
-//   // Multiply the random 0..1 vec3 by 2 and then substract 1.  This puts the components of the vec3 in the range -1..1.
-//   vec3 noiseVec = (TEXTURE(u_noise, tc * vec2(u_viewport.x / 4.0, u_viewport.y / 4.0)).rgb + 1.0) / 2.0;
-
-//   float bias = u_hbaoSettings.x; // Represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges.
-//   float zLengthCap = u_hbaoSettings.y; // If the distance in linear Z from the current sample to first sample is greater than this value, sampling stops in the current direction.
-//   float intensity = u_hbaoSettings.z; // Raise the final occlusion to the power of this value.  Larger values make the ambient shadows darker.
-//   float texelStepSize = clamp(u_hbaoSettings.w * linearDepth, 1.0, u_hbaoSettings.w); // Indicates the distance to step toward the next texel sample in the current direction.
-
-//   float tOcclusion = 0.0;
-
-//   // loop for each direction
-//   for (int i = 0; i < 4; i++) {
-//     float newGapAngle = gapAngle * (float(i) + noiseVec.x);
-//     float cosVal = cos(newGapAngle);
-//     float sinVal = sin(newGapAngle);
-
-//     // rotate sampling direction
-//     vec2 rotatedSampleDirection = vec2(cosVal * sampleDirection.x - sinVal * sampleDirection.y, sinVal * sampleDirection.x + cosVal * sampleDirection.y);
-//     float curOcclusion = 0.0;
-//     float curStepSize = texelStepSize; // 1.0 = stepsize, StepSize should be specified by uniform - what are good values?
-
-//     // loop for each step
-//     for (int j = 0; j < 6; j++) {
-//       vec2 directionWithStep = vec2(rotatedSampleDirection.x * curStepSize * pixelSize.x, rotatedSampleDirection.y * curStepSize * pixelSize.y);
-//       vec2 newCoords = directionWithStep + tc;
-
-//       // do not repeat around the depth texture
-//       if(newCoords.x > 1.0 || newCoords.y > 1.0 || newCoords.x < 0.0 || newCoords.y < 0.0) {
-//           break;
-//       }
-
-//       db = readDepth(newCoords);
-//       float curLinearDepth = unfinalizeLinearDepth(db);
-//       float curNonLinearDepth = computeNonLinearDepth(db);
-//       vec3 curViewPos = computePositionFromDepth(newCoords, curNonLinearDepth).xyz;
-//       vec3 diffVec = curViewPos.xyz - viewPos.xyz;
-//       float zLength = abs(curLinearDepth - linearDepth);
-
-//       float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
-//       float weight = smoothstep(0.0, 1.0, zLengthCap / zLength);
-
-//       if (dotVal < bias) {
-//           dotVal = 0.0;
-//       }
-
-//       curOcclusion = max(curOcclusion, dotVal * weight);
-//       curStepSize += texelStepSize;
-//     }
-//     tOcclusion += curOcclusion;
-//   }
-
-//   float distanceFadeFactor = kFrustumType_Perspective == u_frustum.z ? 1.0 - pow(clamp(nonLinearDepth / u_maxDistance, 0.0, 1.0), 4.0) : 1.0;
-//   tOcclusion *= distanceFadeFactor;
-
-//   tOcclusion /= 4.0;
-//   tOcclusion = 1.0 - clamp(tOcclusion, 0.0, 1.0);
-//   tOcclusion = pow(tOcclusion, intensity);
-
-//   return vec4(tOcclusion, tOcclusion, tOcclusion, 1.0);
-// `;
 
 const computePositionFromDepth = `
 vec4 computePositionFromDepth(vec2 tc, float nonLinearDepth) {
@@ -355,10 +269,10 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
 
   frag.addFunction(computePositionFromDepth);
   frag.addFunction(computeNormalFromDepth);
-  frag.addFunction(GTAOFastAcos);
-  frag.addFunction(IntegrateArc);
-  frag.addFunction(GetCameraVec);
-  frag.addFunction(SliceSample);
+  frag.addFunction(gtaoFastAcos);
+  frag.addFunction(integrateArc);
+  frag.addFunction(getCameraVec);
+  frag.addFunction(sliceSample);
   addRenderOrderConstants(frag);
 
   if (shouldUseDB)
@@ -388,13 +302,6 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
       });
     });
 
-  // frag.addUniform("u_noise", VariableType.Sampler2D, (prog) => {
-  //   prog.addGraphicUniform("u_noise", (uniform, params) => {
-  //     const geom = params.geometry as AmbientOcclusionGeometry;
-  //     Texture2DHandle.bindSampler(uniform, geom.noise, TextureUnit.One);
-  //   });
-  // });
-
   addFrustum(builder);
   addViewport(frag);
 
@@ -412,16 +319,41 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
     });
   });
 
-  // frag.addUniform("u_hbaoSettings", VariableType.Vec4, (prog) => {
-  //   prog.addProgramUniform("u_hbaoSettings", (uniform, params) => {
-  //     const hbaoSettings = new Float32Array([
-  //       params.target.ambientOcclusionSettings.bias,
-  //       params.target.ambientOcclusionSettings.zLengthCap,
-  //       params.target.ambientOcclusionSettings.intensity,
-  //       params.target.ambientOcclusionSettings.texelStepSize]);
-  //     uniform.setUniform4fv(hbaoSettings);
-  //   });
-  // }, VariablePrecision.High);
+  frag.addUniform("u_aoSettings", VariableType.Vec4, (prog) => {
+    prog.addProgramUniform("u_aoSettings", (uniform, params) => {
+      const aoSettings1 = new Float32Array([
+        params.target.ambientOcclusionSettings.angleOffset,
+        params.target.ambientOcclusionSettings.spacialOffset,
+        params.target.ambientOcclusionSettings.c1,
+        params.target.ambientOcclusionSettings.c2,
+      ]);
+      uniform.setUniform4fv(aoSettings1);
+    });
+  }, VariablePrecision.High);
+
+  frag.addUniform("u_aoSettings2", VariableType.Vec4, (prog) => {
+    prog.addProgramUniform("u_aoSettings2", (uniform, params) => {
+      const aoSettings2 = new Float32Array([
+        params.target.ambientOcclusionSettings.ssaoLimit,
+        params.target.ambientOcclusionSettings.ssaoSamples,
+        params.target.ambientOcclusionSettings.ssaoRadius,
+        params.target.ambientOcclusionSettings.ssaoFalloff,
+      ]);
+      uniform.setUniform4fv(aoSettings2);
+    });
+  }, VariablePrecision.High);
+
+  frag.addUniform("u_aoSettings3", VariableType.Vec4, (prog) => {
+    prog.addProgramUniform("u_aoSettings3", (uniform, params) => {
+      const aoSettings3 = new Float32Array([
+        params.target.ambientOcclusionSettings.ssaoThicknessMix,
+        params.target.ambientOcclusionSettings.ssaoMaxStride,
+        0.0,
+        0.0,
+      ]);
+      uniform.setUniform4fv(aoSettings3);
+    });
+  }, VariablePrecision.High);
 
   frag.addUniform("u_maxDistance", VariableType.Float, (prog) => {
     prog.addProgramUniform("u_maxDistance", (uniform, params) => {
