@@ -582,6 +582,7 @@ export class Parser {
     // The sign is saved outside from the loop for cases like this. '-1m 50cm 10mm + 2m 30cm 40mm' => -1.51m + 2.34m
     let sign: 1 | -1 = 1;
 
+    let compositeUnitIndex = 0;
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);
       if(!tokenPair || tokenPair.length === 0){
@@ -593,6 +594,7 @@ export class Parser {
       if(tokenPair[0].isOperator){
         sign = tokenPair[0].value === Operator.addition ? 1 : -1;
         tokenPair.shift();
+        compositeUnitIndex = 0; // Reset the composite unit index, the following tokens begin from start.
       }
 
       // unit specification comes before value (like currency)
@@ -605,13 +607,25 @@ export class Parser {
         let value = sign * (tokenPair[0].value as number);
         let conversion: UnitConversionProps | undefined;
         if(tokenPair.length === 2 && tokenPair[1].isString){
-          conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
+          const spacer = format.spacer ? format.spacer : " ";
+          if(tokenPair[1].value !== spacer){ // ignore spacer
+            conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
+          }
         }
-        conversion = conversion ? conversion : defaultUnitConversion;
+        if (!conversion) {
+          if (compositeUnitIndex > 0 && format.units && format.units.length > compositeUnitIndex) {
+            // if this is not the first token, and we have a composite spec, look up the unit from the current index
+            const presUnitAtIndex = format.units[compositeUnitIndex][0];
+            conversion = Parser.tryFindUnitConversion(presUnitAtIndex.label, unitsConversions, presUnitAtIndex);
+          } else if (defaultUnitConversion) {
+            conversion = defaultUnitConversion;
+          }
+        }
         if (conversion) {
           value = (value * conversion.factor) + conversion.offset;
         }
         mag = mag + value;
+        compositeUnitIndex++;
       } else {
         // only the unit label was specified so assume magnitude of 0
         const conversion = Parser.tryFindUnitConversion(tokenPair[0].value as string, unitsConversions, defaultUnit);
