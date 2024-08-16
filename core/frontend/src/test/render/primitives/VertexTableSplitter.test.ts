@@ -11,10 +11,11 @@ import {
 } from "@itwin/core-common";
 import {
   IModelApp,
+  MeshArgs,
   MockRender,
+  PolylineArgs,
 } from "../../../core-frontend";
 import { createPointStringParams, PointStringParams } from "../../../common/internal/render/PointStringParams";
-import { MeshArgs, PolylineArgs } from "../../../common/internal/render/MeshPrimitives";
 import { VertexTable } from "../../../common/internal/render/VertexTable";
 import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
 import { MeshParams } from "../../../common/internal/render/MeshParams";

@@ -28,6 +28,7 @@ import { RenderPlan } from "./RenderPlan";
 import { RenderAreaPattern, RenderGeometry, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
+import { _implementationProhibited } from "../common/internal/Symbols";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:
@@ -44,6 +45,8 @@ import { Scene } from "./Scene";
 export namespace MockRender {
   /** @internal */
   export abstract class Target extends RenderTarget {
+    protected override readonly [_implementationProhibited] = undefined;
+
     protected constructor(private readonly _system: RenderSystem) { super(); }
 
     public get renderSystem(): RenderSystem { return this._system; }
