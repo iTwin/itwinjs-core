@@ -209,6 +209,7 @@ export class BaseFormat {
       if (typeof (formatProps.azimuthCounterClockwise) !== "boolean")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthCounterClockwise' attribute. It should be of type 'boolean'.`);
       this._azimuthCounterClockwise = formatProps.azimuthCounterClockwise;
+    }
     if (undefined !== formatProps.allowMathematicOperations) { // optional; default is false
       if (typeof (formatProps.allowMathematicOperations) !== "boolean")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'allowMathematicOperations' attribute. It should be of type 'boolean'.`);
