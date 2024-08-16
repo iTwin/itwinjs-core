@@ -45,7 +45,7 @@ import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
-import { _implementationProhibited, _renderSystem, _textures } from "../common/internal/Symbols";
+import { _createGraphicFromTemplate, _implementationProhibited, _renderSystem, _textures } from "../common/internal/Symbols";
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
@@ -436,10 +436,12 @@ export abstract class RenderSystem implements IDisposable {
   /** ###TODO
    * @beta
    */
-  public createGraphicFromTemplate(args: { template: GraphicTemplate, instances: RenderInstances }): RenderGraphic | undefined;
+  public createGraphicFromTemplate(args: { template: GraphicTemplate, instances: RenderInstances }): RenderGraphic | undefined {
+    return this[_createGraphicFromTemplate](args.template, args.instances);
+  }
 
   /** @internal */
-  public createGraphicFromTemplate(_args: { template: GraphicTemplate, instances?: RenderInstances }): RenderGraphic | undefined {
+  public [_createGraphicFromTemplate](_template: GraphicTemplate, _instances?: RenderInstances): RenderGraphic | undefined {
     return undefined;
   }
   

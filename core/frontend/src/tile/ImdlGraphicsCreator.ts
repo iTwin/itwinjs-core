@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Id64, JsonUtils } from "@itwin/core-bentley";
+import { Id64, JsonUtils, assert } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
@@ -25,8 +25,9 @@ import type { IModelConnection } from "../IModelConnection";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
 import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
-import { _textures } from "../common/internal/Symbols";
+import { _createGraphicFromTemplate, _implementationProhibited, _nodes, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { GraphicTemplate } from "../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -472,32 +473,61 @@ function remapGraphicDescription(descr: GraphicDescriptionImpl, context: Graphic
 }
 
 /** @internal */
-export async function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined> {
+export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate | undefined {
   if (!isGraphicDescription(descr)) {
     throw new Error("Invalid GraphicDescription");
   }
 
   remapGraphicDescription(descr, context);
 
-  const graphics: RenderGraphic[] = [];
   const graphicsOptions: GraphicsOptions = {
     system,
     textures: context[_textures],
     patterns: new Map(),
   };
 
+  let isInstanceable = true;
+  const geometry: RenderGeometry[] = [];
   for (const primitive of descr.primitives) {
-    const gf = createPrimitiveGraphic(primitive, graphicsOptions);
-    if (gf) {
-      graphics.push(gf);
+    const mods = getModifiers(primitive);
+    if (mods) {
+      assert(!mods.instances); // GraphicDescriptionBuilder providers no way to include instances in a GraphicDescription.
+      isInstanceable = false; // view-independent origin is incompatible with instancing
+    }
+
+    const geom = createPrimitiveGeometry(primitive, graphicsOptions, mods.viOrigin);
+    if (geom) {
+      geometry.push(geom);
+      if (!geom.isInstanceable) {
+        isInstanceable = false;
+      }
     }
   }
 
-  if (graphics.length === 0) {
+  if (geometry.length === 0) {
     return undefined;
   }
 
-  let graphic = graphics.length === 1 ? graphics[0] : system.createGraphicList(graphics);
+  return {
+    [_implementationProhibited]: undefined,
+    isInstanceable,
+    [_nodes]: [{ geometry }],
+  }
+}
+
+/** @internal */
+export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined {
+  const template = createGraphicTemplateFromDescription(descr, context, system);
+  if (!template) {
+    return undefined;
+  }
+
+  let graphic = system[_createGraphicFromTemplate](template);
+  if (!graphic) {
+    return undefined;
+  }
+
+  assert(isGraphicDescription(descr));
 
   if (descr.batch) {
     const featureTable = convertFeatureTable(descr.batch.featureTable, descr.batch.modelId);

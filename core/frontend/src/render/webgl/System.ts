@@ -68,7 +68,7 @@ import { BatchOptions } from "../../common/render/BatchOptions";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "../GraphicTemplate";
-import { _nodes } from "../../common/internal/Symbols";
+import { _createGraphicFromTemplate, _nodes } from "../../common/internal/Symbols";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -502,9 +502,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.createRenderGraphic(geom, InstanceBuffers.fromReusableBuffers(buffers, geom.computeRange()));
   }
 
-  public override createGraphicFromTemplate(args: { template: GraphicTemplate, instances?: RenderInstances }): RenderGraphic | undefined {
-    const template = args.template;
-    const instances = args.instances as RenderInstancesImpl | undefined;
+  public override [_createGraphicFromTemplate](template: GraphicTemplate, renderInstances?: RenderInstances): RenderGraphic | undefined {
+    const instances = renderInstances as RenderInstancesImpl | undefined;
     if (instances) {
       if (!template.isInstanceable) {
         throw new Error("GraphicTemplate is not instanceable");

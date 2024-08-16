@@ -15,6 +15,7 @@ function sym(name: string): string {
 export const _accumulator = Symbol.for(sym("accumulator"));
 /** @internal */
 export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
+export const _createGraphicFromTemplate = Symbol.for(sym("createGraphicFromTemplate"));
 export const _nodes = Symbol.for(sym("nodes"));
 export const _requestSnap = Symbol.for(sym("requestSnap"));
 export const _renderSystem = Symbol.for(sym("renderSystem"));

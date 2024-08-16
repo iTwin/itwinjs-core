@@ -14,7 +14,9 @@ import { RenderInstances } from "./RenderSystem";
 /** @internal */
 export interface GraphicTemplateNode {
   geometry: RenderGeometry[];
+  // For glTF models, the flattened transform of the scene graph node.
   transform?: Transform;
+  // For glTF models, the instances associated with the scene graph node, or with the model as a whole.
   instances?: RenderInstances;
 }
 
