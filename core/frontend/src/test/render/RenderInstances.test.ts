@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { Transform } from "@itwin/core-geometry";
 import { Instance, RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { Id64 } from "@itwin/core-bentley";
+import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 describe("RenderInstancesParamsBuilder", () => {
   it("is empty if no instances supplied", () => {
@@ -17,7 +18,7 @@ describe("RenderInstancesParamsBuilder", () => {
   it("separates opaque and translucent instances", () => {
     const builder = RenderInstancesParamsBuilder.create({});
     const expectCounts = (opaque?: number, translucent?: number) => {
-      const params = builder.finish();
+      const params = builder.finish() as RenderInstancesParamsImpl;
       expect(params.opaque?.count).to.equal(opaque);
       expect(params.translucent?.count).to.equal(translucent);
     }
@@ -48,22 +49,23 @@ describe("RenderInstancesParamsBuilder", () => {
       builder.add({ transform: Transform.createIdentity(), feature });
     }
 
+    const finish = () => builder.finish() as RenderInstancesParamsImpl;
     addInstance();
-    expect(builder.finish().features).to.be.undefined;
+    expect(finish().features).to.be.undefined;
 
     reset();
     addInstance(Id64.invalid);
-    expect(builder.finish().features).not.to.be.undefined;
+    expect(finish().features).not.to.be.undefined;
 
     reset();
     addInstance("0x123");
-    expect(builder.finish().features).not.to.be.undefined;
+    expect(finish().features).not.to.be.undefined;
 
     reset();
     addInstance();
     addInstance("0x123");
     addInstance(Id64.invalid);
-    expect(builder.finish().features).not.to.be.undefined;
+    expect(finish().features).not.to.be.undefined;
   });
 });
 

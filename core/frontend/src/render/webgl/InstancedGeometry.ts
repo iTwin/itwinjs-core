@@ -21,7 +21,7 @@ import { Matrix4 } from "./Matrix";
 import { RenderInstances } from "../RenderSystem";
 import { _implementationProhibited, _renderSystem } from "../../common/internal/Symbols";
 import { BatchType, PackedFeatureTable } from "@itwin/core-common";
-import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
+import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 /** @internal */
 export function isInstancedGraphicParams(params: any): params is InstancedGraphicParams {
@@ -140,7 +140,7 @@ export interface RenderInstancesImpl extends RenderInstances {
 
 /** @internal */
 export namespace RenderInstancesImpl {
-  export function create(params: RenderInstancesParams): RenderInstancesImpl | undefined {
+  export function create(params: RenderInstancesParamsImpl): RenderInstancesImpl | undefined {
     let opaque, translucent;
     if (params.opaque && !(opaque = createReusableInstanceBuffers(params.opaque))) {
       return undefined;
