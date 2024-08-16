@@ -13,7 +13,7 @@ interpolation.
 All responses to requests made through the frontend's [PresentationManager]($presentation-frontend) are automatically localized, assuming all required assets are properly set up.
 `@itwin/presentation-frontend` relies on [IModelApp.localization]($frontend) to do the translations. All Presentation localized strings are defined in locale files located at
 the `public` folder from `@itwin/presentation-common` - consumers must ensure these locale files are placed at a location known to [IModelApp.localization]($frontend). See
-[Localization in iTwin.js](..\..\learning\frontend\Localization.md) page for more details.
+[Localization in iTwin.js]($docs/learning/frontend/Localization.md) page for more details.
 
 ## On the backend
 

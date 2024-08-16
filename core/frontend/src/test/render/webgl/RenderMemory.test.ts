@@ -10,11 +10,11 @@ import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGeometry } from "../../../render/RenderSystem";
 import { RenderGraphic } from "../../../render/RenderGraphic";
-import { MeshArgs, MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
+import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
 import { Texture } from "../../../render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
-import { InstancedGraphicParams } from "../../../core-frontend";
+import { InstancedGraphicParams, MeshArgs } from "../../../core-frontend";
 
 function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
   expect(consumer.totalBytes).to.equal(total);

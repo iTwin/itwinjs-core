@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix range problem for elements during edit which sometimes made the dissappear.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

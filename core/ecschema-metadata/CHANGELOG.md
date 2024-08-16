@@ -1,6 +1,32 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Fri, 19 Jul 2024 14:54:06 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Aug 2024 15:35:19 GMT and should not be manually modified.
+
+## 4.8.2
+Thu, 15 Aug 2024 15:33:49 GMT
+
+_Version update only_
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+_Version update only_
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:38 GMT
+
+### Updates
+
+- Restore clean script
+- Deprecate CustomAttributeClass.containerType and add CustomAttributeClass.appliesTo as it's replacement
+- SchemaUnitProvider now has the beta tag.
+- Added SchemaItem name editing support.
+- added esm build
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
 
 ## 4.7.7
 Fri, 19 Jul 2024 14:52:42 GMT
