@@ -406,7 +406,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
-      const pointStringParams = createPointStringParams(args, IModelApp.renderSystem.maxTextureSize);
+      const pointStringParams = createPointStringParams(args, this.maxTextureSize);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
       const polylineParams = createPolylineParams(args, this.maxTextureSize);

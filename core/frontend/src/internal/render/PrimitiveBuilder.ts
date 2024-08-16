@@ -13,10 +13,16 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GeometryOptions } from "../../common/internal/render/Primitives";
 import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumulator";
-import { MeshList } from "../../common/internal/render/MeshPrimitives";
+import { Mesh, MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
-import { _accumulator, _implementationProhibited } from "../../common/internal/Symbols";
+import { _accumulator, _implementationProhibited, _nodes } from "../../common/internal/Symbols";
+import { GraphicTemplate } from "../../render/GraphicTemplate";
+import { RenderGeometry } from "./RenderGeometry";
+import { createMeshParams } from "../../common/internal/render/VertexTableBuilder";
+import { IModelApp } from "../../IModelApp";
+import { createPointStringParams } from "../../common/internal/render/PointStringParams";
+import { createPolylineParams } from "../../common/internal/render/PolylineParams";
 
 // Set to true to add a range box to every graphic produced by PrimitiveBuilder.
 let addDebugRangeBox = false;
@@ -153,4 +159,100 @@ export class PrimitiveBuilder extends GraphicBuilder {
 
     return meshes;
   }
+
+  private saveToTemplate(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string }): { meshes: MeshList, template: GraphicTemplate } | undefined {
+    const meshes = this[_accumulator].toMeshes(options, tolerance, pickable);
+    if (0 === meshes.length)
+      return undefined;
+
+    // If the meshes contain quantized positions, they are all quantized to the same range. If that range is small relative to the distance
+    // from the origin, quantization errors can produce display artifacts. Remove the translation from the quantization parameters and apply
+    // it in the transform instead.
+    //
+    // If the positions are not quantized, they have already been transformed to be relative to the center of the meshes' range.
+    // Apply the inverse translation to put them back into model space.
+    let transformOrigin: Point3d | undefined;
+    let meshesRangeOffset = false;
+    const geometry: RenderGeometry[] = [];
+
+    let isInstanceable = undefined === this._viewIndependentOrigin;
+    for (const mesh of meshes) {
+      const verts = mesh.points;
+      if (!transformOrigin){
+        if (verts instanceof QPoint3dList) {
+          transformOrigin = verts.params.origin.clone();
+          verts.params.origin.setZero();
+        } else {
+          transformOrigin = verts.range.center;
+          // In this case we need to modify the qOrigin of the graphic that will get created later since we have translated the origin.
+          // We can't modify it directly, but if we temporarily modify the range of the mesh used to create it the qOrigin will get created properly.
+          // Range is shared (not cloned) by all meshes and the mesh list itself, so modifying the range of the meshlist will modify it for all meshes.
+          // We will then later add this offset back to the range once all of the graphics have been created because it is needed unmodified for locate.
+          if (!meshesRangeOffset) {
+            meshes.range?.low.subtractInPlace(transformOrigin);
+            meshes.range?.high.subtractInPlace(transformOrigin);
+            meshesRangeOffset = true;
+          }
+        }
+      } else {
+        if (verts instanceof QPoint3dList) {
+          assert(transformOrigin.isAlmostEqual(verts.params.origin));
+          verts.params.origin.setZero();
+        } else {
+          assert(verts.range.center.isAlmostZero);
+        }
+      }
+
+      const geom = createGeometryFromMesh(mesh, this.system, this._viewIndependentOrigin);
+      if (geom) {
+        geom.noDispose = true;
+        geometry.push(geom);
+        if (!geom.isInstanceable) {
+          isInstanceable = false;
+        }
+      }
+    }
+
+    let transform;
+    if (transformOrigin) {
+      transform = Transform.createTranslation(transformOrigin);
+      if (meshesRangeOffset) { // restore the meshes range that we modified earlier.
+        meshes.range?.low.addInPlace(transformOrigin);
+        meshes.range?.high.addInPlace(transformOrigin);
+      }
+    }
+      
+    return {
+      meshes,
+      template: {
+        [_implementationProhibited]: undefined,
+        isInstanceable,
+        [_nodes]: [{
+          geometry,
+          transform,
+        }],
+      }
+    }
+  }
+}
+
+function createGeometryFromMesh(mesh: Mesh, system: RenderSystem, viOrigin: Point3d | undefined): RenderGeometry | undefined {
+  const meshArgs = mesh.toMeshArgs();
+  if (meshArgs) {
+    const meshParams = createMeshParams(meshArgs, system.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
+    return system.createMeshGeometry(meshParams, viOrigin);
+  }
+
+  const plArgs = mesh.toPolylineArgs();
+  if (!plArgs) {
+    return undefined;
+  }
+
+  if (plArgs.flags.isDisjoint) {
+    const psParams = createPointStringParams(plArgs, system.maxTextureSize);
+    return psParams ? system.createPointStringGeometry(psParams, viOrigin) : undefined;
+  }
+
+  const plParams = createPolylineParams(plArgs, system.maxTextureSize);
+  return plParams ? system.createPolylineGeometry(plParams, viOrigin) : undefined;
 }

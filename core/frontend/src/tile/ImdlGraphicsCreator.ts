@@ -497,6 +497,7 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
 
     const geom = createPrimitiveGeometry(primitive, graphicsOptions, mods.viOrigin);
     if (geom) {
+      geom.noDispose = true;
       geometry.push(geom);
       if (!geom.isInstanceable) {
         isInstanceable = false;
