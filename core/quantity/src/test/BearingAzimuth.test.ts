@@ -210,7 +210,7 @@ describe.only("Azimuth format tests:", () => {
     }
   });
 
-  it("Format degrees with various bases", async () => {
+  it("^Roundtrip degrees with various bases", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const azimuthDecimalJson: FormatProps = {
@@ -246,6 +246,21 @@ describe.only("Azimuth format tests:", () => {
       return FormatterSpec.create(`DegreeToAzimuthWith${baseInDegrees}Base`, format, unitsProvider, deg);
     };
 
+    const createParser = async (baseInDegrees: number, counterClockwise: boolean): Promise<ParserSpec> => {
+      const props = {
+        ...azimuthDecimalJson,
+        azimuthBase: baseInDegrees,
+        azimuthCounterClockwise: counterClockwise,
+      };
+
+      const format = new Format(`azimuthWith${baseInDegrees}Base`);
+      await format.fromJSON(unitsProvider, props);
+      assert.isTrue(format.hasUnits);
+      const deg: UnitProps = await unitsProvider.findUnitByName("Units.ARC_DEG");
+      assert.isTrue(deg.isValid);
+      return ParserSpec.create(format, unitsProvider, deg);
+    };
+
     interface TestData {
       input: number;
       base: number;
@@ -278,6 +293,13 @@ describe.only("Azimuth format tests:", () => {
       const formatter = await createFormatter(entry.base, entry.counterClockwise);
       const result = Formatter.formatQuantity(entry.input, formatter);
       expect(result, formatter.name).to.be.eql(entry.result);
+
+      const parser = await createParser(entry.base, entry.counterClockwise);
+      const parseResult = Parser.parseQuantityString(result, parser);
+      if (!Parser.isParsedQuantity(parseResult)) {
+        assert.fail("Expected a parsed quantity");
+      }
+      expect(parseResult.value, `Parsed result for ${entry.input} with base ${entry.base} ccw: ${entry.counterClockwise}`).closeTo(entry.input, 0.0001);
     }
   });
 
