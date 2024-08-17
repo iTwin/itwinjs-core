@@ -9,9 +9,9 @@
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { _batch, _implementationProhibited, _nodes } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { RenderInstances } from "./RenderSystem";
 import { RenderFeatureTable } from "@itwin/core-common";
-import { BatchOptions } from "../common";
+import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
+import { BatchOptions } from "../common/render/BatchOptions";
 
 /** @internal */
 export interface GraphicTemplateNode {
@@ -19,7 +19,7 @@ export interface GraphicTemplateNode {
   // For glTF models, the flattened transform of the scene graph node.
   transform?: Transform;
   // For glTF models, the instances associated with the scene graph node, or with the model as a whole.
-  instances?: RenderInstances;
+  instances?: InstancedGraphicParams;
 }
 
 /** @internal */
