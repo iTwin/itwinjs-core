@@ -16,8 +16,8 @@ import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumu
 import { Mesh, MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
-import { _accumulator, _batch, _createGraphicFromTemplate, _implementationProhibited, _nodes } from "../../common/internal/Symbols";
-import { GraphicTemplate, GraphicTemplateBatch } from "../../render/GraphicTemplate";
+import { _accumulator, _createGraphicFromTemplate, _implementationProhibited } from "../../common/internal/Symbols";
+import { GraphicTemplate, GraphicTemplateBatch, createGraphicTemplate } from "../../render/GraphicTemplate";
 import { RenderGeometry } from "./RenderGeometry";
 import { createMeshParams } from "../../common/internal/render/VertexTableBuilder";
 import { IModelApp } from "../../IModelApp";
@@ -51,11 +51,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
     const result = this.saveToTemplate(this, tolerance, this.pickable);
     accum.clear();
 
-    return result ?? {
-      [_implementationProhibited]: undefined,
-      [_nodes]: [],
-      isInstanceable: true,
-    };
+    return result ?? createGraphicTemplate({ nodes: [] });
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {
@@ -149,7 +145,6 @@ export class PrimitiveBuilder extends GraphicBuilder {
     let meshesRangeOffset = false;
     const geometry: RenderGeometry[] = [];
 
-    let isInstanceable = undefined === this._viewIndependentOrigin;
     for (const mesh of meshes) {
       const verts = mesh.points;
       if (!transformOrigin){
@@ -179,11 +174,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
 
       const geom = createGeometryFromMesh(mesh, this.system, this._viewIndependentOrigin);
       if (geom) {
-        geom.noDispose = true;
         geometry.push(geom);
-        if (!geom.isInstanceable) {
-          isInstanceable = false;
-        }
       }
     }
 
@@ -205,15 +196,10 @@ export class PrimitiveBuilder extends GraphicBuilder {
       };
     }
 
-    return {
-      [_implementationProhibited]: undefined,
-      isInstanceable,
-      [_nodes]: [{
-        geometry,
-        transform,
-      }],
-      [_batch]: batch,
-    };
+    return createGraphicTemplate({
+      batch,
+      nodes: [{ geometry, transform }],
+    });
   }
 }
 

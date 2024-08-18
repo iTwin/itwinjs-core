@@ -25,9 +25,9 @@ import type { IModelConnection } from "../IModelConnection";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
 import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
-import { _batch, _createGraphicFromTemplate, _implementationProhibited, _nodes, _textures } from "../common/internal/Symbols";
+import { _createGraphicFromTemplate, _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { GraphicTemplate, GraphicTemplateBatch } from "../render/GraphicTemplate";
+import { GraphicTemplate, GraphicTemplateBatch, createGraphicTemplate } from "../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -486,22 +486,16 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
     patterns: new Map(),
   };
 
-  let isInstanceable = true;
   const geometry: RenderGeometry[] = [];
   for (const primitive of descr.primitives) {
     const mods = getModifiers(primitive);
-    if (mods) {
-      assert(!mods.instances); // GraphicDescriptionBuilder providers no way to include instances in a GraphicDescription.
-      isInstanceable = false; // view-independent origin is incompatible with instancing
-    }
+
+    // GraphicDescriptionBuilder providers no way to include instances in a GraphicDescription.
+    assert(undefined === mods?.instances);
 
     const geom = createPrimitiveGeometry(primitive, graphicsOptions, mods.viOrigin);
     if (geom) {
-      geom.noDispose = true;
       geometry.push(geom);
-      if (!geom.isInstanceable) {
-        isInstanceable = false;
-      }
     }
   }
 
@@ -517,12 +511,10 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
     batch = { range, featureTable };
   }
 
-  return {
-    [_implementationProhibited]: undefined,
-    isInstanceable,
-    [_nodes]: [{ geometry }],
-    [_batch]: batch,
-  };
+  return createGraphicTemplate({
+    nodes: [{ geometry }],
+    batch,
+  });
 }
 
 /** @internal */

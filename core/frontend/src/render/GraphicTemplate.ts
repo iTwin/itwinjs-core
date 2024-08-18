@@ -39,3 +39,34 @@ export interface GraphicTemplate {
   /** @internal */
   readonly [_batch]?: GraphicTemplateBatch;
 }
+
+/** Create a GraphicTemplate.
+ * Each RenderGeometry in each node will be marked `noDispose`.
+ * The `isInstancable` flag will be calculated from the nodes and their geometry.
+ * @internal
+ */
+export function createGraphicTemplate(args: {
+  nodes: GraphicTemplateNode[],
+  batch?: GraphicTemplateBatch,
+}): GraphicTemplate {
+  let isInstanceable = true;
+  for (const node of args.nodes) {
+    if (node.instances) {
+      isInstanceable = false;
+    }
+
+    for (const geometry of node.geometry) {
+      geometry.noDispose = true;
+      if (!geometry.isInstanceable) {
+        isInstanceable = false;
+      }
+    }
+  }
+
+  return {
+    [_implementationProhibited]: undefined,
+    isInstanceable,
+    [_nodes]: args.nodes,
+    [_batch]: args.batch,
+  };
+}
