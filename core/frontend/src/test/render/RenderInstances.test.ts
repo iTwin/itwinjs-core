@@ -9,10 +9,9 @@ import { Id64 } from "@itwin/core-bentley";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 describe("RenderInstancesParamsBuilder", () => {
-  it("is empty if no instances supplied", () => {
+  it("throws if no instances supplied", () => {
     const builder = RenderInstancesParamsBuilder.create({});
-    const params = builder.finish();
-    expect(params).to.deep.equal({});
+    expect(() => builder.finish()).to.throw("No instances defined");
   });
 
   it("populates feature table IFF features are present", () => {
