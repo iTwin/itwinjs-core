@@ -19,7 +19,6 @@ import {
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { GraphicBranch } from "../render/GraphicBranch";
 import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
@@ -42,6 +41,7 @@ import {
 import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../render/GraphicTemplate";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { _createGraphicFromTemplate } from "../common/internal/Symbols";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -505,81 +505,11 @@ export abstract class GltfReader {
   }
 
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
-    if (this._isCanceled)
-      return { readStatus: TileReadStatus.Canceled, isLeaf };
-
-    // If contentRange was not supplied, we will compute it as we read the meshes.
-    if (!contentRange)
-      this._computedContentRange = contentRange = Range3d.createNull();
-    else
-      this._computedContentRange = undefined;
-
-    // Save feature table model id in case we need to recreate it after reading instances
-    const featureTableModelId = featureTable?.modelId;
-    // Flush feature table if instance features are used
-    if(this._structuralMetadata && this._glTF.extensionsUsed?.includes("EXT_instance_features") && this._idMap){
-      featureTable = undefined;
-    }
-
-    // ###TODO this looks like a hack? Why does it assume the first node's transform is special, or that the transform will be specified as a matrix instead of translation+rot+scale?
-    if (this._returnToCenter || this._nodes[0]?.matrix || (pseudoRtcBias && pseudoRtcBias.magnitude() < 1.0E5))
-      pseudoRtcBias = undefined;
-
-    const transformStack = new TransformStack();
-    const renderGraphicList: RenderGraphic[] = [];
-    let readStatus: TileReadStatus = TileReadStatus.InvalidTileData;
-    for (const nodeKey of this._sceneNodes) {
-      assert(transformStack.isEmpty);
-      const node = this._nodes[nodeKey];
-      if (node && TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, node, featureTable, transformStack, instances, pseudoRtcBias)))
-        return { readStatus, isLeaf };
-    }
-
-    // Creates a feature table based on instance features
-    // The table must be created after reading instances, since the maximum number of features is not known until all instances have been read.
-    if(this._instanceFeatures.length > 0 && this._idMap){
-      featureTable = new FeatureTable(this._instanceFeatures.length, featureTableModelId);
-      for(let instanceFeatureId = 0; instanceFeatureId < this._instanceFeatures.length; instanceFeatureId++){
-        featureTable.insertWithIndex(this._instanceFeatures[instanceFeatureId], instanceFeatureId);
-      }
-    }
-
-    if (0 === renderGraphicList.length)
-      return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
-
-    let renderGraphic = this._system.createGraphicList(renderGraphicList);
-
-    // Compute range in tileset/world space.
-    let range = contentRange;
-    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
-    const invTransform = transform?.inverse();
-    if (invTransform)
-      range = invTransform.multiplyRange(contentRange);
-
-    // The batch range needs to be in tile coordinate space.
-    // If we computed the content range ourselves, it's already in tile space.
-    // If the content range was supplied by the caller, it's in tileset space and needs to be transformed to tile space.
-    if (featureTable)
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), this._computedContentRange ? contentRange : range);
-
-    const viewFlagOverrides = this.viewFlagOverrides;
-    if (transform || viewFlagOverrides) {
-      const branch = new GraphicBranch(true);
-      if (viewFlagOverrides)
-        branch.setViewFlagOverrides(viewFlagOverrides);
-
-      branch.add(renderGraphic);
-      renderGraphic = this._system.createBranch(branch, transform ?? Transform.createIdentity());
-    }
-
-    return {
-      readStatus,
-      isLeaf,
-      contentRange,
-      range,
-      graphic: renderGraphic,
-      containsPointCloud: this._containsPointCloud,
-    };
+    const result = this.readGltfAndCreateTemplate(isLeaf, featureTable, contentRange, true, transformToRoot, pseudoRtcBias, instances);
+    return result.template ? {
+      ...result,
+      graphic: this._system[_createGraphicFromTemplate](result.template),
+    } : result;
   }
 
   protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfTemplateResult {
@@ -668,40 +598,6 @@ export abstract class GltfReader {
     }
 
     return { polyfaces };
-  }
-
-  private graphicFromMeshData(gltfMesh: GltfPrimitiveData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
-    if ("pointcloud" === gltfMesh.type)
-      return this._system.createPointCloud(gltfMesh, this._iModel);
-
-    if (!gltfMesh.points || !gltfMesh.pointRange)
-      return this._system.createMeshGraphics(gltfMesh.primitive, instances);
-
-    const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
-    if (realityMeshPrimitive) {
-      const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
-      if (realityMesh)
-        return realityMesh;
-    }
-
-    const mesh = gltfMesh.primitive;
-    const pointCount = gltfMesh.points.length / 3;
-    assert(mesh.points instanceof QPoint3dList);
-    mesh.points.fromTypedArray(gltfMesh.pointRange, gltfMesh.points);
-    if (mesh.triangles && gltfMesh.indices)
-      mesh.triangles.addFromTypedArray(gltfMesh.indices);
-
-    if (gltfMesh.uvs && gltfMesh.uvRange && gltfMesh.uvQParams) {
-      /** This is ugly and inefficient... unnecessary if Mesh stored uvs as QPoint2dList */
-      for (let i = 0, j = 0; i < pointCount; i++)
-        mesh.uvParams.push(gltfMesh.uvQParams.unquantize(gltfMesh.uvs[j++], gltfMesh.uvs[j++]));
-    }
-
-    if (gltfMesh.normals)
-      for (const normal of gltfMesh.normals)
-        mesh.normals.push(new OctEncodedNormal(normal));
-
-    return this._system.createMeshGraphics(mesh, instances);
   }
 
   private geometryFromMeshData(gltfMesh: GltfPrimitiveData, isInstanced: boolean): RenderGeometry | undefined {
@@ -877,74 +773,6 @@ export abstract class GltfReader {
     }
 
     return { count, transforms, transformCenter, featureIds };
-  }
-
-  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, batchInstances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
-    if (undefined === node)
-      return TileReadStatus.InvalidTileData;
-
-    // IMPORTANT: Do not return without popping this node from the stack.
-    transformStack.push(node);
-    const thisTransform = transformStack.transform;
-
-    const nodeInstances = !batchInstances && undefined !== node.mesh ? this.readInstanceAttributes(node, featureTable) : undefined;
-
-    /**
-     * This is a workaround for tiles generated by
-     * context capture which have a large offset from the tileset origin that exceeds the
-     * capacity of 32 bit integers. It is essentially an ad hoc RTC applied at read time only if the tile is far from the
-     * origin and there is no RTC supplied either with the B3DM of the GLTF.
-     * as the vertices are supplied in a quantized format, applying the RTC bias to
-     * quantization origin will make these tiles work correctly.
-     */
-    let thisBias;
-    if (undefined !== pseudoRtcBias)
-      thisBias = (undefined === thisTransform) ? pseudoRtcBias : thisTransform.matrix.multiplyInverse(pseudoRtcBias);
-
-    for (const meshKey of getGltfNodeMeshIds(node)) {
-      const nodeMesh = this._meshes[meshKey];
-      if (nodeMesh?.primitives) {
-        const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias, nodeInstances);
-
-        let renderGraphic: RenderGraphic | undefined;
-        if (0 !== meshes.length) {
-          if (1 === meshes.length) {
-            renderGraphic = this.graphicFromMeshData(meshes[0], batchInstances ?? nodeInstances);
-          } else {
-            const thisList: RenderGraphic[] = [];
-            for (const mesh of meshes) {
-              renderGraphic = this.graphicFromMeshData(mesh, batchInstances ?? nodeInstances);
-              if (undefined !== renderGraphic)
-                thisList.push(renderGraphic);
-            }
-
-            if (0 !== thisList.length)
-              renderGraphic = this._system.createGraphicList(thisList);
-          }
-
-          if (renderGraphic) {
-            if (thisTransform && !thisTransform.isIdentity) {
-              const branch = new GraphicBranch(true);
-              branch.add(renderGraphic);
-              renderGraphic = this._system.createBranch(branch, thisTransform);
-            }
-
-            renderGraphicList.push(renderGraphic);
-          }
-        }
-      }
-    }
-
-    if (node.children) {
-      for (const childId of node.children) {
-        const child = this._nodes[childId];
-        if (child)
-          this.readNodeAndCreateGraphics(renderGraphicList, child, featureTable, transformStack, batchInstances ?? nodeInstances);
-      }
-    }
-
-    transformStack.pop();
-    return TileReadStatus.Success;
   }
 
   private readTemplateNodes(
