@@ -25,7 +25,7 @@ import type { IModelConnection } from "../IModelConnection";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
 import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
-import { _createGraphicFromTemplate, _implementationProhibited, _textures } from "../common/internal/Symbols";
+import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { GraphicTemplate, GraphicTemplateBatch, createGraphicTemplate } from "../render/GraphicTemplate";
 
@@ -526,7 +526,7 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
 export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined {
   const template = createGraphicTemplateFromDescription(descr, context, system);
 
-  let graphic = system[_createGraphicFromTemplate](template);
+  let graphic = system.createGraphicFromTemplate({ template });
   if (!graphic) {
     return undefined;
   }

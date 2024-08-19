@@ -31,6 +31,7 @@ import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 import { RenderMemory } from "../RenderMemory";
 import { RealityMeshParams } from "../RealityMeshParams";
 import {
+    CreateGraphicFromTemplateArgs,
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderInstances, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
@@ -68,7 +69,7 @@ import { BatchOptions } from "../../common/render/BatchOptions";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "../GraphicTemplate";
-import { _batch, _branch, _createGraphicFromTemplate, _featureTable, _nodes } from "../../common/internal/Symbols";
+import { _batch, _branch, _featureTable, _nodes } from "../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 /* eslint-disable no-restricted-syntax */
@@ -499,8 +500,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.createRenderGraphic(geom, InstanceBuffers.fromRenderInstances(instances, geom.computeRange()));
   }
 
-  public override [_createGraphicFromTemplate](template: GraphicTemplate, renderInstances?: RenderInstances): RenderGraphic {
-    const instances = renderInstances as RenderInstancesImpl | undefined;
+  public override createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic {
+    const template = args.template;
+    const instances = args.instances as RenderInstancesImpl | undefined;
     if (instances && !template.isInstanceable) {
       throw new Error("GraphicTemplate is not instanceable");
     }

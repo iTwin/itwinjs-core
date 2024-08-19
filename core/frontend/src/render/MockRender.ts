@@ -28,7 +28,7 @@ import { RenderPlan } from "./RenderPlan";
 import { RenderAreaPattern, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
-import { _createGraphicFromTemplate, _implementationProhibited } from "../common/internal/Symbols";
+import { _implementationProhibited } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
@@ -181,7 +181,7 @@ export namespace MockRender {
     /** @internal */
     public override createAreaPattern() { return new AreaPattern(); }
     /** @internal */
-    public override [_createGraphicFromTemplate]() { return new Graphic(); }
+    public override createGraphicFromTemplate() { return new Graphic(); }
   }
 
   export type SystemFactory = () => RenderSystem;

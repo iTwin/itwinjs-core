@@ -17,7 +17,6 @@ export const _batch = Symbol.for(sym("batch"));
 export const _branch = Symbol.for(sym("branch"));
 /** @internal */
 export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
-export const _createGraphicFromTemplate = Symbol.for(sym("createGraphicFromTemplate"));
 export const _featureTable = Symbol.for(sym("featureTable"));
 export const _nodes = Symbol.for(sym("nodes"));
 export const _requestSnap = Symbol.for(sym("requestSnap"));

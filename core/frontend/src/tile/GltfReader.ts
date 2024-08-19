@@ -41,7 +41,6 @@ import {
 import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../render/GraphicTemplate";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { _createGraphicFromTemplate } from "../common/internal/Symbols";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -508,7 +507,7 @@ export abstract class GltfReader {
     const result = this.readGltfAndCreateTemplate(isLeaf, featureTable, contentRange, true, transformToRoot, pseudoRtcBias, instances);
     return result.template ? {
       ...result,
-      graphic: this._system[_createGraphicFromTemplate](result.template),
+      graphic: this._system.createGraphicFromTemplate({ template: result.template }),
     } : result;
   }
 

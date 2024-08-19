@@ -16,7 +16,7 @@ import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumu
 import { MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
-import { _accumulator, _createGraphicFromTemplate, _implementationProhibited } from "../../common/internal/Symbols";
+import { _accumulator, _implementationProhibited } from "../../common/internal/Symbols";
 import { GraphicTemplate, GraphicTemplateBatch, createGraphicTemplate } from "../../render/GraphicTemplate";
 import { RenderGeometry } from "./RenderGeometry";
 
@@ -37,7 +37,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
 
   public override finish(): RenderGraphic {
     const template = this.toTemplate(false);
-    const graphic = this.system[_createGraphicFromTemplate](template);
+    const graphic = this.system.createGraphicFromTemplate({ template });
     return graphic ?? this.system.createGraphicList([]);
   }
 

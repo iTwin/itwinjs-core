@@ -45,7 +45,7 @@ import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
-import { _createGraphicFromTemplate, _featureTable, _implementationProhibited, _renderSystem, _textures, _transformCenter, _transforms } from "../common/internal/Symbols";
+import { _featureTable, _implementationProhibited, _renderSystem, _textures, _transformCenter, _transforms } from "../common/internal/Symbols";
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
@@ -263,6 +263,14 @@ export interface CreateGraphicFromDescriptionArgs {
   context: GraphicDescriptionContext;
 }
 
+/** ###TODO
+ * @beta
+ */
+export interface CreateGraphicFromTemplateArgs {
+  template: GraphicTemplate;
+  instances?: RenderInstances;
+}
+
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -463,15 +471,8 @@ export abstract class RenderSystem implements IDisposable {
   /** ###TODO
    * @beta
    */
-  public createGraphicFromTemplate(args: { template: GraphicTemplate, instances: RenderInstances }): RenderGraphic | undefined {
-    return this[_createGraphicFromTemplate](args.template, args.instances);
-  }
+  public abstract createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic;
 
-  /** @internal */
-  public [_createGraphicFromTemplate](_template: GraphicTemplate, _instances?: RenderInstances): RenderGraphic | undefined {
-    return undefined;
-  }
-  
   /** Create a RenderGraphic from a RenderGeometry produced by this RenderSystem.
    * @internal
    */
