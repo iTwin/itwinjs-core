@@ -40,7 +40,7 @@ import {
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
 import { PickableGraphicOptions } from "../common/render/BatchOptions";
-import { GraphicTemplateNode } from "../render/GraphicTemplate";
+import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../render/GraphicTemplate";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 
 /* eslint-disable no-restricted-syntax */
@@ -146,6 +146,8 @@ export interface GltfReaderResult extends TileContent {
   readStatus: TileReadStatus;
   range?: AxisAlignedBox3d;
 }
+
+type GltfTemplateResult = Omit<GltfReaderResult, "graphic"> & { template?: GraphicTemplate };
 
 /** Data required for creating a [[GltfReader]] capable of deserializing [glTF](https://www.khronos.org/gltf/).
  * @internal
@@ -580,6 +582,82 @@ export abstract class GltfReader {
     };
   }
 
+  protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfTemplateResult {
+    if (this._isCanceled)
+      return { readStatus: TileReadStatus.Canceled, isLeaf };
+
+    // If contentRange was not supplied, we will compute it as we read the meshes.
+    if (!contentRange)
+      this._computedContentRange = contentRange = Range3d.createNull();
+    else
+      this._computedContentRange = undefined;
+
+    // Save feature table model id in case we need to recreate it after reading instances
+    const featureTableModelId = featureTable?.modelId;
+    // Flush feature table if instance features are used
+    if(this._structuralMetadata && this._glTF.extensionsUsed?.includes("EXT_instance_features") && this._idMap){
+      featureTable = undefined;
+    }
+
+    // ###TODO this looks like a hack? Why does it assume the first node's transform is special, or that the transform will be specified as a matrix instead of translation+rot+scale?
+    if (this._returnToCenter || this._nodes[0]?.matrix || (pseudoRtcBias && pseudoRtcBias.magnitude() < 1.0E5))
+      pseudoRtcBias = undefined;
+
+    const transformStack = new TransformStack();
+    const templateNodes: GraphicTemplateNode[] = [];
+    let readStatus: TileReadStatus = TileReadStatus.InvalidTileData;
+    for (const nodeKey of this._sceneNodes) {
+      assert(transformStack.isEmpty);
+      const node = this._nodes[nodeKey];
+      if (node && TileReadStatus.Success !== (readStatus = this.readTemplateNodes(templateNodes, node, featureTable, transformStack, instances, pseudoRtcBias)))
+        return { readStatus, isLeaf };
+    }
+
+    // Creates a feature table based on instance features
+    // The table must be created after reading instances, since the maximum number of features is not known until all instances have been read.
+    if(this._instanceFeatures.length > 0 && this._idMap){
+      featureTable = new FeatureTable(this._instanceFeatures.length, featureTableModelId);
+      for(let instanceFeatureId = 0; instanceFeatureId < this._instanceFeatures.length; instanceFeatureId++){
+        featureTable.insertWithIndex(this._instanceFeatures[instanceFeatureId], instanceFeatureId);
+      }
+    }
+
+    if (0 === templateNodes.length)
+      return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
+
+    // Compute range in tileset/world space.
+    let range = contentRange;
+    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
+    const invTransform = transform?.inverse();
+    if (invTransform)
+      range = invTransform.multiplyRange(contentRange);
+
+    // The batch range needs to be in tile coordinate space.
+    // If we computed the content range ourselves, it's already in tile space.
+    // If the content range was supplied by the caller, it's in tileset space and needs to be transformed to tile space.
+    const batch: GraphicTemplateBatch | undefined = !featureTable ? undefined : {
+      featureTable: PackedFeatureTable.pack(featureTable),
+      range: this._computedContentRange ? contentRange : range,
+    };
+
+    const viewFlagOverrides = this.viewFlagOverrides;
+    const branch: GraphicTemplateBranch | undefined = transform || viewFlagOverrides ? { transform, viewFlagOverrides } : undefined;
+
+    return {
+      readStatus,
+      isLeaf,
+      contentRange,
+      range,
+      containsPointCloud: this._containsPointCloud,
+      template: createGraphicTemplate({
+        nodes: templateNodes,
+        batch,
+        branch,
+        noDispose,
+      })
+    };
+  }
+  
   public readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
     const transformStack = new TransformStack(this.getTileTransform(transformToRoot));
     const polyfaces: IndexedPolyface[] = [];
