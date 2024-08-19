@@ -13,16 +13,12 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GeometryOptions } from "../../common/internal/render/Primitives";
 import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumulator";
-import { Mesh, MeshList } from "../../common/internal/render/MeshPrimitives";
+import { MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
 import { _accumulator, _createGraphicFromTemplate, _implementationProhibited } from "../../common/internal/Symbols";
 import { GraphicTemplate, GraphicTemplateBatch, createGraphicTemplate } from "../../render/GraphicTemplate";
 import { RenderGeometry } from "./RenderGeometry";
-import { createMeshParams } from "../../common/internal/render/VertexTableBuilder";
-import { IModelApp } from "../../IModelApp";
-import { createPointStringParams } from "../../common/internal/render/PointStringParams";
-import { createPolylineParams } from "../../common/internal/render/PolylineParams";
 
 /** @internal */
 export class PrimitiveBuilder extends GraphicBuilder {
@@ -40,18 +36,22 @@ export class PrimitiveBuilder extends GraphicBuilder {
   }
 
   public override finish(): RenderGraphic {
-    const template = this.finishTemplate();
+    const template = this.toTemplate(false);
     const graphic = this.system[_createGraphicFromTemplate](template);
     return graphic ?? this.system.createGraphicList([]);
   }
 
   public override finishTemplate(): GraphicTemplate {
+    return this.toTemplate(true);
+  }
+
+  private toTemplate(noDispose: boolean): GraphicTemplate {
     const accum = this[_accumulator];
     const tolerance = this.computeTolerance(accum);
-    const result = this.saveToTemplate(this, tolerance, this.pickable);
+    const result = this.saveToTemplate(this, tolerance, this.pickable, noDispose);
     accum.clear();
 
-    return result ?? createGraphicTemplate({ nodes: [] });
+    return result ?? createGraphicTemplate({ nodes: [], noDispose });
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {
@@ -130,7 +130,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
     return meshes;
   }
 
-  private saveToTemplate(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): GraphicTemplate | undefined {
+  private saveToTemplate(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined, noDispose: boolean): GraphicTemplate | undefined {
     const meshes = this[_accumulator].toMeshes(options, tolerance, pickable);
     if (0 === meshes.length)
       return undefined;
@@ -172,7 +172,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
         }
       }
 
-      const geom = createGeometryFromMesh(mesh, this.system, this._viewIndependentOrigin);
+      const geom = this.system.createGeometryFromMesh(mesh, this._viewIndependentOrigin);
       if (geom) {
         geometry.push(geom);
       }
@@ -199,27 +199,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
     return createGraphicTemplate({
       batch,
       nodes: [{ geometry, transform }],
+      noDispose,
     });
   }
-}
-
-function createGeometryFromMesh(mesh: Mesh, system: RenderSystem, viOrigin: Point3d | undefined): RenderGeometry | undefined {
-  const meshArgs = mesh.toMeshArgs();
-  if (meshArgs) {
-    const meshParams = createMeshParams(meshArgs, system.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
-    return system.createMeshGeometry(meshParams, viOrigin);
-  }
-
-  const plArgs = mesh.toPolylineArgs();
-  if (!plArgs) {
-    return undefined;
-  }
-
-  if (plArgs.flags.isDisjoint) {
-    const psParams = createPointStringParams(plArgs, system.maxTextureSize);
-    return psParams ? system.createPointStringGeometry(psParams, viOrigin) : undefined;
-  }
-
-  const plParams = createPolylineParams(plArgs, system.maxTextureSize);
-  return plParams ? system.createPolylineGeometry(plParams, viOrigin) : undefined;
 }

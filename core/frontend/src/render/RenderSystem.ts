@@ -401,6 +401,28 @@ export abstract class RenderSystem implements IDisposable {
     return polylineArgs ? this.createIndexedPolylines(polylineArgs, instances) : undefined;
   }
 
+  /** @internal */
+  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined {
+    const meshArgs = mesh.toMeshArgs();
+    if (meshArgs) {
+      const meshParams = createMeshParams(meshArgs, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
+      return this.createMeshGeometry(meshParams, viOrigin);
+    }
+
+    const plArgs = mesh.toPolylineArgs();
+    if (!plArgs) {
+      return undefined;
+    }
+
+    if (plArgs.flags.isDisjoint) {
+      const psParams = createPointStringParams(plArgs, this.maxTextureSize);
+      return psParams ? this.createPointStringGeometry(psParams, viOrigin) : undefined;
+    }
+
+    const plParams = createPolylineParams(plArgs, this.maxTextureSize);
+    return plParams ? this.createPolylineGeometry(plParams, viOrigin) : undefined;
+  }
+
   /** Create a graphic from a low-level representation of a set of line strings.
    * @param args A description of the line strings.
    * @param instances Repetitions of the line strings to be drawn.

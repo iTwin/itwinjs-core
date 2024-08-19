@@ -514,6 +514,7 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
   return createGraphicTemplate({
     nodes: [{ geometry }],
     batch,
+    noDispose: true,
   });
 }
 

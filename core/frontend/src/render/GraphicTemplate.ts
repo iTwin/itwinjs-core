@@ -48,6 +48,7 @@ export interface GraphicTemplate {
 export function createGraphicTemplate(args: {
   nodes: GraphicTemplateNode[],
   batch?: GraphicTemplateBatch,
+  noDispose: boolean,
 }): GraphicTemplate {
   let isInstanceable = true;
   for (const node of args.nodes) {
@@ -56,7 +57,7 @@ export function createGraphicTemplate(args: {
     }
 
     for (const geometry of node.geometry) {
-      geometry.noDispose = true;
+      geometry.noDispose = args.noDispose;
       if (!geometry.isInstanceable) {
         isInstanceable = false;
       }
