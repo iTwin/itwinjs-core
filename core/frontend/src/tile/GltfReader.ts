@@ -545,16 +545,11 @@ export abstract class GltfReader {
     if (0 === renderGraphicList.length)
       return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
 
-    let renderGraphic: RenderGraphic | undefined;
-    if (1 === renderGraphicList.length)
-      renderGraphic = renderGraphicList[0];
-    else
-      renderGraphic = this._system.createGraphicList(renderGraphicList);
-
-    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
+    let renderGraphic = this._system.createGraphicList(renderGraphicList);
 
     // Compute range in tileset/world space.
     let range = contentRange;
+    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
     const invTransform = transform?.inverse();
     if (invTransform)
       range = invTransform.multiplyRange(contentRange);

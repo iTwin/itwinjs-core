@@ -68,7 +68,7 @@ import { BatchOptions } from "../../common/render/BatchOptions";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "../GraphicTemplate";
-import { _batch, _createGraphicFromTemplate, _featureTable, _nodes } from "../../common/internal/Symbols";
+import { _batch, _branch, _createGraphicFromTemplate, _featureTable, _nodes } from "../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 /* eslint-disable no-restricted-syntax */
@@ -538,6 +538,17 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       graphic = this.createBatch(graphic, instances[_featureTable], range);
     } else if (template[_batch]) {
       graphic = this.createBatch(graphic, template[_batch].featureTable, template[_batch].range, template[_batch].options);
+    }
+
+    const templateBranch = template[_branch];
+    if (templateBranch) {
+      const branch = new GraphicBranch(true);
+      if (templateBranch.viewFlagOverrides) {
+        branch.setViewFlagOverrides(templateBranch.viewFlagOverrides);
+      }
+
+      branch.add(graphic);
+      graphic = this.createBranch(branch, templateBranch.transform ?? Transform.createIdentity());
     }
 
     return graphic;

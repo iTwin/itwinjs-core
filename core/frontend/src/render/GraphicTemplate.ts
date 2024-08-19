@@ -7,9 +7,9 @@
  */
 
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { _batch, _implementationProhibited, _nodes } from "../common/internal/Symbols";
+import { _batch, _branch, _implementationProhibited, _nodes } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { RenderFeatureTable } from "@itwin/core-common";
+import { RenderFeatureTable, ViewFlagOverrides } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import { BatchOptions } from "../common/render/BatchOptions";
 
@@ -29,6 +29,12 @@ export interface GraphicTemplateBatch {
   readonly range: Range3d;
 }
 
+/** @internal */
+export interface GraphicTemplateBranch {
+  readonly transform?: Transform;
+  readonly viewFlagOverrides?: ViewFlagOverrides;
+}
+
 export interface GraphicTemplate {
   readonly [_implementationProhibited]: unknown;
 
@@ -38,6 +44,8 @@ export interface GraphicTemplate {
   readonly [_nodes]: GraphicTemplateNode[];
   /** @internal */
   readonly [_batch]?: GraphicTemplateBatch;
+  /** @internal */
+  readonly [_branch]?: GraphicTemplateBranch;
 }
 
 /** Create a GraphicTemplate.
@@ -49,6 +57,7 @@ export function createGraphicTemplate(args: {
   nodes: GraphicTemplateNode[],
   batch?: GraphicTemplateBatch,
   noDispose: boolean,
+  branch?: GraphicTemplateBranch,
 }): GraphicTemplate {
   let isInstanceable = true;
   for (const node of args.nodes) {
@@ -69,5 +78,6 @@ export function createGraphicTemplate(args: {
     isInstanceable,
     [_nodes]: args.nodes,
     [_batch]: args.batch,
+    [_branch]: args.branch,
   };
 }
