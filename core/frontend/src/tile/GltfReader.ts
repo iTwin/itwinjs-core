@@ -148,6 +148,15 @@ export interface GltfReaderResult extends TileContent {
 
 type GltfTemplateResult = Omit<GltfReaderResult, "graphic"> & { template?: GraphicTemplate };
 
+function templateToGraphicResult(result: GltfTemplateResult, system: RenderSystem): GltfReaderResult {
+  const template = result.template;
+  delete result.template;
+  return {
+    ...result,
+    graphic: template ? system.createGraphicFromTemplate({ template }) : undefined,
+  };
+}
+
 /** Data required for creating a [[GltfReader]] capable of deserializing [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -505,10 +514,7 @@ export abstract class GltfReader {
 
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
     const result = this.readGltfAndCreateTemplate(isLeaf, featureTable, contentRange, true, transformToRoot, pseudoRtcBias, instances);
-    return result.template ? {
-      ...result,
-      graphic: this._system.createGraphicFromTemplate({ template: result.template }),
-    } : result;
+    return templateToGraphicResult(result, this._system);
   }
 
   protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfTemplateResult {
@@ -2063,6 +2069,18 @@ export interface GltfGraphic {
   boundingBox: AxisAlignedBox3d;
 }
 
+/** The output of [[readGltfTemplate]].
+ * @public
+ */
+export interface GltfTemplate {
+  /** The graphic template created from the glTF model. */
+  template: GraphicTemplate;
+  /** The bounding box of the model, in local coordinates (y-axis up). */
+  localBoundingBox: ElementAlignedBox3d;
+  /** The bounding box of the model, in world coordinates (z-axis up). */
+  boundingBox: AxisAlignedBox3d;
+}
+
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
  * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
@@ -2078,6 +2096,27 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
   return result?.graphic;
 }
 
+/** ###TODO
+ * @beta
+ */
+export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<GltfTemplate | undefined> {
+  const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
+  const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
+  const reader = props ? new GltfGraphicsReader(props, args) : undefined;
+  if (!reader)
+    return undefined;
+
+  const result = await reader.readTemplate();
+  if (!result.template)
+    return undefined;
+
+  return {
+    template: result.template,
+    localBoundingBox: result.contentRange ?? Range3d.createNull(),
+    boundingBox: result.range ?? Range3d.createNull(),
+  };
+}
+
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
  * The returned graphic also includes the bounding boxes of the glTF model in world and local coordiantes.
@@ -2088,24 +2127,17 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
  * @public
  */
 export async function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic | undefined> {
-  const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
-  const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
-  const reader = props ? new GltfGraphicsReader(props, args) : undefined;
-  if (!reader)
+  const result = await readGltfTemplate(args);
+  if (!result) {
     return undefined;
+  }
 
-  const result = await reader.read();
-  if (!result.graphic)
-    return undefined;
-
-  assert(result.contentRange !== undefined, "readGltf always computes content range");
-  assert(result.range !== undefined, "readGltf always computes world range");
-
+  const template = result.template;
+  delete (result as Partial<GltfTemplate>).template;
   return {
-    graphic: result.graphic,
-    localBoundingBox: result.contentRange ?? Range3d.createNull(),
-    boundingBox: result.range ?? Range3d.createNull(),
-  };
+    ...result,
+    graphic: IModelApp.renderSystem.createGraphicFromTemplate({ template }),
+  }
 }
 
 /** Implements [[readGltfGraphics]]. Exported strictly for tests.
@@ -2188,7 +2220,6 @@ export class GltfGraphicsReader extends GltfReader {
   }
 
   private getGltfStructuralMetadataPropertyValues(property: GltfStructuralMetadata.PropertyTableProperty, classProperty: GltfStructuralMetadata.ClassProperty, count: number){
-
     // Not supported for now
     if(classProperty.type === "ENUM" || classProperty.type === "BOOLEAN"){
       return undefined;
@@ -2329,10 +2360,15 @@ export class GltfGraphicsReader extends GltfReader {
     }
   }
 
-  public async read(): Promise<GltfReaderResult> {
+  public async readTemplate(): Promise<GltfTemplateResult> {
     await this.resolveResources();
     this.readGltfStructuralMetadata();
-    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._contentRange, this._transform);
+    return this.readGltfAndCreateTemplate(this._isLeaf, this._featureTable, this._contentRange, true, this._transform);
+  }
+
+  public async read(): Promise<GltfReaderResult> {
+    const result = await this.readTemplate();
+    return templateToGraphicResult(result, this._system);
   }
 
   public get structuralMetadata(): StructuralMetadata | undefined { return this._structuralMetadata; }
