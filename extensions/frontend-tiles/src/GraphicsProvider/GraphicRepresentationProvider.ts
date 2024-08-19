@@ -271,3 +271,30 @@ export async function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresen
   url.pathname = `${url.pathname}/tileset.json`;
   return url;
 }
+
+export async function obtainGraphicRepresentationList(args: ObtainGraphicRepresentationUrlArgs): Promise<GraphicRepresentation[] | undefined> {
+  if (!args.dataSource.id) {
+    Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data from a source without an Id");
+    return undefined;
+  }
+
+  const queryArgs: QueryGraphicRepresentationsArgs = {
+    accessToken: args.accessToken,
+    sessionId: args.sessionId,
+    dataSource: args.dataSource,
+    format: args.format,
+    urlPrefix: args.urlPrefix,
+    enableCDN: args.enableCDN,
+  };
+
+  const reps: GraphicRepresentation[] = [];
+  let count = 0;
+  for await (const data of queryGraphicRepresentations(queryArgs)) {
+    reps.push(data);
+    count++;
+    if (count > 4)
+      break;
+  }
+
+  return reps;
+}
