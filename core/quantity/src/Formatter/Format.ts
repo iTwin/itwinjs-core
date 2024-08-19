@@ -419,6 +419,9 @@ export class Format extends BaseFormat {
       };
     }
 
+    const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
+    const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
+
     if (this.customProps)
       return {
         type: formatTypeToString(this.type),
@@ -433,6 +436,10 @@ export class Format extends BaseFormat {
         scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
         stationOffsetSize: this.stationOffsetSize,
         stationSeparator: this.stationSeparator,
+        azimuthBase: this.azimuthBase,
+        azimuthBaseUnit,
+        azimuthCounterClockwise: this.azimuthCounterClockwise,
+        revolutionUnit,
         composite,
         custom: this.customProps,
       } as CustomFormatProps;
@@ -450,6 +457,10 @@ export class Format extends BaseFormat {
       scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
+      azimuthBase: this.azimuthBase,
+      azimuthBaseUnit,
+      azimuthCounterClockwise: this.azimuthCounterClockwise,
+      revolutionUnit,
       composite,
     };
   }
