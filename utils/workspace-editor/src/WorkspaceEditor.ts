@@ -666,7 +666,8 @@ Yargs.command<MakeVersionOpt>({
   command: "versionDb <dbName>",
   describe: "make a new version of a WorkspaceDb",
   builder: {
-    versionType: { describe: "the type of version to create", default: "patch", string: true, choices: ["major", "minor", "patch"] },
+    versionType: { describe: "the type of version to create", default: "patch", string: true, choices: ["major" , "minor" , "patch" , "premajor" , "preminor" , "prepatch" , "prerelease"] },
+    includePrerelease:{describe: "version prereleased Db", boolean:true, default:false},
   },
   handler: runCommand(versionWorkspaceDb),
 });

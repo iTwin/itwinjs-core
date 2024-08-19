@@ -89,4 +89,6 @@ We welcome contributions, large or small, including:
 - Example code snippets
 - Sample data
 
+If you would like to contribute new APIs, please check the [CODEOWNERS](https://github.com/iTwin/itwinjs-core/blob/master/.github/CODEOWNERS) file to ensure your contributions align with the package owner's and project goals.
+
 Thank you for taking the time to contribute to open source and making great projects like iTwin.js possible!
