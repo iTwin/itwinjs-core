@@ -8,7 +8,7 @@ import {
   GpuMemoryLimit,
   IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
 } from "@itwin/core-frontend";
-import { initializeFrontendTiles, obtainMeshExportTilesetUrl } from "@itwin/frontend-tiles";
+import { initializeFrontendTiles, MeshExport, obtainMeshExportTilesetUrl, queryMeshExports, QueryMeshExportsArgs } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -229,12 +229,37 @@ const dtaFrontendMain = async () => {
       //     return undefined;
       //   }
       // },
-      computeSpatialTilesetBaseUrl: async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({
-        iModel,
-        accessToken: configuration.frontendTilesToken || "",
-        enableCDN: false,
-        urlPrefix: "qa-",
-      }),
+      computeSpatialTilesetBaseUrl: async (iModel: IModelConnection) => {
+
+        // Test - get latest 5 exports
+        // The only issue with this is the url provided by the MeshExport object is not directly to the tileset
+        // It would need "/tileset.json" appended - see GraphicRepresentationProvider.ts L271
+        const meshExportArgs: QueryMeshExportsArgs = {
+          accessToken: configuration.frontendTilesToken || "",
+          iTwinId: iModel.iTwinId || "",
+          iModelId: iModel.iModelId || "",
+          changesetId: iModel.changeset?.id || "",
+          // changesetId: "a450237bc8fc062a24c6d4be7cbce9912c567e96",
+          enableCDN: false,
+          urlPrefix: "qa-",
+        };
+        const exports: MeshExport[] = [];
+        let count = 0;
+        for await (const data of queryMeshExports(meshExportArgs)) {
+          exports.push(data);
+          count++;
+          if (count > 4)
+            break;
+        }
+        console.log(exports);
+
+        return obtainMeshExportTilesetUrl({
+          iModel,
+          accessToken: configuration.frontendTilesToken || "",
+          enableCDN: false,
+          urlPrefix: "qa-",
+        });
+      },
     });
   }
 
