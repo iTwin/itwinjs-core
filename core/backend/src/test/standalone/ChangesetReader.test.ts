@@ -575,7 +575,7 @@ describe("Changeset Reader API", async () => {
     const changesets = (await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir })).slice(1);
 
     if ("Grouping changeset [2,3,4] should not contain TestDomain:Test2dElement as insert+update+delete=noop") {
-      const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true, });
+      const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
       while (adaptor.step()) {
@@ -608,19 +608,19 @@ describe("Changeset Reader API", async () => {
         id: "0x20000000004",
         classId: "0x14d",
         op: "Deleted",
-        classFullName: "TestDomain:Test2dElement"
+        classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[1]).deep.eq({
         id: "0x20000000004",
         classId: "0x14d",
         op: "Deleted",
-        classFullName: "TestDomain:Test2dElement"
+        classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[2]).deep.eq({
         id: "0x20000000001",
         classId: "0xa5",
         op: "Updated",
-        classFullName: "BisCore:DrawingModel"
+        classFullName: "BisCore:DrawingModel",
       });
     }
     const groupCsFile = path.join(KnownTestLocations.outputDir, "changeset_grouping.ec");
@@ -640,19 +640,19 @@ describe("Changeset Reader API", async () => {
         id: "0x20000000004",
         classId: "0x14d",
         op: "Inserted",
-        classFullName: "TestDomain:Test2dElement"
+        classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[1]).deep.eq({
         id: "0x20000000004",
         classId: "0x14d",
         op: "Inserted",
-        classFullName: "TestDomain:Test2dElement"
+        classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[2]).deep.eq({
         id: "0x20000000001",
         classId: "0xa5",
         op: "Updated",
-        classFullName: "BisCore:DrawingModel"
+        classFullName: "BisCore:DrawingModel",
       });
 
       reader.writeToFile({ fileName: groupCsFile, containsSchemaChanges: false, overwriteFile: true });
@@ -673,19 +673,19 @@ describe("Changeset Reader API", async () => {
         id: "0x20000000004",
         classId: "0x14d",
         op: "Inserted",
-        classFullName: "TestDomain:Test2dElement"
+        classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[1]).deep.eq({
         id: "0x20000000004",
         classId: "0x14d",
         op: "Inserted",
-        classFullName: "TestDomain:Test2dElement"
+        classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[2]).deep.eq({
         id: "0x20000000001",
         classId: "0xa5",
         op: "Updated",
-        classFullName: "BisCore:DrawingModel"
+        classFullName: "BisCore:DrawingModel",
       });
     }
     rwIModel.close();
