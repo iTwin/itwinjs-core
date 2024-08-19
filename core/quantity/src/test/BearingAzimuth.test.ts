@@ -7,7 +7,7 @@ import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, Parser, ParserSpec, UnitProps } from "../core-quantity";
+import { FormatProps, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvider } from "../core-quantity";
 
 describe("Bearing format tests:", () => {
   it("Roundtrip persisted radian to and from bearing", async () => {
@@ -392,5 +392,105 @@ describe("Azimuth format tests:", () => {
     expect(parseResult.value).closeTo(0.0872665, 0.0001);
     const formattedValue = Formatter.formatQuantity(parseResult.value, formatter);
     expect(formattedValue).to.be.eql("265.0°");
+  });
+});
+
+describe("Azimuth and Revolution formatting that throws error:", () => {
+  const unitsProvider: UnitsProvider = {
+    findUnitByName: async (name: string) => {
+      if (name === "invalidUnit") {
+        return { isValid: false };
+      }
+      return { isValid: true };
+    },
+  } as UnitsProvider;
+
+  const testFormatWithAzimuthType = new Format("testAzimuthFormat");
+
+  it("should throw an error if azimuthBaseUnit is not a string", async () => {
+    const jsonObj: FormatProps = {
+      azimuthBaseUnit: 123 as unknown as string,
+      type: "azimuth",
+    };
+
+    try {
+      await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
+      expect.fail("Expected error was not thrown");
+    } catch (e: any) {
+      assert.strictEqual(e.message, "The Format testAzimuthFormat has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.");
+      assert.instanceOf(e, QuantityError);
+    }
+  });
+
+  it("should throw an error if azimuthBaseUnit is invalid", async () => {
+    const jsonObj: FormatProps = {
+      azimuthBaseUnit: "invalidUnit",
+      type: "azimuth",
+    };
+
+    try {
+      await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
+      expect.fail("Expected error was not thrown");
+    } catch (e: any) {
+      assert.strictEqual(e.message, "Invalid unit name 'invalidUnit' for azimuthBaseUnit in Format 'testAzimuthFormat'.");
+      assert.instanceOf(e, QuantityError);
+    }
+  });
+
+  it("should throw an error if revolutionUnit is not a string", async () => {
+    const jsonObj: FormatProps = {
+      revolutionUnit: 123 as unknown as string, // Invalid type
+      type: "azimuth",
+    };
+
+    try {
+      await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
+      expect.fail("Expected error was not thrown");
+    } catch (e: any) {
+      assert.strictEqual(e.message, "The Format testAzimuthFormat has an invalid 'revolutionUnit' attribute. It should be of type 'string'.");
+      assert.instanceOf(e, QuantityError);
+    }
+  });
+
+  it("should throw an error if revolutionUnit is invalid", async () => {
+    const jsonObj: FormatProps = {
+      revolutionUnit: "invalidUnit",
+      type: "azimuth",
+    };
+
+    try {
+      await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
+      expect.fail("Expected error was not thrown");
+    } catch (e: any) {
+      assert.strictEqual(e.message, "Invalid unit name 'invalidUnit' for revolutionUnit in Format 'testAzimuthFormat'.");
+      assert.instanceOf(e, QuantityError);
+    }
+  });
+
+  it("should throw an error if revolutionUnit is required but not provided", async () => {
+    const jsonObj: FormatProps = {
+      type: "azimuth",
+    };
+
+    try {
+      await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
+      expect.fail("Expected error was not thrown");
+    } catch (e: any) {
+      assert.strictEqual(e.message, "The Format testAzimuthFormat is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.");
+      assert.instanceOf(e, QuantityError);
+    }
+  });
+
+  it("should throw an error if _azimuthBase is defined and _azimuthBaseUnit is undefined when revolutionUnit is defined", async () => {
+    testFormatWithAzimuthType.revolutionUnit = await unitsProvider.findUnitByName("Units.REVOLUTION"); // Set _revolutionUnit to a defined value
+    testFormatWithAzimuthType.azimuthBase = 123; // Set _azimuthBase to a defined value
+    testFormatWithAzimuthType.azimuthBaseUnit = undefined; // Ensure _azimuthBaseUnit is undefined
+    try {
+      await testFormatWithAzimuthType.fromJSON(unitsProvider, { type: "azimuth" });
+      expect.fail("Expected error was not thrown");
+    } catch (e: any) {
+      assert.strictEqual(e.message, "The Format testAzimuthFormat has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.");
+      assert.instanceOf(e, QuantityError);
+    }
   });
 });
