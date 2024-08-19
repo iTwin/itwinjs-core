@@ -222,10 +222,17 @@ export interface PlanarGridProps {
  */
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
+/** ###TODO
+ * @beta
+ */
 export interface RenderInstances {
+  /** @internal */
   readonly [_implementationProhibited]: "renderInstances";
+  /** @internal */
   readonly [_transformCenter]: XYAndZ;
+  /** @internal */
   readonly [_transforms]: Float32Array;
+  /** @internal */
   readonly [_featureTable]?: PackedFeatureTable;
 }
 

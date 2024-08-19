@@ -55,6 +55,7 @@ export type InstancedGraphicProps = Omit<InstancedGraphicParams, "transformCente
   range?: LowAndHighXYZ;
 }
 
+/** @public */
 export namespace InstancedGraphicProps {
   export function collectTransferables(xfers: Set<Transferable>, props: InstancedGraphicProps): void {
     xfers.add(props.transforms.buffer);

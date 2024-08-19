@@ -2326,13 +2326,24 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
-export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined>;
+export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined;
 
 // @beta
 export interface CreateGraphicFromDescriptionArgs {
     context: GraphicDescriptionContext;
     description: GraphicDescription;
 }
+
+// @beta
+export interface CreateGraphicFromTemplateArgs {
+    // (undocumented)
+    instances?: RenderInstances;
+    // (undocumented)
+    template: GraphicTemplate;
+}
+
+// @internal (undocumented)
+export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate;
 
 // @internal
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
@@ -2351,6 +2362,12 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
 
 // @internal (undocumented)
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference;
+
+// @beta
+export interface CreateRenderInstancesParamsBuilderArgs {
+    // (undocumented)
+    modelId?: Id64String;
+}
 
 // @public
 export interface CreateRenderMaterialArgs extends MaterialParams {
@@ -4111,6 +4128,8 @@ export class GltfGraphicsReader extends GltfReader {
     // (undocumented)
     read(): Promise<GltfReaderResult>;
     // (undocumented)
+    readTemplate(): Promise<GltfTemplateResult>;
+    // (undocumented)
     get sceneNodes(): GltfId[];
     // (undocumented)
     get scenes(): GltfDictionary<GltfScene>;
@@ -4253,6 +4272,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult;
     // (undocumented)
+    protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfTemplateResult;
+    // (undocumented)
     protected readIndices(json: {
         [k: string]: any;
     }, accessorName: string): number[] | undefined;
@@ -4334,6 +4355,13 @@ export interface GltfReaderResult extends TileContent {
     range?: AxisAlignedBox3d;
     // (undocumented)
     readStatus: TileReadStatus;
+}
+
+// @public
+export interface GltfTemplate {
+    boundingBox: AxisAlignedBox3d;
+    localBoundingBox: ElementAlignedBox3d;
+    template: GraphicTemplate;
 }
 
 // @internal (undocumented)
@@ -4533,6 +4561,8 @@ export abstract class GraphicBuilder extends GraphicAssembler {
     // @internal (undocumented)
     protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
     abstract finish(): RenderGraphic;
+    // @beta
+    abstract finishTemplate(): GraphicTemplate;
     readonly iModel?: IModelConnection;
     // @deprecated
     get pickId(): Id64String | undefined;
@@ -5731,6 +5761,16 @@ export enum InputSource {
     Unknown = 0
 }
 
+// @beta
+export interface Instance {
+    // (undocumented)
+    feature?: Feature | Id64String;
+    // (undocumented)
+    symbology?: InstanceSymbology;
+    // (undocumented)
+    transform: Transform;
+}
+
 // @public
 export interface InstancedGraphicParams {
     readonly count: number;
@@ -5739,6 +5779,36 @@ export interface InstancedGraphicParams {
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
+}
+
+// @public (undocumented)
+export namespace InstancedGraphicParams {
+    // (undocumented)
+    export function fromProps(props: InstancedGraphicProps): InstancedGraphicParams;
+    // (undocumented)
+    export function toProps(params: InstancedGraphicParams): InstancedGraphicProps;
+}
+
+// @public
+export type InstancedGraphicProps = Omit<InstancedGraphicParams, "transformCenter" | "range"> & {
+    transformCenter: XYAndZ;
+    range?: LowAndHighXYZ;
+};
+
+// @public (undocumented)
+export namespace InstancedGraphicProps {
+    // (undocumented)
+    export function collectTransferables(xfers: Set<Transferable>, props: InstancedGraphicProps): void;
+}
+
+// @beta
+export interface InstanceSymbology {
+    // (undocumented)
+    color?: RgbColorProps;
+    // (undocumented)
+    linePixels?: LinePixels;
+    // (undocumented)
+    weight?: number;
 }
 
 // @public
@@ -7561,10 +7631,19 @@ export namespace MockRender {
     }
     // (undocumented)
     export class Geometry implements RenderGeometry {
+        constructor(renderGeometryType: "mesh" | "polyline" | "point-string");
         // (undocumented)
         collectStatistics(): void;
         // (undocumented)
+        computeRange(): Range3d;
+        // (undocumented)
         dispose(): void;
+        // (undocumented)
+        readonly isInstanceable = true;
+        // (undocumented)
+        noDispose: boolean;
+        // (undocumented)
+        readonly renderGeometryType: "mesh" | "polyline" | "point-string";
     }
     // (undocumented)
     export class Graphic extends RenderGraphic {
@@ -7611,6 +7690,8 @@ export namespace MockRender {
         createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
         // (undocumented)
         createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): Branch;
+        // (undocumented)
+        createGraphicFromTemplate(): Graphic;
         // (undocumented)
         createGraphicList(primitives: RenderGraphic[]): List;
         // (undocumented)
@@ -7916,6 +7997,8 @@ export class NullRenderSystem extends RenderSystem {
     createGraphic(): any;
     // (undocumented)
     createGraphicBranch(): any;
+    // (undocumented)
+    createGraphicFromTemplate(): any;
     // (undocumented)
     createGraphicList(): any;
     // (undocumented)
@@ -8813,6 +8896,9 @@ export interface ReadGltfGraphicsArgs {
     transform?: Transform;
 }
 
+// @beta
+export function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<GltfTemplate | undefined>;
+
 // @public
 export interface ReadImageBufferArgs {
     rect?: ViewRect;
@@ -9475,9 +9561,6 @@ export enum RenderDiagnostics {
     WebGL = 4
 }
 
-// @internal
-export type RenderGeometry = IDisposable & RenderMemory.Consumer;
-
 // @public
 export abstract class RenderGraphic implements IDisposable {
     // @internal (undocumented)
@@ -9506,6 +9589,46 @@ export interface RenderGraphicTileTreeArgs {
     iModel: IModelConnection;
     modelId: Id64String;
     viewFlags?: ViewFlagOverrides;
+}
+
+// @beta
+export interface RenderInstances {
+    // @internal (undocumented)
+    readonly [_featureTable]?: PackedFeatureTable;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: "renderInstances";
+    // @internal (undocumented)
+    readonly [_transformCenter]: XYAndZ;
+    // @internal (undocumented)
+    readonly [_transforms]: Float32Array;
+}
+
+// @beta
+export interface RenderInstancesParams {
+    // (undocumented)
+    readonly [_implementationProhibited]: "renderInstancesParams";
+}
+
+// @beta (undocumented)
+export namespace RenderInstancesParams {
+    // (undocumented)
+    export function collectTransferables(xfers: Set<Transferable>, params: RenderInstancesParams): void;
+}
+
+// @beta
+export interface RenderInstancesParamsBuilder {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    // (undocumented)
+    add(instance: Instance): void;
+    // (undocumented)
+    finish(): RenderInstancesParams;
+}
+
+// @beta (undocumented)
+export namespace RenderInstancesParamsBuilder {
+    // (undocumented)
+    export function create(args: CreateRenderInstancesParamsBuilderArgs): RenderInstancesParamsBuilder;
 }
 
 // @internal
@@ -9830,11 +9953,15 @@ export abstract class RenderSystem implements IDisposable {
     abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined;
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     // @beta
-    createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): Promise<RenderGraphic | undefined>;
+    createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): RenderGraphic | undefined;
+    // @beta
+    abstract createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic;
     // @internal
     createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic;
     // @internal
@@ -9857,7 +9984,9 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPlanarGrid(_frustum: Frustum, _grid: PlanarGridProps): RenderGraphic | undefined;
     // @internal (undocumented)
-    createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
+    createPointCloud(args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createPointCloudGeometry(_args: PointCloudArgs): RenderGeometry | undefined;
     // @internal (undocumented)
     createPointString(params: PointStringParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -9867,17 +9996,23 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
-    createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
+    createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal?: boolean): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createRealityMeshGeometry(_params: RealityMeshParams, _disableTextureDisposal?: boolean): RenderGeometry | undefined;
     // @internal (undocumented)
     createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
+    // @beta
+    createRenderInstances(_params: RenderInstancesParams): RenderInstances | undefined;
     createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     // @internal
     createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
+    // @beta
+    createTemplateFromDescription(args: CreateGraphicFromDescriptionArgs): GraphicTemplate;
     // @internal (undocumented)
     createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal?: boolean): RenderTerrainGeometry | undefined;
     // (undocumented)
