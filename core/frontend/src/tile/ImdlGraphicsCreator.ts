@@ -508,7 +508,11 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
       range.extendRange(geom.computeRange(geomRange));
     }
 
-    batch = { range, featureTable };
+    batch = {
+      ...descr.batch,
+      range,
+      featureTable,
+    };
   }
 
   return createGraphicTemplate({
