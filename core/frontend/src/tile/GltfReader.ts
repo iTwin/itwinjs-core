@@ -920,6 +920,7 @@ export abstract class GltfReader {
             templateNodes.push({
               geometry: thisList,
               transform: thisTransform && !thisTransform.isIdentity ? thisTransform : undefined,
+              instances: batchInstances ?? nodeInstances,
             });
           }
         }
