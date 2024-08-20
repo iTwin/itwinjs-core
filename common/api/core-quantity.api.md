@@ -278,7 +278,7 @@ export class Formatter {
 
 // @beta
 export class FormatterSpec {
-    constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps);
+    constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps, azimuthBaseConversion?: UnitConversionProps, revolutionConversion?: UnitConversionProps);
     applyFormatting(magnitude: number): string;
     // (undocumented)
     get azimuthBaseConversion(): UnitConversionProps | undefined;
