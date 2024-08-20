@@ -16,7 +16,7 @@ export class NumberAttributeChangeInfo extends SchemaEditChangeBase {
   public readonly oldValue?: number;
 
   /**
-   * Initializes a new NumberAttributeChangeInfo
+   * Initializes a new NumberAttributeChangeInfo instance.
    * @param contextEditor The SchemaContextEditor that wraps a SchemaContext.
    * @param editType The SchemaEditType for this edit operation.
    * @param newValue The new attribute value.
