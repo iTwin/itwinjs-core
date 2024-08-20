@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add openGroup() and writeToFile to sqliteChagnesetReader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
