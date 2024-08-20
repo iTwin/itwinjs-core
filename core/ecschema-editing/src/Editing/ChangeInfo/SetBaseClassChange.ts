@@ -23,7 +23,6 @@ export class SetBaseClassChange extends SchemaEditChangeBase {
   public readonly modifiedClass: ClassId;
   public readonly newBaseClass?: ClassId;
   public readonly oldBaseClass?: ClassId;
-  public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
   public readonly derivedClasses?: ClassId[];
 
   constructor(contextEditor: SchemaContextEditor, modifiedClass: ECClass, newBaseClass: ECClass | undefined, oldBaseClass: ECClass | undefined, selectedElements: ECElementSelection) {

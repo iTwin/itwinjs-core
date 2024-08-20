@@ -3,16 +3,31 @@ import { SchemaContextEditor } from "../Editor";
 import { ChangeOptionProps, ChangeOptions } from "./ChangeOptions";
 import { SchemaEditType } from "../SchemaEditType";
 
-
+/**
+ * Defines the function used to revert a specific edit defined by the ISchemaEditChangeInfo type parameter.
+ * @alpha
+ */
 export type SchemaChangeRevertCallback = <T extends ISchemaEditChangeInfo>(changeInfo: T) => Promise<void>;
+
+/**
+ * Defines the function used begin (true) or cancel (false) a specific edit operation defined by the ISchemaEditChangeInfo type parameter.
+ * @alpha
+ */
 export type BeginSchemaEditCallback= <T extends ISchemaEditChangeInfo>(changeInfo: T) => Promise<boolean>;
 
+/**
+ * @alpha
+ */
 export interface ISchemaEditChangeProps {
   readonly changeOptions?: ChangeOptionProps;
   readonly editType?: string;
   readonly schemaItemType?: string;
 }
 
+/**
+ * Defines the properties required for a specific schema edit operation.
+ * @alpha
+ */
 export interface ISchemaEditChangeInfo {
   readonly contextEditor: SchemaContextEditor;
   readonly changeOptions?: ChangeOptions;
@@ -23,15 +38,36 @@ export interface ISchemaEditChangeInfo {
   revertChange(): Promise<void>;
 }
 
+/**
+ * The base class for ISchemaEditChangeInfo implementations. Provides shared functionality for
+ * all schema edits.
+ * @alpha
+ */
 export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
   private _sequence: number = -1;
 
+  /** Identifies the unique edit operation using the SchemaEditType enumeration. */
   public abstract readonly editType: SchemaEditType;
+
+  /** The SchemaContextEditor that wraps the SchemaContext for all schema edit operations. */
   public readonly contextEditor: SchemaContextEditor;
+
+  /** The options that control how a specific edit operation is performed. */
   public readonly changeOptions?: ChangeOptions;
+
+  /** The SchemaItemType of the SchemaItem being modified. */
   public readonly schemaItemType: SchemaItemType;
+
+  /** TODO: experimental */
   protected readonly revertCallback?: SchemaChangeRevertCallback;
 
+  /**
+   * Initializes a new SchemaEditChangeBase instance.
+   * @param contextEditor The SchemaContextEditor that manages all schema edits.
+   * @param schemaItemType The type of SchemaItem being modified.
+   * @param changeOptions The options that control the edit operation.
+   * @param revertCallback The callback used to revert the edit operation.
+   */
   constructor(contextEditor: SchemaContextEditor, schemaItemType: SchemaItemType, changeOptions?: ChangeOptions, revertCallback?: SchemaChangeRevertCallback) {
     this.contextEditor = contextEditor;
     this.changeOptions = changeOptions;
@@ -41,27 +77,47 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
     this.contextEditor.addEditInfo(this);
   }
 
+  /**
+   * Gets the sequence number of the edit operation. Used by the SchemaContextEditor to manage edit operations.
+   */
   public get sequence(): number {
     return this._sequence;
   }
 
+  /**
+   * Sets the sequence number of the edit operation. Managed by the SchemaContextEditor.
+   */
   public set sequence(value: number) {
     this._sequence = value;
   }
 
+  /**
+   * Accesses the underlying ChangeOptions.localChange property. Indicates an internal edit which bypasses validation, allowing
+   * direct modification of the target object or property.
+   */
   public get isLocalChange(): boolean {
-
     return this.changeOptions ? this.changeOptions.localChange : false;
   }
 
+  /**
+   * Accesses the underlying ChangeOptions.changeBase property. Indicates that the change should be propagated to
+   * base classes and/or properties, if applicable.
+   */
   public get changeBase(): boolean {
     return this.changeOptions ? this.changeOptions.changeBase : false;
   }
 
+  /**
+   * Accesses the underlying ChangeOptions.changeDerived property. Indicates that the change should be propagated to
+   * derived classes and/or properties, if applicable.
+   */
   public get changeDerived(): boolean {
     return this.changeOptions ? this.changeOptions.changeDerived: false;
   }
 
+  /**
+   * Calls the revertCallback function, reverting the edit operation.
+   */
   public async revertChange(): Promise<void> {
     if (!this.revertCallback)
       return;
@@ -69,11 +125,18 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
     await this.revertCallback(this);
   }
 
+  /**
+   * Serializes the object to json format.
+   */
   public toJson() {
     const itemJson: { [value: string]: any } = {};
 
   }
 
+  /**
+   * Calls the beginChangeCallback function.
+   * @returns True if the edit should continue, false otherwise.
+   */
   public async beginChange(): Promise<boolean> {
     // Edit continues if no callback is available
     if (!this.changeOptions || !this.changeOptions.beginChangeCallback)
@@ -86,186 +149,3 @@ export abstract class SchemaEditChangeBase implements ISchemaEditChangeInfo {
     return startEdit;
   }
 }
-
-// export class SetBaseClassChangeInfo extends SchemaEditChange {
-//   public readonly editType = ECEditingStatus.SetBaseClass;
-//   public readonly classKey: SchemaItemKey;
-//   public readonly baseClassKey?: SchemaItemKey;
-//   public readonly oldBaseClassKey?: SchemaItemKey;
-//   public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
-
-//   constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, classKey: SchemaItemKey, baseClassKey: SchemaItemKey | undefined, oldBaseClassKey: SchemaItemKey | undefined) {
-//     super(contextEditor, selectedElements.options);
-//     this.classKey = classKey;
-//     this.baseClassKey = baseClassKey;
-//     this.oldBaseClassKey = oldBaseClassKey;
-//   }
-// }
-
-// export class SetAbstractConstraintChangeInfo extends SchemaEditChange {
-//   public readonly editType = ECEditingStatus.SetAbstractConstraint;
-//   public readonly constraintId: RelationshipConstraintId;
-//   public readonly abstractConstraintId?: AbstractConstraintId;
-//   public readonly oldAbstractConstraintId?: AbstractConstraintId;
-//   public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
-
-//   constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, constraintId: RelationshipConstraintId, abstractConstraintId?: AbstractConstraintId, oldAbstractConstraintId?: AbstractConstraintId) {
-//     super(contextEditor, selectedElements.options);
-//     this.constraintId = constraintId;
-//     this.abstractConstraintId = abstractConstraintId;
-//     this.oldAbstractConstraintId = oldAbstractConstraintId;
-//   }
-
-//   public async getConstraint(): Promise<RelationshipConstraint> {
-//     const relationship = await this.contextEditor.schemaContext.getSchemaItem<RelationshipClass>(this.constraintId.relationshipKey)
-
-//     const constraint = this.constraintId.name === "source" ? relationship?.source : relationship?.target;
-//     if (!constraint)
-//       throw new Error(`${this.constraintId.name} constraint of RelationshipClass ${relationship?.name} is undefined.`)
-
-//     return constraint;
-//   }
-
-//   public getResultantChangeInfo(): ISchemaEditChangeInfo[] {
-//     return [];
-//   }
-// }
-
-// export class SetRelationshipConstraintChangeInfo extends SchemaEditChange {
-//   public readonly editType: ECEditingStatus;
-//   public readonly relationshipKey: SchemaItemKey;
-//   public readonly constraintId: RelationshipConstraintId;
-//   public readonly oldConstraintId?: RelationshipConstraintId;
-//   public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
-
-//   constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, relationshipKey: SchemaItemKey, constraintId: RelationshipConstraintId, oldConstraintId?: RelationshipConstraintId) {
-//     super(contextEditor, selectedElements.options);
-//     this.editType = constraintId.name === "Source" ? ECEditingStatus.SetSourceConstraint : ECEditingStatus.SetTargetConstraint;
-//     this.relationshipKey = relationshipKey
-//     this.constraintId = constraintId;
-//     this.oldConstraintId = oldConstraintId;
-//   }
-
-//   public async getConstraint(): Promise<RelationshipConstraint> {
-//     const relationship = await this.contextEditor.schemaContext.getSchemaItem<RelationshipClass>(this.constraintId.relationshipKey)
-
-//     const constraint = this.constraintId.name === "Source" ? relationship?.source : relationship?.target;
-//     if (!constraint)
-//       throw new Error(`${this.constraintId.name} constraint of RelationshipClass ${relationship?.name} is undefined.`)
-
-//     return constraint;
-//   }
-
-//   public getResultantChangeInfo(): ISchemaEditChangeInfo[] {
-//     return [];
-//   }
-// }
-
-// export class AddConstraintClassChangeInfo extends ChangeInfoBase {
-//   public readonly editType = ECEditingStatus.AddConstraintClass;
-//   public readonly constraintId: RelationshipConstraintId;
-//   public readonly constraintClassKey: SchemaItemKey;
-//   public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
-
-//   constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, constraintId: RelationshipConstraintId, classKey: SchemaItemKey) {
-//     super(contextEditor, selectedElements.options);
-//     this.constraintId = constraintId;
-//     this.constraintClassKey = classKey;
-//   }
-
-//   public async getConstraint(): Promise<RelationshipConstraint> {
-//     const relationship = await this.contextEditor.schemaContext.getSchemaItem<RelationshipClass>(this.constraintId.relationshipKey)
-
-//     const constraint = this.constraintId.name === "Source" ? relationship?.source : relationship?.target;
-//     if (!constraint)
-//       throw new Error(`${this.constraintId.name} constraint of RelationshipClass ${relationship?.name} is undefined.`)
-
-//     return constraint;
-//   }
-
-//   public getResultantChangeInfo(): ISchemaEditChangeInfo[] {
-//     return [];
-//   }
-// }
-
-// export class RemoveConstraintClassChangeInfo extends ChangeInfoBase {
-//   public readonly editType = ECEditingStatus.RemoveConstraintClass;
-//   public readonly constraintId: RelationshipConstraintId;
-//   public readonly constraintClassKey: SchemaItemKey;
-//   public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
-
-//   constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, constraintId: RelationshipConstraintId) {
-//     super(contextEditor, selectedElements.options);
-
-//     if (!constraintId.constraintClassKey) {
-//       throw new Error("The RelationshipConstraintId.constraintClassKey is undefined.")
-//     }
-//     this.constraintId = constraintId;
-//     this.constraintClassKey = constraintId.constraintClassKey;
-//   }
-
-//   public async getConstraint(): Promise<RelationshipConstraint> {
-//     const relationship = await this.contextEditor.schemaContext.getSchemaItem<RelationshipClass>(this.constraintId.relationshipKey)
-
-//     const constraint = this.constraintId.name === "Source" ? relationship?.source : relationship?.target;
-//     if (!constraint)
-//       throw new Error(`${this.constraintId.name} constraint of RelationshipClass ${relationship?.name} is undefined.`)
-
-//     return constraint;
-//   }
-
-//   public getResultantChangeInfo(): ISchemaEditChangeInfo[] {
-//     return [];
-//   }
-// }
-
-// export class RemoveReferenceChangeInfo extends ChangeInfoBase {
-//   public readonly editType = ECEditingStatus.RemoveSchemaReference;
-//   public readonly schemaKey: SchemaKey;
-//   public readonly reference: Schema;
-//   public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
-
-//   constructor(contextEditor: SchemaContextEditor, selectedElements: ECElementSelection, schemaKey: SchemaKey, reference: Schema, _elements: ISchemaTypeIdentifier[]) {
-//     super(contextEditor, selectedElements.options);
-//     this.schemaKey = schemaKey;
-//     this.reference = reference;
-
-//     this.resultantChangeInfo = this.getResultantChangeInfo();
-//   }
-
-//   public getResultantChangeInfo(): ISchemaEditChangeInfo[] {
-//     const resultantInfo: ISchemaEditChangeInfo[] = [];
-//     // for(const item of this.selectedElements!) {
-//     //   switch (item.typeIdentifier) {
-//     //     case SchemaTypeIdentifiers.BaseClassIdentifier:
-//     //       const baseClassId = item as BaseClassId;
-//     //       resultantInfo.push(new SetBaseClassChangeInfo(this.contextEditor, baseClassId.schemaItemKey, undefined, baseClassId.baseClass.schemaItemKey));
-//     //       break;
-//     //     case SchemaTypeIdentifiers.AbstractConstraintIdentifier:
-//     //       const abstractId = item as AbstractConstraintId;
-//     //       const constraintId = new RelationshipConstraintId(abstractId.name, abstractId.relationshipKey);
-//     //       resultantInfo.push(new SetAbstractConstraintChangeInfo(this.contextEditor, constraintId, undefined, abstractId));
-//     //     case SchemaTypeIdentifiers.RelationshipConstraintIdentifier:
-//     //       const relConstraintId = item as RelationshipConstraintId;
-//     //       resultantInfo.push(new RemoveConstraintClassChangeInfo(this.contextEditor, relConstraintId));
-//     //   }
-//     // }
-
-//     return resultantInfo;
-//   }
-// }
-
-// export interface IRemoveReferenceChangeOptions {
-//   readonly removeBaseClass?: boolean;
-//   readonly removeConstraintClass?: boolean;
-//   readonly removeAbstractConstraint?: boolean;
-//   readonly removeCustomAttribute?: boolean;
-// }
-
-// export type RemoveReferenceCallback = (changeInfo: RemoveReferenceChangeInfo) => IRemoveReferenceChangeOptions;
-
-// export interface ISetBaseClassChangeOptions {
-//   readonly cancel?: boolean;
-// }
-
-// export type SetBaseClassCallback = (changeInfo: SetBaseClassChangeInfo) => ISetBaseClassChangeOptions;

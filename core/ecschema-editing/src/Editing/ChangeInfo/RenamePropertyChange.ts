@@ -23,7 +23,6 @@ export class RenamePropertyChange extends SchemaEditChangeBase {
   public readonly modifiedClass: ClassId;
   public readonly newPropertyName: string;
   public readonly oldPropertyName: string;
-  public readonly resultantChangeInfo: ISchemaEditChangeInfo[] = [];
   public readonly baseProperties?: PropertyId[];
   public readonly derivedProperties?: PropertyId[];
 

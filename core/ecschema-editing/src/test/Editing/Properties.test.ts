@@ -94,7 +94,7 @@ describe("Properties editing tests", () => {
       const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
       const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
 
-      await testEditor.entities.properties.setName(baseClassKey, "TestPropertyName", "NewPropertyName", ChangeOptions.includeDerived());
+      await testEditor.entities.properties.setName(baseClassKey, "TestPropertyName", "NewPropertyName", ChangeOptions.includeDerived);
 
       expect(childProperty.fullName).to.eql("testEntityChild.NewPropertyName");
       expect(grandChildProperty.fullName).to.eql("testEntityGrandChild.NewPropertyName");
@@ -197,7 +197,7 @@ describe("Properties editing tests", () => {
       const testClass = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
       const testProperty = await testClass!.getProperty("ChildPropertyName") as PrimitiveProperty;
 
-      await testEditor.entities.properties.setName(result, "ChildPropertyName", "BasePropertyName", ChangeOptions.allowPropertyOverrides());
+      await testEditor.entities.properties.setName(result, "ChildPropertyName", "BasePropertyName", ChangeOptions.allowPropertyOverrides);
 
       expect(testProperty.name).to.eql("BasePropertyName");
     });
@@ -257,7 +257,7 @@ describe("Properties editing tests", () => {
       const baseClass = await refSchema.getItem<ECClass>(baseClassKey.name);
       const property = await baseClass?.getProperty("BasePropertyName", true) as PrimitiveProperty;
 
-      await testEditor.entities.properties.setName(baseClassKey, "BasePropertyName", "ChildPropertyName", ChangeOptions.allowPropertyOverrides());
+      await testEditor.entities.properties.setName(baseClassKey, "BasePropertyName", "ChildPropertyName", ChangeOptions.allowPropertyOverrides);
 
       expect(property.name).to.eql("ChildPropertyName");
     });

@@ -1,5 +1,9 @@
 import { BeginSchemaEditCallback } from "./ChangeInfo";
 
+/**
+ * Defines potential options for all the edit operations available in the editing API.
+ * @alpha
+ */
 export enum ChangeOption {
   LocalChange = "LocalChange",
   StopRelabelOnFirstPropertyOverrideWithADifferentLabel = "StopRelabelOnFirstPropertyOverrideWithADifferentLabel",
@@ -15,6 +19,11 @@ export enum ChangeOption {
   RemoveCustomAttributesIfPropertyRemoved = "RemoveCustomAttributesIfPropertyRemoved"
 }
 
+/**
+ * Used for JSON serialization/deserialization. Defines the possible options that control CustomAttribute related edits.
+ * TODO: probably not needed...
+ * @alpha
+ */
 export interface CustomAttributeOptionProps {
   readonly updateCustomAttributeReferences: boolean;
   readonly removeCustomAttributesIfClassRemoved: boolean;
@@ -22,6 +31,11 @@ export interface CustomAttributeOptionProps {
   readonly removeCustomAttributesIfPropertyRemoved: boolean;
 }
 
+/**
+ * Used for JSON serialization/deserialization. Defines the possible options that control how a particular edit should be performed.
+ * TODO: probably not needed...
+ * @alpha
+ */
 export interface ChangeOptionProps {
   readonly changeBase: boolean;
   readonly changeDerived: boolean;
@@ -34,15 +48,39 @@ export interface ChangeOptionProps {
   readonly attributeOptions: CustomAttributeOptionProps;
 }
 
+/**
+ * Class that defines the options that are applied to a given edit operation.
+ * @alpha
+ */
 export class ChangeOptions {
+  /** Indicates if the edit should be propagated to base classes/properties, if applicable. Default to false. */
   public changeBase = false;
+
+  /** Indicates if the edit should be propagated to derived classes/properties, if applicable. Default to false. */
   public changeDerived = false;
+
+  /** Only valid for property rename operations. Allows rename if a base property exists with the same name. Defaults to false.*/
   public allowPropertyOverrides = false;
+
+  /** Only valid when removing classes.  Connects base and derived classes of the removed class.  Defaults to false. */
   public breakInheritanceChain = false;
+
+  /**
+   * If false removing a property removes all overrides of the property. A property can be removed directly ore by removing
+   * the class defining the property.  Defaults to false.
+  */
   public leavePropertyOverrides = false;
+
+  /** If false removing a class removes it from the relationship constraints where it is referenced.  Defaults to false. */
   public leaveRelationshipClassEndpoints = false;
+
+  /** If true property overrides will be relabeled until one is found with a different label.  Defaults to false. */
   public stopRelabelOnFirstPropertyOverrideWithDifferentLabel = false;
+
+  /** If true the change will not be propagated beyond the element modified. Defaults to false. */
   public localChange = false;
+
+
   public attributeOptions = CustomAttributeOptions.default();
 
   private _extendedOptions: Map<string, any>;
@@ -76,35 +114,46 @@ export class ChangeOptions {
     return this;
   }
 
+  /** All options are set to false except for [[attributeOptions]] which is set to [[CustomAttributeOptions.Default]] */
   public static get default(): ChangeOptions {
     return new ChangeOptions ();
   }
 
-  public static includeBase(): ChangeOptions {
+  /** All options are set to false except for changeBase. */
+  public static get includeBase(): ChangeOptions {
     const options = this.default;
     options.changeBase = true;
     return options;
   }
 
-  public static includeDerived(): ChangeOptions {
+  /** All options are set to false except for changeDerived. */
+  public static get includeDerived(): ChangeOptions {
     const options = this.default;
     options.changeDerived = true;
     return options;
   }
 
-  public static includeBaseAndDerived(): ChangeOptions {
+  /** All options are set to false except for changeBase and changeDerived. */
+  public static get includeBaseAndDerived(): ChangeOptions {
     const options = this.default;
     options.changeBase = true;
     options.changeDerived = true;
     return options;
   }
 
-  public static allowPropertyOverrides(): ChangeOptions {
+  /** All options are set to false except for allowPropertyOverrides. */
+  public static get allowPropertyOverrides(): ChangeOptions {
     const options = this.default;
     options.allowPropertyOverrides = true;
     return options;
   }
 
+  /**
+   * Creates a new ChangeOptions using the instance as a base and then updates
+   * the options with the given ChangeOption array.
+   * @param changeOptions
+   * @returns The new ChangeOptions instance.
+   */
   public newWith(changeOptions: ChangeOption[]) {
     const newOptions = new ChangeOptions();
     newOptions.changeBase = this.changeBase;
@@ -124,6 +173,11 @@ export class ChangeOptions {
     return newOptions;
   }
 
+  /**
+   * Type guard method to identify an object as a ChangeOptions object.
+   * @param obj The  object to check.
+   * @returns True if a ChangeOptions object, false otherwise.
+   */
   public static isChangeOptions(obj: any): obj is ChangeOptions {
     return (<ChangeOptions>obj).changeBase !== undefined && (<ChangeOptions>obj).changeDerived !== undefined &&
             (<ChangeOptions>obj).breakInheritanceChain !== undefined && (<ChangeOptions>obj).leavePropertyOverrides !== undefined;
@@ -169,15 +223,23 @@ export class ChangeOptions {
         break;
     }
   }
-
 }
 
+/** Options that apply to CustomAttribute related edits. */
 export class CustomAttributeOptions {
+  /** References to classes and properties in custom attribute values are updated.  Defaults to true. */
   public updateCustomAttributeReferences = true;
+
+  /** Removing a custom attribute class removes all instances of that custom attribute.  Defaults to true. */
   public removeCustomAttributesIfClassRemoved = true;
+
+  /** Removing a property from a custom attribute class removes values of that property from all custom attributes.  Defaults to true. */
   public removeCustomAttributePropertyValues = true;
+
+  /** Removing a property from a custom attribute class removes all instances of that custom attribute.  Defaults to false. */
   public removeCustomAttributesIfPropertyRemoved = false;
 
+  /** Returns default options. All options are set to true, except removeCustomAttributesIfPropertyRemoved is false. */
   public static default(): CustomAttributeOptions {
     return new CustomAttributeOptions ();
   }
