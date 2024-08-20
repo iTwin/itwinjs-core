@@ -11,7 +11,7 @@ import { DrawingCategory } from "../../Category";
 import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
 import { HubMock } from "../../HubMock";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
-import { SqliteChangesetReader } from "../../SqliteChangesetReader";
+import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { _nativeDb, ChannelControl } from "../../core-backend";
@@ -498,6 +498,195 @@ describe("Changeset Reader API", async () => {
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "Old");
       adaptor.dispose();
+    }
+    rwIModel.close();
+  });
+  it("openGroup() & writeToFile()", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    // 1. Import schema with class that span overflow table.
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="p1" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+
+    const geometryStream: GeometryStreamProps = [];
+    for (const geom of geomArray) {
+      const arcData = IModelJson.Writer.toIModelJson(geom);
+      geometryStream.push(arcData);
+    }
+
+    const e1 = {
+      classFullName: `TestDomain:Test2dElement`,
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      ...{ p1: "test1" },
+    };
+
+    // 2. Insert a element for the class
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    const e1id = rwIModel.elements.insertElement(e1);
+    assert.isTrue(Id64.isValidId64(e1id), "insert worked");
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
+
+    // 3. Update the element.
+    const updatedElementProps = Object.assign(rwIModel.elements.getElementProps(e1id), { p1: "test2" });
+    await rwIModel.locks.acquireLocks({ exclusive: e1id });
+    rwIModel.elements.updateElement(updatedElementProps);
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "update element", accessToken: adminToken });
+
+    // 4. Delete the element.
+    await rwIModel.locks.acquireLocks({ exclusive: e1id });
+    rwIModel.elements.deleteElement(e1id);
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "delete element", accessToken: adminToken });
+
+    const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
+    const changesets = (await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir })).slice(1);
+
+    if ("Grouping changeset [2,3,4] should not contain TestDomain:Test2dElement as insert+update+delete=noop") {
+      const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
+      const adaptor = new ECChangesetAdaptor(reader);
+      const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
+      while (adaptor.step()) {
+        if (adaptor.inserted) {
+          instances.push({ id: adaptor.inserted?.ECInstanceId, classId: adaptor.inserted.ECClassId, op: adaptor.op, classFullName: adaptor.inserted.$meta?.classFullName });
+        } else if (adaptor.deleted) {
+          instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
+        }
+      }
+      expect(instances.length).to.eq(1);
+      expect(instances[0].id).to.eq("0x20000000001");
+      expect(instances[0].classId).to.eq("0xa5");
+      expect(instances[0].op).to.eq("Updated");
+      expect(instances[0].classFullName).to.eq("BisCore:DrawingModel");
+    }
+
+    if ("Grouping changeset [3,4] should contain update+delete=delete TestDomain:Test2dElement") {
+      const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.slice(1).map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
+      const adaptor = new ECChangesetAdaptor(reader);
+      const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
+      while (adaptor.step()) {
+        if (adaptor.inserted) {
+          instances.push({ id: adaptor.inserted?.ECInstanceId, classId: adaptor.inserted.ECClassId, op: adaptor.op, classFullName: adaptor.inserted.$meta?.classFullName });
+        } else if (adaptor.deleted) {
+          instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
+        }
+      }
+      expect(instances.length).to.eq(3);
+      expect(instances[0]).deep.eq({
+        id: "0x20000000004",
+        classId: "0x14d",
+        op: "Deleted",
+        classFullName: "TestDomain:Test2dElement",
+      });
+      expect(instances[1]).deep.eq({
+        id: "0x20000000004",
+        classId: "0x14d",
+        op: "Deleted",
+        classFullName: "TestDomain:Test2dElement",
+      });
+      expect(instances[2]).deep.eq({
+        id: "0x20000000001",
+        classId: "0xa5",
+        op: "Updated",
+        classFullName: "BisCore:DrawingModel",
+      });
+    }
+    const groupCsFile = path.join(KnownTestLocations.outputDir, "changeset_grouping.ec");
+    if ("Grouping changeset [2,3] should contain insert+update=insert TestDomain:Test2dElement") {
+      const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.slice(0, 2).map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
+      const adaptor = new ECChangesetAdaptor(reader);
+      const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
+      while (adaptor.step()) {
+        if (adaptor.inserted) {
+          instances.push({ id: adaptor.inserted?.ECInstanceId, classId: adaptor.inserted.ECClassId, op: adaptor.op, classFullName: adaptor.inserted.$meta?.classFullName });
+        } else if (adaptor.deleted) {
+          instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
+        }
+      }
+      expect(instances.length).to.eq(3);
+      expect(instances[0]).deep.eq({
+        id: "0x20000000004",
+        classId: "0x14d",
+        op: "Inserted",
+        classFullName: "TestDomain:Test2dElement",
+      });
+      expect(instances[1]).deep.eq({
+        id: "0x20000000004",
+        classId: "0x14d",
+        op: "Inserted",
+        classFullName: "TestDomain:Test2dElement",
+      });
+      expect(instances[2]).deep.eq({
+        id: "0x20000000001",
+        classId: "0xa5",
+        op: "Updated",
+        classFullName: "BisCore:DrawingModel",
+      });
+
+      reader.writeToFile({ fileName: groupCsFile, containsSchemaChanges: false, overwriteFile: true });
+    }
+    if ("writeToFile() test") {
+      const reader = SqliteChangesetReader.openFile({ fileName: groupCsFile, db: rwIModel, disableSchemaCheck: true });
+      const adaptor = new ECChangesetAdaptor(reader);
+      const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
+      while (adaptor.step()) {
+        if (adaptor.inserted) {
+          instances.push({ id: adaptor.inserted?.ECInstanceId, classId: adaptor.inserted.ECClassId, op: adaptor.op, classFullName: adaptor.inserted.$meta?.classFullName });
+        } else if (adaptor.deleted) {
+          instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
+        }
+      }
+      expect(instances.length).to.eq(3);
+      expect(instances[0]).deep.eq({
+        id: "0x20000000004",
+        classId: "0x14d",
+        op: "Inserted",
+        classFullName: "TestDomain:Test2dElement",
+      });
+      expect(instances[1]).deep.eq({
+        id: "0x20000000004",
+        classId: "0x14d",
+        op: "Inserted",
+        classFullName: "TestDomain:Test2dElement",
+      });
+      expect(instances[2]).deep.eq({
+        id: "0x20000000001",
+        classId: "0xa5",
+        op: "Updated",
+        classFullName: "BisCore:DrawingModel",
+      });
     }
     rwIModel.close();
   });
