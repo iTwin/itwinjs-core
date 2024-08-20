@@ -7,6 +7,7 @@ import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   DecorateContext, GraphicBranch, GraphicType, IModelApp, readGltfGraphics, RenderGraphic, Tool,
 } from "@itwin/core-frontend";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 class GltfDecoration {
   private readonly _graphic: RenderGraphic;
@@ -43,8 +44,12 @@ export class GltfDecorationTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override async parseAndRun(...args: string[]) {
-    return this.run(args[0]);
+  private _url?: string;
+
+  public override async parseAndRun(...inArgs: string[]) {
+    const args = parseArgs(inArgs);
+    this._url = args.get("u");
+    return this.run();
   }
 
   private async queryAsset(url?: string): Promise<ArrayBuffer | undefined> {
@@ -67,11 +72,12 @@ export class GltfDecorationTool extends Tool {
     return file.arrayBuffer();
   }
 
-  public override async run(url?: string) {
+  public override async run() {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
 
+    const url = this._url;
     const iModel = vp.iModel;
     try {
       const buffer = await this.queryAsset(url);
