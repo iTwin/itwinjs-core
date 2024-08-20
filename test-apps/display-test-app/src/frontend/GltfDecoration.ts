@@ -37,7 +37,7 @@ class GltfDecoration {
   }
 }
 
-function createInstances(numInstances: number, templateRange: Range3d, iModel: IModelConnection, modelId: Id64String): RenderInstances | undefined {
+function createInstances(numInstances: number, _templateRange: Range3d, iModel: IModelConnection, modelId: Id64String): RenderInstances | undefined {
   if (numInstances <= 1) {
     return undefined;
   }
@@ -48,12 +48,12 @@ function createInstances(numInstances: number, templateRange: Range3d, iModel: I
   maxExtents.high.subtractInPlace(projectCenter);
 
   function applyRandomOffset(pos: Point3d, coord: "x" | "y" | "z"): void {
-    const r = Math.random() * 2 *maxExtents.high[coord] - projectCenter[coord];
+    const r = Math.random() * 2 *maxExtents.high[coord] - maxExtents.high[coord];
     pos[coord] += r;
   }
 
   function computeRandomPosition(): Point3d {
-    const pos = templateRange.center;
+    const pos = new Point3d(); // templateRange.center;
     applyRandomOffset(pos, "x");
     applyRandomOffset(pos, "y");
     applyRandomOffset(pos, "z");
