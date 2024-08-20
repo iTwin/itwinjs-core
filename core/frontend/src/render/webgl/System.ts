@@ -68,7 +68,6 @@ import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../common/render/BatchOptions";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
-import { GraphicTemplate } from "../GraphicTemplate";
 import { _batch, _branch, _featureTable, _nodes } from "../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
@@ -556,7 +555,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return graphic;
   }
 
-  public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
+  public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern | InstanceBuffers): RenderGraphic | undefined {
     const geom = geometry as RenderGeometryImpl;
 
     let buffers: InstanceBuffers | PatternBuffers | undefined;
@@ -565,7 +564,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         throw new Error("RenderGeometry is not instanceable");
       }
 
-      if (instances instanceof PatternBuffers) {
+      if (instances instanceof PatternBuffers || instances instanceof InstanceBuffers) {
         buffers = instances;
       } else {
         assert(isInstancedGraphicParams(instances));

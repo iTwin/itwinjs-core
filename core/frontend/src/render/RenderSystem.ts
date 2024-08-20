@@ -220,7 +220,9 @@ export interface PlanarGridProps {
 /** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].
  * @internal
  */
-export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
+  readonly [_implementationProhibited]: "renderAreaPattern";
+}
 
 /** ###TODO
  * @beta

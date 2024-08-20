@@ -267,6 +267,7 @@ export class InstanceBuffers {
 /** @internal */
 export class PatternBuffers extends InstanceData {
   private readonly _featureId?: Float32Array;
+  public readonly [_implementationProhibited] = "renderAreaPattern";
 
   private constructor(
     count: number,

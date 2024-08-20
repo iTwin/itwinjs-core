@@ -135,6 +135,7 @@ export namespace MockRender {
 
   /** @internal */
   export class AreaPattern implements RenderAreaPattern {
+    public readonly [_implementationProhibited] = "renderAreaPattern";
     public dispose(): void { }
     public collectStatistics(): void { }
   }
