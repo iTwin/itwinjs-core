@@ -1238,6 +1238,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     // @internal
     protected setIsReadOnly(isReadOnly: boolean): void;
     // @internal
+    protected setKindOfQuantity(kindOfQuantity: LazyLoadedKindOfQuantity): void;
+    // @internal
     protected setLabel(label: string): void;
     // (undocumented)
     protected setName(name: ECName): void;
