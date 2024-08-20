@@ -67,9 +67,6 @@ function createInstances(numInstances: number, iModel: IModelConnection, modelId
     ColorDef.fromJSON(ColorByName.yellow),
     ColorDef.fromJSON(ColorByName.orange),
     ColorDef.fromJSON(ColorByName.black),
-    undefined,
-    undefined,
-    undefined,
   ];
   
   const builder = RenderInstancesParamsBuilder.create({ modelId });
@@ -82,13 +79,11 @@ function createInstances(numInstances: number, iModel: IModelConnection, modelId
     const scaleFactor = wantScale ? Math.random() * (maxScale - minScale) + minScale : 1;
     const scale = Transform.createScaleAboutPoint(origin, scaleFactor);
 
-    const color = wantColor ? colors[i % colors.length] : undefined;
+    const symbology = wantColor ? { color: RgbColor.fromColorDef(colors[i % colors.length]) } : undefined;
     builder.add({
       transform: translation.multiplyTransformTransform(scale, scale),
       feature: iModel.transientIds.getNext(),
-      symbology: {
-        color: color ? RgbColor.fromColorDef(color) : undefined,
-      },
+      symbology,
     });
   }
 
