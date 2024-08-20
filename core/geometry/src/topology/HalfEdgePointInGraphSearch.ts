@@ -89,19 +89,16 @@ export class PointSearchContext {
         result = edgeHit.resetAsVertex(dataB.node);
         result.setITag(1);
       } else if (sideA === 0 && sideB === 0) { // ray is clearly along the edge
-        if (alongA * alongB < 0) {
-          // target is within edge
+        if (alongA * alongB < 0) { // target is within edge
           const edgeFraction = (targetDistance - dataA.u) / (dataB.u - dataA.u);
           result = edgeHit.resetAtEdgeAndFraction(dataA.node, edgeFraction);
           result.setITag(1);
-        } else if (alongA < 0 && alongB < 0) {
-          // target is beyond the edge: move towards it
+        } else if (alongA < 0 && alongB < 0) { // target is beyond the edge; move towards it
           if (dataA.u > dataB.u)
             result = edgeHit.resetAsVertex(dataA.node);
           else
             result = edgeHit.resetAsVertex(dataB.node);
-        } else {
-          // both vertices lie on the ray before or after the target; shouldn't happen for edgeHit between nodes
+        } else { // both vertices lie on the ray before or after the target; shouldn't happen for edgeHit between nodes
           edgeHit.resetAsUnknown();
           result = this.panic();
         }
@@ -117,8 +114,7 @@ export class PointSearchContext {
         else
           result = edgeHit.resetAsFace(sideA > 0 ? dataA.node : dataB.node);
       }
-    } else {
-      // both vertices are to same side of the ray; shouldn't happen for edgeHit between nodes
+    } else { // both vertices are to same side of the ray; shouldn't happen for edgeHit between nodes
       edgeHit.resetAsUnknown();
       result = this.panic();
     }
@@ -137,7 +133,6 @@ export class PointSearchContext {
     assert(ray.origin.isExactEqual(vertexHit));
     const vertexNode = vertexHit.node;
     let outboundEdge = vertexNode!;
-
     // lambda to handle the case where the target definitively lies in the same direction as outboundEdge
     const advancePositionAlongOutboundEdge = (rayParam: number): boolean => {
       if (Math.abs(rayParam - targetDistance) <= this._tol) { // direct hit at far end of outBoundEdge
@@ -151,7 +146,6 @@ export class PointSearchContext {
       }
       return true;
     };
-
     do {
       // examine the sector at the outboundEdge node; if ray lies in this sector, return updated detail
       const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
@@ -202,15 +196,15 @@ export class PointSearchContext {
    * @param lastBefore the detail to reset as the last hit on the ray before the target point (CALLER CREATED).
    * @param firstAfter the detail to reset as the first hit on the ray after the target point (CALLER CREATED).
    * @returns summary of the updated details:
-   * * [[RayClassification.TargetOnVertex]] - target lies at a vertex of the face (details are identical)
-   * * [[RayClassification.TargetOnEdge]] - target lies on an edge of the face (details are identical)
+   * * [[RayClassification.TargetOnVertex]] - target lies at a vertex of the face (details are identical).
+   * * [[RayClassification.TargetOnEdge]] - target lies on an edge of the face (details are identical).
    * * [[RayClassification.TargetBefore]] - target lies before the face; the ray intersects the face beyond
    * the target point.
    * * [[RayClassification.TargetAfter]] - target lies after the face; the ray intersects the face before
    * the target point.
    * * [[RayClassification.Bracket]] - target lies between intersections of the ray and the face; if the face
    * is convex, this means the target lies inside the face.
-   * * [[RayClassification.NoHits]] - the face does not intersect the ray
+   * * [[RayClassification.NoHits]] - the face does not intersect the ray.
    */
   public reAimAroundFace(
     faceNode: HalfEdge,

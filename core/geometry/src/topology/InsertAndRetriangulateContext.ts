@@ -154,7 +154,6 @@ export class InsertAndRetriangulateContext {
     else
       this._searcher = this.searchForNearestVertex(xyz);
   }
-
   /** Reclassify the current interior face hit if it is too close to an edge of the face. */
   private reclassifyFaceHit(point: Point3d): boolean {
     if (undefined === this._searcher.node || !this._searcher.isFace || this._searcher.node.isMaskSet(HalfEdgeMask.EXTERIOR))
@@ -177,7 +176,6 @@ export class InsertAndRetriangulateContext {
       this._searcher.resetAtEdgeAndFraction(edge, detail.closestEdgeParam);
     return true;
   }
-
   /** Reclassify the current interior edge hit if it is too close to an edge of either adjacent face. */
   private reclassifyEdgeHit(point: Point3d): boolean {
     if (undefined === this._searcher.node || !this._searcher.isEdge || this._searcher.node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE))
@@ -207,7 +205,6 @@ export class InsertAndRetriangulateContext {
       this._searcher.resetAtEdgeAndFraction(edge, detail.closestEdgeParam);
     return true;
   }
-
   /**
    * Given a point that was just inserted into the graph at the given node, apply the z-coordinate rule around
    * the vertex loop.
@@ -222,25 +219,22 @@ export class InsertAndRetriangulateContext {
     // only replace z; preserving xy preserves convexity of the hull
     node.setXYZAroundVertex(node.x, node.y, point.z);
   }
-
   /**
    * Insert a new point into the graph and retriangulate.
    * @param point the coordinates of the node to be inserted.
-   * @param newZWins rule governing when `point.z` should override the z-coordinate of an existing
-   * vertex with the same x and y.
+   * @param newZWins rule governing when `point.z` should override the z-coordinate of an existing vertex with the
+   * same x and y.
    * @returns true if and only if the point didn't need to be inserted or was successfully inserted.
    */
   public insertAndRetriangulate(point: Point3d, newZWins: InsertedVertexZOptions): boolean {
     this.moveToPoint(this._searcher, point);
     if (this._searcher.node === undefined)
       return false;
-
     // Try to avoid skinny triangles. If we iterated, this could get out of control (e.g., inserting point into a fan).
     // Limiting to one reclassification ensures the hit doesn't move more than tol and reduces skinny triangles
     // adjacent to the hull.
     if (!this.reclassifyFaceHit(point))
       this.reclassifyEdgeHit(point);
-
     if (this._searcher.isFace) {
       // insert point into the graph if it lies in an interior face
       if (!this._searcher.node.isMaskSet(HalfEdgeMask.EXTERIOR)) {
@@ -266,10 +260,10 @@ export class InsertAndRetriangulateContext {
   }
   /**
    * Advance movingPosition to a face, edge, or vertex position detail that contains `target`.
-   * @param movingPosition input seed for search, updated on return
-   * @param target point to search for containing topology in the graph
-   * @param announcer optional callback invoked during search loop; return false to end search
-   * @returns true if search was successful
+   * @param movingPosition input seed for search, updated on return.
+   * @param target point to search for containing topology in the graph.
+   * @param announcer optional callback invoked during search loop; return false to end search.
+   * @returns true if search was successful.
    */
   public moveToPoint(
     movingPosition: HalfEdgePositionDetail,
