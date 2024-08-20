@@ -30,6 +30,8 @@ export class FormatterSpec {
    *  @param format   Defines the output format for the quantity value.
    *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format.
    *  @param persistenceUnit The unit the magnitude value is input.
+   *  @param azimuthBaseConversion The conversion used to interpret azimuth base values.
+   *  @param revolutionConversion The conversion used to determine a revolution value (used for bearing and azimuth).
    */
   constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps, azimuthBaseConversion?: UnitConversionProps, revolutionConversion?: UnitConversionProps) {
     if (!persistenceUnit) {
