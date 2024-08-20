@@ -9,6 +9,7 @@ import {
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { Id64String } from "@itwin/core-bentley";
+import { ColorByName, ColorDef, RgbColor } from "@itwin/core-common";
 
 class GltfDecoration {
   private readonly _graphic: RenderGraphic;
@@ -37,18 +38,16 @@ class GltfDecoration {
   }
 }
 
-function createInstances(numInstances: number, _templateRange: Range3d, iModel: IModelConnection, modelId: Id64String): RenderInstances | undefined {
+function createInstances(numInstances: number, iModel: IModelConnection, modelId: Id64String, wantScale: boolean, wantColor: boolean, _wantRotate: boolean): RenderInstances | undefined {
   if (numInstances <= 1) {
     return undefined;
   }
 
-  const maxExtents = iModel.projectExtents.clone();
-  const projectCenter = iModel.projectExtents.center;
-  maxExtents.low.subtractInPlace(projectCenter);
-  maxExtents.high.subtractInPlace(projectCenter);
+  const diagonal = iModel.projectExtents.diagonal();
+  const maxExtent = Math.min(diagonal.x, Math.min(diagonal.y, diagonal.z));
 
   function applyRandomOffset(pos: Point3d, coord: "x" | "y" | "z"): void {
-    const r = Math.random() * 2 *maxExtents.high[coord] - maxExtents.high[coord];
+    const r = Math.random() * 2 * maxExtent - maxExtent;
     pos[coord] += r;
   }
 
@@ -60,12 +59,36 @@ function createInstances(numInstances: number, _templateRange: Range3d, iModel: 
     return pos;
   }
 
+  const colors = [
+    ColorDef.green,
+    ColorDef.blue,
+    ColorDef.red,
+    ColorDef.white,
+    ColorDef.fromJSON(ColorByName.yellow),
+    ColorDef.fromJSON(ColorByName.orange),
+    ColorDef.fromJSON(ColorByName.black),
+    undefined,
+    undefined,
+    undefined,
+  ];
+  
   const builder = RenderInstancesParamsBuilder.create({ modelId });
   for (let i = 0; i < numInstances; i++) {
     const origin = computeRandomPosition();
+    const translation = Transform.createTranslation(origin);
+
+    const maxScale = 2.5;
+    const minScale = 0.25;
+    const scaleFactor = wantScale ? Math.random() * (maxScale - minScale) + minScale : 1;
+    const scale = Transform.createScaleAboutPoint(origin, scaleFactor);
+
+    const color = wantColor ? colors[i % colors.length] : undefined;
     builder.add({
-      transform: Transform.createTranslation(origin),
+      transform: translation.multiplyTransformTransform(scale, scale),
       feature: iModel.transientIds.getNext(),
+      symbology: {
+        color: color ? RgbColor.fromColorDef(color) : undefined,
+      },
     });
   }
 
@@ -79,15 +102,22 @@ function createInstances(numInstances: number, _templateRange: Range3d, iModel: 
 export class GltfDecorationTool extends Tool {
   public static override toolId = "AddGltfDecoration";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get maxArgs() { return 5; }
 
   private _url?: string;
   private _numInstances = 1;
+  private _wantScale = false;
+  private _wantColor = false;
+  private _wantRotate = false;
 
   public override async parseAndRun(...inArgs: string[]) {
     const args = parseArgs(inArgs);
     this._url = args.get("u");
     this._numInstances = args.getInteger("i") ?? 1;
+    this._wantScale = !!args.getBoolean("s");
+    this._wantColor = !!args.getBoolean("c");
+    this._wantRotate = !!args.getBoolean("r");
+    
     return this.run();
   }
 
@@ -140,7 +170,7 @@ export class GltfDecorationTool extends Tool {
       if (!gltfTemplate?.template)
         return false;
 
-      const instances = createInstances(this._numInstances, gltfTemplate.boundingBox, vp.iModel, modelId);
+      const instances = createInstances(this._numInstances, vp.iModel, modelId, this._wantScale, this._wantColor, this._wantRotate);
       let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template: gltfTemplate.template, instances });
       
       // Transform the graphic to the center of the project extents.
