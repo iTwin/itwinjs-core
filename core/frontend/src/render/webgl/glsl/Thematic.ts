@@ -111,6 +111,13 @@ const applyThematicColorPrelude = `
   }`;
 
 const applyThematicColorPostlude = `
+float patLength = 32.0;
+// 1 = on/displayed
+uint patterns[10] = uint[](0xffffffffu, 0x80808080u, 0xf8f8f8f8u, 0xffe0ffe0u, 0xfe10fe10u, 0xe0e0e0e0u, 0xf888f888u, 0xff18ff18u, 0xccccccccu, 0x00000001u);
+  // float pattern[16] = float[](1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0);
+  // float pattern[16] = float[](1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  // float pattern[16] = float[](1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+  // float patLength = 16.0;
   float gradientMode = u_thematicSettings.x;
   float stepCount = u_thematicSettings.z;
 
@@ -118,10 +125,25 @@ const applyThematicColorPostlude = `
   rgba.a = baseColor.a * (u_thematicSettings.w > 0.0 ? rgba.a : 1.0);
   rgba = mix(rgba, baseColor, u_thematicColorMix);
 
+  float lineWidth = 3.0; // u_thematicColorMix * 10.0; // u_thematicColorMix didn't work for some reason
   if (kThematicGradientMode_IsoLines == gradientMode) {
-    float coord = v_thematicIndex * stepCount;
-    float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
-    rgba.a = 1.0 - min(line, 1.0);
+    // vec4 sens = getSensor(0);  setting rgb.rgb = sens.rgb; did not work for some reason
+    rgba.rgb = vec3 (0.0, 0.0, 0.0);  // for now
+    float largeStep = 100.0;
+    float coord = v_thematicIndex / 50.0; // stepCount;  // kludge for now
+    float line = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+    float lineRadius = lineWidth / 2.0;
+    rgba.a = lineRadius - min(line, lineRadius);
+    // figure out which direction line is going, to know which pattern offset to use
+    float dx = dFdx(rgba.a);
+    float dy = dFdy(rgba.a);
+    float offset = trunc((abs(dx) > abs(dy)) ? gl_FragCoord.y : gl_FragCoord.x);
+    offset = mod(offset, patLength);
+    uint msk = 1u << uint(offset);
+    // grab pattern number from stepCount (start at 2) for debugging
+    rgba.a *= (patterns[clamp(int(stepCount - 2.0), 0, 9)] & msk) > 0u ? 1.0 : 0.0;
+    rgba.rgb = mix(baseColor.rgb, rgba.rgb, rgba.a);
+    rgba.a = 1.0;
     if (u_discardBetweenIsolines && 0.0 == rgba.a)
       discard;
   } else if (kThematicGradientMode_SteppedWithDelimiter == gradientMode) {
@@ -180,6 +202,7 @@ export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShad
     vec3 b = v * u_thematicRange.t;
     vec3 c = proju;
     v_thematicIndex = findFractionalPositionOnLine(a, b, c);
+    v_thematicIndex = u.z;  // for testing fixed height
   }`;
   const hillShadeMode = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
     v_thematicIndex = computeSurfaceNormal().z;
@@ -192,6 +215,10 @@ export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShad
 
 // Determine the fractional position of c on line segment ab.  Assumes the three points are aligned on the same axis.
 const findFractionalPositionOnLine = `
+  // wouldn't this be more efficient?
+  // vec3 dV = a - b;
+  // float distSq = dot(dV, dV);
+  // return dot(b - a, c - a) / distSq;
   float abDist = distance(a, b);
   return dot(b - a, c - a) / (abDist * abDist);
 `;
