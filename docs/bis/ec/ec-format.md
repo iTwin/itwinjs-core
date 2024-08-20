@@ -92,6 +92,14 @@ Supported scientific type:
 
 **stationSeparator** the character used to separate the station and off set portions of a `station` formatted value.
 
+**azimuthBase** A numeric value indicating the base when type is set to azimuth. It fet, the `azimuthBaseUnit` has to also be set to indicate which unit this value is in. Defaults to north (quarter rotation). The value is indicated from east counter-clockwise.
+
+**azimuthBaseUnit** Required if `azimuthBase` is set. A unit name which the base value is in. The unit has to match the phenomenon used on the presentation and persistence units.
+
+**azimuthCounterClockwise** Only applies when the type is set to azimuth. Indicates whether the value should be formatted counter-clockwise from the base. Defaults to false.
+
+**revolutionUnit** Required if `type` is set to either bearing or azimuth. The name of a unit which represents a full revolution in the phenomenon used by the presentation and persistence units. This means a value of "1" in that unit represents a full revolution (like 360 represents a full revolution in degrees).
+
 ## Sub-Elements
 
 [Composite](#composite) _(0..1)_
