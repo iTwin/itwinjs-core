@@ -35,6 +35,21 @@ export class BaseFormat {
     // (undocumented)
     protected _allowMathematicOperations: boolean;
     // (undocumented)
+    get azimuthBase(): number | undefined;
+    set azimuthBase(azimuthBase: number | undefined);
+    // (undocumented)
+    protected _azimuthBase?: number;
+    // (undocumented)
+    get azimuthBaseUnit(): UnitProps | undefined;
+    set azimuthBaseUnit(azimuthBaseUnit: UnitProps | undefined);
+    // (undocumented)
+    protected _azimuthBaseUnit?: UnitProps;
+    // (undocumented)
+    get azimuthCounterClockwise(): boolean | undefined;
+    set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined);
+    // (undocumented)
+    protected _azimuthCounterClockwise?: boolean;
+    // (undocumented)
     get decimalSeparator(): string;
     set decimalSeparator(decimalSeparator: string);
     // (undocumented)
@@ -65,6 +80,11 @@ export class BaseFormat {
     set precision(precision: DecimalPrecision | FractionalPrecision);
     // (undocumented)
     protected _precision: number;
+    // (undocumented)
+    get revolutionUnit(): UnitProps | undefined;
+    set revolutionUnit(revolutionUnit: UnitProps | undefined);
+    // (undocumented)
+    protected _revolutionUnit?: UnitProps;
     // (undocumented)
     get roundFactor(): number;
     set roundFactor(roundFactor: number);
@@ -206,6 +226,12 @@ export interface FormatProps {
     // (undocumented)
     readonly allowMathematicOperations?: boolean;
     // (undocumented)
+    readonly azimuthBase?: number;
+    // (undocumented)
+    readonly azimuthBaseUnit?: string;
+    // (undocumented)
+    readonly azimuthCounterClockwise?: boolean;
+    // (undocumented)
     readonly composite?: {
         readonly spacer?: string;
         readonly includeZero?: boolean;
@@ -222,6 +248,8 @@ export interface FormatProps {
     readonly minWidth?: number;
     // (undocumented)
     readonly precision?: number;
+    // (undocumented)
+    readonly revolutionUnit?: string;
     // (undocumented)
     readonly roundFactor?: number;
     // (undocumented)
@@ -253,6 +281,10 @@ export class FormatterSpec {
     constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps);
     applyFormatting(magnitude: number): string;
     // (undocumented)
+    get azimuthBaseConversion(): UnitConversionProps | undefined;
+    // (undocumented)
+    protected _azimuthBaseConversion?: UnitConversionProps;
+    // (undocumented)
     protected _conversions: UnitConversionSpec[];
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
     // (undocumented)
@@ -268,6 +300,10 @@ export class FormatterSpec {
     get persistenceUnit(): UnitProps;
     // (undocumented)
     protected _persistenceUnit: UnitProps;
+    // (undocumented)
+    get revolutionConversion(): UnitConversionProps | undefined;
+    // (undocumented)
+    protected _revolutionConversion?: UnitConversionProps;
     get unitConversions(): UnitConversionSpec[];
 }
 
@@ -292,6 +328,8 @@ export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
 
 // @beta
 export enum FormatType {
+    Azimuth = 5,
+    Bearing = 4,
     Decimal = 0,
     Fractional = 1,
     Scientific = 2,
@@ -344,9 +382,11 @@ export interface ParsedQuantity {
 // @beta
 export enum ParseError {
     // (undocumented)
+    BearingPrefixOrSuffixMissing = 7,
+    // (undocumented)
     InvalidParserSpec = 6,
     // (undocumented)
-    MathematicOperationFoundButIsNotAllowed = 7,
+    MathematicOperationFoundButIsNotAllowed = 8,
     // (undocumented)
     NoValueOrUnitFoundInString = 2,
     // (undocumented)
@@ -394,12 +434,20 @@ export class Parser {
 // @beta
 export class ParserSpec {
     constructor(outUnit: UnitProps, format: Format, conversions: UnitConversionSpec[]);
+    // (undocumented)
+    get azimuthBaseConversion(): UnitConversionProps | undefined;
+    // (undocumented)
+    protected _azimuthBaseConversion?: UnitConversionProps;
     static create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec>;
     // (undocumented)
     get format(): Format;
     // (undocumented)
     get outUnit(): UnitProps;
     parseToQuantityValue(inString: string): QuantityParseResult;
+    // (undocumented)
+    get revolutionConversion(): UnitConversionProps | undefined;
+    // (undocumented)
+    protected _revolutionConversion?: UnitConversionProps;
     get unitConversions(): UnitConversionSpec[];
 }
 
@@ -500,6 +548,8 @@ export enum QuantityStatus {
     // (undocumented)
     InvalidJson = 35040,
     // (undocumented)
+    MissingRequiredProperty = 35048,
+    // (undocumented)
     NoValueOrUnitFoundInString = 35043,
     // (undocumented)
     QUANTITY_ERROR_BASE = 35039,
@@ -512,7 +562,9 @@ export enum QuantityStatus {
     // (undocumented)
     UnitLabelSuppliedButNotMatched = 35044,
     // (undocumented)
-    UnknownUnit = 35045
+    UnknownUnit = 35045,
+    // (undocumented)
+    UnsupportedUnit = 35047
 }
 
 // @beta
