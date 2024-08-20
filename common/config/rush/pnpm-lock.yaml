@@ -458,7 +458,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       chai: ^4.3.10
-      electron: ^31.0.0
+      electron: ^32.0.0
       eslint: ^8.56.0
       glob: ^10.3.12
       mocha: ^10.2.0
@@ -485,7 +485,7 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       chai: 4.3.10
-      electron: 31.0.0
+      electron: 32.0.0
       eslint: 8.56.0
       glob: 10.3.12
       mocha: 10.2.0
@@ -1288,7 +1288,7 @@ importers:
       '@types/node': ~18.16.20
       chai: ^4.3.10
       cpx2: ^3.0.0
-      electron: ^31.0.0
+      electron: ^32.0.0
       eslint: ^8.56.0
       mocha: ^10.2.0
       rimraf: ^3.0.2
@@ -1300,7 +1300,7 @@ importers:
       '@itwin/core-electron': link:../../core/electron
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      electron: 31.0.0
+      electron: 32.0.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
@@ -1734,7 +1734,7 @@ importers:
       crypto-browserify: 3.12.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^31.0.0
+      electron: ^32.0.0
       eslint: ^8.56.0
       fs-extra: ^8.1.0
       glob: ^10.3.12
@@ -1772,7 +1772,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.19.5_ff3xkui6zafxevgmp23wkrb2la
+      '@itwin/electron-authorization': 0.19.5_4ltb2knktuc7cwmrhz75wdtqnm
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 5.2.1_wj555zckjupkhkzyssqqpl4sei
@@ -1783,7 +1783,7 @@ importers:
       azurite: 3.31.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
-      electron: 31.0.0
+      electron: 32.0.0
       fs-extra: 8.1.0
       sinon: 17.0.1
       sinon-chai: 3.7.0_chai@4.3.10+sinon@17.0.1
@@ -2060,7 +2060,7 @@ importers:
       browserify-zlib: ^0.2.0
       buffer: ^6.0.3
       chai: ^4.3.10
-      electron: ^31.0.0
+      electron: ^32.0.0
       eslint: ^8.56.0
       express: ^4.18.2
       glob: ^10.3.12
@@ -2081,7 +2081,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/express-server': link:../../core/express-server
-      electron: 31.0.0
+      electron: 32.0.0
       express: 4.18.2
       semver: 7.5.2
       spdy: 4.0.1
@@ -2504,7 +2504,7 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^31.0.0
+      electron: ^32.0.0
       eslint: ^8.56.0
       express: ^4.18.2
       internal-tools: workspace:*
@@ -2533,7 +2533,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/electron-authorization': 0.19.5_ff3xkui6zafxevgmp23wkrb2la
+      '@itwin/electron-authorization': 0.19.5_4ltb2knktuc7cwmrhz75wdtqnm
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 5.2.1_wj555zckjupkhkzyssqqpl4sei
@@ -2558,7 +2558,7 @@ importers:
       cross-env: 5.1.4
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 31.0.0
+      electron: 32.0.0
       eslint: 8.56.0
       express: 4.18.2
       internal-tools: link:../../tools/internal
@@ -2623,7 +2623,7 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^31.0.0
+      electron: ^32.0.0
       eslint: ^8.56.0
       express: ^4.18.2
       express-ws: ^5.0.2
@@ -2664,7 +2664,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.19.5_ff3xkui6zafxevgmp23wkrb2la
+      '@itwin/electron-authorization': 0.19.5_4ltb2knktuc7cwmrhz75wdtqnm
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/frontend-tiles': link:../../extensions/frontend-tiles
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
@@ -2693,7 +2693,7 @@ importers:
       cross-env: 5.1.4
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 31.0.0
+      electron: 32.0.0
       eslint: 8.56.0
       express: 4.18.2
       express-ws: 5.0.2_express@4.18.2
@@ -2968,7 +2968,7 @@ importers:
       '@types/yargs': 17.0.19
       canonical-path: ^1.0.0
       detect-port: ~1.3.0
-      electron: ^31.0.0
+      electron: ^32.0.0
       eslint: ^8.56.0
       express: ^4.18.2
       jsonc-parser: ~2.0.3
@@ -3000,7 +3000,7 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/yargs': 17.0.19
-      electron: 31.0.0
+      electron: 32.0.0
       eslint: 8.56.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -4146,7 +4146,7 @@ packages:
       flatbuffers: 1.12.0
       js-base64: 3.6.1
 
-  /@itwin/electron-authorization/0.19.5_ff3xkui6zafxevgmp23wkrb2la:
+  /@itwin/electron-authorization/0.19.5_4ltb2knktuc7cwmrhz75wdtqnm:
     resolution: {integrity: sha512-2mOXbUYesxrdcMEM38klfQNvagbARlXYGVUtVzJ6CrwYdeHfMDB47DymYQ1tp/McTyKKfvN6nHBOTLbCmS7lng==}
     peerDependencies:
       '@itwin/core-bentley': ^3.3.0 || ^4.0.0
@@ -4155,7 +4155,7 @@ packages:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@openid/appauth': 1.3.2
-      electron: 31.0.0
+      electron: 32.0.0
       electron-store: 8.2.0
       username: 5.1.0
     transitivePeerDependencies:
@@ -7430,8 +7430,8 @@ packages:
   /electron-to-chromium/1.5.7:
     resolution: {integrity: sha512-6FTNWIWMxMy/ZY6799nBlPtF1DFDQ6VQJ7yyDP27SJNt5lwtQ5ufqVvHylb3fdQefvRcgA3fKcFMJi9OLwBRNw==}
 
-  /electron/31.0.0:
-    resolution: {integrity: sha512-yJMhwu5NVqor7h5mt65uKtBsjSAD7NiRwNCigK8xAlJMaP0X2FKipEzQocOzusy7E0dny4gkTgOTATy+ucDtjw==}
+  /electron/32.0.0:
+    resolution: {integrity: sha512-rs+VkhztJd2LvRX7d3ikKH+EIHMW4vKM2l5qp7Dx/dLQAKKz3IFNKyYhYzczDnqO+/jUvx0ic0SQvqpv1/ZAsw==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
@@ -8761,7 +8761,7 @@ packages:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.5.2
+      semver: 7.6.3
       serialize-error: 7.0.1
     optional: true
 
