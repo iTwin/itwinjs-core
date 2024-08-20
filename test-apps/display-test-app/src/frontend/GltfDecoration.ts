@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { Angle, AxisIndex, Matrix3d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
   DecorateContext, GraphicBranch, GraphicType, IModelApp, IModelConnection, readGltfGraphics, readGltfTemplate, RenderGraphic, RenderInstances, RenderInstancesParamsBuilder, Tool,
 } from "@itwin/core-frontend";
@@ -38,7 +38,7 @@ class GltfDecoration {
   }
 }
 
-function createInstances(numInstances: number, iModel: IModelConnection, modelId: Id64String, wantScale: boolean, wantColor: boolean, _wantRotate: boolean): RenderInstances | undefined {
+function createInstances(numInstances: number, iModel: IModelConnection, modelId: Id64String, wantScale: boolean, wantColor: boolean, wantRotate: boolean): RenderInstances | undefined {
   if (numInstances <= 1) {
     return undefined;
   }
@@ -79,9 +79,11 @@ function createInstances(numInstances: number, iModel: IModelConnection, modelId
     const scaleFactor = wantScale ? Math.random() * (maxScale - minScale) + minScale : 1;
     const scale = Transform.createScaleAboutPoint(origin, scaleFactor);
 
+    const zAngle = wantRotate ? Math.random() * 360 : 0;
+    const rotation = Transform.createFixedPointAndMatrix(origin, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(zAngle)));
     const symbology = wantColor ? { color: RgbColor.fromColorDef(colors[i % colors.length]) } : undefined;
     builder.add({
-      transform: translation.multiplyTransformTransform(scale, scale),
+      transform: translation.multiplyTransformTransform(scale).multiplyTransformTransform(rotation),
       feature: iModel.transientIds.getNext(),
       symbology,
     });
