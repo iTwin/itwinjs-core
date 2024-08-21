@@ -1096,4 +1096,74 @@ describe("Difference Conflict Reporting", () => {
       });
     });
   });
+
+  describe("KindOfQuantity conflicts", () => {
+    const unitItems = {
+      M: {
+        schemaItemType: "Unit",
+        phenomenon: "ConflictSchema.Length",
+        unitSystem: "ConflictSchema.Metric",
+        definition: "M",
+      },
+      SQ_M: {
+        schemaItemType: "Unit",
+        label: "m²",
+        phenomenon: "ConflictSchema.AREA",
+        unitSystem: "ConflictSchema.Metric",
+        definition: "M(2)"
+      },
+      Length: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+        label: "length",
+      },
+      AREA: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(2)",
+        label: "area",
+      },
+      Metric: {
+        schemaItemType: "UnitSystem",
+        label: "metric",
+      },
+    }
+
+    const sourceSchema = {
+      ...schemaHeader,
+      items: {
+        ...unitItems,
+        ConflictKoQ: {
+          schemaItemType: "KindOfQuantity",
+          name: "ConflictKoQ",
+          relativeError: 2,
+          persistenceUnit: "ConflictSchema.SQ_M",
+        }
+      }
+    };
+
+    const targetSchema = {
+      ...schemaHeader,
+      items: {
+        ...unitItems,
+        ConflictKoQ: {
+          schemaItemType: "KindOfQuantity",
+          name: "ConflictKoQ",
+          relativeError: 2,
+          persistenceUnit: "ConflictSchema.M",
+        }
+      },
+    };
+
+    it("should find a conflict for conflicting KindOfQuantity persistence unit value", async () => {
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      expect(findConflictItem(differences, "ConflictKoQ")).deep.equals({
+        code: ConflictCode.ConflictingPersistenceUnit,
+        schemaType: "KindOfQuantity",
+        itemName: "ConflictKoQ",
+        source: "ConflictSchema.SQ_M",
+        target: "ConflictSchema.M",
+        description: "Kind of Quantity has a different persistence unit.",
+      });
+    });
+  });
 });
