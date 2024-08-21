@@ -91,10 +91,12 @@ export class BaseFormat {
 
   public get spacer(): string | undefined { return this._spacer; }
   public set spacer(spacer: string | undefined) { this._spacer = spacer ?? this._spacer; }
+  public get spacerOrDefault(): string { return this._spacer ?? " "; }
 
   public get includeZero(): boolean | undefined { return this._includeZero; }
   public set includeZero(includeZero: boolean | undefined) { this._includeZero = includeZero ?? this._includeZero; }
 
+  // default "north" is applied by the formatter (quarter rotation counter clockwise from east, the value depends on the units used)
   public get azimuthBase(): number | undefined { return this._azimuthBase; }
   public set azimuthBase(azimuthBase: number | undefined) { this._azimuthBase = azimuthBase; }
 
@@ -103,6 +105,7 @@ export class BaseFormat {
 
   public get azimuthCounterClockwise(): boolean | undefined { return this._azimuthCounterClockwise; }
   public set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined) { this._azimuthCounterClockwise = azimuthCounterClockwise; }
+  public get azimuthCounterClockwiseOrDefault(): boolean { return this._azimuthCounterClockwise ?? false; }
 
   public get revolutionUnit(): UnitProps | undefined { return this._revolutionUnit; }
   public set revolutionUnit(revolutionUnit: UnitProps | undefined) { this._revolutionUnit = revolutionUnit; }
@@ -199,7 +202,7 @@ export class BaseFormat {
       this._stationSeparator = formatProps.stationSeparator;
     }
 
-    if (undefined !== formatProps.azimuthBase) { // optional; default is 0.0
+    if (undefined !== formatProps.azimuthBase) { // optional; default is a quarter rotation (90 degrees) which represents north
       if (typeof (formatProps.azimuthBase) !== "number")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBase' attribute. It should be of type 'number'.`);
       this._azimuthBase = formatProps.azimuthBase;

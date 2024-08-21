@@ -607,7 +607,7 @@ export class Parser {
         let value = sign * (tokenPair[0].value as number);
         let conversion: UnitConversionProps | undefined;
         if(tokenPair.length === 2 && tokenPair[1].isString){
-          const spacer = format.spacer ? format.spacer : " ";
+          const spacer = format.spacerOrDefault;
           if(tokenPair[1].value !== spacer){ // ignore spacer
             conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
           }
@@ -779,10 +779,7 @@ export class Parser {
       }
       azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
     }
-    let azimuthCounterClockwise = false;
-    if (spec.format.azimuthCounterClockwise !== undefined) {
-      azimuthCounterClockwise = spec.format.azimuthCounterClockwise;
-    }
+    const azimuthCounterClockwise = spec.format.azimuthCounterClockwiseOrDefault;
 
     if(azimuthCounterClockwise && azimuthBase === 0) {
       // parsed result already has the same base and orientation as our desired output

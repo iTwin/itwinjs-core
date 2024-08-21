@@ -233,7 +233,7 @@ export class Formatter {
       }
     }
 
-    return compositeStrings.join((spec.format.spacer !== undefined) ? spec.format.spacer : " ");
+    return compositeStrings.join(spec.format.spacerOrDefault);
   }
 
   /** Format a quantity value into a single text string. Imitate how formatting done by server method NumericFormatSpec::FormatDouble.
@@ -498,12 +498,12 @@ export class Formatter {
         azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
       }
 
-      if (azimuthBase === quarterRevolution && spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
+      if (azimuthBase === quarterRevolution && spec.format.azimuthCounterClockwiseOrDefault)
         return {magnitude}; // no conversion necessary, the input is already using the result parameters (east base and counter clockwise)
 
       // subtract the base from the actual value
       magnitude -= azimuthBase;
-      if (spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
+      if (spec.format.azimuthCounterClockwiseOrDefault)
         return {magnitude: this.normalizeAngle(magnitude, revolution)};
 
       // turn it into a clockwise angle
