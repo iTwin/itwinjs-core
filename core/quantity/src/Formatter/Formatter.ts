@@ -477,9 +477,18 @@ export class Formatter {
       if (quadrant === 1 || quadrant === 2)
         suffix = "W";
 
-      // special case, if in quadrant 2 and value is very small, turn suffix to E because S00E is preferred over S00W
-      if (quadrant === 2 && magnitude < 0.00000000001) // 1e-11 is a small value that is close to 0
-        suffix = "E";
+      // special case, if in quadrant 2 and value is very small, turn suffix to E because S00:00:00E is preferred over S00:00:00W
+      if (quadrant === 2 && spec.unitConversions.length > 0) {
+        // To determine if value is small, we need to convert it to the smallest unit presented and use the provided precision on it
+        const unitConversion = spec.unitConversions[spec.unitConversions.length - 1].conversion;
+        const smallestFormattedValue = (magnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD;
+
+        const precisionScale = Math.pow(10.0, spec.format.precision);
+        const floor = Math.floor((smallestFormattedValue) * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+        if(floor === 0) {
+          suffix = "E";
+        }
+      }
 
       return {magnitude, prefix, suffix: suffix!};
     }
