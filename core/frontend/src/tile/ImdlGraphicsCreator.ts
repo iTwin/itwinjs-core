@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Id64, JsonUtils, assert } from "@itwin/core-bentley";
+import { assert, Id64, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
@@ -27,7 +27,7 @@ import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal
 import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
 import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { GraphicTemplate, GraphicTemplateBatch, createGraphicTemplate } from "../render/GraphicTemplate";
+import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch } from "../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal

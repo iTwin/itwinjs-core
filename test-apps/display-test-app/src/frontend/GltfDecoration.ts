@@ -5,10 +5,10 @@
 
 import { Angle, AxisIndex, Matrix3d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  DecorateContext, GraphicBranch, GraphicType, IModelApp, IModelConnection, readGltfGraphics, readGltfTemplate, RenderGraphic, RenderInstances, RenderInstancesParamsBuilder, Tool,
+  DecorateContext, GraphicBranch, GraphicType, IModelApp, IModelConnection, readGltfTemplate, RenderGraphic, RenderInstances, RenderInstancesParamsBuilder, Tool,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
-import { Id64String, assert } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, RgbColor } from "@itwin/core-common";
 
 class GltfDecoration {
@@ -62,7 +62,7 @@ function createTransform(maxExtent: number, wantScale: boolean, wantRotate: bool
 
   const zAngle = wantRotate ? Math.random() * 360 : 0;
   const rotation = Transform.createFixedPointAndMatrix(origin, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(zAngle)));
-  
+
   return translation.multiplyTransformTransform(scale).multiplyTransformTransform(rotation);
 }
 
@@ -82,7 +82,7 @@ function createInstances(numInstances: number, iModel: IModelConnection, modelId
     ColorDef.fromJSON(ColorByName.orange),
     ColorDef.fromJSON(ColorByName.black),
   ];
-  
+
   const builder = RenderInstancesParamsBuilder.create({ modelId });
   for (let i = 0; i < numInstances; i++) {
     const symbology = wantColor ? { color: RgbColor.fromColorDef(colors[i % colors.length]) } : undefined;
@@ -120,7 +120,7 @@ export class GltfDecorationTool extends Tool {
     this._wantColor = !!args.getBoolean("c");
     this._wantRotate = !!args.getBoolean("r");
     this._forceUninstanced = !!args.getBoolean("f");
-    
+
     return this.run();
   }
 
@@ -160,7 +160,7 @@ export class GltfDecorationTool extends Tool {
       const id = iModel.transientIds.getNext();
       // The modelId must be different from the pickable Id for the decoration to be selectable and hilite-able.
       const modelId = iModel.transientIds.getNext();
-      let gltfTemplate = await readGltfTemplate({
+      const gltfTemplate = await readGltfTemplate({
         gltf: new Uint8Array(buffer),
         iModel,
         baseUrl: url ? new URL(url) : undefined,
@@ -190,7 +190,7 @@ export class GltfDecorationTool extends Tool {
 
         graphic = IModelApp.renderSystem.createGraphicList(graphics);
       }
-      
+
       // Transform the graphic to the center of the project extents.
       const branch = new GraphicBranch();
       branch.add(graphic);

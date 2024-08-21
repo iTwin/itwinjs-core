@@ -589,10 +589,10 @@ export abstract class GltfReader {
         batch,
         branch,
         noDispose,
-      })
+      }),
     };
   }
-  
+
   public readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
     const transformStack = new TransformStack(this.getTileTransform(transformToRoot));
     const polyfaces: IndexedPolyface[] = [];
@@ -638,7 +638,7 @@ export abstract class GltfReader {
 
     return this._system.createGeometryFromMesh(mesh, undefined);
   }
-    
+
   private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {
     const ext = node.extensions?.EXT_mesh_gpu_instancing;
     if (!ext || !ext.attributes) {
@@ -786,7 +786,7 @@ export abstract class GltfReader {
     featureTable: FeatureTable | undefined,
     transformStack: TransformStack,
     batchInstances?: InstancedGraphicParams,
-    pseudoRtcBias?: Vector3d
+    pseudoRtcBias?: Vector3d,
   ): TileReadStatus {
     if (undefined === node)
       return TileReadStatus.InvalidTileData;
@@ -842,7 +842,7 @@ export abstract class GltfReader {
     }
 
     transformStack.pop();
-    return TileReadStatus.Success;    
+    return TileReadStatus.Success;
   }
 
   private readNodeAndCreatePolyfaces(polyfaces: IndexedPolyface[], node: GltfNode, transformStack: TransformStack, needNormals: boolean, needParams: boolean): void {
@@ -2136,7 +2136,7 @@ export async function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic 
   return {
     ...result,
     graphic: IModelApp.renderSystem.createGraphicFromTemplate({ template }),
-  }
+  };
 }
 
 /** Implements [[readGltfGraphics]]. Exported strictly for tests.

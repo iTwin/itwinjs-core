@@ -7,7 +7,7 @@
  */
 
 import { UintArray } from "@itwin/core-bentley";
-import { LowAndHighXYZ, XYAndZ } from "@itwin/core-geometry";
+import { XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDefProps, FeatureIndexType, FillFlags, Gradient, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
 } from "@itwin/core-common";

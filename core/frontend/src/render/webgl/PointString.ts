@@ -25,7 +25,7 @@ import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
-  public readonly renderGeometryType: "point-string" = "point-string";
+  public readonly renderGeometryType: "point-string" = "point-string" as const;
   public readonly isInstanceable: boolean;
   public noDispose = false;
   public readonly buffers: BuffersContainer;

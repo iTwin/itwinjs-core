@@ -31,7 +31,7 @@ import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 import { RenderMemory } from "../RenderMemory";
 import { RealityMeshParams } from "../RealityMeshParams";
 import {
-    CreateGraphicFromTemplateArgs,
+  CreateGraphicFromTemplateArgs,
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderInstances, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
@@ -510,9 +510,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     for (const node of template[_nodes]) {
       const nodeGraphics: RenderGraphic[] = [];
       for (const geometry of node.geometry) {
-        const graphic = instances ? this.createInstancedGraphic(geometry, instances) : this.createRenderGraphic(geometry);
-        if (graphic) {
-          nodeGraphics.push(graphic);
+        const gf = instances ? this.createInstancedGraphic(geometry, instances) : this.createRenderGraphic(geometry);
+        if (gf) {
+          nodeGraphics.push(gf);
         }
       }
 

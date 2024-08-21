@@ -34,14 +34,14 @@ class Builder implements RenderInstancesParamsBuilder {
   private readonly _instances = new InstancedGraphicPropsBuilder();
   private readonly _modelId?: Id64String;
   private _containsFeatures = false;
-  
+
   public constructor(modelId?: Id64String) {
     this._modelId = modelId;
   }
 
   public add(instance: Instance): void {
     this._instances.add(instance);
-    
+
     if (undefined !== instance.feature) {
       this._containsFeatures = true;
     }

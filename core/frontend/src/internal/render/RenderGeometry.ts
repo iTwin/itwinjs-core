@@ -13,7 +13,7 @@ import { Range3d } from "@itwin/core-geometry";
 /** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]]. */
 export interface RenderGeometry extends IDisposable, RenderMemory.Consumer {
   readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
-  readonly isInstanceable: boolean
+  readonly isInstanceable: boolean;
   /** If true, this geometry is intended for reuse. Its `dispose` method will do nothing. Instead, we will rely on the JS garbage collector
    * to dispose of any WebGL resources it contains.
    * When creating a reusable `GraphicTemplate`, we set this to `true` for all geometry in the template. We never set it to `false`.

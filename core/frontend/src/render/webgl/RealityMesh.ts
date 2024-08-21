@@ -229,7 +229,7 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 
 /** @internal */
 export class RealityMeshGeometry extends IndexedGeometry implements RenderGeometry {
-  public readonly renderGeometryType: "reality-mesh" = "reality-mesh";
+  public readonly renderGeometryType: "reality-mesh" = "reality-mesh" as const;
   public readonly isInstanceable = false;
   public noDispose = false;
   public readonly hasTextures: boolean;

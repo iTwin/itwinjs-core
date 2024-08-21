@@ -77,10 +77,10 @@ export interface GraphicTemplate {
  * @internal
  */
 export function createGraphicTemplate(args: {
-  nodes: GraphicTemplateNode[],
-  batch?: GraphicTemplateBatch,
-  noDispose: boolean,
-  branch?: GraphicTemplateBranch,
+  nodes: GraphicTemplateNode[];
+  batch?: GraphicTemplateBatch;
+  noDispose: boolean;
+  branch?: GraphicTemplateBranch;
 }): GraphicTemplate {
   let isInstanceable = true;
   for (const node of args.nodes) {

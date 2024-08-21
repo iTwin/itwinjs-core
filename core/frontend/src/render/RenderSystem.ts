@@ -531,7 +531,7 @@ export abstract class RenderSystem implements IDisposable {
     const geom = this.createRealityMeshGeometry(realityMesh, disableTextureDisposal);
     return geom ? this.createRenderGraphic(geom) : undefined;
   }
-  
+
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */

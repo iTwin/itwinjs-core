@@ -17,7 +17,7 @@ import { MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
 import { _accumulator, _implementationProhibited } from "../../common/internal/Symbols";
-import { GraphicTemplate, GraphicTemplateBatch, createGraphicTemplate } from "../../render/GraphicTemplate";
+import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch } from "../../render/GraphicTemplate";
 import { RenderGeometry } from "./RenderGeometry";
 
 /** @internal */
@@ -186,7 +186,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
         meshes.range?.high.addInPlace(transformOrigin);
       }
     }
-      
+
     let batch: GraphicTemplateBatch | undefined;
     if (meshes.features?.anyDefined) {
       batch = {

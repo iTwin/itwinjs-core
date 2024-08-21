@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { LowAndHighXYZ, Point2d, Point3d, Range3d, Transform, XYAndZ, } from "@itwin/core-geometry";
+import { LowAndHighXYZ, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
  * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
@@ -53,10 +53,10 @@ export interface InstancedGraphicParams {
 export type InstancedGraphicProps = Omit<InstancedGraphicParams, "transformCenter" | "range"> & {
   transformCenter: XYAndZ;
   range?: LowAndHighXYZ;
-}
+};
 
 /** @public */
-export namespace InstancedGraphicProps {
+export namespace InstancedGraphicProps { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Add all [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects) from `props`
    * into `xfers`.
    */
@@ -73,7 +73,7 @@ export namespace InstancedGraphicProps {
 }
 
 /** @public */
-export namespace InstancedGraphicParams {
+export namespace InstancedGraphicParams { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Convert `params` to a representation that can be copied using [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone). */
   export function toProps(params: InstancedGraphicParams): InstancedGraphicProps {
     const props: InstancedGraphicProps = {

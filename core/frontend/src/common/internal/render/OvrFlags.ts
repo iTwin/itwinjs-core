@@ -10,7 +10,7 @@
  * These are used for FeatureOverrides and InstancedGraphicParams.
  * The flags are interpreted in the vertex shader.
  */
-export const enum OvrFlags {
+export const enum OvrFlags { // eslint-disable-line no-restricted-syntax
   None = 0,
   Visibility = 1 << 0,
   Rgb = 1 << 1,

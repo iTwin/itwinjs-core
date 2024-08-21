@@ -26,7 +26,7 @@ import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
-  public readonly renderGeometryType: "polyline" = "polyline";
+  public readonly renderGeometryType: "polyline" = "polyline" as const;
   public readonly isInstanceable: boolean;
   public noDispose = false;
   public vertexParams: QParams3d;

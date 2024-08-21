@@ -24,7 +24,7 @@ import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class PointCloudGeometry extends CachedGeometry implements RenderGeometry {
-  public readonly renderGeometryType: "point-cloud" = "point-cloud";
+  public readonly renderGeometryType: "point-cloud" = "point-cloud" as const;
   public readonly isInstanceable = false;
   public noDispose = false;
   public readonly buffers: BuffersContainer;

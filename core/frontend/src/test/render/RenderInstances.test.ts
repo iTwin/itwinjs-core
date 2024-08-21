@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Transform } from "@itwin/core-geometry";
-import { Instance, RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
+import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { Id64 } from "@itwin/core-bentley";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
@@ -16,10 +16,12 @@ describe("RenderInstancesParamsBuilder", () => {
 
   it("populates feature table IFF features are present", () => {
     let builder = RenderInstancesParamsBuilder.create({});
-    const reset = () => { builder = RenderInstancesParamsBuilder.create({}); }
+    const reset = () => {
+      builder = RenderInstancesParamsBuilder.create({});
+    };
     const addInstance = (feature?: string) => {
       builder.add({ transform: Transform.createIdentity(), feature });
-    }
+    };
 
     const finish = () => builder.finish() as RenderInstancesParamsImpl;
     addInstance();
@@ -40,5 +42,4 @@ describe("RenderInstancesParamsBuilder", () => {
     expect(finish().features).not.to.be.undefined;
   });
 });
-
 

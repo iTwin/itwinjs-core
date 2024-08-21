@@ -21,7 +21,7 @@ function build(instances: Instance[], haveFeatures = false): InstancedGraphicPro
   const featureTable = haveFeatures ? new FeatureTable(1000) : undefined;
   const props = builder.finish(featureTable);
   expect(props).not.to.be.undefined;
-  return props!;
+  return props;
 }
 
 function makeInstance(tf: Transform | XYZProps = [1, 2, 3], feature?: Id64String | Feature, symbology?: InstanceSymbology): Instance {
@@ -98,7 +98,7 @@ describe("InstancedGraphicPropsBuilder", () => {
     expect(symbs).not.to.be.undefined;
     expect(symbs.byteLength).to.equal(8 * instances.length);
 
-    function expectOvrs(instanceIdx: number, expected: { rgb?: [number, number, number], weight?: number, lineCode?: number, }): void {
+    function expectOvrs(instanceIdx: number, expected: { rgb?: [number, number, number], weight?: number, lineCode?: number }): void {
       const i = instanceIdx * 8;
       const rgb = expected.rgb ?? [0, 0, 0];
       const weight = expected.weight ?? 0;
@@ -156,7 +156,7 @@ describe("InstancedGraphicPropsBuilder", () => {
       }
 
       const ft = new FeatureTable(9999);
-      const props = builder.finish(ft)!;
+      const props = builder.finish(ft);
 
       expect(ft.length).to.equal(expectedFeatures.length);
       const actualFeatures = ft.getArray().map((x) => [x.value.elementId, x.value.subCategoryId, x.value.geometryClass]);
@@ -195,5 +195,4 @@ describe("InstancedGraphicPropsBuilder", () => {
     ]);
   });
 });
-
 

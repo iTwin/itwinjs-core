@@ -19,7 +19,7 @@ export class InstancedGraphicPropsBuilder {
   private readonly _instances: Instance[] = [];
   private readonly _transformRange = new Range3d();
   private _haveSymbology = false;
-  
+
   public add(instance: Instance): void {
     this._instances.push(instance);
     this._transformRange.extendXYZ(instance.transform.origin.x, instance.transform.origin.y, instance.transform.origin.z);
@@ -87,7 +87,7 @@ export class InstancedGraphicPropsBuilder {
       transforms[tfIdx + 1] = tf.matrix.coffs[1];
       transforms[tfIdx + 2] = tf.matrix.coffs[2];
       transforms[tfIdx + 3] = org[0];
-      
+
       transforms[tfIdx + 4] = tf.matrix.coffs[3];
       transforms[tfIdx + 5] = tf.matrix.coffs[4];
       transforms[tfIdx + 6] = tf.matrix.coffs[5];

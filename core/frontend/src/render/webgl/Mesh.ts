@@ -25,7 +25,7 @@ import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class MeshRenderGeometry implements RenderGeometry {
-  public readonly renderGeometryType: "mesh" = "mesh";
+  public readonly renderGeometryType: "mesh" = "mesh" as const;
   public readonly isInstanceable: boolean;
   public noDispose = false;
   public readonly data: MeshData;
