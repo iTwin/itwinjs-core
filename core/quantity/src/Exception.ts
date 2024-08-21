@@ -22,6 +22,8 @@ export enum QuantityStatus {
   UnitLabelSuppliedButNotMatched = QUANTITY_ERROR_BASE + 5,
   UnknownUnit = QUANTITY_ERROR_BASE + 6,
   UnableToConvertParseTokensToQuantity = QUANTITY_ERROR_BASE + 7,
+  UnsupportedUnit = QUANTITY_ERROR_BASE + 8,
+  MissingRequiredProperty = QUANTITY_ERROR_BASE + 9,
 }
 
 /** The error type thrown by this module. See [[QuantityStatus]] for `errorNumber` values.
