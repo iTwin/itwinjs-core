@@ -7597,6 +7597,8 @@ export namespace MockRender {
     // (undocumented)
     export class AreaPattern implements RenderAreaPattern {
         // (undocumented)
+        readonly [_implementationProhibited] = "renderAreaPattern";
+        // (undocumented)
         collectStatistics(): void;
         // (undocumented)
         dispose(): void;
@@ -9525,7 +9527,10 @@ export interface RemoteExtensionProviderProps {
 }
 
 // @internal
-export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
+    // (undocumented)
+    readonly [_implementationProhibited]: "renderAreaPattern";
+}
 
 // @public
 export abstract class RenderClipVolume {

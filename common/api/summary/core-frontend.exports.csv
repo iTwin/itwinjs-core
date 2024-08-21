@@ -609,7 +609,7 @@ internal;class;RealityTreeReference
 beta;function;registerWorker
 alpha;class;RemoteExtensionProvider
 alpha;interface;RemoteExtensionProviderProps
-internal;type;RenderAreaPattern
+internal;interface;RenderAreaPattern
 public;class;RenderClipVolume
 public;class;RenderContext
 internal;enum;RenderDiagnostics
