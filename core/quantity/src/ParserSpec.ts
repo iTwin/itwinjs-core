@@ -7,7 +7,7 @@
  */
 
 import { Format } from "./Formatter/Format";
-import { AlternateUnitLabelsProvider, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import { AlternateUnitLabelsProvider, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { Parser, QuantityParseResult } from "./Parser";
 
 /** A ParserSpec holds information needed to parse a string into a quantity synchronously.
@@ -17,6 +17,8 @@ export class ParserSpec {
   private _outUnit: UnitProps;
   private _conversions: UnitConversionSpec[] = [];  // max four entries
   private _format: Format;
+  protected _azimuthBaseConversion?: UnitConversionProps; // converts azimuth base unit to persistence unit
+  protected _revolutionConversion?: UnitConversionProps; // converts revolution unit to persistence unit
 
   /** Constructor
    *  @param outUnit     The name of a format specification.
@@ -33,6 +35,8 @@ export class ParserSpec {
   public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
   public get format(): Format { return this._format; }
   public get outUnit(): UnitProps { return this._outUnit; }
+  public get azimuthBaseConversion(): UnitConversionProps | undefined { return this._azimuthBaseConversion; }
+  public get revolutionConversion(): UnitConversionProps | undefined { return this._revolutionConversion; }
 
   /** Static async method to create a ParserSpec given the format and unit of the quantity that will be passed to the Parser. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
@@ -43,7 +47,22 @@ export class ParserSpec {
    */
   public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec> {
     const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit, altUnitLabelsProvider);
-    return new ParserSpec(outUnit, format, conversions);
+    const spec = new ParserSpec(outUnit, format, conversions);
+    if (format.azimuthBaseUnit !== undefined) {
+      if (outUnit !== undefined) {
+        spec._azimuthBaseConversion = await unitsProvider.getConversion(format.azimuthBaseUnit, outUnit);
+      } else {
+        spec._azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
+      }
+    }
+    if (format.revolutionUnit !== undefined) {
+      if (outUnit !== undefined) {
+        spec._revolutionConversion = await unitsProvider.getConversion(format.revolutionUnit, outUnit);
+      } else {
+        spec._revolutionConversion = { factor: 1.0, offset: 0.0 };
+      }
+    }
+    return spec;
   }
 
   /** Do the parsing. Done this way to allow Custom Parser Specs to parse custom formatted strings into their quantities. */
