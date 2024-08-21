@@ -324,7 +324,7 @@ export class XYZ implements XYAndZ {
     this.y += other.y;
     this.z += other.z;
   }
-  /** Add x,y,z from other in place. */
+  /** Subtract x,y,z from other in place. */
   public subtractInPlace(other: XYAndZ): void {
     this.x -= other.x;
     this.y -= other.y;
