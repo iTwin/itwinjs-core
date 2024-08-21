@@ -16,28 +16,48 @@ import { BatchOptions } from "../common/render/BatchOptions";
 /** @internal */
 export interface GraphicTemplateNode {
   geometry: RenderGeometry[];
-  // For glTF models, the flattened transform of the scene graph node.
+  /** For glTF models, the flattened transform of the scene graph node. */
   transform?: Transform;
-  // For glTF models, the instances associated with the scene graph node, or with the model as a whole.
+  /** For glTF models, the instances associated with the scene graph node, or with the model as a whole. */
   instances?: InstancedGraphicParams;
 }
 
-/** @internal */
+/** Describes the collection of $[Feature]($common)s in a [[GraphicTemplate]].
+ * If the template is used for instancing, the batch information in the [[RenderInstances]] overrides this.
+ * @internal
+ */
 export interface GraphicTemplateBatch {
   readonly featureTable: RenderFeatureTable;
   readonly options?: BatchOptions;
   readonly range: Range3d;
 }
 
-/** @internal */
+/** Applies a transform and/or view flag overrides to all of the nodes in a [[GraphicTemplate]].
+ * @internal
+ */
 export interface GraphicTemplateBranch {
   readonly transform?: Transform;
   readonly viewFlagOverrides?: ViewFlagOverrides;
 }
 
+/** A reusable representation of a [[RenderGraphic]].
+ * You can use [[RenderSystem.createGraphicFromTemplate]] to produce a [[RenderGraphic]] from a template.
+ * The template contains all of the WebGL resources required to render the graphics, so no matter how many times you use the template,
+ * no additional GPU resources will be allocated.
+ * The primary use for a template is [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html) - efficiently
+ * drawing many repetitions of the same graphic with different positions, scales, rotations, and symbology.
+ * Using instancing to draw 1 template N times is far more efficient than drawing N [[RenderGraphic]]s created from the same template.
+ * You can instance a template by supplying a [[RenderInstances]] to [[RenderSystem.createGraphicFromTemplate]], unless [[isInstanceable]] is `false`.
+ */
 export interface GraphicTemplate {
+  /** @internal */
   readonly [_implementationProhibited]: unknown;
 
+  /** Whether the graphics in this template can be instanced. Non-instanceable graphics include those produced from glTF models that already
+   * contain instanced geometry and view-independent geometry created from a [[GraphicBuilder]].
+   * [[RenderSystem.createGraphicFromTemplate]] will throw an error if you attempt to instance a non-instanceable template by supplying
+   * [[CreateGraphicFromTemplateArgs.instances]].
+   */
   readonly isInstanceable: boolean;
 
   /** @internal */
@@ -49,7 +69,9 @@ export interface GraphicTemplate {
 }
 
 /** Create a GraphicTemplate.
- * Each RenderGeometry in each node will be marked `noDispose`.
+ * If the caller specifies `noDispose` as `true`, every RenderGeometry in every node will be marked `noDispose`;
+ * this permits the same template to be reused by multiple graphics. The garbage collector will reclaim its
+ * WebGL resources and its `dispose` method will do nothing.
  * The `isInstancable` flag will be calculated from the nodes and their geometry.
  * @internal
  */

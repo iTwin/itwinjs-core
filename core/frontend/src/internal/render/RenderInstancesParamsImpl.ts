@@ -13,12 +13,16 @@ import { CreateRenderInstancesParamsBuilderArgs, Instance, RenderInstancesParams
 import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
 import { FeatureTable, PackedFeatureTable } from "@itwin/core-common";
 
+/** Intermediate representation of `RenderInstances[_batch]`. */
 export interface InstancedFeaturesParams {
   modelId: Id64String;
   data: Uint32Array;
   count: number;
 }
 
+/** This exists so that [[RenderInstancesParams]] can be an opaque type that can be copied between Workers.
+ * (`Symbol`s are dropped during structured cloning).
+ */
 export interface RenderInstancesParamsImpl extends RenderInstancesParams {
   [_implementationProhibited]: "renderInstancesParams";
   instances: InstancedGraphicProps;

@@ -57,6 +57,9 @@ export type InstancedGraphicProps = Omit<InstancedGraphicParams, "transformCente
 
 /** @public */
 export namespace InstancedGraphicProps {
+  /** Add all [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects) from `props`
+   * into `xfers`.
+   */
   export function collectTransferables(xfers: Set<Transferable>, props: InstancedGraphicProps): void {
     xfers.add(props.transforms.buffer);
     if (props.featureIds) {
@@ -71,6 +74,7 @@ export namespace InstancedGraphicProps {
 
 /** @public */
 export namespace InstancedGraphicParams {
+  /** Convert `params` to a representation that can be copied using [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone). */
   export function toProps(params: InstancedGraphicParams): InstancedGraphicProps {
     const props: InstancedGraphicProps = {
       ...params,
@@ -99,6 +103,7 @@ export namespace InstancedGraphicParams {
     return props;
   }
 
+  /** Create an [[InstancedGraphicParams]] rfom an [[InstancedGraphicProps]]. */
   export function fromProps(props: InstancedGraphicProps): InstancedGraphicParams {
     return {
       ...props,

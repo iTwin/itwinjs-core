@@ -85,7 +85,7 @@ export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
   computeChordTolerance?: never;
 }
 
-/** Arguments used to compute the chord tolerance (level of detail) of the [[RenderGraphic]]s produced by a [[GraphicBuilder]].
+/** Arguments used to compute the chord tolerance (level of detail) of the [[RenderGraphic]] or [[GraphicTemplate]] produced by a [[GraphicBuilder]].
  * Generally, the chord tolerance should be roughly equivalent to the size in meters of one pixel on screen where the graphic is to be displayed.
  * For [[GraphicType.ViewOverlay]] and [[GraphicType.ViewBackground]], which already define their geometry in pixels, the chord tolerance should typically be 1.
  * @see [[CustomGraphicBuilderOptions.computeChordTolerance]].
@@ -99,7 +99,7 @@ export interface ComputeChordToleranceArgs {
   readonly computeRange: () => Range3d;
 }
 
-/** Options for creating a [[GraphicBuilder]] to produce a [[RenderGraphic]] that is not associated with any particular [[Viewport]] and may not be associated with
+/** Options for creating a [[GraphicBuilder]] to produce a [[RenderGraphic]] or [[GraphicTemplate]] that is not associated with any particular [[Viewport]] and may not be associated with
  * any particular [[IModelConnection]].
  * This is primarily useful when the same graphic is to be saved and reused for display in multiple viewports and for which a chord tolerance can be computed
  * independently of each viewport's [Frustum]($common).
@@ -116,7 +116,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
   viewport?: never;
 }
 
-/** Provides methods for constructing a [[RenderGraphic]] from geometric primitives and symbology.
+/** Provides methods for constructing a [[RenderGraphic]] or [[GraphicTemplate]] from geometric primitives and symbology.
  * GraphicBuilder is primarily used for creating [[Decorations]] to be displayed inside a [[Viewport]].
  *
  * The typical process for constructing a [[RenderGraphic]] proceeds as follows:
@@ -124,6 +124,12 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
  *  2. Set up the symbology using [[GraphicBuilder.activateGraphicParams]] or [[GraphicBuilder.setSymbology]].
  *  3. Add one or more geometric primitives using methods like [[GraphicBuilder.addShape]] and [[GraphicBuilder.addLineString]], possibly setting new symbology in between.
  *  4. Use [[GraphicBuilder.finish]] to produce the finished [[RenderGraphic]].
+ *
+ * The process for constructing a [[GraphicTemplate]] is similar:
+ *  1. Use [[RenderSystem.createGraphic]] to obtain a builder.
+ *  2. Set up the symbology using [[GraphicBuilder.activateGraphicParams]] or [[GraphicBuilder.setSymbology]].
+ *  3. Add one or more geometric primitives using methods like [[GraphicBuilder.addShape]] and [[GraphicBuilder.addLineString]], possibly setting new symbology in between.
+ *  4. Use [[GraphicBuilder.finishTemplate]] to produce the finished [[GraphicTemplate]].
  *
  * @note Most of the methods which add geometry to the builder take ownership of their inputs rather than cloning them.
  * So, for example, if you pass an array of points to addLineString(), you should not subsequently modify that array.
@@ -189,10 +195,13 @@ export abstract class GraphicBuilder extends GraphicAssembler {
   /**
    * Processes the accumulated symbology and geometry to produce a renderable graphic.
    * This function can only be called once; after the [[RenderGraphic]] has been extracted the [[GraphicBuilder]] should no longer be used.
+   * @see [[finishTemplate]] to obtain a [[GraphicTemplate]] instead.
    */
   public abstract finish(): RenderGraphic;
 
-  /** ###TODO
+  /** Processes the accumulated symbology and geometry to produce a reusable template for a [[RenderGraphic]].
+   * This function can only be called once; after the [[GraphicTemplate]] has been extracted the [[GraphicBuilder]] should no longer be used.
+   * @see [[finish]] to obtain a [[RenderGraphic]] instead.
    * @beta
    */
   public abstract finishTemplate(): GraphicTemplate;

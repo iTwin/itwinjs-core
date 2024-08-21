@@ -12,6 +12,9 @@ import { lineCodeFromLinePixels } from "./LineCode";
 
 const invalidFeature = new Feature();
 
+/** Used internally by [[RenderInstancesParamsBuilder]] to produce an InstancedGraphicProps.
+ * Use [[add]] to append [[Instance]]s, then [[finish]] to obtain an InstancedGraphicProps.
+ */
 export class InstancedGraphicPropsBuilder {
   private readonly _instances: Instance[] = [];
   private readonly _transformRange = new Range3d();
