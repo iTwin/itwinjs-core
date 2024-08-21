@@ -8,7 +8,7 @@ import {
   DecorateContext, GraphicBranch, GraphicType, IModelApp, IModelConnection, readGltfGraphics, readGltfTemplate, RenderGraphic, RenderInstances, RenderInstancesParamsBuilder, Tool,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64String, assert } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, RgbColor } from "@itwin/core-common";
 
 class GltfDecoration {
@@ -103,13 +103,14 @@ function createInstances(numInstances: number, iModel: IModelConnection, modelId
 export class GltfDecorationTool extends Tool {
   public static override toolId = "AddGltfDecoration";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 5; }
+  public static override get maxArgs() { return 6; }
 
   private _url?: string;
   private _numInstances = 1;
   private _wantScale = false;
   private _wantColor = false;
   private _wantRotate = false;
+  private _forceUninstanced = false;
 
   public override async parseAndRun(...inArgs: string[]) {
     const args = parseArgs(inArgs);
@@ -118,6 +119,7 @@ export class GltfDecorationTool extends Tool {
     this._wantScale = !!args.getBoolean("s");
     this._wantColor = !!args.getBoolean("c");
     this._wantRotate = !!args.getBoolean("r");
+    this._forceUninstanced = !!args.getBoolean("f");
     
     return this.run();
   }
@@ -144,7 +146,7 @@ export class GltfDecorationTool extends Tool {
 
   public override async run() {
     const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
+    if (!vp || this._numInstances < 1)
       return false;
 
     const url = this._url;
@@ -171,8 +173,23 @@ export class GltfDecorationTool extends Tool {
       if (!gltfTemplate?.template)
         return false;
 
-      const instances = createInstances(this._numInstances, vp.iModel, modelId, this._wantScale, this._wantColor, this._wantRotate);
-      let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template: gltfTemplate.template, instances });
+      let graphic;
+      if (!this._forceUninstanced) {
+        const instances = createInstances(this._numInstances, vp.iModel, modelId, this._wantScale, this._wantColor, this._wantRotate);
+        graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template: gltfTemplate.template, instances });
+      } else {
+        const diagonal = iModel.projectExtents.diagonal();
+        const maxExtent = Math.min(diagonal.x, Math.min(diagonal.y, diagonal.z));
+        const graphics: RenderGraphic[] = [];
+        for (let i = 0; i < this._numInstances; i++) {
+          const gf = IModelApp.renderSystem.createGraphicFromTemplate({ template: gltfTemplate.template });
+          const gfBranch = new GraphicBranch();
+          gfBranch.add(gf);
+          graphics.push(IModelApp.renderSystem.createGraphicBranch(gfBranch, createTransform(maxExtent, this._wantScale, this._wantRotate)));
+        }
+
+        graphic = IModelApp.renderSystem.createGraphicList(graphics);
+      }
       
       // Transform the graphic to the center of the project extents.
       const branch = new GraphicBranch();
