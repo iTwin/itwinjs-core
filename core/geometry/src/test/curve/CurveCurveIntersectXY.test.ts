@@ -260,10 +260,10 @@ describe("CurveCurveIntersectXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const arc0 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 2, 0),
-    )!;
+    );
     const arc1 = Arc3d.createCircularStartMiddleEnd(
       arc0.fractionToPoint(0.25), arc0.fractionToPoint(0.5), arc0.fractionToPoint(1.5),
-    )!;
+    );
     const intersectionsAB = CurveCurve.intersectionXYPairs(arc0, false, arc1, false);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc0, arc1]);
     const numExpected = 1;
@@ -669,7 +669,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(-2, 0), Point3d.create(0, 2), Point3d.create(2, 0),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
@@ -692,7 +692,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const arc = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2),
-    )!;
+    );
     const lineString = LineString3d.create([5, 2], [6, 0], [7, 2]);
     const lineSegment = LineSegment3d.create(Point3d.create(7, 2), Point3d.create(10, 0));
     const geometryB = Path.create();
@@ -720,7 +720,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const arc = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2),
-    )!;
+    );
     const lineString = LineString3d.create([5, 2], [6, 0], [7, 2]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(7, 2), Point3d.create(10, 0));
     const lineSegment2 = LineSegment3d.create(Point3d.create(10, 0), Point3d.create(1, 2));
@@ -748,11 +748,11 @@ describe("CurveCurveIntersectXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const geometryA = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(-1, 2), Point3d.create(3, 4), Point3d.create(7, 2),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 5), Point3d.create(3, 4), Point3d.create(1, 3),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
@@ -793,7 +793,7 @@ describe("CurveCurveIntersectXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const geometryA = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 2), Point3d.create(3, 4), Point3d.create(5, 2),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = LineString3d.create([3, 5], [3, 1], [6, 1]);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
@@ -885,7 +885,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 0), Point3d.create(2, 1), Point3d.create(3, 0),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
@@ -944,7 +944,7 @@ describe("CurveCurveIntersectXY", () => {
     // path1
     const arc1 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5),
-    )!;
+    );
     const lineString1 = LineString3d.create([5, 5], [6, 3], [7, 5], [10, 3]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(10, 3), Point3d.create(1, 5));
     const geometryA = Path.create();
@@ -955,7 +955,7 @@ describe("CurveCurveIntersectXY", () => {
     // path2
     const arc2 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(0, -2), Point3d.create(2, -3.5), Point3d.create(4, -2),
-    )!;
+    );
     const lineString2 = LineString3d.create([4, -2], [6, -1], [8, -2], [9, 6]);
     const lineSegment2 = LineSegment3d.create(Point3d.create(9, 6), Point3d.create(0, -2));
     const geometryB = Path.create();
@@ -982,7 +982,7 @@ describe("CurveCurveIntersectXY", () => {
     // loop1
     const arc1 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5),
-    )!;
+    );
     const lineString1 = LineString3d.create([5, 5], [6, 3], [7, 5], [10, 3]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(10, 3), Point3d.create(1, 5));
     const geometryA = Loop.create();
@@ -993,7 +993,7 @@ describe("CurveCurveIntersectXY", () => {
     // loop2
     const arc2 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(0, -2), Point3d.create(2, -3.5), Point3d.create(4, -2),
-    )!;
+    );
     const lineString2 = LineString3d.create([4, -2], [6, -1], [8, -2], [9, 6]);
     const lineSegment2 = LineSegment3d.create(Point3d.create(9, 6), Point3d.create(0, -2));
     const geometryB = Loop.create();
@@ -1111,7 +1111,7 @@ describe("CurveCurveIntersectXY", () => {
     // bag of curves
     const arc1 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5),
-    )!;
+    );
     const lineString1 = LineString3d.create([5, 5], [6, 3], [7, 5], [10, 3]);
     const path = Path.create();
     path.tryAddChild(arc1);
