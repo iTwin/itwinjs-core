@@ -157,6 +157,21 @@ describe("Angle.Adjust", () => {
     ck.checkpoint("Angle.Trig");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("fullPeriodAdjust", () => {
+    const ck = new Checker();
+    for (let angle of [0, 3, Angle.pi2Radians, 7, 2 * Angle.pi2Radians]) {
+      for (const scale of [1, -1]) {
+        angle *= scale;
+        if (Angle.isAlmostEqualRadiansAllowPeriodShift(angle, Angle.pi2Radians))
+          ck.testRadians(angle < 0 ? Angle.pi2Radians : 0, Angle.adjustRadians0To2Pi(angle), "verify unorthodox logic for negative multiples of 2pi");
+        else
+          ck.testTrue(Angle.adjustRadians0To2Pi(angle) < Angle.pi2Radians, "verify orthodox logic for non-2pi multiples");
+        ck.testTrue(Angle.adjustRadians0ToLessThan2Pi(angle) < Angle.pi2Radians, "expect 2pi never to be returned");
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 function testSweep(ck: Checker, sweep: AngleSweep, isCCW: boolean, isFullCircle: boolean, sweepDegrees: number | undefined) {
