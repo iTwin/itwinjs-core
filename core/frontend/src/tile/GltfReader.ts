@@ -2070,7 +2070,7 @@ export interface GltfGraphic {
 }
 
 /** The output of [[readGltfTemplate]].
- * @public
+ * @beta
  */
 export interface GltfTemplate {
   /** The graphic template created from the glTF model. */

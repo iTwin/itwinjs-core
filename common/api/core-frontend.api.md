@@ -2336,11 +2336,17 @@ export interface CreateGraphicFromDescriptionArgs {
 
 // @beta
 export interface CreateGraphicFromTemplateArgs {
-    // (undocumented)
     instances?: RenderInstances;
-    // (undocumented)
     template: GraphicTemplate;
 }
+
+// @internal
+export function createGraphicTemplate(args: {
+    nodes: GraphicTemplateNode[];
+    batch?: GraphicTemplateBatch;
+    noDispose: boolean;
+    branch?: GraphicTemplateBranch;
+}): GraphicTemplate;
 
 // @internal (undocumented)
 export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate;
@@ -2365,7 +2371,6 @@ export function createRealityTileTreeReference(props: RealityModelTileTree.Refer
 
 // @beta
 export interface CreateRenderInstancesParamsBuilderArgs {
-    // (undocumented)
     modelId?: Id64String;
 }
 
@@ -4357,7 +4362,7 @@ export interface GltfReaderResult extends TileContent {
     readStatus: TileReadStatus;
 }
 
-// @public
+// @beta
 export interface GltfTemplate {
     boundingBox: AxisAlignedBox3d;
     localBoundingBox: ElementAlignedBox3d;
@@ -4745,6 +4750,45 @@ export interface GraphicSolidPrimitive {
     solidPrimitive: SolidPrimitive;
     // (undocumented)
     type: "solidPrimitive";
+}
+
+// @beta
+export interface GraphicTemplate {
+    // @internal (undocumented)
+    readonly [_batch]?: GraphicTemplateBatch;
+    // @internal (undocumented)
+    readonly [_branch]?: GraphicTemplateBranch;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal (undocumented)
+    readonly [_nodes]: GraphicTemplateNode[];
+    readonly isInstanceable: boolean;
+}
+
+// @internal
+export interface GraphicTemplateBatch {
+    // (undocumented)
+    readonly featureTable: RenderFeatureTable;
+    // (undocumented)
+    readonly options?: BatchOptions;
+    // (undocumented)
+    readonly range: Range3d;
+}
+
+// @internal
+export interface GraphicTemplateBranch {
+    // (undocumented)
+    readonly transform?: Transform;
+    // (undocumented)
+    readonly viewFlagOverrides?: ViewFlagOverrides;
+}
+
+// @internal (undocumented)
+export interface GraphicTemplateNode {
+    // (undocumented)
+    geometry: RenderGeometry[];
+    instances?: InstancedGraphicParams;
+    transform?: Transform;
 }
 
 // @public
@@ -5763,11 +5807,8 @@ export enum InputSource {
 
 // @beta
 export interface Instance {
-    // (undocumented)
     feature?: Feature | Id64String;
-    // (undocumented)
     symbology?: InstanceSymbology;
-    // (undocumented)
     transform: Transform;
 }
 
@@ -5783,9 +5824,7 @@ export interface InstancedGraphicParams {
 
 // @public (undocumented)
 export namespace InstancedGraphicParams {
-    // (undocumented)
     export function fromProps(props: InstancedGraphicProps): InstancedGraphicParams;
-    // (undocumented)
     export function toProps(params: InstancedGraphicParams): InstancedGraphicProps;
 }
 
@@ -5797,17 +5836,13 @@ export type InstancedGraphicProps = Omit<InstancedGraphicParams, "transformCente
 
 // @public (undocumented)
 export namespace InstancedGraphicProps {
-    // (undocumented)
     export function collectTransferables(xfers: Set<Transferable>, props: InstancedGraphicProps): void;
 }
 
 // @beta
 export interface InstanceSymbology {
-    // (undocumented)
     color?: RgbColorProps;
-    // (undocumented)
     linePixels?: LinePixels;
-    // (undocumented)
     weight?: number;
 }
 
@@ -9610,13 +9645,12 @@ export interface RenderInstances {
 
 // @beta
 export interface RenderInstancesParams {
-    // (undocumented)
+    // @internal (undocumented)
     readonly [_implementationProhibited]: "renderInstancesParams";
 }
 
 // @beta (undocumented)
 export namespace RenderInstancesParams {
-    // (undocumented)
     export function collectTransferables(xfers: Set<Transferable>, params: RenderInstancesParams): void;
 }
 
@@ -9624,15 +9658,12 @@ export namespace RenderInstancesParams {
 export interface RenderInstancesParamsBuilder {
     // @internal (undocumented)
     [_implementationProhibited]: unknown;
-    // (undocumented)
     add(instance: Instance): void;
-    // (undocumented)
     finish(): RenderInstancesParams;
 }
 
 // @beta (undocumented)
 export namespace RenderInstancesParamsBuilder {
-    // (undocumented)
     export function create(args: CreateRenderInstancesParamsBuilderArgs): RenderInstancesParamsBuilder;
 }
 

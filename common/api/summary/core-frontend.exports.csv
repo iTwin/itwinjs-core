@@ -132,6 +132,7 @@ internal;function;createEmptyRenderPlan
 internal;function;createGraphicFromDescription
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
+internal;function;createGraphicTemplate
 internal;function;createGraphicTemplateFromDescription
 internal;function;createMapLayerTreeReference
 internal;function;createMaskTreeReference
@@ -277,7 +278,7 @@ internal;class;GltfReader
 internal;interface;GltfReaderArgs
 internal;class;GltfReaderProps
 internal;interface;GltfReaderResult
-public;interface;GltfTemplate
+beta;interface;GltfTemplate
 internal;interface;GLTimerResult
 internal;type;GLTimerResultCallback
 public;type;GpuMemoryLimit
@@ -315,6 +316,10 @@ internal;interface;GraphicsGeometryRenderer
 public;interface;GraphicShape
 public;interface;GraphicShape2d
 public;interface;GraphicSolidPrimitive
+beta;interface;GraphicTemplate
+internal;interface;GraphicTemplateBatch
+internal;interface;GraphicTemplateBranch
+internal;interface;GraphicTemplateNode
 public;enum;GraphicType
 internal;interface;GroundPlaneDecorations
 public;interface;GroupMark
