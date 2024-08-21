@@ -13,7 +13,7 @@ import { loggerCategory} from "../LoggerCategory";
  */
 export interface ObtainIModelTilesetUrlArgs {
   /** The iModel for which to obtain a tileset URl. */
-  iModel: IModelConnection | { iTwinId: string, iModelId: string, changesetId: string };
+  iModel: IModelConnection | { iTwinId: string, iModelId: string, changesetId?: string };
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
   /** Chiefly used in testing environments. */
@@ -45,7 +45,6 @@ Promise<URL|undefined> {
   }
 
   const changeId = args.iModel instanceof IModelConnection ? args.iModel.changeset.id : args.iModel.changesetId;
-
   const graphicsArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,

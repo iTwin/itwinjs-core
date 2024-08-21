@@ -238,8 +238,9 @@ const dtaFrontendMain = async () => {
           accessToken: configuration.frontendTilesToken || "",
           iTwinId: iModel.iTwinId || "",
           iModelId: iModel.iModelId || "",
-          changesetId: iModel.changeset?.id || "",
+          // changesetId: iModel.changeset?.id || "",
           // changesetId: "a450237bc8fc062a24c6d4be7cbce9912c567e96",
+          changesetId: "",
           enableCDN: false,
           urlPrefix: "qa-",
         };
@@ -261,7 +262,7 @@ const dtaFrontendMain = async () => {
         // });
 
         return obtainMeshExportTilesetUrl({
-          iModel: {iTwinId: iModel.iTwinId || "", iModelId: iModel.iModelId || "", changesetId: iModel.changeset?.id || ""},
+          iModel: {iTwinId: iModel.iTwinId || "", iModelId: iModel.iModelId || "", changesetId: ""},
           accessToken: configuration.frontendTilesToken || "",
           enableCDN: false,
           urlPrefix: "qa-",
