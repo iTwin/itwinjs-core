@@ -494,7 +494,6 @@ describe("Numeric Formats tests:", () => {
 
     const formatData = {
       formatTraits: ["trailZeroes"],
-      minWidth: 10,
       precision: 2,
       stationOffsetSize: 2,
       type: "Station",
