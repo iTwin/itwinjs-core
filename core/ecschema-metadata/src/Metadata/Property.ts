@@ -254,6 +254,13 @@ export abstract class Property implements CustomAttributeContainerProps {
   }
 
   /**
+   * @internal Used in schema editing.
+   */
+  protected setKindOfQuantity(kindOfQuantity: LazyLoadedKindOfQuantity) {
+    this._kindOfQuantity = kindOfQuantity;
+  }
+
+  /**
    * Retrieve all custom attributes in the current property and its base
    * This is the async version of getCustomAttributesSync()
    */
