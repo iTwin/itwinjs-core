@@ -208,6 +208,8 @@ export enum ConflictCode {
     // (undocumented)
     ConflictingItemName = "C-001",
     // (undocumented)
+    ConflictingPersistenceUnit = "C-1010",
+    // (undocumented)
     ConflictingPropertyName = "C-1300",
     // (undocumented)
     ConflictingReferenceAlias = "C-002",
