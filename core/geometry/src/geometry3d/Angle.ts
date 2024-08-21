@@ -27,6 +27,8 @@ export class Angle implements BeJSONFunctions {
   public static readonly piOver2Radians = 1.5707963267948966e+000;
   /** maximal accuracy value of pi (180 degrees), in radians */
   public static readonly piRadians = 3.141592653589793e+000;
+  /** maximal accuracy value of 3*pi/2 (270 degrees), in radians */
+  public static readonly pi3Over2Radians = 4.71238898038469e+000;
   /** maximal accuracy value of 2*pi (360 degrees), in radians */
   public static readonly pi2Radians = 6.283185307179586e+000;
   /** scale factor for converting radians to degrees */
@@ -216,7 +218,7 @@ export class Angle implements BeJSONFunctions {
   public tan(): number {
     return Math.tan(this._radians);
   }
-  /** Test if a radians (absolute) value is nearly 2PI or larger! */
+  /** Test if a radians (absolute) value is nearly 2PI or larger. */
   public static isFullCircleRadians(radians: number): boolean {
     return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle;
   }
@@ -232,7 +234,10 @@ export class Angle implements BeJSONFunctions {
   public get isHalfCircle(): boolean {
     return Angle.isHalfCircleRadians(this._radians);
   }
-  /** Adjust a radians value so it is positive in 0..360 */
+  /**
+   * Adjust a degrees value so it is in [0, 360].
+   * * Positive multiples of 360 return 0; negative multiples return 360.
+   */
   public static adjustDegrees0To360(degrees: number): number {
     if (degrees >= 0) {
       const period = 360.0;
@@ -242,13 +247,12 @@ export class Angle implements BeJSONFunctions {
       return degrees - numPeriods * period;
     } else if (degrees < 0) {
       // negative angle ...
-      const radians = Angle.adjustDegrees0To360(-degrees);
-      return 360.0 - radians;
+      return 360.0 - Angle.adjustDegrees0To360(-degrees);
     }
     // fall through for Nan (disaster) !!!
     return 0;
   }
-  /** Adjust a radians value so it is in -180..180 */
+  /** Adjust a degrees value so it is in [-180, 180]. */
   public static adjustDegreesSigned180(degrees: number): number {
     if (Math.abs(degrees) <= 180.0)
       return degrees;
@@ -263,7 +267,10 @@ export class Angle implements BeJSONFunctions {
     // fall through for NaN disaster.
     return 0;
   }
-  /** Adjust a radians value so it is positive in 0..2Pi */
+  /**
+   * Adjust a radians value so it is in [0, 2pi].
+   * * Nonnegative multiples of 2pi return 0; negative multiples return 2pi.
+   */
   public static adjustRadians0To2Pi(radians: number): number {
     if (radians >= 0) {
       const period = Math.PI * 2.0;
@@ -278,7 +285,16 @@ export class Angle implements BeJSONFunctions {
     // fall through for NaN disaster.
     return 0;
   }
-  /** Adjust a radians value so it is positive in -PI..PI */
+  /**
+   * Adjust a radians value so it is in [0, 2pi).
+   * * All multiples of 2pi (within `Geometry.smallAngleRadians`) return 0.
+   */
+  public static adjustRadians0ToLessThan2Pi(radians: number): number {
+    if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, 0))
+      radians = 0;
+    return this.adjustRadians0To2Pi(radians);
+  }
+  /** Adjust a radians value so it is in [-pi, pi] */
   public static adjustRadiansMinusPiPlusPi(radians: number): number {
     if (Math.abs(radians) <= Math.PI)
       return radians;

@@ -39,10 +39,12 @@ export class PackedMatrix3dOps {
    * @param a21 row 2, column 1 entry
    * @param a22 row 2, column 2 entry
    */
-  public static loadMatrix(dest: Float64Array,
+  public static loadMatrix(
+    dest: Float64Array,
     a00: number, a01: number, a02: number,
     a10: number, a11: number, a12: number,
-    a20: number, a21: number, a22: number) {
+    a20: number, a21: number, a22: number,
+  ) {
     dest[0] = a00; dest[1] = a01; dest[2] = a02;
     dest[3] = a10; dest[4] = a11; dest[5] = a12;
     dest[6] = a20; dest[7] = a21; dest[8] = a22;
@@ -154,7 +156,8 @@ export class PackedMatrix3dOps {
   }
 }
 
-/** A Matrix3d is tagged indicating one of the following states:
+/**
+ * A Matrix3d is tagged indicating one of the following states:
  * * unknown: it is not know if the matrix is invertible.
  * * inverseStored: the matrix has its inverse stored.
  * * singular: the matrix is known to be singular.
@@ -177,7 +180,8 @@ export enum InverseMatrixState {
   singular,
 }
 
-/** A Matrix3d is a 3x3 matrix.
+/**
+ * A Matrix3d is a 3x3 matrix.
  * * A very common use is to hold a rigid body rotation (which has no scaling or skew), but the 3x3 contents can
  * also hold scaling and skewing.
  * * The matrix with 2-dimensional layout (note: a 2d array can be shown by a matrix)
@@ -425,7 +429,8 @@ export class Matrix3d implements BeJSONFunctions {
     axx: number, axy: number, axz: number,
     ayx: number, ayy: number, ayz: number,
     azx: number, azy: number, azz: number,
-    result?: Matrix3d): Matrix3d {
+    result?: Matrix3d,
+  ): Matrix3d {
     result = result ? result : new Matrix3d();
     result.inverseState = InverseMatrixState.unknown;
     result.coffs[0] = axx; result.coffs[1] = axy; result.coffs[2] = axz;
@@ -736,7 +741,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Return the matrix for rotation of `angle` around desired `axis`
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeRotationAroundAnAxis
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeTransform
    * @param axis the axis of rotation
    * @param angle the angle of rotation
    * @param result caller-allocated matrix (optional)
