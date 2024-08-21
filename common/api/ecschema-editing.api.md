@@ -208,6 +208,8 @@ export enum ConflictCode {
     // (undocumented)
     ConflictingItemName = "C-001",
     // (undocumented)
+    ConflictingPersistenceUnit = "C-1010",
+    // (undocumented)
     ConflictingPropertyName = "C-1300",
     // (undocumented)
     ConflictingReferenceAlias = "C-002",
@@ -743,7 +745,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
 
 // @alpha
 export type DifferenceType = "add" | "modify";
