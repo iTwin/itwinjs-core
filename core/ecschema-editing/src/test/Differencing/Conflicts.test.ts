@@ -1110,7 +1110,7 @@ describe("Difference Conflict Reporting", () => {
         label: "m²",
         phenomenon: "ConflictSchema.AREA",
         unitSystem: "ConflictSchema.Metric",
-        definition: "M(2)"
+        definition: "M(2)",
       },
       Length: {
         schemaItemType: "Phenomenon",
@@ -1126,7 +1126,7 @@ describe("Difference Conflict Reporting", () => {
         schemaItemType: "UnitSystem",
         label: "metric",
       },
-    }
+    };
 
     const sourceSchema = {
       ...schemaHeader,
@@ -1137,8 +1137,8 @@ describe("Difference Conflict Reporting", () => {
           name: "ConflictKoQ",
           relativeError: 2,
           persistenceUnit: "ConflictSchema.SQ_M",
-        }
-      }
+        },
+      },
     };
 
     const targetSchema = {
@@ -1150,7 +1150,7 @@ describe("Difference Conflict Reporting", () => {
           name: "ConflictKoQ",
           relativeError: 2,
           persistenceUnit: "ConflictSchema.M",
-        }
+        },
       },
     };
 
