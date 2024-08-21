@@ -7,6 +7,7 @@
  */
 
 import { QuantityConstants } from "./Constants";
+import { QuantityError, QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
@@ -23,6 +24,7 @@ export enum ParseError {
   UnknownUnit,
   UnableToConvertParseTokensToQuantity,
   InvalidParserSpec,
+  BearingPrefixOrSuffixMissing,
   MathematicOperationFoundButIsNotAllowed,
 }
 
@@ -580,6 +582,7 @@ export class Parser {
     // The sign is saved outside from the loop for cases like this. '-1m 50cm 10mm + 2m 30cm 40mm' => -1.51m + 2.34m
     let sign: 1 | -1 = 1;
 
+    let compositeUnitIndex = 0;
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);
       if(!tokenPair || tokenPair.length === 0){
@@ -591,6 +594,7 @@ export class Parser {
       if(tokenPair[0].isOperator){
         sign = tokenPair[0].value === Operator.addition ? 1 : -1;
         tokenPair.shift();
+        compositeUnitIndex = 0; // Reset the composite unit index, the following tokens begin from start.
       }
 
       // unit specification comes before value (like currency)
@@ -603,13 +607,25 @@ export class Parser {
         let value = sign * (tokenPair[0].value as number);
         let conversion: UnitConversionProps | undefined;
         if(tokenPair.length === 2 && tokenPair[1].isString){
-          conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
+          const spacer = format.spacerOrDefault;
+          if(tokenPair[1].value !== spacer){ // ignore spacer
+            conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
+          }
         }
-        conversion = conversion ? conversion : defaultUnitConversion;
+        if (!conversion) {
+          if (compositeUnitIndex > 0 && format.units && format.units.length > compositeUnitIndex) {
+            // if this is not the first token, and we have a composite spec, look up the unit from the current index
+            const presUnitAtIndex = format.units[compositeUnitIndex][0];
+            conversion = Parser.tryFindUnitConversion(presUnitAtIndex.label, unitsConversions, presUnitAtIndex);
+          } else if (defaultUnitConversion) {
+            conversion = defaultUnitConversion;
+          }
+        }
         if (conversion) {
           value = (value * conversion.factor) + conversion.offset;
         }
         mag = mag + value;
+        compositeUnitIndex++;
       } else {
         // only the unit label was specified so assume magnitude of 0
         const conversion = Parser.tryFindUnitConversion(tokenPair[0].value as string, unitsConversions, defaultUnit);
@@ -627,7 +643,27 @@ export class Parser {
    *  @param parserSpec unit label if not explicitly defined by user. Must have matching entry in supplied array of unitsConversions.
    */
   public static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult {
-    return Parser.parseToQuantityValue(inString, parserSpec.format, parserSpec.unitConversions);
+    // ensure any labels defined in composite unit definition are specified in unitConversions
+    if (parserSpec.format.units) {
+      parserSpec.format.units.forEach(([unit, label]) => {
+        if (label) {
+          if (unit.label !== label) { // if default unit label does not match composite label ensure the label is in the list of parse labels for the conversion
+            const unitConversion = parserSpec.unitConversions.find((conversion) => conversion.name === unit.name);
+            if (unitConversion && unitConversion.parseLabels && !unitConversion.parseLabels.find((entry) => entry === label))
+              unitConversion.parseLabels.push(label);
+          }
+        }
+      });
+    }
+
+    if (parserSpec.format.type === FormatType.Bearing) {
+      return this.parseBearingFormat(inString, parserSpec);
+    }
+    if (parserSpec.format.type === FormatType.Azimuth) {
+      return this.parseAzimuthFormat(inString, parserSpec);
+    }
+
+    return this.parseAndProcessTokens(inString, parserSpec.format, parserSpec.unitConversions);
   }
 
   /** Method to generate a Quantity given a string that represents a quantity value and likely a unit label.
@@ -636,6 +672,9 @@ export class Parser {
    *  @param unitsConversions dictionary of conversions used to convert from unit used in inString to output quantity
    */
   public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
+    // TODO: This method is not able to do bearing and azimuth formatting and is overlapping with parseQuantityString.
+    // We should consider deprecating and removing it, there do not seem to be any upstream callers at this moment
+
     // ensure any labels defined in composite unit definition are specified in unitConversions
     if (format.units) {
       format.units.forEach(([unit, label]) => {
@@ -649,6 +688,139 @@ export class Parser {
       });
     }
 
+    if(format.type === FormatType.Bearing || format.type === FormatType.Azimuth) {
+      // throw error indicating to call parseQuantityString instead
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Bearing and Azimuth format must be parsed using a ParserSpec. Call parseQuantityString instead.`);
+    }
+
+    return this.parseAndProcessTokens(inString, format, unitsConversions);
+  }
+
+  private static parseBearingFormat(inString: string, spec: ParserSpec): QuantityParseResult {
+    // TODO: at some point we will want to open this for localization, in the first release it's going to be hard coded
+    enum DirectionLabel {
+      North = "N",
+      South = "S",
+      East = "E",
+      West = "W"
+    }
+    let matchedPrefix: DirectionLabel | null = null;
+    let matchedSuffix: DirectionLabel | null = null;
+
+    // check if input string begins with northLabel or southLabel and strip it off
+    if (inString.startsWith(DirectionLabel.North)) {
+      inString = inString.substring(DirectionLabel.North.length);
+      matchedPrefix = DirectionLabel.North;
+    } else if (inString.startsWith(DirectionLabel.South)) {
+      inString = inString.substring(DirectionLabel.South.length);
+      matchedPrefix = DirectionLabel.South;
+    }
+
+    // check if input string ends with eastLabel or westLabel and strip it off
+    if (inString.endsWith(DirectionLabel.East)) {
+      inString = inString.substring(0, inString.length - DirectionLabel.East.length);
+      matchedSuffix = DirectionLabel.East;
+    } else if (inString.endsWith(DirectionLabel.West)) {
+      inString = inString.substring(0, inString.length - DirectionLabel.West.length);
+      matchedSuffix = DirectionLabel.West;
+    }
+
+    if (matchedPrefix === null && matchedSuffix === null) {
+      return { ok: false, error: ParseError.BearingPrefixOrSuffixMissing };
+    }
+
+    const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
+    if(this.isParseError(parsedResult) || !parsedResult.ok) {
+      return parsedResult;
+    }
+
+    let magnitude = parsedResult.value;
+    const revolution = this.getRevolution(spec);
+    magnitude = this.normalizeAngle(magnitude, revolution);
+    const quarterRevolution = revolution / 4;
+    // we have to turn the value into an east base and counter clockwise (NW and SE are already counter clockwise)
+    if (matchedPrefix === DirectionLabel.North) {
+      if (matchedSuffix === DirectionLabel.West) {
+        magnitude = quarterRevolution + magnitude;
+      } else if (matchedSuffix === DirectionLabel.East) {
+        magnitude = quarterRevolution - magnitude;
+      }
+    } else if (matchedPrefix === DirectionLabel.South) {
+      if (matchedSuffix === DirectionLabel.West) {
+        magnitude = (3 * quarterRevolution) - magnitude;
+      } else if (matchedSuffix === DirectionLabel.East) {
+        magnitude = (3 * quarterRevolution) + magnitude;
+      }
+    }
+
+    return { ok: true, value: magnitude };
+  }
+
+  private static parseAzimuthFormat(inString: string, spec: ParserSpec): QuantityParseResult {
+    const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
+    if(this.isParseError(parsedResult) || !parsedResult.ok) {
+      return parsedResult;
+    }
+
+    let magnitude = parsedResult.value;
+
+    const revolution = this.getRevolution(spec);
+    magnitude = this.normalizeAngle(magnitude, revolution);
+    const quarterRevolution = revolution / 4;
+    let azimuthBase = quarterRevolution;
+    if (spec.format.azimuthBase !== undefined) {
+      if (spec.azimuthBaseConversion === undefined) {
+        throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.format.name}'s azimuth base.`);
+      }
+      const azBaseQuantity: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
+      const azBaseConverted = azBaseQuantity.convertTo(spec.outUnit, spec.azimuthBaseConversion);
+      if (azBaseConverted === undefined || !azBaseConverted.isValid) {
+        throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.outUnit.name}.`);
+      }
+      azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
+    }
+    const azimuthCounterClockwise = spec.format.azimuthCounterClockwiseOrDefault;
+
+    if(azimuthCounterClockwise && azimuthBase === 0) {
+      // parsed result already has the same base and orientation as our desired output
+      return parsedResult;
+    }
+
+    if (azimuthCounterClockwise)
+      magnitude = azimuthBase + magnitude;
+    else
+      magnitude = azimuthBase - magnitude;
+
+    magnitude = this.normalizeAngle(magnitude, revolution);
+
+    return { ok: true, value: magnitude };
+  }
+
+  // TODO: The following two methods are redundant with Formatter. We should consider consolidating them.
+  private static normalizeAngle(magnitude: number, revolution: number): number {
+    magnitude = magnitude % revolution; // Strip anything that goes around more than once
+
+    if (magnitude < 0) // If the value is negative, we want to normalize it to a positive angle
+      magnitude += revolution;
+
+    return magnitude;
+  }
+
+  private static getRevolution(spec: ParserSpec): number {
+    if (spec.revolutionConversion === undefined) {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing revolution unit conversion for calculating ${spec.format.name}'s revolution.`);
+    }
+
+    const revolution: Quantity = new Quantity(spec.format.revolutionUnit, 1.0);
+    const converted = revolution.convertTo(spec.outUnit, spec.revolutionConversion);
+    if (converted === undefined || !converted.isValid) {
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert revolution unit to ${spec.outUnit.name} On format ${spec.format.name}.`);
+    }
+
+    return converted.magnitude;
+  }
+
+  private static parseAndProcessTokens(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
       return { ok: false, error: ParseError.UnableToGenerateParseTokens };
