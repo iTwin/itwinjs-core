@@ -38,14 +38,7 @@ class GltfDecoration {
   }
 }
 
-function createInstances(numInstances: number, iModel: IModelConnection, modelId: Id64String, wantScale: boolean, wantColor: boolean, wantRotate: boolean): RenderInstances | undefined {
-  if (numInstances <= 1) {
-    return undefined;
-  }
-
-  const diagonal = iModel.projectExtents.diagonal();
-  const maxExtent = Math.min(diagonal.x, Math.min(diagonal.y, diagonal.z));
-
+function createTransform(maxExtent: number, wantScale: boolean, wantRotate: boolean): Transform {
   function applyRandomOffset(pos: Point3d, coord: "x" | "y" | "z"): void {
     const r = Math.random() * 2 * maxExtent - maxExtent;
     pos[coord] += r;
@@ -59,6 +52,27 @@ function createInstances(numInstances: number, iModel: IModelConnection, modelId
     return pos;
   }
 
+  const origin = computeRandomPosition();
+  const translation = Transform.createTranslation(origin);
+
+  const maxScale = 2.5;
+  const minScale = 0.25;
+  const scaleFactor = wantScale ? Math.random() * (maxScale - minScale) + minScale : 1;
+  const scale = Transform.createScaleAboutPoint(origin, scaleFactor);
+
+  const zAngle = wantRotate ? Math.random() * 360 : 0;
+  const rotation = Transform.createFixedPointAndMatrix(origin, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(zAngle)));
+  
+  return translation.multiplyTransformTransform(scale).multiplyTransformTransform(rotation);
+}
+
+function createInstances(numInstances: number, iModel: IModelConnection, modelId: Id64String, wantScale: boolean, wantColor: boolean, wantRotate: boolean): RenderInstances | undefined {
+  if (numInstances <= 1) {
+    return undefined;
+  }
+
+  const diagonal = iModel.projectExtents.diagonal();
+  const maxExtent = Math.min(diagonal.x, Math.min(diagonal.y, diagonal.z));
   const colors = [
     ColorDef.green,
     ColorDef.blue,
@@ -71,19 +85,9 @@ function createInstances(numInstances: number, iModel: IModelConnection, modelId
   
   const builder = RenderInstancesParamsBuilder.create({ modelId });
   for (let i = 0; i < numInstances; i++) {
-    const origin = computeRandomPosition();
-    const translation = Transform.createTranslation(origin);
-
-    const maxScale = 2.5;
-    const minScale = 0.25;
-    const scaleFactor = wantScale ? Math.random() * (maxScale - minScale) + minScale : 1;
-    const scale = Transform.createScaleAboutPoint(origin, scaleFactor);
-
-    const zAngle = wantRotate ? Math.random() * 360 : 0;
-    const rotation = Transform.createFixedPointAndMatrix(origin, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(zAngle)));
     const symbology = wantColor ? { color: RgbColor.fromColorDef(colors[i % colors.length]) } : undefined;
     builder.add({
-      transform: translation.multiplyTransformTransform(scale).multiplyTransformTransform(rotation),
+      transform: createTransform(maxExtent, wantScale, wantRotate),
       feature: iModel.transientIds.getNext(),
       symbology,
     });
