@@ -29,6 +29,7 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
+import { CivilContoursPanel } from "./CivilContours";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -404,6 +405,12 @@ export class Viewer extends Window {
         return panel;
       },
       tooltip: "Point cloud settings",
+    });
+
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue90a",
+      createDropDown: async (container: HTMLElement) => new CivilContoursPanel(this.viewport, container),
+      tooltip: "Civil contours",
     });
 
     this.updateTitle();
