@@ -2083,11 +2083,7 @@ export interface GltfTemplate {
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
- * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
- * If a particular glTF asset fails to load and/or display properly, please
- * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
- * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
- * @see [[readGltf]] to obtain more information about the glTF model.
+ * @see [[readGltf]] for more details.
  * @public
  * @extensions
  */
@@ -2096,7 +2092,9 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
   return result?.graphic;
 }
 
-/** ###TODO
+/** Produce a [[GraphicTemplate]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
+ * @returns a template produced from the glTF asset's default scene, or `undefined` if a template could not be produced from the asset.
+ * @see [[readGltf]] for more details.
  * @beta
  */
 export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<GltfTemplate | undefined> {
@@ -2124,6 +2122,7 @@ export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<Gltf
  * If a particular glTF asset fails to load and/or display properly, please
  * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
  * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
+ * @see [[readGltfTemplate]] to produce a [[GraphicTemplate]] instead of a [[RenderGraphic]].
  * @public
  */
 export async function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic | undefined> {

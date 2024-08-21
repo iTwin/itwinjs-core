@@ -224,7 +224,8 @@ export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
   readonly [_implementationProhibited]: "renderAreaPattern";
 }
 
-/** ###TODO
+/** Contains the WebGL resources necessary to draw multiple repetitions of a [[GraphicTemplate]] using [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html).
+ * Use [[RenderSystem.createRenderInstances]] to create one.
  * @beta
  */
 export interface RenderInstances {
@@ -272,11 +273,13 @@ export interface CreateGraphicFromDescriptionArgs {
   context: GraphicDescriptionContext;
 }
 
-/** ###TODO
+/** Arguments supplied to [[RenderSystem.createGraphicFromTemplate]].
  * @beta
  */
 export interface CreateGraphicFromTemplateArgs {
+  /** Describes how to draw the graphic. */
   template: GraphicTemplate;
+  /** Optionally describes how to draw multiple repetitions of the graphic. */
   instances?: RenderInstances;
 }
 
@@ -472,12 +475,12 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined { return undefined; }
 
-  /** ###TODO
+  /** Create a [[RenderInstances]] from a [[RenderInstancesParams]], to be supplied to [[createGraphicFromTemplate]] via [[CreateGraphicFromTempalateArgs.instances]].
    * @beta
    */
   public createRenderInstances(_params: RenderInstancesParams): RenderInstances | undefined { return undefined; }
 
-  /** ###TODO
+  /** Creates a graphic that draws any number of repetitions of a [[GraphicTemplate]].
    * @beta
    */
   public abstract createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic;
@@ -856,7 +859,7 @@ export abstract class RenderSystem implements IDisposable {
     return createGraphicFromDescription(args.description, args.context, this);
   }
 
-  /** ###TODO
+  /** Convert a [[GraphicDescription]] produced by a [[GraphicDescriptionBuilder]] into a [[GraphicTemplate]].
    * @beta
    */
   public createTemplateFromDescription(args: CreateGraphicFromDescriptionArgs): GraphicTemplate {
