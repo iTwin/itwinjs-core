@@ -319,7 +319,8 @@ export abstract class CurveChain extends CurveCollection {
   public abstract override cloneStroked(options?: StrokeOptions): CurveChain;
   /**
    * Add a child curve.
-   * * Returns false if the given child is not a CurvePrimitive.
+   * @param child curve to add to the chain. The curve is captured by this instance.
+   * @return whether the child was added
    */
   public tryAddChild(child: AnyCurve | undefined): boolean {
     if (child && child instanceof CurvePrimitive) {
