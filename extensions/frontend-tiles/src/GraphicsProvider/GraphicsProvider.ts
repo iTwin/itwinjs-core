@@ -8,12 +8,12 @@ import { IModelApp, IModelConnection} from "@itwin/core-frontend";
 import { obtainGraphicRepresentationUrl} from "./GraphicRepresentationProvider";
 import { loggerCategory} from "../LoggerCategory";
 
-/** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
+/** Arguments supplied  to [[obtainIModelTilesetUrl]].
  * @beta
  */
 export interface ObtainIModelTilesetUrlArgs {
   /** The iModel for which to obtain a tileset URl. */
-  iModel: IModelConnection;
+  iModel: IModelConnection | { iTwinId: string, iModelId: string, changesetId: string };
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
   /** Chiefly used in testing environments. */
@@ -44,13 +44,15 @@ Promise<URL|undefined> {
     return undefined;
   }
 
+  const changeId = args.iModel instanceof IModelConnection ? args.iModel.changeset.id : args.iModel.changesetId;
+
   const graphicsArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
     dataSource: {
       iTwinId: args.iModel.iTwinId,
       id: args.iModel.iModelId,
-      changeId: args.iModel.changeset.id,
+      changeId,
       type: "IMODEL",
     },
     format: "IMDL",

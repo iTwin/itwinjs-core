@@ -253,8 +253,15 @@ const dtaFrontendMain = async () => {
         }
         console.log(exports);
 
+        // return obtainMeshExportTilesetUrl({
+        //   iModel,
+        //   accessToken: configuration.frontendTilesToken || "",
+        //   enableCDN: false,
+        //   urlPrefix: "qa-",
+        // });
+
         return obtainMeshExportTilesetUrl({
-          iModel,
+          iModel: {iTwinId: iModel.iTwinId || "", iModelId: iModel.iModelId || "", changesetId: iModel.changeset?.id || ""},
           accessToken: configuration.frontendTilesToken || "",
           enableCDN: false,
           urlPrefix: "qa-",
