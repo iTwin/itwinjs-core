@@ -635,7 +635,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
   /**
-   * Create a matrix with uniform scale factors for scale factor "s"
+   * Create a matrix with uniform scale factor "s":
    * ```
    * equation
    * \begin{bmatrix}s & 0 & 0 \\ 0 & s & 0\\ 0 & 0 & s\end{bmatrix}

@@ -87,14 +87,14 @@ export class Checker {
    * Constructor that allows setting statics in `GeometryCoreTestIO` as a debugging convenience.
    * * Do not push to server an invocation that passes true.
    */
-  public constructor(enableConsole: boolean = false, enableSave: boolean = false) {
+  public constructor(enableConsole: boolean = false, enableSave: boolean = false, enableLongTests: boolean = false) {
     this._numErrors = 0;
     this._numOK = 0;
     this._savedErrors = 0;
     this._savedOK = 0;
     GeometryCoreTestIO.enableConsole = enableConsole;
     GeometryCoreTestIO.enableSave = enableSave;
-    // Note that GeometryCoreTestIO.enableLongTests remains unchanged.
+    GeometryCoreTestIO.enableLongTests = enableLongTests;
   }
   public getNumErrors(): number {
     return this._savedErrors + this._numErrors;
