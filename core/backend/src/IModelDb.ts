@@ -151,6 +151,25 @@ class IModelSettings extends SettingsImpl {
   }
 }
 
+/** A wrapper class for accessing nativeDb methods to be used by other packages
+ *  @internal @preapproved
+ */
+export class NativeDb {
+  /** @internal */
+  private [_nativeDb]: IModelJsNative.DgnDb;
+  /** Example comment - Acquire the exclusive schema lock on this iModel.
+   * @note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
+   * will be able to acquire *any* locks while the schema lock is held.
+   */
+  public setToStandalone(){
+    this[_nativeDb].deleteAllTxns();
+    this[_nativeDb].saveChanges();
+  }
+  constructor(nativeDb: IModelJsNative.DgnDb) {
+    this[_nativeDb] = nativeDb;
+  }
+}
+
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -219,6 +238,9 @@ export abstract class IModelDb extends IModel {
     this.changeset = this[_nativeDb].getCurrentChangeset();
     this.onChangesetApplied.raiseEvent();
   }
+
+  /** @internal */
+  public readonly nativeDbWrapper?: NativeDb;
 
   /** @internal */
   public restartDefaultTxn() {

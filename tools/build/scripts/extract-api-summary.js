@@ -72,7 +72,7 @@ fs.readFile(argv.apiSignature, function (error, data) {
       return;
     }
 
-    let match = line.match(/\s@(beta|alpha|public|internal)/);
+    let match = line.match(/\s@(beta|alpha|public|internal|preapproved)/);
     if (null === match) {
       previousLines = [];
       return;
