@@ -6,7 +6,7 @@
 import { dispose, IDisposable } from "@itwin/core-bentley";
 import {
   ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createColorInput, createComboBox, createNumericInput,
-  createTextBox,
+  createSlider, createTextBox,
 } from "@itwin/frontend-devtools";
 import { LinePixels, RgbColor } from "@itwin/core-common";
 import { Viewport } from "@itwin/core-frontend";
@@ -34,9 +34,31 @@ export class CivilContoursSettings implements IDisposable {
       inline: true,
     });
 
-    this.addColor(this._element);
-    this.addWeight(this._element);
-    CivilContoursSettings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10)));
+    const hr1 = document.createElement("hr");
+    hr1.style.borderColor = "grey";
+    this._element.appendChild(hr1);
+    const label1 = document.createElement("label");
+    label1.innerText = "Major Contours";
+    label1.style.display = "inline";
+    this._element.appendChild(label1);
+
+    this.addInterval(this._element, true);
+    this.addColor(this._element, true);
+    this.addWeight(this._element, true);
+    CivilContoursSettings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10), true), true);
+
+    const hr2 = document.createElement("hr");
+    hr2.style.borderColor = "grey";
+    this._element.appendChild(hr2);
+    const label2 = document.createElement("label");
+    label2.innerText = "Minor Contours";
+    label2.style.display = "inline";
+    this._element.appendChild(label2);
+
+    this.addInterval(this._element, false);
+    this.addColor(this._element, false);
+    this.addWeight(this._element, false);
+    CivilContoursSettings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10), false), false);
 
     const buttonDiv = document.createElement("div");
     buttonDiv.style.textAlign = "center";
@@ -65,50 +87,52 @@ export class CivilContoursSettings implements IDisposable {
     this._parent.removeChild(this._element);
   }
 
-  private updateColor(_rgb: RgbColor | undefined): void { }
-  private updateWeight(_weight: number | undefined): void {  }
-  private updateStyle(_style: LinePixels): void {
+  private updateInterval(_weight: number | undefined, _major: boolean): void {  }
+  private updateColor(_rgb: RgbColor | undefined, _major: boolean): void { }
+  private updateWeight(_weight: number | undefined, _major: boolean): void {  }
+  private updateStyle(_style: LinePixels, _major: boolean): void {
     // const linePixels = LinePixels.Invalid !== style ? style : undefined;
   }
 
-  private addWeight(parent: HTMLElement): void {
+  private addInterval(parent: HTMLElement, major: boolean): void {
     const div = document.createElement("div");
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.id = "cb_ovrWeight";
-    div.appendChild(cb);
-
     const label = document.createElement("label");
-    label.htmlFor = "cb_ovrWeight";
-    label.innerText = "Weight ";
+    label.htmlFor = major ? "major_interval" : "minor_interval";
+    label.innerText = "Interval ";
     div.appendChild(label);
 
     const num = createNumericInput({
       parent: div,
       value: 1,
-      disabled: true,
+      disabled: false,
       min: 1,
-      max: 31,
+      // max: 31,
       step: 1,
-      handler: (value) => this.updateWeight(value),
+      handler: (value) => this.updateInterval(value, major),
     });
     div.appendChild(num);
-
-    cb.addEventListener("click", () => {
-      num.disabled = !cb.checked;
-      this.updateWeight(cb.checked ? parseInt(num.value, 10) : undefined);
-    });
-
     parent.appendChild(div);
   }
 
-  public static addStyle(parent: HTMLElement, value: LinePixels, handler: ComboBoxHandler): ComboBox {
+  private addWeight(parent1: HTMLElement, major: boolean): void {
+    const weightSlider = createSlider({
+      name: " Weight ", id: major ? "major_weight" : "minor_weight", parent: parent1,
+      min: "1.25", max: "10", step: "0.25",
+      value: "1.5",
+      readout: "right", verticalAlign: false, textAlign: false,
+      handler: (slider) => {
+        const wt = Number.parseFloat(slider.value);
+        if (!Number.isNaN(wt))
+          this.updateWeight(wt, major);
+      },
+    }).div;
+    parent1.appendChild(weightSlider);
+  }
+
+  public static addStyle(parent: HTMLElement, value: LinePixels, handler: ComboBoxHandler, major: boolean): ComboBox {
     const entries = [
-      { name: "Not overridden", value: LinePixels.Invalid },
       { name: "Solid", value: LinePixels.Solid },
-      { name: "Hidden Line", value: LinePixels.HiddenLine },
-      { name: "Invisible", value: LinePixels.Invisible },
       { name: "Code1", value: LinePixels.Code1 },
       { name: "Code2", value: LinePixels.Code2 },
       { name: "Code3", value: LinePixels.Code3 },
@@ -116,46 +140,35 @@ export class CivilContoursSettings implements IDisposable {
       { name: "Code5", value: LinePixels.Code5 },
       { name: "Code6", value: LinePixels.Code6 },
       { name: "Code7", value: LinePixels.Code7 },
+      { name: "Hidden Line", value: LinePixels.HiddenLine },
+      { name: "Invisible", value: LinePixels.Invisible },
     ];
 
     return createComboBox({
       parent,
       entries,
-      id: "ovr_Style",
+      id: major ? "major_style" : "minor_style",
       name: "Style ",
       value,
       handler,
     });
   }
 
-  private addColor(parent: HTMLElement): void {
+  private addColor(parent: HTMLElement, major: boolean): void {
     const div = document.createElement("div");
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.id = "cb_ovrColor";
-    div.appendChild(cb);
-
-    const update = () => this.updateColor(convertHexToRgb(input.value));
+    const update = () => this.updateColor(convertHexToRgb(input.value), major);
     const props: ColorInputProps = {
       parent: div,
-      id: "color_ovrColor",
+      id: major ? "major_color" : "minor_color",
       label: "Color",
-      value: "#ffffff",
+      value: "#000000",
       display: "inline",
-      disabled: true,
+      disabled: false,
       handler: update,
     };
     const input: HTMLInputElement = createColorInput(props).input;
 
-    cb.addEventListener("click", () => {
-      input.disabled = !cb.checked;
-
-      if (cb.checked)
-        update();
-      else
-        this.updateColor(undefined);
-    });
     parent.appendChild(div);
   }
 }
