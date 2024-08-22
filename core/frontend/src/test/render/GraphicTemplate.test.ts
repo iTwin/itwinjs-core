@@ -8,9 +8,11 @@ import { IModelApp } from "../../IModelApp";
 import { EmptyLocalization } from "@itwin/core-common";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { GraphicType } from "../../common/render/GraphicType";
-import { Point2d } from "@itwin/core-geometry";
-import { GraphicTemplate } from "../../core-frontend";
+import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import { RenderInstances } from "../../render/RenderSystem";
 import { _nodes } from "../../common/internal/Symbols";
+import { GraphicTemplate } from "../../render/GraphicTemplate";
+import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 
 describe.only("GraphicTemplate", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -37,7 +39,35 @@ describe.only("GraphicTemplate", () => {
   });
   
   it("is not instanceable if GraphicBuilder or GraphicDescription specifies a view-independent origin", () => {
-    
+    function makeTemplate(viewIndependent: boolean): GraphicTemplate {
+      const builder = IModelApp.renderSystem.createGraphic({
+        type: GraphicType.Scene,
+        computeChordTolerance: () => 0,
+        viewIndependentOrigin: viewIndependent ? new Point3d(1, 2, 3) : undefined,
+      });
+
+      builder.addPointString2d([new Point2d(1, 2)], 0);
+      return builder.finishTemplate();
+    }
+
+    function makeInstances(): RenderInstances {
+      const builder = RenderInstancesParamsBuilder.create({});
+      builder.add({ transform: Transform.createIdentity() });
+      const instances = IModelApp.renderSystem.createRenderInstances(builder.finish())!;
+      expect(instances).not.to.be.undefined;
+      return instances;
+    }
+
+    const viewDep = makeTemplate(false);
+    expect(viewDep.isInstanceable).to.be.true;
+    expect(IModelApp.renderSystem.createGraphicFromTemplate({ template: viewDep, instances: makeInstances() })).not.to.be.undefined;
+
+    const viewIndep = makeTemplate(true);
+    expect(viewIndep.isInstanceable).to.be.false;
+    expect(() => IModelApp.renderSystem.createGraphicFromTemplate({
+      template: viewIndep,
+      instances: makeInstances(),
+    })).to.throw("instanceable");
   });
 
   it("produces a batch if features are specified", () => {
@@ -45,10 +75,6 @@ describe.only("GraphicTemplate", () => {
   });
 
   it("produces a Branch if GraphicDescription specifies a translation", () => {
-    
-  });
-
-  it("is instanceable otherwise", () => {
     
   });
 });
