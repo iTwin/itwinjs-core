@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { AnySchemaDifference, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 
