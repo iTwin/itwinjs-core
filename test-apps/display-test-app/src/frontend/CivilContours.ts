@@ -9,8 +9,9 @@ import {
   createSlider, createTextBox,
 } from "@itwin/frontend-devtools";
 import { LinePixels, RgbColor } from "@itwin/core-common";
-import { Viewport } from "@itwin/core-frontend";
+import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
+import { CivilContourDisplay, CivilContourDisplayProps } from "@itwin/core-common/lib/cjs/CivilContourDisplay";
 
 export class CivilContoursSettings implements IDisposable {
   private readonly _vp: Viewport;
@@ -171,6 +172,27 @@ export class CivilContoursSettings implements IDisposable {
 
     parent.appendChild(div);
   }
+
+  private updateContoursDisplay(updateFunction: (view: ViewState) => CivilContourDisplayProps) {
+    const props = updateFunction(this._vp.view);
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.contours = CivilContourDisplay.fromJSON(props);
+    this.sync();
+  }
+
+  private resetContoursDisplay(): void {
+    const contours = CivilContourDisplay.fromJSON({});
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.contours = contours;
+    this.sync();
+    this.updateContourDisplayUI(this._vp.view);
+  }
+
+  private sync(): void {
+    this._vp.synchWithView();
+  }
+
+  private updateContourDisplayUI(_view: ViewState) {
+  }
+
 }
 
 export class CivilContoursPanel extends ToolBarDropDown {
