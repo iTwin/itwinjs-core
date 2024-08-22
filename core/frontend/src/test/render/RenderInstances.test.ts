@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Range3d, Transform } from "@itwin/core-geometry";
+import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
 import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { Id64 } from "@itwin/core-bentley";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
@@ -11,7 +11,10 @@ import { InstancedGraphicPropsBuilder } from "../../common/internal/render/Insta
 import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
 import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
-import { EmptyLocalization } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, LinePixels } from "@itwin/core-common";
+import { GraphicType } from "../../common";
+import { Color, openBlankViewport, readUniqueColors } from "../openBlankViewport";
+import { GraphicBranch } from "../../core-frontend";
 
 describe("RenderInstancesParamsBuilder", () => {
   it("throws if no instances supplied", () => {
@@ -95,5 +98,71 @@ describe("InstanceBuffers", () => {
 
     buffers.dispose();
     expect(buffers.isDisposed).to.be.false;
+  });
+});
+
+describe.only("RenderInstances", () => {
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  after(async () => IModelApp.shutdown());
+
+  it("renders the same template with different positions, scales, features, and symbologies", () => {
+    // Create a template of a red solid line 1 pixel tall and 5 pixels wide
+    const builder = IModelApp.renderSystem.createGraphic({
+      type: GraphicType.ViewOverlay,
+      computeChordTolerance: () => 0,
+    });
+
+    builder.setSymbology(ColorDef.red, ColorDef.red, 1, LinePixels.Solid);
+    builder.addLineString2d([new Point2d(0, 0), new Point2d(5, 0)], 0);
+    const template = builder.finishTemplate();
+
+    // Create 4 instances each in one of the corners of a 100x100-pixel viewport.
+    const paramsBuilder = RenderInstancesParamsBuilder.create({});
+    paramsBuilder.add({
+      transform: Transform.createTranslationXYZ(25, -25, 0),
+      feature: "0x1",
+    });
+    paramsBuilder.add({
+      transform: Transform.createTranslationXYZ(25, 25, 0),
+      feature: "0x2",
+      symbology: { color: { r: 0, g: 0, b: 255 } },
+    });
+    paramsBuilder.add({
+      transform: Transform.createTranslationXYZ(-25, 25, 0),
+      feature: "0x3",
+      symbology: { weight: 3 },
+    });
+    paramsBuilder.add({
+      transform: Transform.createTranslationXYZ(-25, -25, 0),
+      feature: "0x4",
+      symbology: { linePixels: LinePixels.HiddenLine },
+    });
+
+    // Create a graphic from the template+instances, translated to the center of the viewport.
+    const instances = IModelApp.renderSystem.createRenderInstances(paramsBuilder.finish())!;
+    expect(instances).not.to.be.undefined;
+    let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
+    const branch = new GraphicBranch(false);
+    branch.add(graphic);
+    graphic = IModelApp.renderSystem.createBranch(branch, Transform.createTranslationXYZ(50, 50, 0));
+
+    // Draw the instances into a viewport.
+    IModelApp.viewManager.addDecorator({
+      decorate: (context) => {
+        context.addDecoration(GraphicType.ViewOverlay, graphic);
+      },
+    });
+
+    const vp = openBlankViewport({ height: 100, width: 100 });
+    vp.displayStyle.backgroundColor = ColorDef.black;
+    vp.renderFrame();
+
+    const colors = readUniqueColors(vp);
+    expect(colors.length).to.equal(3);
+    expect(colors.contains(Color.fromColorDef(ColorDef.black))).to.be.true;
+    expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
+    expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
+
+    vp.dispose();
   });
 });
