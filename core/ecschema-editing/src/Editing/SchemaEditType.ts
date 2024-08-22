@@ -1,3 +1,4 @@
+/** Defines all possible edit types. */
 export enum SchemaEditType {
   CreateSchemaItemFailed = "CreateSchemaItemFailed",
   CreateSchemaItemFromProps = "CreateSchemaItemFromProps",
