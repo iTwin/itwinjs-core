@@ -48,6 +48,9 @@ export interface GraphicTemplateBranch {
  * drawing many repetitions of the same graphic with different positions, scales, rotations, and symbology.
  * Using instancing to draw 1 template N times is far more efficient than drawing N [[RenderGraphic]]s created from the same template.
  * You can instance a template by supplying a [[RenderInstances]] to [[RenderSystem.createGraphicFromTemplate]], unless [[isInstanceable]] is `false`.
+ * @see [[GraphicBuilder.finishTemplate]] to create a template from a [[GraphicBuilder]].
+ * @see [[RenderSystem.createTemplateFromDescription]] to create a template from a [[GraphicDescription]].
+ * @see [[readGltfTemplate]] to create a template from a glTF model.
  * @beta
  */
 export interface GraphicTemplate {

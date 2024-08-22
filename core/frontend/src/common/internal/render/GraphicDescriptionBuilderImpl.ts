@@ -158,17 +158,6 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
             type: "viewIndependentOrigin",
             origin: { x: origin.x, y: origin.y, z: origin.z },
           };
-        /* ###TODO } else if (this._instances) {
-          primitive.modifier = {
-            ...this._instances,
-            type: "instances",
-            transformCenter: { x: this._instances.transformCenter.x, y: this._instances.transformCenter.y, z: this._instances.transformCenter.z },
-            range: this._instances.range ? {
-              low: { x: this._instances.range.low.x, y: this._instances.range.low.y, z: this._instances.range.low.z },
-              high: { x: this._instances.range.high.x, y: this._instances.range.high.y, z: this._instances.range.high.z },
-            } : undefined,
-          };
-        */
         }
 
         description.primitives.push(primitive);

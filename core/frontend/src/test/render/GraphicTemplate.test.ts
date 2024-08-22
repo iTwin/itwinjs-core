@@ -9,9 +9,14 @@ import { EmptyLocalization } from "@itwin/core-common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { RenderInstances } from "../../render/RenderSystem";
-import { _batch, _nodes } from "../../common/internal/Symbols";
+import { _batch, _branch, _nodes } from "../../common/internal/Symbols";
 import { GraphicTemplate } from "../../render/GraphicTemplate";
 import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
+import { TransientIdSequence } from "@itwin/core-bentley";
+import { GraphicDescriptionImpl } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicDescriptionBuilder } from "../../common/render/GraphicDescriptionBuilder";
+import { WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
+import { IModelConnection } from "../../IModelConnection";
 
 describe.only("GraphicTemplate", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -91,7 +96,23 @@ describe.only("GraphicTemplate", () => {
     expect(batch.featureTable.batchModelId).to.equal("0x2");
   });
 
-  it("produces a Branch if GraphicDescription specifies a translation", () => {
-    
+  it("produces a Branch if GraphicDescription specifies a translation", async () => {
+    const iModel = { transientIds: new TransientIdSequence() } as unknown as IModelConnection;
+    const contextProps = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
+    const workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
+    const mainContext = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
+
+    const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, computeChordTolerance: () => 0, context: workerContext });
+    builder.addPointString2d([new Point2d(10, 0)], 2);
+    const descr = builder.finish() as GraphicDescriptionImpl;
+    expect(descr.translation).not.to.be.undefined;
+
+    const template = IModelApp.renderSystem.createTemplateFromDescription({ context: mainContext, description: descr });
+    const branch = template[_branch]!;
+    expect(branch).not.to.be.undefined;
+    expect(branch.transform).not.to.be.undefined;
+    expect(branch.transform!.origin.x).to.equal(10);
+    expect(branch.transform!.origin.y).to.equal(0);
+    expect(branch.transform!.origin.z).to.equal(2);
   });
 });
