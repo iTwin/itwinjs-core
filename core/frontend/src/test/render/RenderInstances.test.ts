@@ -96,4 +96,4 @@ describe("InstanceBuffers", () => {
     buffers.dispose();
     expect(buffers.isDisposed).to.be.false;
   });
-})
+});
