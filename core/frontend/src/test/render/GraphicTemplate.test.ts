@@ -18,7 +18,7 @@ import { GraphicDescriptionBuilder } from "../../common/render/GraphicDescriptio
 import { WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
 import { IModelConnection } from "../../IModelConnection";
 
-describe.only("GraphicTemplate", () => {
+describe("GraphicTemplate", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
