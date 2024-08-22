@@ -502,15 +502,9 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
   let batch: GraphicTemplateBatch | undefined;
   if (descr.batch) {
     const featureTable = convertFeatureTable(descr.batch.featureTable, descr.batch.modelId);
-    const range = new Range3d();
-    const geomRange = new Range3d();
-    for (const geom of geometry) {
-      range.extendRange(geom.computeRange(geomRange));
-    }
-
     batch = {
-      ...descr.batch,
-      range,
+      options: { ...descr.batch },
+      range: Range3d.fromJSON(descr.batch.range),
       featureTable,
     };
   }
