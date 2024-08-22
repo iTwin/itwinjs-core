@@ -27,7 +27,7 @@ import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal
 import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
 import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch } from "../render/GraphicTemplate";
+import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -509,9 +509,15 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
     };
   }
 
+  let branch: GraphicTemplateBranch | undefined;
+  if (descr.translation) {
+    branch = { transform: Transform.createTranslation(Point3d.fromJSON(descr.translation)) };
+  }
+
   return createGraphicTemplate({
     nodes: [{ geometry }],
     batch,
+    branch,
     noDispose: true,
   });
 }
