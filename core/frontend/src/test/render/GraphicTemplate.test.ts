@@ -6,11 +6,10 @@
 import { expect } from "chai";
 import { IModelApp } from "../../IModelApp";
 import { EmptyLocalization } from "@itwin/core-common";
-import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { GraphicType } from "../../common/render/GraphicType";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { RenderInstances } from "../../render/RenderSystem";
-import { _nodes } from "../../common/internal/Symbols";
+import { _batch, _nodes } from "../../common/internal/Symbols";
 import { GraphicTemplate } from "../../render/GraphicTemplate";
 import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 
@@ -71,7 +70,25 @@ describe.only("GraphicTemplate", () => {
   });
 
   it("produces a batch if features are specified", () => {
-    
+    function makeTemplate(withFeatures: boolean): GraphicTemplate {
+      const builder = IModelApp.renderSystem.createGraphic({
+        type: GraphicType.Scene,
+        computeChordTolerance: () => 0,
+        pickable: withFeatures ? { id: "0x1", modelId: "0x2", noFlash: true, isVolumeClassifier: true } : undefined,
+      });
+
+      builder.addPointString2d([new Point2d(1, 2)], 0);
+      return builder.finishTemplate();
+    }
+
+    const noFeat = makeTemplate(false);
+    expect(noFeat[_batch]).to.be.undefined;
+
+    const feat = makeTemplate(true);
+    const batch = feat[_batch]!;
+    expect(batch).not.to.be.undefined;
+    expect(batch.featureTable.numFeatures).to.equal(1);
+    expect(batch.featureTable.batchModelId).to.equal("0x2");
   });
 
   it("produces a Branch if GraphicDescription specifies a translation", () => {
