@@ -23,6 +23,7 @@ export interface FormatProps {
   readonly thousandSeparator?: string;
   readonly uomSeparator?: string;
   readonly scientificType?: string; // conditionally required
+  readonly ratioType?: string; // conditionaly required
   readonly stationOffsetSize?: number; // conditionally required
   readonly stationSeparator?: string;
   readonly azimuthBase?: number; // value is specified from east counter-clockwise

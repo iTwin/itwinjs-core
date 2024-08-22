@@ -12,7 +12,8 @@ import { UnitProps, UnitsProvider } from "../Interfaces";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
   getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, ScientificType,
-  scientificTypeToString, ShowSignOption, showSignOptionToString,
+  scientificTypeToString, ShowSignOption, showSignOptionToString, RatioType,
+  parseRatioType
 } from "./FormatEnums";
 import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
@@ -38,6 +39,7 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
+  protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
   protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
@@ -64,6 +66,9 @@ export class BaseFormat {
 
   public get scientificType(): ScientificType | undefined { return this._scientificType; }
   public set scientificType(scientificType: ScientificType | undefined) { this._scientificType = scientificType; }
+
+  public get ratioTYpe(): RatioType | undefined { return this._ratioType; }
+  public set ratioType(ratioType: RatioType | undefined) { this._ratioType = ratioType; }
 
   public get showSignOption(): ShowSignOption { return this._showSignOption; }
   public set showSignOption(showSignOption: ShowSignOption) { this._showSignOption = showSignOption; }
@@ -135,6 +140,13 @@ export class BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Scientific' type therefore the attribute 'scientificType' is required.`);
 
       this._scientificType = parseScientificType(formatProps.scientificType, this.name);
+    }
+
+    if (this.type === FormatType.Ratio){
+      if (undefined === formatProps.ratioType)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type therefore the attribute 'ratioType' is required.`);
+
+      this._ratioType = parseRatioType(formatProps.ratioType, this.name);
     }
 
     if (undefined !== formatProps.roundFactor) { // optional; default is 0.0
