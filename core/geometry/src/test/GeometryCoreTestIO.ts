@@ -202,7 +202,7 @@ export class GeometryCoreTestIO {
   }
   /**
    * Clone the geometry and append to collection, e.g., for output by saveGeometry.
-   * Also try to move the geometry by dx,dy,dz.
+   * Also try to move the cloned geometry by dx,dy,dz. The original geometry is not moved.
    */
   public static captureCloneGeometry(
     collection: GeometryQuery[],
@@ -512,7 +512,7 @@ export class GeometryCoreTestIO {
     const bytes = GeometryCoreTestIO.readBytesFromFile(filePath);
     if (bytes && bytes.length > 0)
       return BentleyGeometryFlatBuffer.bytesToGeometry(bytes, true);
-  return undefined;
+    return undefined;
   }
 
   /** Read an imjs file and interpret as GeometryQuery(s) */

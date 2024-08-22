@@ -340,7 +340,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Create a transform with the specified `matrix` and points `a` and `b`. The returned Transform maps
-   * point `p` to `M*(p-a) + b` (i.e., `Tp = M*(p-a) + b`), so maps `a` to 'b'.
+   * point `p` to `M*(p-a) + b` (i.e., `Tp = M*(p-a) + b`), so maps `a` to `b`.
    */
   public static createMatrixPickupPutdown(
     matrix: Matrix3d, a: Point3d, b: Point3d, result?: Transform,

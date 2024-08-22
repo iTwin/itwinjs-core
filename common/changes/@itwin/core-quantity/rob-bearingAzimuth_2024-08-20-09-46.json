@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Bearing and Azimuth format support",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

@@ -324,7 +324,7 @@ export class XYZ implements XYAndZ {
     this.y += other.y;
     this.z += other.z;
   }
-  /** Add x,y,z from other in place. */
+  /** Subtract x,y,z from other in place. */
   public subtractInPlace(other: XYAndZ): void {
     this.x -= other.x;
     this.y -= other.y;
@@ -1242,8 +1242,7 @@ export class Vector3d extends XYZ {
     return this.crossProduct(vectorB, result).normalize(result);
   }
   /**
-   * Compute the cross product of this vector with `vectorB`.   Normalize it, using given xyz as
-   * default if length is zero.
+   * Compute the cross product of this vector with `vectorB`. Normalize it, using given xyz as default if length is zero.
    * @param vectorB second vector of cross product
    * @param x x value for default result
    * @param y y value for default result
