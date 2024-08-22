@@ -7676,6 +7676,8 @@ export namespace MockRender {
         // (undocumented)
         dispose(): void;
         // (undocumented)
+        isDisposed: boolean;
+        // (undocumented)
         readonly isInstanceable = true;
         // (undocumented)
         noDispose: boolean;
