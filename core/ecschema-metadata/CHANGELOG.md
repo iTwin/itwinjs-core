@@ -1,6 +1,11 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Fri, 16 Aug 2024 18:18:14 GMT and should not be manually modified.
+This log was last generated on Thu, 22 Aug 2024 17:37:06 GMT and should not be manually modified.
+
+## 4.8.4
+Thu, 22 Aug 2024 17:37:06 GMT
+
+_Version update only_
 
 ## 4.8.3
 Fri, 16 Aug 2024 18:18:14 GMT
