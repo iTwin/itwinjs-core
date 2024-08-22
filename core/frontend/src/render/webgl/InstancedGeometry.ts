@@ -117,6 +117,10 @@ export class InstanceBuffersData extends InstanceData {
       dispose(this.symbology);
     }
   }
+
+  public get isDisposed(): boolean {
+    return this.transforms.isDisposed && (!this.featureIds || this.featureIds.isDisposed) && (!this.symbology || this.symbology.isDisposed);
+  }
 }
 
 /** @internal */
@@ -216,14 +220,12 @@ export class InstanceBuffers {
     return new InstanceBuffers(instances.buffers, range);
   }
 
-  public get isDisposed(): boolean {
-    return this.transforms.isDisposed
-      && (undefined === this.featureIds || this.featureIds.isDisposed)
-      && (undefined === this.symbology || this.symbology.isDisposed);
-  }
-
   public dispose() {
     dispose(this._data);
+  }
+
+  public get isDisposed() {
+    return this._data.isDisposed;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
