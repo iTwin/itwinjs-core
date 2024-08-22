@@ -8,6 +8,8 @@
 
 import type { SchemaType } from "./SchemaDifference";
 
+const conflictDomain = "SchemaConflict";
+
 /**
  * The unique conflicts codes for Schema differencing.
  *
@@ -40,24 +42,24 @@ import type { SchemaType } from "./SchemaDifference";
  */
 export enum ConflictCode {
 
-  ConflictingItemName = "C-001",
-  ConflictingReferenceAlias = "C-002",
+  ConflictingItemName = `${conflictDomain}-001`,
+  ConflictingReferenceAlias = `${conflictDomain}-002`,
 
-  ConflictingBaseClass = "C-100",
-  RemovingBaseClass = "C-101",
-  SealedBaseClass = "C-102",
+  ConflictingBaseClass = `${conflictDomain}-100`,
+  RemovingBaseClass = `${conflictDomain}-101`,
+  SealedBaseClass = `${conflictDomain}-102`,
 
-  ConflictingEnumerationType = "C-700",
-  ConflictingEnumeratorValue = "C-701",
+  ConflictingEnumerationType = `${conflictDomain}-700`,
+  ConflictingEnumeratorValue = `${conflictDomain}-701`,
 
-  ConflictingPersistenceUnit = "C-1010",
-  MixinAppliedMustDeriveFromConstraint = "C-1100",
+  ConflictingPersistenceUnit = `${conflictDomain}-1010`,
+  MixinAppliedMustDeriveFromConstraint = `${conflictDomain}-1100`,
 
-  ConflictingPropertyName = "C-1300",
+  ConflictingPropertyName = `${conflictDomain}-1300`,
 
-  AbstractConstraintMustNarrowBaseConstraints = "C-1500",
-  DerivedConstraintsMustNarrowBaseConstraints = "C-1501",
-  ConstraintClassesDeriveFromAbstractConstraint = "C-1502",
+  AbstractConstraintMustNarrowBaseConstraints = `${conflictDomain}-1500`,
+  DerivedConstraintsMustNarrowBaseConstraints = `${conflictDomain}-1501`,
+  ConstraintClassesDeriveFromAbstractConstraint = `${conflictDomain}-1502`,
 }
 
 /**

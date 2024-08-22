@@ -277,7 +277,7 @@ export interface ClassPropertyDifference {
   readonly changeType: "add" | "modify";
   readonly schemaType: SchemaOtherTypes.Property;
   readonly itemName: string;
-  readonly path: string;
+  readonly propertyName: string;
   readonly difference: PartialEditable<AnyPropertyProps>;
 }
 
@@ -323,7 +323,7 @@ export interface CustomAttributePropertyDifference {
   readonly schemaType: SchemaOtherTypes.CustomAttributeInstance;
   readonly appliedTo: "Property";
   readonly itemName: string;
-  readonly path: string;
+  readonly propertyName: string;
   readonly difference: PartialEditable<CustomAttribute>;
 }
 
@@ -336,7 +336,7 @@ export interface CustomAttributeRelationshipConstraintDifference {
   readonly schemaType: SchemaOtherTypes.CustomAttributeInstance;
   readonly appliedTo: "RelationshipConstraint";
   readonly itemName: string;
-  readonly path: "$source" | "$target";
+  readonly constraint: "source" | "target";
   readonly difference: PartialEditable<CustomAttribute>;
 }
 
@@ -355,11 +355,28 @@ export interface EntityClassMixinDifference {
  * Differencing entry for changed Enumerators on Enumerable Schema Items.
  * @alpha
  */
-export interface EnumeratorDifference {
-  readonly changeType: "add" | "modify";
+export type EnumeratorDifference = EnumeratorDifferenceAdd | EnumeratorDifferenceModify;
+
+/**
+ * Differencing entry for added Enumerators on Enumerable Schema Items.
+ * @alpha
+ */
+export interface EnumeratorDifferenceAdd {
+  readonly changeType: "add";
   readonly schemaType: SchemaOtherTypes.Enumerator;
   readonly itemName: string;
-  readonly path: string;
+  readonly difference: PartialEditable<AnyEnumerator>;
+}
+
+/**
+ * Differencing entry for changed Enumerators on Enumerable Schema Items.
+ * @alpha
+ */
+export interface EnumeratorDifferenceModify {
+  readonly changeType: "modify";
+  readonly schemaType: SchemaOtherTypes.Enumerator;
+  readonly itemName: string;
+  readonly enumerator: string;
   readonly difference: PartialEditable<AnyEnumerator>;
 }
 
@@ -371,7 +388,7 @@ export interface RelationshipConstraintDifference {
   readonly changeType: "modify";
   readonly schemaType: SchemaOtherTypes.RelationshipConstraint;
   readonly itemName: string;
-  readonly path: "$source" | "$target";
+  readonly constraint: "source" | "target";
   readonly difference: PartialEditable<Omit<RelationshipConstraintProps, "constraintClasses">>;
 }
 
@@ -383,7 +400,7 @@ export interface RelationshipConstraintClassDifference {
   readonly changeType: "add";
   readonly schemaType: SchemaOtherTypes.RelationshipConstraintClass;
   readonly itemName: string;
-  readonly path: "$source" | "$target";
+  readonly constraint: "source" | "target";
   readonly difference: string[];
 }
 

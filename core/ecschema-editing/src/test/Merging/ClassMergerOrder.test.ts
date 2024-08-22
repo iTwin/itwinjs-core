@@ -103,7 +103,7 @@ describe("Class items merging order tests", () => {
 
     const mergedItem = await mergedSchema.getItem<EntityClass>("testClass");
     const classMixins = mergedItem?.mixins;
-    if(classMixins){
+    if (classMixins) {
       expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
       expect((classMixins[1]).fullName).to.deep.equal("TargetSchema.mixinB");
     }
@@ -257,7 +257,7 @@ describe("Class items merging order tests", () => {
     });
   });
 
-  it("it should merge missing struct properties of existing entity class before the struct class item",async () => {
+  it("it should merge missing struct properties of existing entity class before the struct class item", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -304,7 +304,7 @@ describe("Class items merging order tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.Property,
           itemName: "sps",
-          path: "Status",
+          propertyName: "Status",
           difference: {
             name: "Status",
             type: "PrimitiveProperty",
@@ -317,7 +317,7 @@ describe("Class items merging order tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.Property,
           itemName: "sps",
-          path: "Allocation",
+          propertyName: "Allocation",
           difference: {
             name: "Allocation",
             type: "StructArrayProperty",
@@ -332,7 +332,7 @@ describe("Class items merging order tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.Property,
           itemName: "middle",
-          path: "Allocation",
+          propertyName: "Allocation",
           difference: {
             name: "Allocation",
             type: "StructArrayProperty",

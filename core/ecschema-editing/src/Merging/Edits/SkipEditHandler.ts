@@ -58,7 +58,7 @@ function findItemEntries({ differences }: SchemaDifferenceResult, itemName: stri
 function findRelatedItemEntries({ differences }: SchemaDifferenceResult, itemName: string, pathName: string): number[] {
   const found: number[] = [];
   differences.forEach((difference, index) => {
-    if ("itemName" in difference && difference.itemName === itemName && "path" in difference && difference.path === pathName) {
+    if ("itemName" in difference && difference.itemName === itemName && "propertyName" in difference && difference.propertyName === pathName) {
       found.push(index);
     }
   });

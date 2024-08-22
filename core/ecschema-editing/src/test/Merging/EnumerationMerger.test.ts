@@ -98,7 +98,6 @@ describe("Enumeration merge tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.Enumerator,
           itemName: "TestEnumeration",
-          path: "$enumerators",
           difference: {
             name: "FirstValue",
             value: "F",
@@ -158,7 +157,6 @@ describe("Enumeration merge tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.Enumerator,
           itemName: "TestEnumeration",
-          path: "$enumerators",
           difference: {
             name: "ThirdValue",
             value: 2,
@@ -220,7 +218,7 @@ describe("Enumeration merge tests", () => {
           changeType: "modify",
           schemaType: SchemaOtherTypes.Enumerator,
           itemName: "TestEnumeration",
-          path: "EnumeratorOne",
+          enumerator: "EnumeratorOne",
           difference: {
             description: "This is for enumerator one",
             label: "Enumerator One",
@@ -309,7 +307,7 @@ describe("Enumeration merge tests", () => {
           changeType: "modify",
           schemaType: SchemaOtherTypes.Enumerator,
           itemName: "TestEnumeration",
-          path: "EnumeratorOne",
+          enumerator: "EnumeratorOne",
           difference: {
             value: 100,
           },
