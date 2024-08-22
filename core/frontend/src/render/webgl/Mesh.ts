@@ -76,6 +76,15 @@ export class MeshRenderGeometry implements RenderGeometry {
     dispose(this.indexedEdges);
   }
 
+  public get isDisposed() {
+    return this.data.isDisposed &&
+      (!this.surface || this.surface.isDisposed) &&
+      (!this.segmentEdges || this.segmentEdges.isDisposed) &&
+      (!this.silhouetteEdges || this.silhouetteEdges.isDisposed) &&
+      (!this.polylineEdges || this.polylineEdges.isDisposed) &&
+      (!this.indexedEdges || this.indexedEdges.isDisposed);
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics) {
     this.data.collectStatistics(stats);
     this.surface?.collectStatistics(stats);

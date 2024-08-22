@@ -125,10 +125,11 @@ export namespace MockRender {
   export class Geometry implements RenderGeometry {
     public noDispose = false;
     public readonly isInstanceable = true;
+    public isDisposed = false;
     public constructor(public readonly renderGeometryType: "mesh" | "polyline" | "point-string") {
 
     }
-    public dispose(): void { }
+    public dispose(): void { this.isDisposed = true; }
     public collectStatistics(): void { }
     public computeRange() { return new Range3d(); }
   }
