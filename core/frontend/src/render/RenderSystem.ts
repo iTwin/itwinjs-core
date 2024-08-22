@@ -856,7 +856,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Convert a [[GraphicDescription]] produced by a [[GraphicDescriptionBuilder]] into a [[RenderGraphic]].
    * @beta
    */
-  public createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): RenderGraphic  | undefined {
+  public createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): RenderGraphic | undefined {
     return createGraphicFromDescription(args.description, args.context, this);
   }
 

@@ -107,7 +107,7 @@ export class InstanceBuffersData extends InstanceData {
       return undefined;
     }
 
-    return undefined !== tfBuf ? new InstanceBuffersData(count, tfBuf, transformCenter, symBuf, idBuf, disableDisposal) : undefined;
+    return new InstanceBuffersData(count, tfBuf, transformCenter, symBuf, idBuf, disableDisposal);
   }
 
   public dispose(): void {
