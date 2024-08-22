@@ -12,8 +12,8 @@ import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/rend
 import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
 import { ColorDef, EmptyLocalization, LinePixels } from "@itwin/core-common";
-import { GraphicType } from "../../common";
-import { Color, openBlankViewport, readUniqueColors } from "../openBlankViewport";
+import { GraphicType, ViewRect } from "../../common";
+import { Color, openBlankViewport, readUniqueColors, readUniquePixelData } from "../openBlankViewport";
 import { GraphicBranch } from "../../core-frontend";
 
 describe("RenderInstancesParamsBuilder", () => {
@@ -157,12 +157,26 @@ describe.only("RenderInstances", () => {
     vp.displayStyle.backgroundColor = ColorDef.black;
     vp.renderFrame();
 
-    const colors = readUniqueColors(vp);
+    let colors = readUniqueColors(vp);
     expect(colors.length).to.equal(3);
     expect(colors.contains(Color.fromColorDef(ColorDef.black))).to.be.true;
     expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
     expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
 
+    let pixels = readUniquePixelData(vp);
+    expect(pixels.length).to.equal(5);
+    expect(pixels.containsElement("")).to.be.true;
+    for (let i = 1; i <= 4; i++) {
+      expect(pixels.containsElement(`0x${i}`)).to.be.true;
+    }
+
+    colors = readUniqueColors(vp, new ViewRect(50, 0, 100, 50));
+    expect(colors.length).to.equal(2);
+    expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
+    pixels = readUniquePixelData(vp, new ViewRect(50, 0, 100, 50));
+
+
+    
     vp.dispose();
   });
 });
