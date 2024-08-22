@@ -11,10 +11,11 @@ import { InstancedGraphicPropsBuilder } from "../../common/internal/render/Insta
 import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
 import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
-import { ColorDef, EmptyLocalization, LinePixels } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, LinePixels, ModelFeature } from "@itwin/core-common";
 import { GraphicType, ViewRect } from "../../common";
 import { Color, openBlankViewport, readUniqueColors, readUniquePixelData } from "../openBlankViewport";
 import { GraphicBranch } from "../../core-frontend";
+import { _featureTable } from "../../common/internal/Symbols";
 
 describe("RenderInstancesParamsBuilder", () => {
   it("throws if no instances supplied", () => {
@@ -105,6 +106,29 @@ describe.only("RenderInstances", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
+  it("populates feature table", () => {
+    const paramsBuilder = RenderInstancesParamsBuilder.create({ modelId: "0xf" });
+    paramsBuilder.add({ feature: "0x1", transform: Transform.createIdentity() });
+    paramsBuilder.add({ feature: "0x2", transform: Transform.createIdentity() });
+    paramsBuilder.add({ feature: "0x3", transform: Transform.createIdentity() });
+    paramsBuilder.add({ feature: "0x4", transform: Transform.createIdentity() });
+    const params = paramsBuilder.finish();
+
+    const instances = IModelApp.renderSystem.createRenderInstances(params)!;
+    expect(instances).not.to.be.undefined;
+
+    const ft = instances[_featureTable]!;
+    expect(ft).not.to.be.undefined;
+    expect(ft.numFeatures).to.equal(4);
+    expect(ft.batchModelId).to.equal("0xf");
+
+    const feat = ModelFeature.create();
+    expect(ft.findFeature(0, feat)?.elementId).to.equal("0x1");
+    expect(ft.findFeature(1, feat)?.elementId).to.equal("0x2");
+    expect(ft.findFeature(2, feat)?.elementId).to.equal("0x3");
+    expect(ft.findFeature(3, feat)?.elementId).to.equal("0x4");
+  });
+  
   it("renders the same template with different positions, scales, features, and symbologies", () => {
     // Create a template of a red solid line 1 pixel tall and 5 pixels wide
     const builder = IModelApp.renderSystem.createGraphic({
@@ -141,6 +165,8 @@ describe.only("RenderInstances", () => {
     // Create a graphic from the template+instances, translated to the center of the viewport.
     const instances = IModelApp.renderSystem.createRenderInstances(paramsBuilder.finish())!;
     expect(instances).not.to.be.undefined;
+    expect(instances[_featureTable]!.numFeatures).to.equal(4);
+    
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
     const branch = new GraphicBranch(false);
     branch.add(graphic);
