@@ -9,7 +9,7 @@
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./FormatterSpec";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, RatioType, ScientificType, ShowSignOption } from "./FormatEnums";
 import { Quantity } from "../Quantity";
 
 /**  rounding additive
@@ -50,7 +50,7 @@ class FractionalNumeric {
   /** Determine the GCD given two values. This value can be used to reduce a fraction.
    * See algorithm description http://en.wikipedia.org/wiki/Euclidean_algorithm
    */
-  private getGreatestCommonFactor(numerator: number, denominator: number): number {
+  public static getGreatestCommonFactor(numerator: number, denominator: number): number {
     let r;
     while (denominator !== 0) {
       r = numerator % denominator;
@@ -215,6 +215,9 @@ export class Formatter {
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
       let unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD; // offset should only ever be defined for major unit
+      if (spec.format.type === FormatType.Ratio){
+        return this.formatRatio(unitValue, spec);
+      }
       if (0 === i) {
         const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
         unitValue = Math.floor(unitValue * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
@@ -248,7 +251,7 @@ export class Formatter {
       posMagnitude = Math.abs(Formatter.roundDouble(magnitude, spec.format.roundFactor));
 
     const isSci = ((posMagnitude > 1.0e12) || spec.format.type === FormatType.Scientific);
-    const isDecimal = (isSci || spec.format.type === FormatType.Decimal || spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth);
+    const isDecimal = (isSci || spec.format.type === FormatType.Decimal || spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) || spec.format.type === FormatType.Ratio;
     const isFractional = (!isDecimal && spec.format.type === FormatType.Fractional);
     /* const usesStops = spec.format.type === FormatType.Station; */
     const isPrecisionZero = spec.format.precision === DecimalPrecision.Zero;
@@ -536,5 +539,31 @@ export class Formatter {
     }
 
     return converted.magnitude;
+  }
+
+  private static formatRatio(magnitude: number, spec: FormatterSpec): string {
+    if (null == spec.format.ratioType)
+      throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
+    switch (spec.format.ratioType) {
+      case RatioType.OneToN:
+        return "1:" + this.formatMagnitude(magnitude, spec);
+      case RatioType.NToOne:
+        return this.formatMagnitude(magnitude, spec) + ":1";
+      case RatioType.ValueBased:
+        if (magnitude > 1.0)
+          return this.formatMagnitude(magnitude, spec) + ":1";
+        else
+          return "1:" + this.formatMagnitude(magnitude, spec);
+      case RatioType.UseGreatestCommonDivisor:
+        const reciprocal = this.roundDouble(1.0 / magnitude, spec.format.precision);
+        let numerator = reciprocal * spec.format.precision;
+        let denominator = spec.format.precision;
+
+        let gcd = FractionalNumeric.getGreatestCommonFactor(numerator, denominator);
+
+        numerator /= gcd;
+        denominator /= gcd;
+
+        return this.formatMagnitude(numerator, spec) + ":" + this.formatMagnitude(denominator, spec);
   }
 }

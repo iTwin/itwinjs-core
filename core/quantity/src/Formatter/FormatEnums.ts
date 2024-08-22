@@ -112,6 +112,8 @@ export enum FormatType {
   Bearing,
   /** Azimuth angle e.g. 45°30'00". Requires provided quantities to be of the angle phenomenon */
   Azimuth,
+  /** Eg. 1:2 or 0.3:1. Requires provided quantities to be of the slope phenomenon */
+  Ratio,
 }
 
 /** required if type is scientific
@@ -121,6 +123,17 @@ export enum ScientificType {
   Normalized,
   /** Zero value left of decimal point (ie 0.12345e4) */
   ZeroNormalized,
+}
+
+export enum RatioType {
+  /** One to N ratio (ie 1:N) */
+  OneToN,
+  /** N to One ratio (ie N:1) */
+  NToOne,
+  /**  the lesser value scales to 1. e.g. input 0.5 turns into 2:1 | input 2 turns into 1:2 */
+  ValueBased,
+  /**  scales to the greatest common divisor, integer ratio. e.g. 3:10 */
+  UseGreatestCommonDivisor ,
 }
 
 /** Determines how the sign of values are displayed
@@ -152,6 +165,18 @@ export function parseScientificType(scientificType: string, formatName: string):
 /**  @beta   */
 export function scientificTypeToString(scientificType: ScientificType): string {
   return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
+}
+
+/**  @beta   */
+export function parseRatioType(ratioType: string, formatName: string): RatioType {
+  switch (ratioType.toLowerCase()) {
+    case "oneton": return RatioType.OneToN;
+    case "ntoone": return RatioType.NToOne;
+    case "valuebased": return RatioType.ValueBased;
+    case "usegreatestcommondivisor": return RatioType.UseGreatestCommonDivisor;
+    default:
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioType' attribute.`);
+  }
 }
 
 /** @beta    */
@@ -256,6 +281,7 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
     case "fractional": return FormatType.Fractional;
     case "bearing": return FormatType.Bearing;
     case "azimuth": return FormatType.Azimuth;
+    case "ratio": return FormatType.Ratio;
     default:
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
@@ -270,6 +296,7 @@ export function formatTypeToString(type: FormatType): string {
     case FormatType.Fractional: return "Fractional";
     case FormatType.Bearing: return "Bearing";
     case FormatType.Azimuth: return "Azimuth";
+    case FormatType.Ratio: return "Ratio";
   }
 }
 
@@ -317,6 +344,7 @@ export function parsePrecision(precision: number, type: FormatType, formatName: 
     case FormatType.Decimal:
     case FormatType.Scientific:
     case FormatType.Station:
+    case FormatType.Ratio:
     case FormatType.Bearing:
     case FormatType.Azimuth:
       return parseDecimalPrecision(precision, formatName);
