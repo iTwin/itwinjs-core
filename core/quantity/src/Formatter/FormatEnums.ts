@@ -179,6 +179,16 @@ export function parseRatioType(ratioType: string, formatName: string): RatioType
   }
 }
 
+/**  @beta   */
+export function ratioTypeToString(ratioType: RatioType): string {
+  switch (ratioType) {
+    case RatioType.OneToN: return "OneToN";
+    case RatioType.NToOne: return "NToOne";
+    case RatioType.ValueBased: return "ValueBased";
+    case RatioType.UseGreatestCommonDivisor: return "UseGreatestCommonDivisor";
+  }
+}
+
 /** @beta    */
 export function parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
   switch (showSignOption.toLowerCase()) {
