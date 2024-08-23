@@ -7,49 +7,63 @@ import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatProps, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvider } from "../core-quantity";
 
 
-describe("Ratio tests", () => {
-  it.only ("ratio init fromJSON", async () => {
+describe("Ratio Type Tests", () => {
+  async function testRatioType(ratioType: string, testData: { input: number; ratio: string; }[]) {
     assert.isTrue(true);
 
-    const ratioJson: FormatProps ={
+    const ratioJson: FormatProps = {
       type: "Ratio",
-      ratioType: "OneToN",
-      precision: 4,
+      ratioType,
+      precision: 3,
       composite: {
         includeZero: true,
         units: [
-          { name: "Units.VERTICAL_PER_HORIZONTAL"}, // presentation unit
+          { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
         ],
       }
-    }
+    };
 
     const unitsProvider = new TestUnitsProvider();
-    const ratioFormat = new Format("Ratio"); // I already specified the type in JSON though
+    const ratioFormat = new Format("Ratio");
     await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
     assert.isTrue(ratioFormat.hasUnits);
 
     const v_h: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
     assert.isTrue(v_h.isValid);
-    const ratioFormatter = await FormatterSpec.create("v_hOneToN", ratioFormat, unitsProvider, v_h); // v_h is persistent unit
-    // const ratioParser = await ParserSpec.create(ratio, unitsProvider, v_h);
 
-    interface TestData {
-      input: number;
-      unit: UnitProps;
-      ratio: string;
-    }
+    const ratioFormatterSpec = await FormatterSpec.create(`v_h${ratioType}`, ratioFormat, unitsProvider, v_h);
 
-    // does input accept negative values?
-    const testData: TestData[] = [
-      { input: 1.0, unit: v_h, ratio: "1:1" },
-      { input: 2.0, unit: v_h, ratio: "2:1" },
-      { input: 0.5, unit: v_h, ratio: "1:2" },
-    ];
-
-    for (const entry of testData){
-      const resultRatio = Formatter.formatQuantity(entry.input, ratioFormatter);
+    for (const entry of testData) {
+      const resultRatio = Formatter.formatQuantity(entry.input, ratioFormatterSpec);
       expect(resultRatio).to.equal(entry.ratio);
     }
+  }
 
-  })
-})
+  it.only("ratiotype OneToN", async () => {
+    const testData: { input: number; ratio: string; }[] = [
+      { input: 1.0, ratio: "1:1" },
+      { input: 2.0, ratio: "1:0.5" },
+      { input: 0.5, ratio: "1:2" },
+      { input: 0.333, ratio: "1:3.003" },
+      { input: 0.3333, ratio: "1:3" },
+      { input: 0.2857, ratio: "1:3.5" },
+      { input: 0.25, ratio: "1:4" },
+      { input: 0.6667, ratio: "1:1.5" },
+    ];
+    await testRatioType("OneToN", testData);
+  });
+
+  it.only("ratiotype NToOne", async () => {
+    const testData: { input: number; ratio: string; }[] = [
+      { input: 1.0, ratio: "1:1" },
+      { input: 2.0, ratio: "2:1" },
+      { input: 0.5, ratio: "0.5:1" },
+      { input: 0.333, ratio: "0.333:1" },
+      { input: 0.3333, ratio: "0.333:1" },
+      { input: 0.2857, ratio: "0.286:1" },
+      { input: 0.25, ratio: "0.25:1" },
+      { input: 0.6667, ratio: "0.667:1" },
+    ];
+    await testRatioType("NToOne", testData);
+  });
+});

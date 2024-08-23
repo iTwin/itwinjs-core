@@ -67,7 +67,7 @@ export class BaseFormat {
   public get scientificType(): ScientificType | undefined { return this._scientificType; }
   public set scientificType(scientificType: ScientificType | undefined) { this._scientificType = scientificType; }
 
-  public get ratioTYpe(): RatioType | undefined { return this._ratioType; }
+  public get ratioType(): RatioType | undefined { return this._ratioType; }
   public set ratioType(ratioType: RatioType | undefined) { this._ratioType = ratioType; }
 
   public get showSignOption(): ShowSignOption { return this._showSignOption; }
@@ -292,6 +292,7 @@ export class Format extends BaseFormat {
     newFormat._azimuthBase = this._azimuthBase;
     newFormat._azimuthBaseUnit = this._azimuthBaseUnit;
     newFormat._azimuthCounterClockwise = this._azimuthCounterClockwise;
+    newFormat._ratioType = this._ratioType;
     newFormat._revolutionUnit = this._revolutionUnit;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
