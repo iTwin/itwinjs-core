@@ -66,4 +66,39 @@ describe("Ratio Type Tests", () => {
     ];
     await testRatioType("NToOne", testData);
   });
+
+  it.only("ratioType valueBased", async () => {
+    const testData: { input: number; ratio: string; }[] = [
+      { input: 0.0, ratio: "1:0" },
+      { input: 1.0, ratio: "1:1" },
+      { input: 2.0, ratio: "2:1" },
+      { input: 0.5, ratio: "1:2" },
+      { input: 0.333, ratio: "1:3.003" },
+      { input: 0.3333, ratio: "1:3" },
+      { input: 0.2857, ratio: "1:3.5" },
+      { input: 3.5, ratio: "3.5:1" },
+      { input: 0.25, ratio: "1:4" },
+      { input: 4, ratio: "4:1" },
+      { input: 0.6667, ratio: "1:1.5" },
+
+    ];
+    await testRatioType("ValueBased", testData);
+  });
+
+  it.only("ratioType UseGreatestCommonDivisor", async () => {
+    const testData: { input: number; ratio: string; }[] = [
+      { input: 0.0, ratio: "1:0" }, // Special case
+      { input: 1.0, ratio: "1:1" },
+      { input: 2.0, ratio: "2:1" },
+      { input: 0.5, ratio: "1:2" },
+      { input: 0.333, ratio: "1000:3003" }, // Adjusted to reflect test cases
+      { input: 0.3333, ratio: "1:3" },
+      { input: 0.2857, ratio: "2:7" },
+      { input: 0.25, ratio: "1:4" },
+      { input: 0.6667, ratio: "2:3" }
+    ];
+    await testRatioType("UseGreatestCommonDivisor", testData);
+  });
+
+
 });

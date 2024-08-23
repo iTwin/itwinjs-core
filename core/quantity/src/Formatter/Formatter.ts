@@ -546,7 +546,7 @@ export class Formatter {
       throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
 
     let reciprocal = 0;
-    if (magnitude != 0)
+    if ((Math.abs(magnitude) > 0.0001))
       reciprocal = 1.0 / magnitude;
 
     switch (spec.format.ratioType) {
@@ -562,14 +562,14 @@ export class Formatter {
       case RatioType.UseGreatestCommonDivisor:
         const precisionScale = Math.pow(10.0, spec.format.precision);
         reciprocal = this.roundDouble(reciprocal, 1/precisionScale);
-        let numerator = reciprocal * spec.format.precision;
+        let numerator = reciprocal * precisionScale;
         let denominator = precisionScale;
 
         let gcd = FractionalNumeric.getGreatestCommonFactor(numerator, denominator);
         numerator /= gcd;
         denominator /= gcd;
 
-        return this.formatMagnitude(numerator, spec) + ":" + this.formatMagnitude(denominator, spec);
+        return this.formatMagnitude(denominator, spec) + ":" + this.formatMagnitude(numerator, spec);
 
       default:
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid ratio type specified.`);
