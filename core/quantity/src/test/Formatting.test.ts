@@ -847,7 +847,7 @@ describe("Formatting tests:", () => {
     }
   });
 
-  it("deserialization of Formats is consistent", async () => {
+  it.only("deserialization of Formats is consistent", async () => {
     const unitsProvider = new TestUnitsProvider();
     const formatPropsArray: FormatProps[] = [
       {
@@ -910,6 +910,18 @@ describe("Formatting tests:", () => {
           ],
         },
       },
+      {
+        type: "Ratio",
+        ratioType: "OneToN",
+        precision: 3,
+        composite: {
+          includeZero: true,
+          spacer: "",
+          units: [
+            { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
+          ],
+        }
+      }
     ];
 
     for (const formatProps of formatPropsArray) {
