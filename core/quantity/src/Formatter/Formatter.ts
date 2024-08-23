@@ -43,7 +43,7 @@ class FractionalNumeric {
       this._numerator = 0;
       this._integral += 1;
     } else {
-      this._greatestCommonFactor = this.getGreatestCommonFactor(this._numerator, this._denominator);
+      this._greatestCommonFactor = FractionalNumeric.getGreatestCommonFactor(this._numerator, this._denominator);
     }
   }
 
@@ -542,28 +542,37 @@ export class Formatter {
   }
 
   private static formatRatio(magnitude: number, spec: FormatterSpec): string {
-    if (null == spec.format.ratioType)
-      throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
+    if (null === spec.format.ratioType)
+      throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
+
+    let reciprocal = 0;
+    if (magnitude != 0)
+      reciprocal = 1.0 / magnitude;
+
     switch (spec.format.ratioType) {
       case RatioType.OneToN:
-        return "1:" + this.formatMagnitude(magnitude, spec);
+        return "1:" + this.formatMagnitude(reciprocal, spec);
       case RatioType.NToOne:
         return this.formatMagnitude(magnitude, spec) + ":1";
       case RatioType.ValueBased:
         if (magnitude > 1.0)
           return this.formatMagnitude(magnitude, spec) + ":1";
         else
-          return "1:" + this.formatMagnitude(magnitude, spec);
+          return "1:" + this.formatMagnitude(reciprocal, spec);
       case RatioType.UseGreatestCommonDivisor:
-        const reciprocal = this.roundDouble(1.0 / magnitude, spec.format.precision);
+        const precisionScale = Math.pow(10.0, spec.format.precision);
+        reciprocal = this.roundDouble(reciprocal, 1/precisionScale);
         let numerator = reciprocal * spec.format.precision;
-        let denominator = spec.format.precision;
+        let denominator = precisionScale;
 
         let gcd = FractionalNumeric.getGreatestCommonFactor(numerator, denominator);
-
         numerator /= gcd;
         denominator /= gcd;
 
         return this.formatMagnitude(numerator, spec) + ":" + this.formatMagnitude(denominator, spec);
+
+      default:
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid ratio type specified.`);
+    }
   }
 }
