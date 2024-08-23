@@ -409,7 +409,10 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90a",
-      createDropDown: async (container: HTMLElement) => new CivilContoursPanel(this.viewport, container),
+      createDropDown: async (container: HTMLElement) => {
+        const panel = new CivilContoursPanel(this.viewport, container);
+        return panel;
+      },
       tooltip: "Civil contours",
     });
 

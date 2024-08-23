@@ -6,12 +6,18 @@
 import { dispose, IDisposable } from "@itwin/core-bentley";
 import {
   ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createColorInput, createComboBox, createNumericInput,
-  createSlider, createTextBox,
+  createSlider, createTextBox, Slider,
 } from "@itwin/frontend-devtools";
 import { LinePixels, RgbColor } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
-import { CivilContourDisplay, CivilContourDisplayProps } from "@itwin/core-common/lib/cjs/CivilContourDisplay";
+// import { CivilContourDisplay, CivilContourDisplayProps } from "@itwin/core-common/lib/cjs/CivilContourDisplay";
+
+// size of widget or panel
+const winSize = { top: 0, left: 0, width: 311, height: 300 };
+const indent1 = "5px";
+const bottomSpace1 = "3px";
+const bottomSpace2 = "5px";
 
 export class CivilContoursSettings implements IDisposable {
   private readonly _vp: Viewport;
@@ -24,16 +30,21 @@ export class CivilContoursSettings implements IDisposable {
 
     this._element = document.createElement("div");
     this._element.className = "toolMenu";
-    this._element.style.cssFloat = "left";
     this._element.style.display = "block";
+    this._element.style.overflowX = "none";
+    this._element.style.overflowY = "none";
+    const width = winSize.width * 0.98;
+    this._element.style.width = `${width}px`;
 
-    createTextBox({
+    const tb = createTextBox({
       label: "Subcategory Ids: ",
       id: `contours_subCatIds`,
       parent: this._element,
       tooltip: "Enter comma-separated list of Subcategory Ids to associate this contour styling with",
       inline: true,
     });
+    tb.textbox.style.marginBottom = bottomSpace1;
+    tb.label!.style.fontWeight = "bold";
 
     const hr1 = document.createElement("hr");
     hr1.style.borderColor = "grey";
@@ -41,25 +52,29 @@ export class CivilContoursSettings implements IDisposable {
     const label1 = document.createElement("label");
     label1.innerText = "Major Contours";
     label1.style.display = "inline";
+    label1.style.fontWeight = "bold";
     this._element.appendChild(label1);
 
     this.addInterval(this._element, true);
     this.addColor(this._element, true);
     this.addWeight(this._element, true);
-    CivilContoursSettings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10), true), true);
+    const cb = CivilContoursSettings.addStyle(this._element, LinePixels.Solid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10), true), true);
+    cb.div.style.marginBottom = bottomSpace2;
 
     const hr2 = document.createElement("hr");
     hr2.style.borderColor = "grey";
     this._element.appendChild(hr2);
     const label2 = document.createElement("label");
     label2.innerText = "Minor Contours";
+    label2.style.fontWeight = "bold";
     label2.style.display = "inline";
     this._element.appendChild(label2);
 
     this.addInterval(this._element, false);
     this.addColor(this._element, false);
     this.addWeight(this._element, false);
-    CivilContoursSettings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10), false), false);
+    const cb2 = CivilContoursSettings.addStyle(this._element, LinePixels.Solid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10), false), false);
+    cb2.div.style.marginBottom = bottomSpace2;
 
     const buttonDiv = document.createElement("div");
     buttonDiv.style.textAlign = "center";
@@ -78,7 +93,10 @@ export class CivilContoursSettings implements IDisposable {
       tooltip: "Remove all contour settings",
     });
 
-    this._element.appendChild(document.createElement("hr"));
+    const hr3 = document.createElement("hr");
+    this._element.appendChild(hr3);
+    hr3.style.borderColor = "grey";
+
     this._element.appendChild(buttonDiv);
 
     parent.appendChild(this._element);
@@ -105,7 +123,7 @@ export class CivilContoursSettings implements IDisposable {
 
     const num = createNumericInput({
       parent: div,
-      value: 1,
+      value: major ? 100 : 50,
       disabled: false,
       min: 1,
       // max: 31,
@@ -114,45 +132,7 @@ export class CivilContoursSettings implements IDisposable {
     });
     div.appendChild(num);
     parent.appendChild(div);
-  }
-
-  private addWeight(parent1: HTMLElement, major: boolean): void {
-    const weightSlider = createSlider({
-      name: " Weight ", id: major ? "major_weight" : "minor_weight", parent: parent1,
-      min: "1.25", max: "10", step: "0.25",
-      value: "1.5",
-      readout: "right", verticalAlign: false, textAlign: false,
-      handler: (slider) => {
-        const wt = Number.parseFloat(slider.value);
-        if (!Number.isNaN(wt))
-          this.updateWeight(wt, major);
-      },
-    }).div;
-    parent1.appendChild(weightSlider);
-  }
-
-  public static addStyle(parent: HTMLElement, value: LinePixels, handler: ComboBoxHandler, major: boolean): ComboBox {
-    const entries = [
-      { name: "Solid", value: LinePixels.Solid },
-      { name: "Code1", value: LinePixels.Code1 },
-      { name: "Code2", value: LinePixels.Code2 },
-      { name: "Code3", value: LinePixels.Code3 },
-      { name: "Code4", value: LinePixels.Code4 },
-      { name: "Code5", value: LinePixels.Code5 },
-      { name: "Code6", value: LinePixels.Code6 },
-      { name: "Code7", value: LinePixels.Code7 },
-      { name: "Hidden Line", value: LinePixels.HiddenLine },
-      { name: "Invisible", value: LinePixels.Invisible },
-    ];
-
-    return createComboBox({
-      parent,
-      entries,
-      id: major ? "major_style" : "minor_style",
-      name: "Style ",
-      value,
-      handler,
-    });
+    div.style.marginLeft = indent1;
   }
 
   private addColor(parent: HTMLElement, major: boolean): void {
@@ -171,17 +151,70 @@ export class CivilContoursSettings implements IDisposable {
     const input: HTMLInputElement = createColorInput(props).input;
 
     parent.appendChild(div);
+    div.style.marginLeft = indent1;
+    div.style.marginTop = indent1;
+    div.style.marginBottom = indent1;
+  }
+
+  private addWeight(parent1: HTMLElement, major: boolean): Slider {
+    const weightSlider = createSlider({
+      name: " Weight ", id: major ? "major_weight" : "minor_weight", parent: parent1,
+      min: "1.25", max: "10", step: "0.25",
+      value: "1.5",
+      readout: "right", verticalAlign: false, textAlign: false,
+      handler: (slider) => {
+        const wt = Number.parseFloat(slider.value);
+        if (!Number.isNaN(wt))
+          this.updateWeight(wt, major);
+      },
+    });
+    parent1.appendChild(weightSlider.div);
+    weightSlider.div.style.marginLeft = indent1;
+    // center the slider with the labels
+    weightSlider.label.style.position = "relative";
+    weightSlider.label.style.bottom = "3px";
+    weightSlider.readout.style.position = "relative";
+    weightSlider.readout.style.bottom = "3px";
+    weightSlider.readout.style.marginLeft = "3px";
+
+    return weightSlider;
+  }
+
+  public static addStyle(parent: HTMLElement, value: LinePixels, handler: ComboBoxHandler, major: boolean): ComboBox {
+    const entries = [
+      { name: "Solid", value: LinePixels.Solid },
+      { name: "Code1", value: LinePixels.Code1 },
+      { name: "Code2", value: LinePixels.Code2 },
+      { name: "Code3", value: LinePixels.Code3 },
+      { name: "Code4", value: LinePixels.Code4 },
+      { name: "Code5", value: LinePixels.Code5 },
+      { name: "Code6", value: LinePixels.Code6 },
+      { name: "Code7", value: LinePixels.Code7 },
+      { name: "Hidden Line", value: LinePixels.HiddenLine },
+      { name: "Invisible", value: LinePixels.Invisible },
+    ];
+
+    const cb = createComboBox({
+      parent,
+      entries,
+      id: major ? "major_style" : "minor_style",
+      name: "Style ",
+      value,
+      handler,
+    });
+    cb.div.style.marginLeft = indent1;
+    return cb;
   }
 
   private updateContoursDisplay(updateFunction: (view: ViewState) => CivilContourDisplayProps) {
-    const props = updateFunction(this._vp.view);
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.contours = CivilContourDisplay.fromJSON(props);
+    // const props = updateFunction(this._vp.view);
+    // (this._vp.view as ViewState3d).getDisplayStyle3d().settings.contours = CivilContourDisplay.fromJSON(props);
     this.sync();
   }
 
   private resetContoursDisplay(): void {
-    const contours = CivilContourDisplay.fromJSON({});
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.contours = contours;
+    // const contours = CivilContourDisplay.fromJSON({});
+    // (this._vp.view as ViewState3d).getDisplayStyle3d().settings.contours = contours;
     this.sync();
     this.updateContourDisplayUI(this._vp.view);
   }
