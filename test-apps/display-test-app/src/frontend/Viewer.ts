@@ -5,11 +5,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, Id64String } from "@itwin/core-bentley";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
-import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
+import { ColorDef, ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   createWorkerProxy,
+  HitDetail,
   IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
-  PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
+  PaddingPercent, ScreenViewport, TiledGraphicsProvider, TileTreeReference, Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { MarkupApp, MarkupData } from "@itwin/core-markup";
@@ -31,7 +32,7 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
-import { Calculator, CreateCirclesArgs, GraphicCreator } from "./workers/ExampleWorker";
+import { Calculator, CreateCirclesArgs, GraphicCreator, GraphicCreatorResult } from "./workers/ExampleWorker";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -46,14 +47,34 @@ interface CalculatorProxy {
   /** From WorkerProxy, true if `terminate` has been called. */
   readonly isTerminated: boolean;
 }
-// __PUBLISH_EXTRACT_END__
+
+class FeatureProvider implements TiledGraphicsProvider {
+  private static _instance?: FeatureProvider;
+  public trees: TileTreeReference[] = [];
+
+  private constructor(private _vp: Viewport) {
+  }
+
+  public static getInstance(vp: Viewport) {
+    if (this._instance === undefined) {
+      this._instance = new FeatureProvider(vp);
+      vp.addTiledGraphicsProvider(this._instance);
+    }
+    return this._instance;
+  }
+
+  public forEachTileTreeRef(_viewport: ScreenViewport, func: (ref: TileTreeReference) => void): void {
+    for (const tree of this.trees)
+      func(tree);
+  }
+}
 
 async function testGraphicCreator(vp: Viewport) {
   // Instantiate a reusable WorkerProxy for use by the createCircleGraphic function.
   const worker = createWorkerProxy<GraphicCreator>("./lib/scripts/ExampleWorker.js");
 
   // Create a render graphic from a description of a large number of circles, using a WorkerProxy.
-  async function createCircleGraphic(xyzRadius: Float64Array, color: Uint32Array, chordTolerance: number, iModel: IModelConnection): Promise<RenderGraphic | undefined> {
+  async function createCircleGraphic(xyzRadius: Float64Array, color: Uint32Array, chordTolerance: number, iModel: IModelConnection): Promise<GraphicCreatorResult> {
     // Package up the RenderSystem's context to be sent to the Worker.
     const workerContext = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
 
@@ -67,19 +88,37 @@ async function testGraphicCreator(vp: Viewport) {
       chordTolerance,
       context: workerContext,
     };
-    const result = await worker.createCircles(args, transfer);
 
-    // Unpackage the context from the Worker.
-    const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(result.context, iModel);
-
-    // Convert the GraphicDescription into a RenderGraphic.
-    return IModelApp.renderSystem.createGraphicFromDescription({
-      description: result.description,
-      context,
-    });
+    const result =  worker.createCircles(args, transfer);
+    return result;
   }
 
-  await createCircleGraphic(new Float64Array(), new Uint32Array(), 1, vp.iModel);
+  const viewCenter = vp.view.getCenter();
+  const circles = new Float64Array([viewCenter.x, viewCenter.y, viewCenter.z, 1000]);
+  const graphicResult = await createCircleGraphic(circles, new Uint32Array([ColorDef.blue.tbgr]), 1, vp.iModel);
+
+  // Unpackage the context from the Worker.
+  const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(graphicResult.context, vp.iModel);
+
+  // Convert the GraphicDescription into a RenderGraphic.
+  const graphic = await IModelApp.renderSystem.createGraphicFromDescription({
+    description: graphicResult.description,
+    context,
+  });
+
+  if(graphic === undefined)
+    return;
+
+  const inst = FeatureProvider.getInstance(vp);
+
+  inst.trees.push(TileTreeReference.createFromRenderGraphic({
+    graphic,
+    iModel: vp.iModel,
+    modelId: graphicResult.modelId,
+    getToolTip: async (hit: HitDetail) => {
+      return `sourceId: ${hit.sourceId}`;
+    },
+  }));
 }
 
 export async function testCalculator() {
@@ -333,7 +372,7 @@ export class Viewer extends Window {
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue9fc",
       click: async () => {
-        await testCalculator();
+        // await testCalculator();
         await testGraphicCreator(this.viewport);
       },
       tooltip: "Test Worker",

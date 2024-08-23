@@ -2628,6 +2628,7 @@ importers:
       express: ^4.18.2
       express-ws: ^5.0.2
       fs-extra: ^8.1.0
+      glob: ^10.3.12
       internal-tools: workspace:*
       node-simctl: ~7.2.1
       npm-run-all: ^4.1.5
@@ -2639,6 +2640,7 @@ importers:
       rollup-plugin-ignore: ^1.0.10
       rollup-plugin-visualizer: ^5.9.2
       rollup-plugin-webpack-stats: ^0.2.0
+      source-map-loader: ^4.0.0
       ts-node: ^10.8.2
       typescript: ~5.3.3
       vhacd-js: ^0.0.1
@@ -2698,6 +2700,7 @@ importers:
       express: 4.18.2
       express-ws: 5.0.2_express@4.18.2
       fs-extra: 8.1.0
+      glob: 10.3.12
       internal-tools: link:../../tools/internal
       node-simctl: 7.2.1
       npm-run-all: 4.1.5
@@ -2709,6 +2712,7 @@ importers:
       rollup-plugin-ignore: 1.0.10
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
+      source-map-loader: 4.0.0_webpack@5.76.0
       ts-node: 10.8.2_typescript@5.3.3
       typescript: 5.3.3
       vite: 5.3.3
@@ -7013,6 +7017,7 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+    dev: false
 
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
@@ -8489,14 +8494,14 @@ packages:
     resolution: {integrity: sha512-dCIq9FpEcyQyXKCkyzmlPTFNgrCzPudOe+mhvJU5zAtlBnGVy2yKxtfsxK2tQBThwq225jcvBjpw1Gr40uzZCA==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      cross-spawn: 7.0.1
+      cross-spawn: 7.0.3
       signal-exit: 3.0.7
 
   /foreground-child/3.3.0:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
     engines: {node: '>=14'}
     dependencies:
-      cross-spawn: 7.0.1
+      cross-spawn: 7.0.3
       signal-exit: 4.1.0
 
   /form-data-encoder/2.1.4:

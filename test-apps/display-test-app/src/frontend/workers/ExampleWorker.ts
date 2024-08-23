@@ -59,9 +59,10 @@ export interface CreateCirclesArgs {
 }
 
 /** The return type of a GraphicCreator method, returning a description of the graphic and the context for its creation. */
-interface GraphicCreatorResult {
+export interface GraphicCreatorResult {
   context: GraphicDescriptionContextProps;
   description: GraphicDescription;
+  modelId: string;
 }
 
 export interface GraphicCreator {
@@ -104,7 +105,8 @@ registerWorker<GraphicCreator>({
       builder.setSymbology(color, color, 1);
 
       // Assign a unique Id to the circle so it can be interacted with by the user.
-      builder.activatePickableId(context.transientIds.getNext());
+      const circleId = context.transientIds.getNext();
+      builder.activatePickableId(circleId);
 
       // Add the circle to the builder.
       const offset = i * 4;
@@ -128,6 +130,7 @@ registerWorker<GraphicCreator>({
     const result: GraphicCreatorResult = {
       description,
       context: contextProps,
+      modelId,
     };
 
     // Return the graphic description and context, transferring any transferable objects to the main thread.
