@@ -90,7 +90,7 @@ export class CivilContoursSettings implements IDisposable {
     const buttonDiv = document.createElement("div");
     buttonDiv.style.textAlign = "center";
     createButton({
-      value: "Apply",
+      value: "Add",
       handler: () => { this.applyNewTerrain(); },
       parent: buttonDiv,
       inline: true,
