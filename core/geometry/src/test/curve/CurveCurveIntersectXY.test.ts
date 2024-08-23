@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
@@ -571,6 +572,144 @@ describe("CurveCurveIntersectXY", () => {
       dyOuter += 100.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineBsplineMapped");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionOnExtendedPath", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.create(
+      LineString3d.create(Point3d.create(95.24913755203208, 20.36095210703357), Point3d.create(95.24913755203208, 12.748564710980762)),
+      LineString3d.create(Point3d.create(95.24913755203208, 12.748564710980762), Point3d.create(89.42790013152023, 12.74856471098076)),
+      LineString3d.create(Point3d.create(89.42790013152023, 12.74856471098076), Point3d.create(89.42790013152023, 7.375114784355288)),
+      LineString3d.create(Point3d.create(89.42790013152023, 7.375114784355288), Point3d.create(97.67998394741026, 7.3751147843552864)),
+      LineString3d.create(Point3d.create(97.67998394741026, 7.3751147843552864), Point3d.create(97.67998394741026, 2.961209487484229)),
+      LineString3d.create(Point3d.create(97.67998394741026, 2.961209487484229), Point3d.create(102.60564638015066, 2.961209487484229)),
+    );
+
+    let dx = 0;
+    const lineString1 = LineString3d.create(
+      Point3d.create(83.03093593315717, 10.06183974766802), Point3d.create(85.84560018043788, 10.06183974766802),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString1, dx);
+    const intersectionDetails1 = CurveCurve.intersectionProjectedXYPairs(undefined, path, true, lineString1, true);
+    for (const pair of intersectionDetails1)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(1, intersectionDetails1.length, "1 intersection is expected");
+
+    dx += 20;
+    const lineString2 = LineString3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString2, dx);
+    const intersectionDetails2 = CurveCurve.intersectionProjectedXYPairs(undefined, path, true, lineString2, true);
+    for (const pair of intersectionDetails2)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(1, intersectionDetails2.length, "1 intersection is expected");
+
+    dx += 20;
+    const lineString3 = LineString3d.create(Point3d.create(104, 1), Point3d.create(104, 5));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString3, dx);
+    const intersectionDetails3 = CurveCurve.intersectionProjectedXYPairs(undefined, path, true, lineString3, true);
+    for (const pair of intersectionDetails3)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(1, intersectionDetails3.length, "1 intersection is expected");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionOnExtendedPath");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionOnExtendedLoop", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const loop = Loop.create(
+      LineString3d.create(Point3d.create(95.24913755203208, 20.36095210703357), Point3d.create(95.24913755203208, 12.748564710980762)),
+      LineString3d.create(Point3d.create(95.24913755203208, 12.748564710980762), Point3d.create(89.42790013152023, 12.74856471098076)),
+      LineString3d.create(Point3d.create(89.42790013152023, 12.74856471098076), Point3d.create(89.42790013152023, 7.375114784355288)),
+      LineString3d.create(Point3d.create(89.42790013152023, 7.375114784355288), Point3d.create(97.67998394741026, 7.3751147843552864)),
+      LineString3d.create(Point3d.create(97.67998394741026, 7.3751147843552864), Point3d.create(97.67998394741026, 2.961209487484229)),
+      LineString3d.create(Point3d.create(97.67998394741026, 2.961209487484229), Point3d.create(102.60564638015066, 2.961209487484229)),
+      LineString3d.create(Point3d.create(102.60564638015066, 2.961209487484229), Point3d.create(102.60564638015066, 20.36095210703357)),
+      LineString3d.create(Point3d.create(95.24913755203208, 20.36095210703357), Point3d.create(95.24913755203208, 12.748564710980762)),
+    );
+
+    let dx = 0;
+    const lineString1 = LineString3d.create(
+      Point3d.create(83.03093593315717, 10.06183974766802), Point3d.create(85.84560018043788, 10.06183974766802),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString1, dx);
+    const intersectionDetails1 = CurveCurve.intersectionProjectedXYPairs(undefined, loop, true, lineString1, true);
+    for (const pair of intersectionDetails1)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(2, intersectionDetails1.length, "2 intersections are expected");
+
+    dx += 20;
+    const lineString2 = LineString3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString2, dx);
+    const intersectionDetails2 = CurveCurve.intersectionProjectedXYPairs(undefined, loop, true, lineString2, true);
+    for (const pair of intersectionDetails2)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(0, intersectionDetails2.length, "no intersection is expected");
+
+    dx += 20;
+    const lineString3 = LineString3d.create(Point3d.create(104, 1), Point3d.create(104, 5));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString3, dx);
+    const intersectionDetails3 = CurveCurve.intersectionProjectedXYPairs(undefined, loop, true, lineString3, true);
+    for (const pair of intersectionDetails3)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(0, intersectionDetails3.length, "no intersection is expected");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionOnExtendedLoop");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionOnExtendedCurveChainWithDistanceIndex", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.create(
+      LineString3d.create(Point3d.create(95.24913755203208, 20.36095210703357), Point3d.create(95.24913755203208, 12.748564710980762)),
+      LineString3d.create(Point3d.create(95.24913755203208, 12.748564710980762), Point3d.create(89.42790013152023, 12.74856471098076)),
+      LineString3d.create(Point3d.create(89.42790013152023, 12.74856471098076), Point3d.create(89.42790013152023, 7.375114784355288)),
+      LineString3d.create(Point3d.create(89.42790013152023, 7.375114784355288), Point3d.create(97.67998394741026, 7.3751147843552864)),
+      LineString3d.create(Point3d.create(97.67998394741026, 7.3751147843552864), Point3d.create(97.67998394741026, 2.961209487484229)),
+      LineString3d.create(Point3d.create(97.67998394741026, 2.961209487484229), Point3d.create(102.60564638015066, 2.961209487484229)),
+    );
+    const curveChain = CurveChainWithDistanceIndex.createCapture(path);
+
+    let dx = 0;
+    const lineString1 = LineString3d.create(
+      Point3d.create(83.03093593315717, 10.06183974766802), Point3d.create(85.84560018043788, 10.06183974766802),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveChain, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString1, dx);
+    const intersectionDetails1 = CurveCurve.intersectionProjectedXYPairs(undefined, curveChain, true, lineString1, true);
+    for (const pair of intersectionDetails1)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(1, intersectionDetails1.length, "1 intersection is expected");
+
+    dx += 20;
+    const lineString2 = LineString3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveChain, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString2, dx);
+    const intersectionDetails2 = CurveCurve.intersectionProjectedXYPairs(undefined, curveChain, true, lineString2, true);
+    for (const pair of intersectionDetails2)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(1, intersectionDetails2.length, "1 intersection is expected");
+
+    dx += 20;
+    const lineString3 = LineString3d.create(Point3d.create(104, 1), Point3d.create(104, 5));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveChain, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString3, dx);
+    const intersectionDetails3 = CurveCurve.intersectionProjectedXYPairs(undefined, curveChain, true, lineString3, true);
+    for (const pair of intersectionDetails3)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx);
+    ck.testExactNumber(1, intersectionDetails3.length, "1 intersection is expected");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionOnExtendedCurveChainWithDistanceIndex");
     expect(ck.getNumErrors()).equals(0);
   });
   it("IntersectXYWithTolerance", () => {
