@@ -53,3 +53,17 @@ Approximation using `options.sampleMethod = EllipticalArcSampleMethod.AdaptiveSu
 Pictured below are triangulations of a DTM dataset with skirt points. At top is the result using default tolerance. Due to the skirt points having xy-distance greater than the default tolerance from actual terrain sites, they are included in the triangulation, resulting in undesirable near-vertical facets. At bottom is the result using `options.chordTol = 0.002`, which is sufficiently large to remove these artifacts:
 
 ![Toleranced Triangulations](./assets/triangulate-points-tolerance.jpg "Toleranced Triangulations")
+
+### Revert timeline changes
+
+Currently the only way we can undo a faulty changeset is to delete it from imodel hub. This can have many side effects. A more elegant way to do it is to invert the changeset in timeline and push that as new changeset on timeline. This new method is still intrusive and require schema lock. But is safe as it can be again reverted to reinstate existing changes and thus nothing is ever lost from timeline.
+
+[IModelDb.revertAndPushChanges]($core-backend) Allow to push a single changeset that undo all changeset from tip to specified changeset in history.
+
+Some detail and requirements are as following.
+
+- When calling the iModel must not have any local changes.
+- The operation is atomic and if fail it will return db to previous state.
+- Revert operation requires schema lock (exclusive lock on imodel). As it does not take lock on individual element that will be affected by revert.
+- After revert if no description is provided, it will create a default description for changeset and push it. This release schema lock.
+- Schema changes are not reverted in case of SchemaSync or can also optionally skipped when not using schema sync.

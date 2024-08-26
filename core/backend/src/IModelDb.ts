@@ -29,7 +29,7 @@ import {
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
+import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
 import { ChannelControl } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -2774,12 +2774,12 @@ export class BriefcaseDb extends IModelDb {
                 throw e;
               }
             },
-            appParams:{
+            appParams: {
               author: { name: "unknown" },
               origin: { name: "unknown" },
             },
-            close: () => {},
-            initialize: async () => {},
+            close: () => { },
+            initialize: async () => { },
           };
         }
       }
@@ -2990,6 +2990,59 @@ export class BriefcaseDb extends IModelDb {
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
     this.txns.touchWatchFile();
+  }
+
+  /** Revert timeline changes and then push resulting changeset */
+  public async revertAndPushChanges(arg: RevertChangesArgs): Promise<void> {
+    const nativeDb = this[_nativeDb];
+    if (arg.toIndex === undefined) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot revert without a toIndex");
+    }
+    if (nativeDb.hasUnsavedChanges()) {
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot revert with unsaved changes");
+    }
+
+    if (nativeDb.hasPendingTxns()) {
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot revert with pending txns");
+    }
+
+    this.clearCaches();
+    while (true) {
+      await this.pullChanges({ ...arg, toIndex: undefined });
+      if (nativeDb.hasPendingTxns()) {
+        // schema sync create txn on pull. We need to push it.
+        const description = nativeDb.getTxnDescription(nativeDb.getCurrentTxnId());
+        await this.pushChanges({ description, accessToken: arg.accessToken });
+      } else {
+        // prevent any one from pushing changes while we are reverting
+        await this.acquireSchemaLock();
+        break;
+      }
+    }
+
+    if (nativeDb.schemaSyncEnabled()) {
+      arg.skipSchemaChanges = true;
+    }
+    try {
+      await BriefcaseManager.revertTimelineChanges(this, arg);
+      this.saveChanges("Revert changes");
+      if (!arg.description) {
+        arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+      }
+
+      await this.pushChanges({
+        description: arg.description,
+        accessToken: arg.accessToken,
+        mergeRetryCount: arg.mergeRetryCount,
+        mergeRetryDelay: arg.mergeRetryDelay,
+        pushRetryCount: arg.pushRetryCount,
+        pushRetryDelay: arg.pushRetryDelay,
+      });
+      this.clearCaches();
+    } finally {
+      this.abandonChanges();
+      await this.locks.releaseAllLocks();
+    }
   }
 
   /** Push changes to iModelHub. */

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, GuidString, Id64 } from "@itwin/core-bentley";
+import { DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
@@ -501,6 +501,162 @@ describe("Changeset Reader API", async () => {
     }
     rwIModel.close();
   });
+  it("revert timeline changes", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    let nProps = 0;
+    // 1. Import schema with class that span overflow table.
+    const addPropertyAndImportSchema = async () => {
+      await rwIModel.acquireSchemaLock();
+      ++nProps;
+      const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00.${nProps}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i + 1}" typeName="string"/>`).join("\n")}
+        </ECEntityClass>
+    </ECSchema>`;
+      await rwIModel.importSchemaStrings([schema]);
+    };
+    await addPropertyAndImportSchema();
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
+
+    const createEl = async (args: { [key: string]: any }) => {
+      await rwIModel.locks.acquireLocks({ exclusive: drawingModelId });
+      const geomArray: Arc3d[] = [
+        Arc3d.createXY(Point3d.create(0, 0), 5),
+        Arc3d.createXY(Point3d.create(5, 5), 2),
+        Arc3d.createXY(Point3d.create(-5, -5), 20),
+      ];
+      process.env
+      const geometryStream: GeometryStreamProps = [];
+      for (const geom of geomArray) {
+        const arcData = IModelJson.Writer.toIModelJson(geom);
+        geometryStream.push(arcData);
+      }
+
+      const e1 = {
+        classFullName: `TestDomain:Test2dElement`,
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        geom: geometryStream,
+        ...args,
+      };
+      return rwIModel.elements.insertElement(e1);;
+    };
+    const updateEl = async (id: Id64String, args: { [key: string]: any }) => {
+      await rwIModel.locks.acquireLocks({ exclusive: id });
+      const updatedElementProps = Object.assign(rwIModel.elements.getElementProps(id), args);
+      rwIModel.elements.updateElement(updatedElementProps);
+    }
+
+    const deleteEl = async (id: Id64String) => {
+      await rwIModel.locks.acquireLocks({ exclusive: id });
+      rwIModel.elements.deleteElement(id);
+    };
+    const getChanges = async () => {
+      return HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir: path.join(KnownTestLocations.outputDir, rwIModelId, "changesets") });
+    };
+
+    const findEl = (id: Id64String) => {
+      try {
+        return rwIModel.elements.getElementProps(id);
+      } catch (e) {
+        return undefined;
+      }
+    }
+    // 2. Insert a element for the class
+    const el1 = await createEl({ p1: "test1" });
+    const el2 = await createEl({ p1: "test2" });
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "insert 2 elements" });
+
+    // 3. Update the element.
+    await updateEl(el1, { p1: "test3" });
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "update element 1" });
+
+    // 4. Delete the element.
+    await deleteEl(el2);
+    const el3 = await createEl({ p1: "test4" });
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "delete element 2" });
+
+    // 5. import schema and insert element 4 & update element 3
+    await addPropertyAndImportSchema();
+    const el4 = await createEl({ p1: "test5", p2: "test6" });
+    await updateEl(el3, { p1: "test7", p2: "test8" });
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "import schema, insert element 4 & update element 3" });
+
+    assert.isDefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isDefined(findEl(el3));
+    assert.isDefined(findEl(el4));
+    assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
+    // 6. Revert to timeline 2
+    await rwIModel.revertAndPushChanges({ toIndex: 2, description: "revert to timeline 2" });
+    assert.equal((await getChanges()).at(-1)!.description, "revert to timeline 2");
+
+    assert.isUndefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isUndefined(findEl(el3));
+    assert.isUndefined(findEl(el4));
+    assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1"]);
+
+    await rwIModel.revertAndPushChanges({ toIndex: 6, description: "reinstate last reverted changeset" });
+    assert.equal((await getChanges()).at(-1)!.description, "reinstate last reverted changeset");
+    assert.isDefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isDefined(findEl(el3));
+    assert.isDefined(findEl(el4));
+    assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
+
+    await addPropertyAndImportSchema();
+    const el5 = await createEl({ p1: "test9", p2: "test10", p3: "test11" });
+    await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "import schema, insert element 5 & update element 1" });
+    assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+
+    //skip schema changes & auto generated comment
+    await rwIModel.revertAndPushChanges({ toIndex: 1, skipSchemaChanges: true });
+    assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 8 to 1 (schema changes skipped)");
+    assert.isUndefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isUndefined(findEl(el3));
+    assert.isUndefined(findEl(el4));
+    assert.isUndefined(findEl(el5));
+    assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+
+    await rwIModel.revertAndPushChanges({ toIndex: 9 });
+    assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 9 to 9");
+    assert.isDefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isDefined(findEl(el3));
+    assert.isDefined(findEl(el4));
+    assert.isDefined(findEl(el5));
+    assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+    rwIModel.close();
+  });
+
   it("openGroup() & writeToFile()", async () => {
     const adminToken = "super manager token";
     const iModelName = "test";
