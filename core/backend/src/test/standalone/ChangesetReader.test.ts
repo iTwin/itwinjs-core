@@ -544,7 +544,7 @@ describe("Changeset Reader API", async () => {
         Arc3d.createXY(Point3d.create(5, 5), 2),
         Arc3d.createXY(Point3d.create(-5, -5), 20),
       ];
-      process.env
+
       const geometryStream: GeometryStreamProps = [];
       for (const geom of geomArray) {
         const arcData = IModelJson.Writer.toIModelJson(geom);
@@ -565,7 +565,7 @@ describe("Changeset Reader API", async () => {
       await rwIModel.locks.acquireLocks({ exclusive: id });
       const updatedElementProps = Object.assign(rwIModel.elements.getElementProps(id), args);
       rwIModel.elements.updateElement(updatedElementProps);
-    }
+    };
 
     const deleteEl = async (id: Id64String) => {
       await rwIModel.locks.acquireLocks({ exclusive: id });
@@ -581,7 +581,7 @@ describe("Changeset Reader API", async () => {
       } catch (e) {
         return undefined;
       }
-    }
+    };
     // 2. Insert a element for the class
     const el1 = await createEl({ p1: "test1" });
     const el2 = await createEl({ p1: "test2" });
@@ -636,7 +636,7 @@ describe("Changeset Reader API", async () => {
     await rwIModel.pushChanges({ description: "import schema, insert element 5 & update element 1" });
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
-    //skip schema changes & auto generated comment
+    // skip schema changes & auto generated comment
     await rwIModel.revertAndPushChanges({ toIndex: 1, skipSchemaChanges: true });
     assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 8 to 1 (schema changes skipped)");
     assert.isUndefined(findEl(el1));

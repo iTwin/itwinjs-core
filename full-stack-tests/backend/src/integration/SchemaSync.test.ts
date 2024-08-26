@@ -1083,7 +1083,7 @@ describe("Schema synchronization", function (this: Suite) {
         Arc3d.createXY(Point3d.create(5, 5), 2),
         Arc3d.createXY(Point3d.create(-5, -5), 20),
       ];
-      process.env
+
       const geometryStream: GeometryStreamProps = [];
       for (const geom of geomArray) {
         const arcData = IModelJson.Writer.toIModelJson(geom);
@@ -1104,7 +1104,7 @@ describe("Schema synchronization", function (this: Suite) {
       await b1.locks.acquireLocks({ exclusive: id });
       const updatedElementProps = Object.assign(b1.elements.getElementProps(id), args);
       b1.elements.updateElement(updatedElementProps);
-    }
+    };
 
     const deleteEl = async (id: Id64String) => {
       await b1.locks.acquireLocks({ exclusive: id });
@@ -1120,7 +1120,7 @@ describe("Schema synchronization", function (this: Suite) {
       } catch (e) {
         return undefined;
       }
-    }
+    };
     // 2. Insert a element for the class
     const el1 = await createEl({ p1: "test1" });
     const el2 = await createEl({ p1: "test2" });
@@ -1177,7 +1177,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b1.pushChanges({ description: "import schema, insert element 5 & update element 1" });
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
-    //skip schema changes & auto generated comment
+    // skip schema changes & auto generated comment
     await b1.revertAndPushChanges({ toIndex: 2, skipSchemaChanges: true });
     assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 9 to 2 (schema changes skipped)");
     assert.isUndefined(findEl(el1));
