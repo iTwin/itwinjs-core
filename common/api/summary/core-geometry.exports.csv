@@ -117,12 +117,15 @@ public;type;DirectSpiralTypeName
 public;enum;DuplicateFacetClusterSelector
 public;class;Ellipsoid
 public;class;EllipsoidPatch
+public;class;EllipticalArcApproximationOptions
+public;enum;EllipticalArcSampleMethod
 public;class;FacetFaceData
 public;type;FacetIntersectCallback
 public;class;FacetIntersectOptions
 public;interface;FacetLocationDetail
 public;class;FacetLocationDetailPair
 public;interface;FacetProjectedVolumeSums
+public;type;FractionMapper
 public;class;FrameBuilder
 internal;class;GaussMapper
 public;class;GeodesicPathPoint
