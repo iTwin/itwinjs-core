@@ -489,6 +489,7 @@ export class BriefcaseDb extends IModelDb {
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
     pullChanges(arg?: PullChangesArgs): Promise<void>;
     pushChanges(arg: PushChangesArgs): Promise<void>;
+    revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
@@ -553,6 +554,8 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps[]>;
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
+    // @internal (undocumented)
+    static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
 }
 
 // @public
@@ -4679,6 +4682,13 @@ export class RepositoryModel extends DefinitionModel {
 export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcaseProps {
     onProgress?: ProgressFunction;
 }
+
+// @public
+export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
+    onProgress?: ProgressFunction;
+    toIndex: ChangesetIndex;
+    skipSchemaChanges?: true;
+};
 
 // @public
 export abstract class RoleElement extends Element_2 {
