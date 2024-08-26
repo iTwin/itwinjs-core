@@ -19,9 +19,7 @@ export class SheetIndexPartition extends InformationPartitionElement {
  * @beta
  */
 export class SheetIndex extends InformationReferenceElement {
-  public static override get className(): string {
-    return "SheetIndex";
-  }
+  public static override get className(): string { return "SheetIndex"; }
 
   /** Create a Code for a SheetIndex given a name that is meant to be unique within the scope of the specified SheetIndexModel.
    * @param iModel  The IModelDb
@@ -68,9 +66,7 @@ export class SheetIndex extends InformationReferenceElement {
  * @beta
 */
 export abstract class SheetIndexEntry extends InformationReferenceElement {
-  public static override get className(): string {
-    return "SheetIndexEntry";
-  }
+  public static override get className(): string { return "SheetIndexEntry"; }
   /** Can be used to prioritize or order members within a SheetIndex or SheetIndexFolder. */
   public entryPriority: number;
 
@@ -123,9 +119,7 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
  * @beta
  */
 export class SheetIndexFolder extends SheetIndexEntry {
-  public static override get className(): string {
-    return "SheetIndexFolder";
-  }
+  public static override get className(): string { return "SheetIndexFolder"; }
 
   /** Create a new SheetIndexFolder
    * @param iModelDb The iModel
@@ -174,9 +168,7 @@ export class SheetIndexFolder extends SheetIndexEntry {
  * @beta
 */
 export class SheetIndexReference extends SheetIndexEntry {
-  public static override get className(): string {
-    return "SheetIndexReference";
-  }
+  public static override get className(): string { return "SheetIndexReference"; }
   /** The bis:SheetIndex that this bis:SheetIndexReference is pointing to. */
   public sheetIndex?: SheetIndexReferenceRefersToSheetIndex;
   protected constructor(props: SheetIndexReferenceProps, iModel: IModelDb) {
@@ -261,9 +253,7 @@ export class SheetIndexReference extends SheetIndexEntry {
  * @beta
 */
 export class SheetReference extends SheetIndexEntry {
-  public static override get className(): string {
-    return "SheetReference";
-  }
+  public static override get className(): string { return "SheetReference"; }
   /** The bis:Sheet that this bis:SheetReference is pointing to. */
   public sheet: SheetReferenceRefersToSheet | undefined;
   protected constructor(props: SheetReferenceProps, iModel: IModelDb) {
