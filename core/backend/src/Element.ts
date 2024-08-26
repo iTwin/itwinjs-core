@@ -1339,6 +1339,15 @@ export class SpatialLocationPartition extends InformationPartitionElement {
   public static override get className(): string { return "SpatialLocationPartition"; }
 }
 
+/** A SheetIndexPartition element establishes a *Sheet Index* modeling perspective for its parent Subject
+ * A SheetIndexPartition is always sub-modeled by a SheetIndexModel.
+ * @see [[SheetIndexModel]]
+ * @beta
+ */
+export class SheetIndexPartition extends InformationPartitionElement {
+  public static override get className(): string { return "SheetIndexPartition"; }
+}
+
 /** Group Information is an abstract base class for modeling entities whose main purpose is to reference a group of related elements.
  * @public
  */

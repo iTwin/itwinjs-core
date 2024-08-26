@@ -1,17 +1,8 @@
 import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, EntityReferenceSet, IModelError, RelatedElementProps, SheetIndexEntryProps, SheetIndexFolderProps, SheetIndexReferenceProps, SheetReferenceProps } from "@itwin/core-common";
-import { InformationPartitionElement, InformationReferenceElement, Sheet } from "./Element";
+import { InformationReferenceElement, Sheet } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "./NavigationRelationship";
-
-/** A SheetIndexPartition element establishes a *Sheet Index* modeling perspective for its parent Subject
- * A SheetIndexPartition is always sub-modeled by a SheetIndexModel.
- * @see [[SheetIndexModel]]
- * @beta
- */
-export class SheetIndexPartition extends InformationPartitionElement {
-  public static override get className(): string { return "SheetIndexPartition"; }
-}
 
 /**
  * A bis:InformationReferenceElement used to organize bis:Sheet instances into a hierarchy with the assistance
