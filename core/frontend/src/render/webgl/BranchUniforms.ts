@@ -105,11 +105,7 @@ export class BranchUniforms {
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
-    if (branch.overrideClipStyle) {
-      this.overrideClipStyle = true;
-    } else {
-      this.overrideClipStyle = false;
-    }
+    this.overrideClipStyle = !!branch.overrideClipStyle
 
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
