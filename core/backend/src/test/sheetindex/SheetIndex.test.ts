@@ -72,7 +72,7 @@ const insertCodeSpec = async (iModel: IModelDb) => {
   iModel.codeSpecs.insert(entrySpec);
 };
 
-describe.only("SheetIndex", () => {
+describe("SheetIndex", () => {
   let iModel: SnapshotDb;
 
   beforeEach(async () => {
