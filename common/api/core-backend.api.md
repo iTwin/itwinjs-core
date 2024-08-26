@@ -175,13 +175,11 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
-import { QueryRowFormat } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
-import { RelatedElementProps } from '@itwin/core-common';
 import { RelationshipProps } from '@itwin/core-common';
 import { RemoveFunction } from '@itwin/core-common';
 import { RenderMaterialProps } from '@itwin/core-common';
@@ -192,7 +190,6 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
-import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -200,10 +197,7 @@ import { SectionType } from '@itwin/core-common';
 import { ServerStorage } from '@itwin/object-storage-core';
 import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
-import { SheetIndexEntryProps } from '@itwin/core-common';
-import { SheetIndexReferenceProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
-import { SheetReferenceProps } from '@itwin/core-common';
 import { SheetTemplateProps } from '@itwin/core-common';
 import { SnapRequestProps } from '@itwin/core-common';
 import { SnapResponseProps } from '@itwin/core-common';
@@ -1327,16 +1321,6 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
-export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
-
-// @beta
-export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
-    graphemeCharIndexes: number[];
-    paragraphIndex: number;
-    runLayoutResult: RunLayoutResult;
-}
-
-// @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @public
@@ -1841,11 +1825,6 @@ export class ECSqlInsertResult {
 }
 
 // @public
-export interface ECSqlRowArg {
-    rowFormat?: QueryRowFormat;
-}
-
-// @public
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     bindArray(parameter: number | string, val: any[]): void;
@@ -1869,13 +1848,11 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
-    // @internal (undocumented)
-    formatCurrentRow(currentResp: any, rowFormat?: QueryRowFormat): any[] | object;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
     // @internal
     getNativeSql(): string;
-    getRow(args?: ECSqlRowArg): any;
+    getRow(): any;
     getValue(columnIx: number): ECSqlValue;
     get isPrepared(): boolean;
     next(): IteratorResult<any>;
@@ -4969,35 +4946,10 @@ export class SheetBorderTemplate extends Document_2 {
 }
 
 // @beta
-export class SheetIndex extends InformationReferenceElement {
+export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
-    static get className(): string;
-    static create(iModelDb: IModelDb, modelId: Id64String, name: string): SheetIndex;
-    static createCode(iModel: IModelDb, scopeSheetIndexModelId: CodeScopeProps, codeValue: string): Code;
-    static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String;
-}
-
-// @beta
-export abstract class SheetIndexEntry extends InformationReferenceElement {
-    protected constructor(props: SheetIndexEntryProps, iModel: IModelDb);
-    // (undocumented)
-    static get className(): string;
-    static createCode(iModelDb: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // (undocumented)
-    protected static createParentRelationshipProps(iModelDb: IModelDb, id: Id64String): RelatedElementProps;
-    // (undocumented)
-    protected static createProps(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number): SheetIndexEntryProps;
-    entryPriority: number;
-    // (undocumented)
-    toJSON(): SheetIndexEntryProps;
-}
-
-// @beta
-export class SheetIndexFolder extends SheetIndexEntry {
-    // (undocumented)
-    static get className(): string;
-    static create(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number): SheetIndexFolder;
-    static insert(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number): Id64String;
+    static classFullName: string;
 }
 
 // @beta
@@ -5008,21 +4960,23 @@ export class SheetIndexModel extends InformationModel {
 }
 
 // @beta
+export class SheetIndexOwnsEntries extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
 export class SheetIndexPartition extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
 }
 
 // @beta
-export class SheetIndexReference extends SheetIndexEntry {
-    protected constructor(props: SheetIndexReferenceProps, iModel: IModelDb);
+export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
+    constructor(sheetIndexId: Id64String, relClassName?: string);
     // (undocumented)
-    static get className(): string;
-    // (undocumented)
-    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
-    static create(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number, sheetIndex?: Id64String): SheetIndexReference;
-    static insert(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number, sheetIndex?: Id64String): Id64String;
-    sheetIndex?: SheetIndex;
+    static classFullName: string;
 }
 
 // @public
@@ -5032,15 +4986,10 @@ export class SheetModel extends GraphicalModel2d {
 }
 
 // @beta
-export class SheetReference extends SheetIndexEntry {
-    protected constructor(props: SheetReferenceProps, iModel: IModelDb);
+export class SheetReferenceRefersToSheet extends RelatedElement {
+    constructor(sheetId: Id64String, relClassName?: string);
     // (undocumented)
-    static get className(): string;
-    // (undocumented)
-    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
-    static create(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number, sheet?: Id64String): SheetReference;
-    static insert(iModelDb: IModelDb, sheetIndexModel: Id64String, parentId: Id64String, name: string, priority: number, sheet?: Id64String): Id64String;
-    sheet: Sheet | undefined;
+    static classFullName: string;
 }
 
 // @public
@@ -5223,9 +5172,6 @@ export class SqliteChangesetReader implements IDisposable {
     static openFile(args: {
         readonly fileName: string;
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
-    static openGroup(args: {
-        readonly changesetFiles: string[];
-    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     static openLocalChanges(args: {
         iModel: IModelJsNative.DgnDb;
         includeInMemoryChanges?: true;
@@ -5233,11 +5179,6 @@ export class SqliteChangesetReader implements IDisposable {
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
-    writeToFile(args: {
-        fileName: string;
-        containsSchemaChanges: boolean;
-        overwriteFile?: boolean;
-    }): void;
 }
 
 // @beta

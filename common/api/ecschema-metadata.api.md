@@ -1238,8 +1238,6 @@ export abstract class Property implements CustomAttributeContainerProps {
     // @internal
     protected setIsReadOnly(isReadOnly: boolean): void;
     // @internal
-    protected setKindOfQuantity(kindOfQuantity: LazyLoadedKindOfQuantity): void;
-    // @internal
     protected setLabel(label: string): void;
     // (undocumented)
     protected setName(name: ECName): void;
@@ -1363,7 +1361,7 @@ export enum PropertyType {
 }
 
 // @beta (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
 
 // @beta (undocumented)
 export namespace PropertyTypeUtils {

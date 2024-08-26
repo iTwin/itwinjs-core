@@ -756,14 +756,10 @@ public;class;ServerTimeoutError
 public;interface;SessionProps
 beta;interface;SheetBorderTemplateProps
 beta;interface;SheetIndexEntryProps
-beta;class;SheetIndexFolderOwnsEntries
 beta;type;SheetIndexFolderProps
-beta;class;SheetIndexOwnsEntries
 beta;interface;SheetIndexReferenceProps
-beta;class;SheetIndexReferenceRefersToSheetIndex
 public;interface;SheetProps
 beta;interface;SheetReferenceProps
-beta;class;SheetReferenceRefersToSheet
 beta;interface;SheetTemplateProps
 internal;class;SilhouetteEdgeArgs
 public;class;SkyBox

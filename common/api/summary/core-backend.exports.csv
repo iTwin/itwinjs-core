@@ -57,8 +57,6 @@ internal;interface;BisCodeSpecIndexProps
 internal;interface;FontIndexProps
 public;class;CodeSpecs
 public;interface;ComputedProjectExtents
-beta;function;computeGraphemeOffsets
-beta;interface;ComputeGraphemeOffsetsArgs
 beta;function;computeLayoutTextBlockResult
 public;interface;ComputeProjectExtentsOptions
 alpha;type;ConcreteEntity
@@ -116,7 +114,6 @@ beta;class;ECSchemaXmlContext
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
 public;class;ECSqlInsertResult
-public;interface;ECSqlRowArg
 public;class;ECSqlStatement
 public;class;ECSqlValue
 public;class;ECSqlValueIterator
@@ -364,14 +361,13 @@ beta;namespace;SettingsPriority
 beta;interface;SettingsSchemas
 public;class;Sheet
 public;class;SheetBorderTemplate
-beta;class;SheetIndex
-beta;class;SheetIndexEntry
-beta;class;SheetIndexFolder
+beta;class;SheetIndexFolderOwnsEntries
 beta;class;SheetIndexModel
+beta;class;SheetIndexOwnsEntries
 beta;class;SheetIndexPartition
-beta;class;SheetIndexReference
+beta;class;SheetIndexReferenceRefersToSheetIndex
 public;class;SheetModel
-beta;class;SheetReference
+beta;class;SheetReferenceRefersToSheet
 public;class;SheetTemplate
 public;class;SheetViewDefinition
 public;class;SnapshotDb

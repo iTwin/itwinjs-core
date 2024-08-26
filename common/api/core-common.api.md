@@ -8955,32 +8955,11 @@ export interface SheetIndexEntryProps extends ElementProps {
 }
 
 // @beta
-export class SheetIndexFolderOwnsEntries extends RelatedElement {
-    constructor(parentId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
-}
-
-// @beta
 export type SheetIndexFolderProps = SheetIndexEntryProps;
 
 // @beta
-export class SheetIndexOwnsEntries extends RelatedElement {
-    constructor(parentId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
-}
-
-// @beta
 export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
-    sheetIndex?: Id64String;
-}
-
-// @beta
-export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
-    constructor(parentId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
+    sheetIndex?: RelatedElementProps;
 }
 
 // @public
@@ -8999,14 +8978,7 @@ export interface SheetProps extends ElementProps {
 
 // @beta
 export interface SheetReferenceProps extends SheetIndexEntryProps {
-    sheet?: Id64String;
-}
-
-// @beta
-export class SheetReferenceRefersToSheet extends RelatedElement {
-    constructor(parentId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
+    sheet?: RelatedElementProps;
 }
 
 // @beta

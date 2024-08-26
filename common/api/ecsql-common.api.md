@@ -1085,13 +1085,13 @@ export abstract class StatementExpr extends Expr {
 
 // @alpha
 export class SubqueryExpr extends ValueExpr {
-    constructor(query: SelectStatementExpr | CteExpr);
+    constructor(query: SelectStatementExpr);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
     static deserialize(node: NativeECSqlParseNode): SubqueryExpr;
     // (undocumented)
-    readonly query: SelectStatementExpr | CteExpr;
+    readonly query: SelectStatementExpr;
     // (undocumented)
     static readonly type = ExprType.Subquery;
     // (undocumented)
