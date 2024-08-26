@@ -109,6 +109,29 @@ describe.only("SheetIndex", () => {
   });
 
   describe("Update", () => {
+    it("Priority", () => {
+      const subjectId = iModel.elements.getRootSubject().id;
+
+      const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
+      expect(Id64.isValidId64(modelId)).to.be.true;
+
+      const sheetIndex1Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
+      expect(Id64.isValidId64(sheetIndex1Id)).to.be.true;
+
+      const folderId = SheetIndexFolder.insert(iModel, modelId, sheetIndex1Id, "TestFolder", 1);
+      expect(Id64.isValidId64(folderId)).to.be.true;
+
+      const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
+      expect(folder).to.not.be.undefined;
+      expect(folder?.entryPriority).equals(1);
+
+      folder!.entryPriority = 0;
+      folder!.update();
+
+      const folderPostUpdate = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
+      expect(folderPostUpdate?.entryPriority).equals(0);
+    });
+
     it("Parent", () => {
       const subjectId = iModel.elements.getRootSubject().id;
 
@@ -259,6 +282,22 @@ describe.only("SheetIndex", () => {
       expect(folder?.parent?.id).equals(sheetIndexId);
     });
 
+    it("Should not insert SheetIndexFolder with the same name", async () => {
+      const subjectId = iModel.elements.getRootSubject().id;
+
+      const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
+      expect(Id64.isValidId64(modelId)).to.be.true;
+      const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
+      expect(Id64.isValidId64(sheetIndex)).to.be.true;
+
+      const folder = SheetIndexFolder.insert(iModel, modelId, sheetIndex, "TestFolder", 1);
+      expect(Id64.isValidId64(folder)).to.be.true;
+
+      const failInsert = () => SheetIndexFolder.insert(iModel, modelId, sheetIndex, "TestFolder", 0);
+
+      expect(failInsert).throws();
+    });
+
     it("Should have children", async () => {
       const subjectId = iModel.elements.getRootSubject().id;
 
@@ -285,6 +324,22 @@ describe.only("SheetIndex", () => {
   });
 
   describe("SheetReferences", () => {
+    it("Should not insert SheetReferences with the same name", async () => {
+      const subjectId = iModel.elements.getRootSubject().id;
+
+      const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
+      expect(Id64.isValidId64(modelId)).to.be.true;
+      const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
+      expect(Id64.isValidId64(sheetIndex)).to.be.true;
+
+      const sheetRef1 = SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef", 1);
+      expect(Id64.isValidId64(sheetRef1)).to.be.true;
+
+      const failInsert = () => SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef", 0);
+
+      expect(failInsert).throws();
+    });
+
     it("Should insert SheetReferences without a Sheet", async () => {
       const subjectId = iModel.elements.getRootSubject().id;
 
@@ -319,10 +374,41 @@ describe.only("SheetIndex", () => {
 
       expect(ref?.sheet?.id).equals(sheetId);
     });
+
+    it.skip("Should not insert with the same Sheet twice", async () => {
+      const subjectId = iModel.elements.getRootSubject().id;
+      const sheetId = await insertSheet(iModel, "sheet-1");
+
+      const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
+      expect(Id64.isValidId64(modelId)).to.be.true;
+      const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
+
+      SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef-1", 1, sheetId);
+
+      const sameIndex = () => SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef-2", 2, sheetId);
+
+      expect(sameIndex).throws();
+    });
   });
 
   describe("SheetIndexReferences", () => {
-    it("Should insert SheetReferences without a Sheet", async () => {
+    it("Should not insert SheetIndexReferences with the same name", async () => {
+      const subjectId = iModel.elements.getRootSubject().id;
+
+      const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
+      expect(Id64.isValidId64(modelId)).to.be.true;
+      const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
+      expect(Id64.isValidId64(sheetIndex)).to.be.true;
+
+      const sheetIndexRef = SheetIndexReference.insert(iModel, modelId, sheetIndex, "TestSheetIndexRef", 1);
+      expect(Id64.isValidId64(sheetIndexRef)).to.be.true;
+
+      const failInsert = () => SheetIndexReference.insert(iModel, modelId, sheetIndex, "TestSheetIndexRef", 0);
+
+      expect(failInsert).throws();
+    });
+
+    it("Should insert SheetIndexReferences without a SheetIndexRef", async () => {
       const subjectId = iModel.elements.getRootSubject().id;
 
       const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
@@ -334,7 +420,7 @@ describe.only("SheetIndex", () => {
       expect(Id64.isValidId64(sheetRef)).to.be.true;
     });
 
-    it("Should insert and with a Sheet", async () => {
+    it("Should insert and with a SheetIndexRef", async () => {
       const subjectId = iModel.elements.getRootSubject().id;
 
       const modelId = SheetIndexModel.insert(iModel, subjectId, "TestSheetIndexModel");
