@@ -155,6 +155,10 @@ export interface GraphicBranchOptions {
    * @internal
    */
   viewAttachmentId?: Id64String;
+  /** If true, any clip in this branch will override the view's [[DisplayStyleSettings.clipStyle]],
+   * and no [[ClipStyle.insideColor]] or [[ClipStyle.outsideColor]] will be applied.
+   */
+  overrideClipStyle?: boolean;
 }
 
 /** Clip/Transform for a branch that are varied over time.

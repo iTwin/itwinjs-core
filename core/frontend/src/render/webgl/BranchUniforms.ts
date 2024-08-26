@@ -70,6 +70,8 @@ export class BranchUniforms {
   private readonly _scratchVIModelMatrix = Transform.createIdentity();
   private readonly _zeroPoint = new Point3d(0, 0, 0);
 
+  public overrideClipStyle = false;
+
   public get stack(): BranchStack { return this._stack; }
 
   public constructor(target: Target) {
@@ -103,6 +105,12 @@ export class BranchUniforms {
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
+    if (branch.overrideClipStyle) {
+      this.overrideClipStyle = true;
+    } else {
+      this.overrideClipStyle = false;
+    }
+
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
 

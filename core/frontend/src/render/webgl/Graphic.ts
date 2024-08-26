@@ -311,6 +311,7 @@ export class Branch extends Graphic {
   public readonly appearanceProvider?: FeatureAppearanceProvider;
   public readonly secondaryClassifiers?: PlanarClassifier[];
   public readonly viewAttachmentId?: Id64String;
+  public readonly overrideClipStyle?: boolean;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -328,6 +329,7 @@ export class Branch extends Graphic {
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
     this.viewAttachmentId = opts.viewAttachmentId;
+    this.overrideClipStyle = opts.overrideClipStyle;
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);

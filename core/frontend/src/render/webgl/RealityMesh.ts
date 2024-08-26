@@ -376,7 +376,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
     }
 
-    return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity());
+    return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity(), {overrideClipStyle: true});
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

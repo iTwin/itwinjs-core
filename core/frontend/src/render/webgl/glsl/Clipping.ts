@@ -99,13 +99,13 @@ const applyClipPlanesPostlude = `
 
   numSetsClippedBy += int(clippedByCurrentPlaneSet);
   if (numSetsClippedBy == numPlaneSets) {
-    if (u_outsideRgba.a > 0.0) {
+    if (!u_overrideClipStyle && (u_outsideRgba.a > 0.0)) {
       g_clipColor = u_outsideRgba.rgb;
       return bvec2(true,false);
     } else {
       discard;
     }
-  } else if (u_insideRgba.a > 0.0) {
+  } else if (!u_overrideClipStyle && (u_insideRgba.a > 0.0)) {
     g_clipColor = u_insideRgba.rgb;
     return bvec2(true,false);
   }
@@ -148,6 +148,12 @@ export function addClipping(prog: ProgramBuilder) {
   prog.addUniform("u_insideRgba", VariableType.Vec4, (program) => {
     program.addGraphicUniform("u_insideRgba", (uniform, params) => {
       params.target.uniforms.branch.clipStack.insideColor.bind(uniform);
+    });
+  });
+
+  prog.addUniform("u_overrideClipStyle", VariableType.Boolean, (program) => {
+    program.addGraphicUniform("u_overrideClipStyle", (uniform, params) => {
+      uniform.setUniform1i(params.target.uniforms.branch.overrideClipStyle ? 1 : 0);
     });
   });
 

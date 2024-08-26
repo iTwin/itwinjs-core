@@ -45,6 +45,10 @@ export interface BranchStateOptions {
   forceViewCoords?: boolean;
   readonly viewAttachmentId?: Id64String;
   groupNodeId?: number;
+  /** If true, any clip in this branch will override the view's [[DisplayStyleSettings.clipStyle]],
+   * and no [[ClipStyle.insideColor]] or [[ClipStyle.outsideColor]] will be applied.
+   */
+  overrideClipStyle?: boolean;
 }
 
 /**
@@ -71,6 +75,7 @@ export class BranchState {
   public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
   public get viewAttachmentId() { return this._opts.viewAttachmentId; }
   public get groupNodeId() { return this._opts.groupNodeId; }
+  public get clipStyle() { return this._opts.overrideClipStyle;}
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -105,6 +110,7 @@ export class BranchState {
       realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
       viewAttachmentId: branch.viewAttachmentId ?? prev.viewAttachmentId,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
+      overrideClipStyle: branch.overrideClipStyle,
     });
   }
 
