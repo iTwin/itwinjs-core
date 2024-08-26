@@ -8,10 +8,11 @@ import { BisCodeSpec, CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedEle
 
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
-import { DocumentPartition, Sheet, SheetIndex, SheetIndexFolder, SheetIndexReference, SheetReference } from "../../Element";
+import { DocumentPartition, Sheet } from "../../Element";
 import { expect } from "chai";
 import { DocumentListModel, SheetIndexModel, SheetModel } from "../../Model";
 import { ElementOwnsChildElements, SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "../../NavigationRelationship";
+import { SheetIndex, SheetIndexFolder, SheetIndexReference, SheetReference } from "../../SheetIndex";
 
 export const getOrCreateDocumentList = async (iModel: IModelDb): Promise<Id64String> => {
   const documentListName = "SheetList";

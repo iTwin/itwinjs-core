@@ -14,11 +14,12 @@ import {
   AxisAlignedBox3d, ElementProps, EntityReferenceSet, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel,
   InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
-import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
+import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 import { _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { SheetIndexPartition } from "./SheetIndex";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta
