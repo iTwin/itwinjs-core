@@ -1036,7 +1036,7 @@ describe("Schema synchronization", function (this: Suite) {
     });
     HubMock.shutdown();
   });
-  it.only("revert timeline changes", async () => {
+  it("revert timeline changes", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
     HubMock.startup("test", KnownTestLocations.outputDir);
     const adminToken = "super manager token";
