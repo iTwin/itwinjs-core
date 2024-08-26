@@ -847,7 +847,7 @@ describe("Formatting tests:", () => {
     }
   });
 
-  it.only("deserialization of Formats is consistent", async () => {
+  it("deserialization of Formats is consistent", async () => {
     const unitsProvider = new TestUnitsProvider();
     const formatPropsArray: FormatProps[] = [
       {

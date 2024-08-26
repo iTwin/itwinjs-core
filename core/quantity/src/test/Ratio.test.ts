@@ -29,7 +29,7 @@ describe("Ratio Type Tests", () => {
     const v_h: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
     assert.isTrue(v_h.isValid);
 
-    const ratioFormatterSpec = await FormatterSpec.create(`${ratioType}`, ratioFormat, unitsProvider, v_h);
+    const ratioFormatterSpec = await FormatterSpec.create(`${ratioType}`, ratioFormat, unitsProvider, v_h); //persisted unit
 
     for (const entry of testData) {
       if (null != entry.precision)
@@ -40,7 +40,7 @@ describe("Ratio Type Tests", () => {
   }
 
   describe("RatioType Tests", () => {
-    it.only("ratiotype OneToN", async () => {
+    it("ratiotype OneToN", async () => {
       const testData: { input: number; ratio: string; }[] = [
         { input: 0.0, ratio: "1:0" },
         { input: 1.0, ratio: "1:1" },
@@ -55,7 +55,7 @@ describe("Ratio Type Tests", () => {
       await testRatioType("OneToN", testData);
     });
 
-    it.only("ratiotype NToOne", async () => {
+    it("ratiotype NToOne", async () => {
       const testData: { input: number; ratio: string; }[] = [
         { input: 0.0, ratio: "0:1" },
         { input: 1.0, ratio: "1:1" },
@@ -70,7 +70,7 @@ describe("Ratio Type Tests", () => {
       await testRatioType("NToOne", testData);
     });
 
-    it.only("ratioType valueBased", async () => {
+    it("ratioType valueBased", async () => {
       const testData: { input: number; ratio: string; }[] = [
         { input: 0.0, ratio: "1:0" },
         { input: 1.0, ratio: "1:1" },
@@ -88,7 +88,7 @@ describe("Ratio Type Tests", () => {
       await testRatioType("ValueBased", testData);
     });
 
-    it.only("ratioType UseGreatestCommonDivisor", async () => {
+    it("ratioType UseGreatestCommonDivisor", async () => {
       const testData: { input: number; ratio: string; }[] = [
         { input: 0.0, ratio: "1:0" }, // Special case
         { input: 1.0, ratio: "1:1" },
@@ -105,7 +105,7 @@ describe("Ratio Type Tests", () => {
   });
 
   describe("RatioType Tests with different precision", () => {
-    it.only("ratioType precision test | One To N", async () => {
+    it("ratioType precision test | One To N", async () => {
       const testData: { input: number; ratio: string; precision: number}[] = [
         { input: 3, ratio: "1:0", precision: 0 },
         { input: 3, ratio: "1:0.3", precision: 1 },
@@ -117,7 +117,7 @@ describe("Ratio Type Tests", () => {
       await testRatioType("OneToN", testData);
     });
 
-    it.only("ratioType precision test | NToOne", async () => {
+    it("ratioType precision test | NToOne", async () => {
       const testData: { input: number; ratio: string; precision: number}[] = [
         { input: 3, ratio: "3:1", precision: 0 },
         { input: 3, ratio: "3:1", precision: 1 },
@@ -127,7 +127,7 @@ describe("Ratio Type Tests", () => {
       await testRatioType("NToOne", testData);
     });
 
-    it.only("ratioType precision test | valueBased", async () => {
+    it("ratioType precision test | valueBased", async () => {
       const testData: { input: number; ratio: string; precision: number}[] = [
         { input: 3, ratio: "3:1", precision: 0 },
         { input: 3, ratio: "3:1", precision: 1 },
@@ -137,7 +137,7 @@ describe("Ratio Type Tests", () => {
       await testRatioType("ValueBased", testData);
     });
 
-    it.only("ratioType precision test | UseGreatestCommonDivisor", async () => {
+    it("ratioType precision test | UseGreatestCommonDivisor", async () => {
       const testData: { input: number; ratio: string; precision: number}[] = [
         { input: 3, ratio: "1:0", precision: 0 },
         { input: 3, ratio: "10:3", precision: 1 },
@@ -150,11 +150,105 @@ describe("Ratio Type Tests", () => {
     });
   });
 
-  // serialize and deserialize tests
-  // describe("Serialize and Deserialize Tests", () => {
-  // }
+  describe("ratio formatting that should throw an error", () => {
+    it("should throw an error if ratioType is not provided", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
+          ],
+        }
+      };
 
-  // ratio formatting that should throw an error
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("Ratio");
+      try {
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect.fail("Expected error was not thrown");
+      } catch (e: any){
+        assert.strictEqual(e.message, "The Format Ratio is 'Ratio' type therefore the attribute 'ratioType' is required.")
+        assert.instanceOf(e, QuantityError);
+      }
+    });
 
+    it("should throw an error if ratioType is invalid", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "someInvalidType",
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
+          ],
+        }
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("Ratio");
+      try {
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect.fail("Expected error was not thrown");
+      } catch (e: any){
+        assert.strictEqual(e.message, "The Format Ratio has an invalid 'ratioType' attribute.")
+        assert.instanceOf(e, QuantityError);
+      }
+    });
+
+    it("should throw an error if presentation unit is invalid", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "OneToN",
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "Units.M" }, // presentation unit
+          ],
+        }
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("Ratio");
+      try {
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        const v_h: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
+        const ratioFormatterSpec = await FormatterSpec.create(`InvalidPresentationUnit`, ratioFormat, unitsProvider, v_h);
+        Formatter.formatQuantity(2.0, ratioFormatterSpec);
+        expect.fail("Expected error was not thrown");
+      } catch (e: any){
+        assert.strictEqual(e.message, "The Format Ratio has an invalid presentation unit.")
+        assert.instanceOf(e, QuantityError);
+      }
+    });
+
+    it("should throw an error if persistence unit is invalid", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "OneToN",
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
+          ],
+        }
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("Ratio");
+      try {
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        const v_h: UnitProps = await unitsProvider.findUnitByName("Units.M");
+        const ratioFormatterSpec = await FormatterSpec.create(`InvalidPersistentUnit`, ratioFormat, unitsProvider, v_h);
+        Formatter.formatQuantity(2.0, ratioFormatterSpec);
+        expect.fail("Expected error was not thrown");
+      } catch (e: any){
+        assert.strictEqual(e.message, "The Format Ratio has an invalid persistence unit.")
+        assert.instanceOf(e, QuantityError);
+      }
+    });
+
+
+  });
 
 });
