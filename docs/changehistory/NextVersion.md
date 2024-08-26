@@ -56,14 +56,14 @@ Pictured below are triangulations of a DTM dataset with skirt points. At top is 
 
 ### Revert timeline changes
 
-Currently the only way we can undo a faulty changeset is to delete it from imodel hub. This can have many side effects. A more elegant way to do it is to invert the changeset in timeline and push that as new changeset on timeline. This new method is still intrusive and require schema lock. But is safe as it can be again reverted to reinstate existing changes and thus nothing is ever lost from timeline.
+At present, the sole method to reverse a defective changeset is to remove it from the iModel hub, which can lead to numerous side effects. A preferable approach would be to reverse the changeset in the timeline and introduce it as a new changeset. Although this method remains intrusive and necessitates a schema lock, it is safer because it allows for the reversal to restore previous changes, ensuring that nothing is permanently lost from the timeline.
 
 [IModelDb.revertAndPushChanges]($core-backend) Allow to push a single changeset that undo all changeset from tip to specified changeset in history.
 
 Some detail and requirements are as following.
 
-- When calling the iModel must not have any local changes.
-- The operation is atomic and if fail it will return db to previous state.
-- Revert operation requires schema lock (exclusive lock on imodel). As it does not take lock on individual element that will be affected by revert.
-- After revert if no description is provided, it will create a default description for changeset and push it. This release schema lock.
-- Schema changes are not reverted in case of SchemaSync or can also optionally skipped when not using schema sync.
+- When invoking the iModel, it must not have any local modifications.
+- The operation is atomic; if it fails, the database will revert to its previous state.
+- The revert operation necessitates a schema lock (an exclusive lock on the iModel) because it does not lock each individual element affected by the revert.
+- If no description is provided after a revert, a default description for the changeset will be created and pushed, which releases the schema lock.
+- Schema changes are not reverted during SchemaSync, or they can be optionally skipped when SchemaSync is not utilized.
