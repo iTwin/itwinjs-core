@@ -435,30 +435,7 @@ export class Format extends BaseFormat {
     const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
     const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
 
-    if (this.customProps)
-      return {
-        type: formatTypeToString(this.type),
-        precision: this.precision,
-        roundFactor: this.roundFactor,
-        minWidth: this.minWidth,
-        showSignOption: showSignOptionToString(this.showSignOption),
-        formatTraits: formatTraitsToArray(this.formatTraits),
-        decimalSeparator: this.decimalSeparator,
-        thousandSeparator: this.thousandSeparator,
-        uomSeparator: this.uomSeparator,
-        scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
-        ratioType: this.ratioType ? ratioTypeToString(this.ratioType) : undefined,
-        stationOffsetSize: this.stationOffsetSize,
-        stationSeparator: this.stationSeparator,
-        azimuthBase: this.azimuthBase,
-        azimuthBaseUnit,
-        azimuthCounterClockwise: this.azimuthCounterClockwise,
-        revolutionUnit,
-        composite,
-        custom: this.customProps,
-      } as CustomFormatProps;
-
-    return {
+    const baseFormatProps = {
       type: formatTypeToString(this.type),
       precision: this.precision,
       roundFactor: this.roundFactor,
@@ -468,8 +445,8 @@ export class Format extends BaseFormat {
       decimalSeparator: this.decimalSeparator,
       thousandSeparator: this.thousandSeparator,
       uomSeparator: this.uomSeparator,
-      scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
-      ratioType: (this.ratioType != null) ? ratioTypeToString(this.ratioType) : undefined,
+      scientificType: this.scientificType !== undefined ? scientificTypeToString(this.scientificType) : undefined,
+      ratioType: this.ratioType !== undefined ? ratioTypeToString(this.ratioType) : undefined,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       azimuthBase: this.azimuthBase,
@@ -478,5 +455,13 @@ export class Format extends BaseFormat {
       revolutionUnit,
       composite,
     };
+
+    if (this.customProps)
+      return {
+        ...baseFormatProps,
+        custom: this.customProps,
+      } as CustomFormatProps;
+
+    return baseFormatProps;
   }
 }

@@ -215,9 +215,7 @@ export class Formatter {
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
       let unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD; // offset should only ever be defined for major unit
-      if (spec.format.type === FormatType.Ratio){
-        return this.formatRatio(unitValue, spec);
-      }
+
       if (0 === i) {
         const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
         unitValue = Math.floor(unitValue * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
@@ -234,6 +232,14 @@ export class Formatter {
         const componentText = Formatter.formatCompositePart(unitValue, true, currentLabel, spec);
         compositeStrings.push(componentText);
       }
+
+      if (spec.format.type === FormatType.Ratio){
+        if ( spec.persistenceUnit.phenomenon !== 'Units.SLOPE')
+          throw new QuantityError(QuantityStatus.UnsupportedUnit, `The Format ${spec.format.name} has an invalid persistence unit.`);
+        compositeStrings.length = 0; // clear the array
+        compositeStrings.push(this.formatRatio(unitValue, spec));
+      }
+
     }
 
     return compositeStrings.join((spec.format.spacer !== undefined) ? spec.format.spacer : " ");
@@ -544,6 +550,9 @@ export class Formatter {
   private static formatRatio(magnitude: number, spec: FormatterSpec): string {
     if (null === spec.format.ratioType)
       throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
+
+    if (spec.format.hasUnits && spec.format.units && spec.format.units[0][0].phenomenon !== 'Units.SLOPE')
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `The Format ${spec.format.name} has an invalid presentation unit.`);
 
     const precisionScale = Math.pow(10.0, spec.format.precision);
     let reciprocal = 0;
