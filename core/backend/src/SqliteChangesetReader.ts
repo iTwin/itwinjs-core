@@ -63,7 +63,6 @@ export interface SqliteChangesetReaderArgs {
   /** do not check if column of change match db schema instead ignore addition columns */
   readonly disableSchemaCheck?: true;
 }
-
 /**
  * Represent sqlite change.
  * @beta
@@ -78,7 +77,6 @@ export interface SqliteChange {
   /** columns in change */
   [key: string]: any;
 }
-
 /**
  * Read raw sqlite changeset from disk and enumerate changes.
  * It also optionally let you format change with schema from
@@ -106,7 +104,31 @@ export class SqliteChangesetReader implements IDisposable {
     reader._nativeReader.openFile(args.fileName, args.invert ?? false);
     return reader;
   }
-
+  /**
+   * Group changeset file into single changeset and open that changeset.
+   * @param args - The arguments for opening the changeset group.
+   * @returns The SqliteChangesetReader instance.
+   */
+  public static openGroup(args: { readonly changesetFiles: string[] } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    if (args.changesetFiles.length === 0) {
+      throw new Error("changesetFiles must contain at least one file.");
+    }
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openGroup(args.changesetFiles, args.invert ?? false);
+    return reader;
+  }
+  /**
+   * Writes the changeset to a file.
+   * @note can be use with openGroup() or openLocalChanges() to persist changeset.
+   * @param args - The arguments for writing to the file.
+   * @param args.fileName - The name of the file to write to.
+   * @param args.containsSchemaChanges - Indicates whether the changeset contains schema changes.
+   * @param args.overwriteFile - Indicates whether to override the file if it already exists. Default is false.
+   */
+  public writeToFile(args: { fileName: string, containsSchemaChanges: boolean, overwriteFile?: boolean }): void {
+    this._nativeReader.writeToFile(args.fileName, args.containsSchemaChanges, args.overwriteFile ?? false);
+  }
   /**
    * Open local changes in iModel.
    * @param args iModel and other options.
