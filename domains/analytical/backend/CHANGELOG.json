@@ -2,6 +2,18 @@
   "name": "@itwin/analytical-backend",
   "entries": [
     {
+      "version": "4.8.4",
+      "tag": "@itwin/analytical-backend_v4.8.4",
+      "date": "Thu, 22 Aug 2024 17:37:06 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.3",
+      "tag": "@itwin/analytical-backend_v4.8.3",
+      "date": "Fri, 16 Aug 2024 18:18:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.8.2",
       "tag": "@itwin/analytical-backend_v4.8.2",
       "date": "Thu, 15 Aug 2024 15:33:49 GMT",

@@ -22,13 +22,31 @@ export interface FormatProps {
   readonly decimalSeparator?: string;
   readonly thousandSeparator?: string;
   readonly uomSeparator?: string;
-  readonly scientificType?: string; // conditionally required
-  readonly stationOffsetSize?: number; // conditionally required
+
+  /** conditionally required. */
+  readonly scientificType?: string;
+
+  /** conditionally required. */
+  readonly stationOffsetSize?: number;
   readonly stationSeparator?: string;
+
+  /** The base value for azimuth, specified from east counter-clockwise. */
+  readonly azimuthBase?: number;
+
+  /** The name of the unit for the azimuth base value. */
+  readonly azimuthBaseUnit?: string;
+
+  /** If set to true, azimuth values are returned counter-clockwise from the base. */
+  readonly azimuthCounterClockwise?: boolean;
+
+  /** The name of the unit that represents a revolution/perigon. Required for bearing or azimuth types. */
+  readonly revolutionUnit?: string;
+
   readonly allowMathematicOperations?: boolean;
   readonly composite?: {
+    /** separates values when formatting composite strings */
     readonly spacer?: string;
-    readonly includeZero?: boolean; // not currently used in Native formatter
+    readonly includeZero?: boolean;
     readonly units: Array<{
       readonly name: string;
       readonly label?: string;
