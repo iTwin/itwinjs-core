@@ -559,6 +559,9 @@ export class Formatter {
     if ((Math.abs(magnitude) > 1/precisionScale))
       reciprocal = 1.0 / magnitude;
 
+    if (reciprocal === 0.0)
+      return "0:1";
+
     switch (spec.format.ratioType) {
       case RatioType.OneToN:
         return "1:" + this.formatMagnitude(reciprocal, spec);
