@@ -92,8 +92,8 @@ describe("Difference Conflict Resolving", () => {
 
     // For all runs the class ClassToBeSkipped shall be skipped.
     const initialSchemaChanges = new SchemaEdits();
-    initialSchemaChanges.items.skip("ClassToBeSkipped");
-    initialSchemaChanges.properties.skip("SameNameOtherItemType", "PropertyToSkip");
+    initialSchemaChanges.items.skip("ConflictSchema", "ClassToBeSkipped");
+    initialSchemaChanges.properties.skip("ConflictSchema", "SameNameOtherItemType", "PropertyToSkip");
 
     let storedSchemaEdits = initialSchemaChanges.toJSON();
 
@@ -105,10 +105,10 @@ describe("Difference Conflict Resolving", () => {
       if (differences.conflicts) {
         for (const conflict of differences.conflicts) {
           if (conflict.code === ConflictCode.ConflictingItemName && conflict.itemName === "SameNameOtherItemType") {
-            schemaEdits.items.rename(conflict.itemName, `${conflict.itemName}_1`);
+            schemaEdits.items.rename(sourceSchema.name, conflict.itemName, `${conflict.itemName}_1`);
           }
           if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.path === "MyProperty") {
-            schemaEdits.properties.rename(conflict.itemName!, conflict.path, `${conflict.path}_1`);
+            schemaEdits.properties.rename(sourceSchema.name, conflict.itemName!, conflict.path, `${conflict.path}_1`);
           }
         }
       }
