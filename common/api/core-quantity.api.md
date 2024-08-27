@@ -50,6 +50,8 @@ export class BaseFormat {
     // (undocumented)
     protected _azimuthCounterClockwise?: boolean;
     // (undocumented)
+    get azimuthCounterClockwiseOrDefault(): boolean;
+    // (undocumented)
     get decimalSeparator(): string;
     set decimalSeparator(decimalSeparator: string);
     // (undocumented)
@@ -105,6 +107,8 @@ export class BaseFormat {
     set spacer(spacer: string | undefined);
     // (undocumented)
     protected _spacer: string;
+    // (undocumented)
+    get spacerOrDefault(): string;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
     set stationOffsetSize(stationOffsetSize: number | undefined);
@@ -225,11 +229,8 @@ export class Format extends BaseFormat {
 export interface FormatProps {
     // (undocumented)
     readonly allowMathematicOperations?: boolean;
-    // (undocumented)
     readonly azimuthBase?: number;
-    // (undocumented)
     readonly azimuthBaseUnit?: string;
-    // (undocumented)
     readonly azimuthCounterClockwise?: boolean;
     // (undocumented)
     readonly composite?: {
@@ -248,15 +249,12 @@ export interface FormatProps {
     readonly minWidth?: number;
     // (undocumented)
     readonly precision?: number;
-    // (undocumented)
     readonly revolutionUnit?: string;
     // (undocumented)
     readonly roundFactor?: number;
-    // (undocumented)
     readonly scientificType?: string;
     // (undocumented)
     readonly showSignOption?: string;
-    // (undocumented)
     readonly stationOffsetSize?: number;
     // (undocumented)
     readonly stationSeparator?: string;

@@ -56,7 +56,7 @@ describe("RegionBoolean", () => {
     let y0 = 0;
     candidates.push(LineSegment3d.createXYXY(0, 0, 1, 0));
     candidates.push(LineSegment3d.createXYXY(1, 0, 1, 1));
-    candidates.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(0.1, -0.1), Point3d.create(0.5, 0.6), Point3d.create(1.1, 0.8))!);
+    candidates.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(0.1, -0.1), Point3d.create(0.5, 0.6), Point3d.create(1.1, 0.8)));
     for (const c of candidates)
       GeometryCoreTestIO.consoleLog(" geometry: ", IModelJson.Writer.toIModelJson(c));
     const linestringStartY = 0.5;   // making this 0.5 creates partial overlap -- problem?
@@ -736,6 +736,21 @@ describe("RegionBoolean", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  // how to recover the constituent loops formed by a self-intersecting polygon
+  it("SelfIntersectingPolygon", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const bowTie = Loop.createPolygon([Point3d.create(0,0), Point3d.create(10,0), Point3d.create(0,10), Point3d.create(10,10)]);
+    const signedLoops = RegionOps.constructAllXYRegionLoops(bowTie);
+    ck.testExactNumber(1, signedLoops.length, "only one connected component");
+    if (ck.testExactNumber(2, signedLoops[0].positiveAreaLoops.length, "two constituent ccw loops from intersections"))
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].positiveAreaLoops);
+    if (ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "one cw outer loop"))
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SelfIntersectingPolygon");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("OverlappingArcs", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -1232,14 +1247,14 @@ describe("GeneralSweepBooleans", () => {
     const rectangle2 = Loop.create(LineString3d.create(Sample.createRectangle(1, 1, 6, 2, 0, true)));
     const area3 = Loop.create(
       LineSegment3d.createXYXY(2, 1.5, 5, 2.5), LineSegment3d.createXYXY(5, 2.5, 5, 3),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(5, 3, 0), Point3d.create(4, 4, 0), Point3d.create(2, 3, 0))!,
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(5, 3, 0), Point3d.create(4, 4, 0), Point3d.create(2, 3, 0)),
       LineSegment3d.createXYXY(2, 3, 2, 1.5));
     const area4 = Loop.create(
       LineSegment3d.createXYXY(-1, -1, -1, 9),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(-1, 9), Point3d.create(4, 4, 0), Point3d.create(-1, -1))!);
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(-1, 9), Point3d.create(4, 4, 0), Point3d.create(-1, -1)));
     const area5 = Loop.create(
       LineSegment3d.createXYXY(-1, 1, -1, 6),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(-1, 6), Point3d.create(1, 3.5), Point3d.create(-1, 1))!);
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(-1, 6), Point3d.create(1, 3.5), Point3d.create(-1, 1)));
     const xStep = 20.0;
     let y0 = 0;
     for (const rectangle1 of [rectangle1B, rectangle1A, rectangle1B]) {

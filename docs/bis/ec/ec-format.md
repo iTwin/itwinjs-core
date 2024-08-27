@@ -14,8 +14,9 @@
 - `fractional`
 - `scientific`
 - `station`
-- `bearing`
-- `azimuth`
+- `bearing` (only supported in quantity package, not in ec yet)
+- `azimuth` (only supported in quantity package, not in ec yet)
+- `ratio` (only supported in quantity package, not in ec yet)
 
 **precision** defines the precision to show the formatted value.
 
@@ -86,13 +87,21 @@ Supported scientific type:
 - `normalized`
 - `zeroNormalized`
 
+**RatioType** determines the type of ratio format to use. Only valid when the type is ratio.
+
+Supported ratio type:
+- `oneToN`
+- `NToOne`
+- `valueBased`
+- `useGreatestCommonDivisor`
+
 **stationOffsetSize** represents the magnitude of the StationOffset.
 
 - Example: StationOffsetSize of 2, in base 10, represents an offset of 100.
 
 **stationSeparator** the character used to separate the station and off set portions of a `station` formatted value.
 
-**azimuthBase** A numeric value indicating the base when type is set to azimuth. It fet, the `azimuthBaseUnit` has to also be set to indicate which unit this value is in. Defaults to north (quarter rotation). The value is indicated from east counter-clockwise.
+**azimuthBase** A numeric value indicating the base when type is set to azimuth. If set, the `azimuthBaseUnit` has to also be set to indicate which unit this value is in. Defaults to north (quarter rotation). The value is indicated from east counter-clockwise.
 
 **azimuthBaseUnit** Required if `azimuthBase` is set. A unit name which the base value is in. The unit has to match the phenomenon used on the presentation and persistence units.
 
