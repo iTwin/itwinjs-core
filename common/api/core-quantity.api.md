@@ -363,7 +363,7 @@ export enum FractionalPrecision {
 export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
 
 // @beta (undocumented)
-export function getTraitString(trait: FormatTraits): "keepSingleZero" | "showUnitLabel" | "fractionDash" | "keepDecimalPoint" | "trailZeroes" | "zeroEmpty" | "applyRounding" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
+export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
 
 // @beta
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
