@@ -1051,7 +1051,6 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isTrue(SchemaSync.isEnabled(b1));
     assert.isTrue(SchemaSync.isEnabled(b2));
 
-
     let nProps = 0;
     // 1. Import schema with class that span overflow table.
     const addPropertyAndImportSchema = async (b: BriefcaseDb) => {
