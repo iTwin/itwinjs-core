@@ -95,7 +95,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     enableCDN: args.enableCDN,
   };
 
-  for await (const data of queryGraphicRepresentations(graphicsArgs)){
+  for await (const data of queryGraphicRepresentations(graphicsArgs)) {
     const meshExport = {
       id: data.representationId,
       displayName: data.displayName,
@@ -119,6 +119,80 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     yield meshExport;
   }
 }
+
+// In theory, this function is ony called after we're waiting for the first export of a given iModel or changeset
+// So we just wait for the first (only?) export to complete
+export async function queryMeshExportsAndWaitForCompletion(args: QueryMeshExportsArgs): Promise<MeshExport[]> {
+  const exports: MeshExport[] = [];
+  const completedExports: { exportId: string, success: boolean }[] = [];
+
+  try {
+    // Start export
+    // const response = await startExport(args);
+
+    // Get export status
+    let currentExport;
+    const start = Date.now();
+    while ((Date.now() - start) < 900000) { // Wait for 15 minutes before stopping the loop
+      // Get export status
+      // currentExport = await queryMeshExports(args).next();
+      for await (const data of queryMeshExports(args)) {
+        currentExport = data;
+        break;
+      }
+
+      if (currentExport !== undefined && currentExport.status === "Complete") {
+        console.log(`Export ${response.export.id} completed! Time Elapsed: ${Date.now() - start} milliseconds`);
+        completedExports.push({ exportId: response.export.id, success: true });
+        return exports;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Sleep for 1 second
+    }
+
+    let msg = `Export ${response.export.id} failed to complete within 15 minutes.`;
+    if (currentExport)
+      msg += ` Last Status: ${currentExport.status}`;
+    console.log(msg);
+
+    completedExports.push({ exportId: response.export.id, success: false });
+  } catch (error: any) {
+    console.error(`Failed to start export: ${error.message}`);
+  }
+
+  return exports;
+}
+
+export async function startExport(args: QueryMeshExportsArgs) {
+  const exportPrefix = args.urlPrefix ?? "";
+
+  const headers = {
+    "Authorization": args.accessToken,
+    "Accept": "application/vnd.bentley.itwin-platform.v1+json",
+    "Content-Type": "application/json",
+    "use-new-exporter": "true",
+  };
+
+  const reqBody = {
+    iModelId: args.iModelId,
+    changesetId: args.changesetId ?? "",
+    exportType: "IMODEL",
+  };
+
+  console.log("starting export");
+
+  const response = await fetch(
+    `https://${exportPrefix}api.bentley.com/mesh-export/`,
+    {
+      headers,
+      method: "POST",
+      body: JSON.stringify(reqBody),
+    },
+  );
+  const responseJson = await (response).json();
+  console.log(responseJson);
+
+  return responseJson;
+};
 
 /** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
  * @beta

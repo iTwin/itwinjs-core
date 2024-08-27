@@ -8,7 +8,7 @@ import {
   GpuMemoryLimit,
   IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
 } from "@itwin/core-frontend";
-import { initializeFrontendTiles, MeshExport, obtainMeshExportTilesetUrl, queryMeshExports, QueryMeshExportsArgs } from "@itwin/frontend-tiles";
+import { initializeFrontendTiles, MeshExport, obtainMeshExportTilesetUrl, queryMeshExports, queryMeshExportsAndWaitForCompletion, QueryMeshExportsArgs, startExport } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -214,21 +214,6 @@ const dtaFrontendMain = async () => {
   if (configuration.frontendTilesUrlTemplate) {
     initializeFrontendTiles({
       enableEdges: true,
-      // computeSpatialTilesetBaseUrl: async (iModel) => {
-      //   let urlStr = configuration.frontendTilesUrlTemplate!.replace("{iModel.key}", iModel.key);
-      //   urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
-      //   urlStr = urlStr.replace("{iModel.extension}", getFileExt(iModel.key));
-      //   const url = new URL(urlStr);
-      //   try {
-      //     // See if a tileset has been published for this iModel.
-      //     const response = await fetch(`${url}tileset.json`);
-      //     await response.json();
-      //     return url;
-      //   } catch (_) {
-      //     // No tileset available.
-      //     return undefined;
-      //   }
-      // },
       computeSpatialTilesetBaseUrl: async (iModel: IModelConnection) => {
 
         // Test - get latest 5 exports
@@ -238,8 +223,6 @@ const dtaFrontendMain = async () => {
           accessToken: configuration.frontendTilesToken || "",
           iTwinId: iModel.iTwinId || "",
           iModelId: iModel.iModelId || "",
-          // changesetId: iModel.changeset?.id || "",
-          // changesetId: "a450237bc8fc062a24c6d4be7cbce9912c567e96",
           changesetId: "",
           enableCDN: false,
           urlPrefix: "qa-",
@@ -252,14 +235,11 @@ const dtaFrontendMain = async () => {
           if (count > 4)
             break;
         }
-        console.log(exports);
+        // console.log(exports);
 
-        // return obtainMeshExportTilesetUrl({
-        //   iModel,
-        //   accessToken: configuration.frontendTilesToken || "",
-        //   enableCDN: false,
-        //   urlPrefix: "qa-",
-        // });
+        // Another test
+        await startExport(meshExportArgs);
+        await queryMeshExportsAndWaitForCompletion(meshExportArgs);
 
         return obtainMeshExportTilesetUrl({
           iModel: {iTwinId: iModel.iTwinId || "", iModelId: iModel.iModelId || "", changesetId: ""},
