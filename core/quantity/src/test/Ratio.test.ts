@@ -42,7 +42,7 @@ describe("Ratio Type Tests", () => {
   describe("RatioType Tests", () => {
     it("ratiotype OneToN", async () => {
       const testData: { input: number; ratio: string; }[] = [
-        { input: 0.0, ratio: "1:0" },
+        { input: 0.0, ratio: "0:1" },
         { input: 1.0, ratio: "1:1" },
         { input: 2.0, ratio: "1:0.5" },
         { input: 0.5, ratio: "1:2" },
@@ -72,7 +72,7 @@ describe("Ratio Type Tests", () => {
 
     it("ratioType valueBased", async () => {
       const testData: { input: number; ratio: string; }[] = [
-        { input: 0.0, ratio: "1:0" },
+        { input: 0.0, ratio: "0:1" },
         { input: 1.0, ratio: "1:1" },
         { input: 2.0, ratio: "2:1" },
         { input: 0.5, ratio: "1:2" },
@@ -90,7 +90,7 @@ describe("Ratio Type Tests", () => {
 
     it("ratioType UseGreatestCommonDivisor", async () => {
       const testData: { input: number; ratio: string; }[] = [
-        { input: 0.0, ratio: "1:0" }, // Special case
+        { input: 0.0, ratio: "0:1" }, // Special case
         { input: 1.0, ratio: "1:1" },
         { input: 2.0, ratio: "2:1" },
         { input: 0.5, ratio: "1:2" },
