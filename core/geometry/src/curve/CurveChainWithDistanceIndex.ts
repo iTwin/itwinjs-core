@@ -229,7 +229,9 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
  * distance along a CurveChain.
  * * For example if the total length of the chain is `L`, then the distance along the chain from parameters `t0`
  * to `t1` is easily computed as `L*(t1-t0)`.
- * * The curve chain can be any type derived from `CurveChain`, i.e., either a `Path` or a `Loop`.
+ * * A `CurveChainWithDistanceIndex` can be created from any `CurveChain`, but as with any `CurvePrimitive`, closure
+ * (and planarity) is only implied by containment in a `Loop`; in other words, the type of a
+ * `CurveChainWithDistanceIndex`'s underlying `CurveChain` has no implications.
  * @public
  */
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
@@ -249,7 +251,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   // final assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
   private constructor(path: CurveChain, fragments: PathFragment[]) {
     super();
-    this._path = path;
+    this._path = path instanceof Path ? path : Path.create(...path.children); // always a Path!
     this._fragments = fragments;
     this._totalLength = fragments.length > 0 ? fragments[fragments.length - 1].chainDistance1 : 0;
   }
