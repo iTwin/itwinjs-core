@@ -175,6 +175,7 @@ export abstract class IModelDb extends IModel {
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
   private _workspace?: OwnedWorkspace;
+
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
   /** @internal */
@@ -2579,6 +2580,11 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
+  private _skipSyncSchemasOnPullAndPush?: true;
+
+  /** @internal */
+  public get skipSyncSchemasOnPullAndPush() { return this._skipSyncSchemasOnPullAndPush ?? false; }
+
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -2984,7 +2990,8 @@ export class BriefcaseDb extends IModelDb {
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
-      await SchemaSync.pull(this);
+      if (!this.skipSyncSchemasOnPullAndPush)
+        await SchemaSync.pull(this);
       this.initializeIModelDb();
     });
 
@@ -3006,42 +3013,45 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot revert with pending txns");
     }
 
-    this.clearCaches();
-    while (true) {
-      await this.pullChanges({ ...arg, toIndex: undefined });
-      if (nativeDb.hasPendingTxns()) {
-        // schema sync create txn on pull. We need to push it.
-        const description = nativeDb.getTxnDescription(nativeDb.getCurrentTxnId());
-        await this.pushChanges({ description, accessToken: arg.accessToken });
+    const skipSchemaSyncPull = async <T>(func: () => Promise<T>) => {
+      if (nativeDb.schemaSyncEnabled()) {
+        this._skipSyncSchemasOnPullAndPush = true;
+        try {
+          return await func();
+        } finally {
+          this._skipSyncSchemasOnPullAndPush = undefined;
+        }
       } else {
-        // prevent any one from pushing changes while we are reverting
-        await this.acquireSchemaLock();
-        break;
+        return func();
       }
-    }
+    };
+    this.clearCaches();
+    await skipSchemaSyncPull(async () => this.pullChanges({ ...arg, toIndex: undefined }));
+    await this.acquireSchemaLock();
 
     if (nativeDb.schemaSyncEnabled()) {
       arg.skipSchemaChanges = true;
     }
+
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
       this.saveChanges("Revert changes");
       if (!arg.description) {
         arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
-
-      await this.pushChanges({
+      const pushArgs = {
         description: arg.description,
         accessToken: arg.accessToken,
         mergeRetryCount: arg.mergeRetryCount,
         mergeRetryDelay: arg.mergeRetryDelay,
         pushRetryCount: arg.pushRetryCount,
         pushRetryDelay: arg.pushRetryDelay,
-      });
+        retainLocks: arg.retainLocks,
+      };
+      await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
       this.clearCaches();
     } finally {
       this.abandonChanges();
-      await this.locks.releaseAllLocks();
     }
   }
 

@@ -1036,6 +1036,7 @@ describe("Schema synchronization", function (this: Suite) {
     });
     HubMock.shutdown();
   });
+
   it("revert timeline changes", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
     HubMock.startup("test", KnownTestLocations.outputDir);
@@ -1047,6 +1048,10 @@ describe("Schema synchronization", function (this: Suite) {
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
     await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
     const b2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    assert.isTrue(SchemaSync.isEnabled(b1));
+    assert.isTrue(SchemaSync.isEnabled(b2));
+
+
     let nProps = 0;
     // 1. Import schema with class that span overflow table.
     const addPropertyAndImportSchema = async (b: BriefcaseDb) => {
@@ -1114,9 +1119,9 @@ describe("Schema synchronization", function (this: Suite) {
       return HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir: path.join(KnownTestLocations.outputDir, rwIModelId, "changesets") });
     };
 
-    const findEl = (id: Id64String) => {
+    const findEl = (id: Id64String, b = b1) => {
       try {
-        return b1.elements.getElementProps(id);
+        return b.elements.getElementProps(id);
       } catch (e) {
         return undefined;
       }
@@ -1195,8 +1200,53 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isDefined(findEl(el4));
     assert.isDefined(findEl(el5));
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+
+    // schema sync should be skip for revert
+    await b2.pullChanges();
+    const b3 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    assert.isTrue(SchemaSync.isEnabled(b3));
+
+    await addPropertyAndImportSchema(b1);
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    // b3 should get new property via schema sync
+    await b3.pullChanges();
+    assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    // b2 should not see new property even after revert
+    assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+    await b2.revertAndPushChanges({ toIndex: 11 });
+    assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 11 to 11 (schema changes skipped)");
+    assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+
+    await b1.pullChanges();
+    await b2.pullChanges();
+    await b3.pullChanges();
+
+    assert.isUndefined(findEl(el1, b1));
+    assert.isUndefined(findEl(el2, b1));
+    assert.isUndefined(findEl(el3, b1));
+    assert.isUndefined(findEl(el4, b1));
+    assert.isUndefined(findEl(el5, b1));
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    assert.isUndefined(findEl(el1, b2));
+    assert.isUndefined(findEl(el2, b2));
+    assert.isUndefined(findEl(el3, b2));
+    assert.isUndefined(findEl(el4, b2));
+    assert.isUndefined(findEl(el5, b2));
+    assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    assert.isUndefined(findEl(el1, b3));
+    assert.isUndefined(findEl(el2, b3));
+    assert.isUndefined(findEl(el3, b3));
+    assert.isUndefined(findEl(el4, b3));
+    assert.isUndefined(findEl(el5, b3));
+    assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
     b1.close();
     b2.close();
+    b3.close();
     HubMock.shutdown();
   });
 });

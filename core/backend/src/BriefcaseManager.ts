@@ -585,7 +585,8 @@ export class BriefcaseManager {
     while (true) {
       try {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
-        await SchemaSync.pull(db);
+        if (!db.skipSyncSchemasOnPullAndPush)
+          await SchemaSync.pull(db);
         return await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {
         if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)
