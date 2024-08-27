@@ -457,7 +457,7 @@ export class BriefcaseManager {
       throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be specified to revert changesets");
     }
     if (arg.toIndex > currentIndex) {
-      throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be less than the current index to revert changesets");
+      throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be less than or equal to the current index");
     }
     if (!db.holdsSchemaLock) {
       throw new IModelError(ChangeSetStatus.ApplyError, "Cannot revert timeline changesets without holding a schema lock");
