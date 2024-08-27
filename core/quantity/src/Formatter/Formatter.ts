@@ -242,7 +242,7 @@ export class Formatter {
 
     }
 
-    return compositeStrings.join((spec.format.spacer !== undefined) ? spec.format.spacer : " ");
+    return compositeStrings.join(spec.format.spacerOrDefault);
   }
 
   /** Format a quantity value into a single text string. Imitate how formatting done by server method NumericFormatSpec::FormatDouble.
@@ -486,9 +486,18 @@ export class Formatter {
       if (quadrant === 1 || quadrant === 2)
         suffix = "W";
 
-      // special case, if in quadrant 2 and value is very small, turn suffix to E because S00E is preferred over S00W
-      if (quadrant === 2 && magnitude < 0.00000000001) // 1e-11 is a small value that is close to 0
-        suffix = "E";
+      // special case, if in quadrant 2 and value is very small, turn suffix to E because S00:00:00E is preferred over S00:00:00W
+      if (quadrant === 2 && spec.unitConversions.length > 0) {
+        // To determine if value is small, we need to convert it to the smallest unit presented and use the provided precision on it
+        const unitConversion = spec.unitConversions[spec.unitConversions.length - 1].conversion;
+        const smallestFormattedValue = (magnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD;
+
+        const precisionScale = Math.pow(10.0, spec.format.precision);
+        const floor = Math.floor((smallestFormattedValue) * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+        if(floor === 0) {
+          suffix = "E";
+        }
+      }
 
       return {magnitude, prefix, suffix: suffix!};
     }
@@ -507,12 +516,12 @@ export class Formatter {
         azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
       }
 
-      if (azimuthBase === quarterRevolution && spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
+      if (azimuthBase === quarterRevolution && spec.format.azimuthCounterClockwiseOrDefault)
         return {magnitude}; // no conversion necessary, the input is already using the result parameters (east base and counter clockwise)
 
       // subtract the base from the actual value
       magnitude -= azimuthBase;
-      if (spec.format.azimuthCounterClockwise !== undefined && spec.format.azimuthCounterClockwise === true)
+      if (spec.format.azimuthCounterClockwiseOrDefault)
         return {magnitude: this.normalizeAngle(magnitude, revolution)};
 
       // turn it into a clockwise angle

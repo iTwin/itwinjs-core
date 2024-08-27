@@ -10,20 +10,20 @@ import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
   AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass, ECClassModifier,
-  Enumeration, Mixin, Property, PropertyProps,
+  Enumeration, KindOfQuantity, Mixin, Property, PropertyProps,
   RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, SchemaItemType,
 } from "@itwin/ecschema-metadata";
 import {
   type AnySchemaItemDifference,
   type AnySchemaItemPathDifference,
-  ClassItemDifference,
-  ClassPropertyDifference,
+  type ClassItemDifference,
+  type ClassPropertyDifference,
   type CustomAttributeDifference,
   type DifferenceType,
-  EntityClassMixinDifference,
-  EnumeratorDifference,
-  RelationshipConstraintClassDifference,
-  RelationshipConstraintDifference,
+  type EntityClassMixinDifference,
+  type EnumeratorDifference,
+  type RelationshipConstraintClassDifference,
+  type RelationshipConstraintDifference,
   type SchemaDifference,
   SchemaOtherTypes,
   type SchemaReferenceDifference,
@@ -94,7 +94,6 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.CustomAttributeClassDelta:
       case SchemaCompareCodes.FormatDelta:
       case SchemaCompareCodes.InvertedUnitDelta:
-      case SchemaCompareCodes.KoqDelta:
       case SchemaCompareCodes.MixinDelta:
       case SchemaCompareCodes.PhenomenonDelta:
       case SchemaCompareCodes.PropertyCategoryDelta:
@@ -104,6 +103,8 @@ export class SchemaDiagnosticVisitor {
 
       case SchemaCompareCodes.EnumerationDelta:
         return this.visitChangedEnumeration(diagnostic);
+      case SchemaCompareCodes.KoqDelta:
+        return this.visitChangedKindOfQuantity(diagnostic);
 
       case SchemaCompareCodes.EnumeratorDelta:
         return this.visitChangedEnumerator(diagnostic);
@@ -217,6 +218,24 @@ export class SchemaDiagnosticVisitor {
     // an unspecific string as property indexer. Casted to any as short term fix but that
     // needs to be handled better in future.
     (modifyEntry.difference as any)[propertyName] = sourceValue;
+  }
+
+  private visitChangedKindOfQuantity(diagnostic: AnyDiagnostic) {
+    const kindOfQuantity = diagnostic.ecDefinition as KindOfQuantity;
+    const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [string, string, string];
+
+    if (propertyName === "persistenceUnit") {
+      return this.addConflict({
+        code: ConflictCode.ConflictingPersistenceUnit,
+        schemaType: SchemaItemType.KindOfQuantity,
+        itemName: kindOfQuantity.name,
+        source: sourceValue,
+        target: targetValue,
+        description: "Kind of Quantity has a different persistence unit.",
+      });
+    }
+
+    return this.visitChangedSchemaItem(diagnostic);
   }
 
   private visitChangedEnumeration(diagnostic: AnyDiagnostic) {

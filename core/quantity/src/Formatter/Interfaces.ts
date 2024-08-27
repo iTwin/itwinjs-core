@@ -22,18 +22,34 @@ export interface FormatProps {
   readonly decimalSeparator?: string;
   readonly thousandSeparator?: string;
   readonly uomSeparator?: string;
-  readonly scientificType?: string; // conditionally required
-  readonly ratioType?: string; // conditionaly required
-  readonly stationOffsetSize?: number; // conditionally required
+
+  /** conditionally required. */
+  readonly scientificType?: string;
+
+  /** conditionally required. */
+  readonly ratioType?: string;
+
+  /** conditionally required. */
+  readonly stationOffsetSize?: number;
   readonly stationSeparator?: string;
-  readonly azimuthBase?: number; // value is specified from east counter-clockwise
-  readonly azimuthBaseUnit?: string; // name of unit for azimuthBase value
-  readonly azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
-  readonly revolutionUnit?: string; // name of unit that represents a revolution/perigon, required for bearing or azimuth types
+
+  /** The base value for azimuth, specified from east counter-clockwise. */
+  readonly azimuthBase?: number;
+
+  /** The name of the unit for the azimuth base value. */
+  readonly azimuthBaseUnit?: string;
+
+  /** If set to true, azimuth values are returned counter-clockwise from the base. */
+  readonly azimuthCounterClockwise?: boolean;
+
+  /** The name of the unit that represents a revolution/perigon. Required for bearing or azimuth types. */
+  readonly revolutionUnit?: string;
+
   readonly allowMathematicOperations?: boolean;
   readonly composite?: {
-    readonly spacer?: string; // separates values when formatting composite strings
-    readonly includeZero?: boolean; // not currently used in Native formatter
+    /** separates values when formatting composite strings */
+    readonly spacer?: string;
+    readonly includeZero?: boolean;
     readonly units: Array<{
       readonly name: string;
       readonly label?: string;
