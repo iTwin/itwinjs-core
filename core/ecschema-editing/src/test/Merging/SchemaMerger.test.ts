@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { SchemaConflictsError } from "../../Differencing/Errors";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 import "chai-as-promised";
-import { SchemaConflictsError } from "../../Differencing/Errors";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -40,13 +41,54 @@ describe("Schema merge tests", () => {
       });
   });
 
+  it("should throw an error if the target schema cannot be located", async () => {
+    const merger = new SchemaMerger(new SchemaContext());
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      conflicts: [],
+      differences: [],
+    });
+
+    await expect(merge).to.be.rejectedWith("The target schema 'TargetSchema' could not be found in the editing context.");
+  });
+
+  it("should throw an error if the target schema cannot be located", async () => {
+    const targetSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TargetSchema",
+      version: "1.0.0",
+      alias: "target",
+    }, new SchemaContext());
+    const merger = new SchemaMerger(targetSchema.context);
+    const merge = merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      conflicts: [],
+      differences: [],
+    });
+
+    await expect(merge).to.be.rejectedWith("The target schema 'TargetSchema' is not dynamic. Only dynamic schemas are supported for merging.");
+  });
+
   it("should merge label and description from schema", async () => {
-    const targetContext = new SchemaContext();
+    const targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TargetSchema",
       version: "1.0.0",
       alias: "target",
+      references: [
+        {
+          name: "CoreCustomAttributes",
+          version: "01.00.01",
+        },
+      ],
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.DynamicSchema"
+        }
+      ],
     }, targetContext);
 
     const newDescription = "This is the new description";
@@ -56,7 +98,7 @@ describe("Schema merge tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      differences:[{
+      differences: [{
         changeType: "modify",
         schemaType: SchemaOtherTypes.Schema,
         difference: {
@@ -70,12 +112,23 @@ describe("Schema merge tests", () => {
   });
 
   it("should merge Schema Items case insensitive", async () => {
-    const targetContext = new SchemaContext();
+    const targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TargetSchema",
       version: "1.0.0",
       alias: "target",
+      references: [
+        {
+          name: "CoreCustomAttributes",
+          version: "01.00.01",
+        },
+      ],
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.DynamicSchema"
+        }
+      ],
       items: {
         TestCustomAttribute: {
           schemaItemType: "CustomAttributeClass",
@@ -88,7 +141,7 @@ describe("Schema merge tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      differences:[{
+      differences: [{
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
         appliedTo: "Schema",
@@ -98,10 +151,7 @@ describe("Schema merge tests", () => {
       }],
     });
 
-    expect(mergedSchema.toJSON().customAttributes).deep.equals(
-      [{
-        className: "TargetSchema.TestCustomAttribute",
-      }],
-    );
+    expect(mergedSchema.customAttributes).is.not.undefined;
+    expect(mergedSchema.customAttributes!.has("TargetSchema.TestCustomAttribute"));
   });
 });

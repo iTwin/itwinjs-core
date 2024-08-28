@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Enumeration, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Enumeration, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
+import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -16,12 +17,23 @@ describe("Enumeration merge tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      {
+        name: "CoreCustomAttributes",
+        version: "01.00.01",
+      },
+    ],
+    customAttributes: [
+      {
+        className: "CoreCustomAttributes.DynamicSchema"
+      }
+    ],
   };
 
   it("should merge missing enumeration", async () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -87,7 +99,7 @@ describe("Enumeration merge tests", () => {
           }],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -147,7 +159,7 @@ describe("Enumeration merge tests", () => {
           }],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -209,7 +221,7 @@ describe("Enumeration merge tests", () => {
           ],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -260,7 +272,7 @@ describe("Enumeration merge tests", () => {
           }],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const merge = merger.merge({
@@ -298,7 +310,7 @@ describe("Enumeration merge tests", () => {
           ],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const merge = merger.merge({

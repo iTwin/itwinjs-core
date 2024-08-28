@@ -7,6 +7,7 @@ import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -17,10 +18,21 @@ describe("Class merger tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      {
+        name: "CoreCustomAttributes",
+        version: "01.00.01",
+      },
+    ],
+    customAttributes: [
+      {
+        className: "CoreCustomAttributes.DynamicSchema"
+      }
+    ],
   };
 
-  beforeEach(() => {
-    targetContext = new SchemaContext();
+  beforeEach(async () => {
+    targetContext = await BisTestHelper.getNewContext();
   });
 
   it("should merge missing struct class", async () => {
@@ -784,6 +796,7 @@ describe("Class merger tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",

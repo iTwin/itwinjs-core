@@ -2,43 +2,43 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { Schema } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
+import { expect } from "chai";
 
 describe("Schema reference merging tests", () => {
 
-  const sourceJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-    name: "SourceSchema",
-    version: "1.2.3",
-    alias: "source",
-  };
   const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      {
+        name: "CoreCustomAttributes",
+        version: "01.00.01",
+      },
+    ],
+    customAttributes: [
+      {
+        className: "CoreCustomAttributes.DynamicSchema"
+      }
+    ],
   };
 
   it("should merge missing schema references", async () => {
-    const targetSchemaContext = new SchemaContext();
+    const targetSchemaContext = await BisTestHelper.getNewContext();
     const targetSchema = await Schema.fromJson({
       ...targetJson,
     }, targetSchemaContext);
 
     await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "BisCore",
+      name: "TestSchema",
       version: "01.00.15",
-      alias: "bis",
-    }, targetSchemaContext);
-    await Schema.fromJson({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "CoreCustomAttributes",
-      version: "01.00.03",
-      alias: "ca",
+      alias: "ts",
     }, targetSchemaContext);
 
     const merger = new SchemaMerger(targetSchema.context);
@@ -49,154 +49,45 @@ describe("Schema reference merging tests", () => {
         changeType: "add",
         schemaType: SchemaOtherTypes.SchemaReference,
         difference: {
-          name: "BisCore",
+          name: "TestSchema",
           version: "01.00.15",
-        },
-      }, {
-        changeType: "add",
-        schemaType: SchemaOtherTypes.SchemaReference,
-        difference: {
-          name: "CoreCustomAttributes",
-          version: "01.00.03",
         },
       }],
     });
 
     expect(mergedSchema.toJSON().references).deep.equals([
-      { name: "BisCore", version: "01.00.15" },
-      { name: "CoreCustomAttributes", version: "01.00.03" },
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+      { name: "TestSchema", version: "01.00.15" },
     ]);
   });
 
-  it.skip("should merge compatible schema references", async () => {
-    const sourceSchemaContext = new SchemaContext();
-    const targetSchemaContext = new SchemaContext();
-
-    // For this test case we need schema mocks we reference.
-    // they can be empty, it's just there to get resolved by the schema context.
-    await Schema.fromJson({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "BisCore",
-      version: "01.00.16",
-      alias: "bis",
-    }, sourceSchemaContext);
-    await Schema.fromJson({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "BisCore",
-      version: "01.00.15",
-      alias: "bis",
-    }, targetSchemaContext);
-
-    const sourceSchema = await Schema.fromJson({
-      ...sourceJson,
-      references: [
-        {
-          name: "BisCore",
-          version: "01.00.16",
-        },
-      ],
-    }, sourceSchemaContext);
-    const targetSchema = await Schema.fromJson({
-      ...targetJson,
-      references: [
-        {
-          name: "BisCore",
-          version: "01.00.15",
-        },
-      ],
-    }, targetSchemaContext);
-
-    const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema);
-    const bisCoreReference = await mergedSchema.getReference("BisCore");
-    expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.16");
-  });
-
   it("should not merge if target has more recent schema references", async () => {
-    const sourceSchemaContext = new SchemaContext();
-    const targetSchemaContext = new SchemaContext();
-
-    // For this test case we need schema mocks we reference.
-    // they can be empty, it's just there to get resolved by the schema context.
-    await Schema.fromJson({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "BisCore",
-      version: "01.00.15",
-      alias: "bis",
-    }, sourceSchemaContext);
-    await Schema.fromJson({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "BisCore",
-      version: "01.00.16",
-      alias: "bis",
-    }, targetSchemaContext);
-
-    const sourceSchema = await Schema.fromJson({
-      ...sourceJson,
-      references: [
-        {
-          name: "BisCore",
-          version: "01.00.15",
-        },
-      ],
-    }, sourceSchemaContext);
-
+    const targetSchemaContext = await BisTestHelper.getNewContext();
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "BisCore",
-          version: "01.00.16",
+          version: "01.00.01",
         },
       ],
     }, targetSchemaContext);
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema);
+    const mergedSchema = await merger.merge({
+      sourceSchemaName: "SourceSchema.01.02.03",
+      targetSchemaName: "TargetSchema.01.00.00",
+      differences: [{
+        changeType: "modify",
+        schemaType: SchemaOtherTypes.SchemaReference,
+        difference: {
+          name: "BisCore",
+          version: "01.00.00",
+        },
+      }]
+    });
     const bisCoreReference = await mergedSchema.getReference("BisCore");
-    expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.16");
-  });
-
-  it.skip("should fail if schema references are incompatible", async () => {
-    const sourceSchemaContext = new SchemaContext();
-    const targetSchemaContext = new SchemaContext();
-
-    // For this test case we need schema mocks we reference.
-    // they can be empty, it's just there to get resolved by the schema context.
-    await Schema.fromJson({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "BisCore",
-      version: "01.01.01",
-      alias: "bis",
-    }, sourceSchemaContext);
-    await Schema.fromJson({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "BisCore",
-      version: "01.00.15",
-      alias: "bis",
-    }, targetSchemaContext);
-
-    const sourceSchema = await Schema.fromJson({
-      ...sourceJson,
-      references: [
-        {
-          name: "BisCore",
-          version: "01.01.01",
-        },
-      ],
-    }, sourceSchemaContext);
-
-    const targetSchema = await Schema.fromJson({
-      ...targetJson,
-      references: [
-        {
-          name: "BisCore",
-          version: "01.00.15",
-        },
-      ],
-    }, targetSchemaContext);
-
-    const merger = new SchemaMerger(targetSchema.context);
-    await expect(merger.mergeSchemas(targetSchema, sourceSchema)).to.eventually.rejectedWith("Schemas references of BisCore have incompatible versions: 01.00.15 and 01.01.01");
+    expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.01");
   });
 });

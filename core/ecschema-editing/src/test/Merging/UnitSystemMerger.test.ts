@@ -2,18 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaContext, SchemaItemType, UnitSystem } from "@itwin/ecschema-metadata";
+import { Schema, SchemaItemType, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 describe("Unit system merger tests", () => {
   it("should merge missing unit system", async () => {
-    const targetContext = new SchemaContext();
+    const targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TargetSchema",
       version: "1.0.0",
       alias: "target",
+      references: [
+        {
+          name: "CoreCustomAttributes",
+          version: "01.00.01",
+        },
+      ],
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.DynamicSchema"
+        }
+      ],
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
@@ -38,12 +50,23 @@ describe("Unit system merger tests", () => {
   });
 
   it("should merge unit system with new label and description", async () => {
-    const targetContext = new SchemaContext();
+    const targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TargetSchema",
       version: "1.0.0",
       alias: "target",
+      references: [
+        {
+          name: "CoreCustomAttributes",
+          version: "01.00.01",
+        },
+      ],
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.DynamicSchema"
+        }
+      ],
       items: {
         testUnitSystem: {
           schemaItemType: "UnitSystem",

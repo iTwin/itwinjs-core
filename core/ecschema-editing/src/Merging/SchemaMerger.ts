@@ -15,6 +15,7 @@ import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
 import * as Utils from "../Differencing/Utils";
+import { ECEditingStatus, SchemaEditingError } from "../ecschema-editing";
 
 /**
  * Defines the context of a Schema merging run.
@@ -81,9 +82,15 @@ export class SchemaMerger {
       );
     }
 
-    const schema = await this._editor.getSchema(targetSchemaKey);
-    if (schema === undefined) {
-      throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+    const schema = await this._editor.getSchema(targetSchemaKey).catch((error: Error) => {
+      if (error instanceof SchemaEditingError && error.errorNumber === ECEditingStatus.SchemaNotFound) {
+        throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+      }
+      throw error;
+    });
+
+    if (!schema.customAttributes || !schema.customAttributes.has("CoreCustomAttributes.DynamicSchema")) {
+      throw new Error(`The target schema '${targetSchemaKey.name}' is not dynamic. Only dynamic schemas are supported for merging.`);
     }
 
     const context: SchemaMergeContext = {

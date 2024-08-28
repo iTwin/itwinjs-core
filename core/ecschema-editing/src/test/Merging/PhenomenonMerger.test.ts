@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Phenomenon, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Phenomenon, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 
 describe("Phenomenon merger tests", () => {
@@ -12,10 +13,21 @@ describe("Phenomenon merger tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      {
+        name: "CoreCustomAttributes",
+        version: "01.00.01",
+      },
+    ],
+    customAttributes: [
+      {
+        className: "CoreCustomAttributes.DynamicSchema"
+      }
+    ],
   };
 
   it("should merge missing phenomenon item", async () => {
-    const targetSchema = await Schema.fromJson(targetJson, new SchemaContext());
+    const targetSchema = await Schema.fromJson(targetJson, await BisTestHelper.getNewContext());
     const merger = new SchemaMerger(targetSchema.context);
 
     const mergedSchema = await merger.merge({
@@ -56,7 +68,7 @@ describe("Phenomenon merger tests", () => {
           definition: "Units.LENGTH(4)",
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     await expect(merger.merge({
