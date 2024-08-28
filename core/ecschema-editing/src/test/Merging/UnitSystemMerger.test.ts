@@ -23,8 +23,8 @@ describe("Unit system merger tests", () => {
       ],
       customAttributes: [
         {
-          className: "CoreCustomAttributes.DynamicSchema"
-        }
+          className: "CoreCustomAttributes.DynamicSchema",
+        },
       ],
     }, targetContext);
 
@@ -64,8 +64,8 @@ describe("Unit system merger tests", () => {
       ],
       customAttributes: [
         {
-          className: "CoreCustomAttributes.DynamicSchema"
-        }
+          className: "CoreCustomAttributes.DynamicSchema",
+        },
       ],
       items: {
         testUnitSystem: {

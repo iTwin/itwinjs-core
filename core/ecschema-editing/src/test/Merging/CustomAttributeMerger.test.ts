@@ -25,8 +25,8 @@ describe("Custom Attribute merge", () => {
     ],
     customAttributes: [
       {
-        className: "CoreCustomAttributes.DynamicSchema"
-      }
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
     ],
   };
 

@@ -27,8 +27,8 @@ describe("Rename change tests", () => {
     ],
     customAttributes: [
       {
-        className: "CoreCustomAttributes.DynamicSchema"
-      }
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
     ],
   };
 

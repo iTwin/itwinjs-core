@@ -21,8 +21,8 @@ describe("Phenomenon merger tests", () => {
     ],
     customAttributes: [
       {
-        className: "CoreCustomAttributes.DynamicSchema"
-      }
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
     ],
   };
 

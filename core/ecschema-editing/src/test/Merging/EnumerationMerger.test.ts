@@ -25,8 +25,8 @@ describe("Enumeration merge tests", () => {
     ],
     customAttributes: [
       {
-        className: "CoreCustomAttributes.DynamicSchema"
-      }
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
     ],
   };
 

@@ -24,8 +24,8 @@ describe("Difference Conflict Resolving", () => {
       ],
       customAttributes: [
         {
-          className: "CoreCustomAttributes.DynamicSchema"
-        }
+          className: "CoreCustomAttributes.DynamicSchema",
+        },
       ],
       items: {
         SameNameOtherItemType: {

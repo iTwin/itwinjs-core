@@ -23,8 +23,8 @@ describe("Schema reference merging tests", () => {
     ],
     customAttributes: [
       {
-        className: "CoreCustomAttributes.DynamicSchema"
-      }
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
     ],
   };
 
@@ -85,7 +85,7 @@ describe("Schema reference merging tests", () => {
           name: "BisCore",
           version: "01.00.00",
         },
-      }]
+      }],
     });
     const bisCoreReference = await mergedSchema.getReference("BisCore");
     expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.01");

@@ -26,8 +26,8 @@ describe("KindOfQuantity merge tests", () => {
     ],
     customAttributes: [
       {
-        className: "CoreCustomAttributes.DynamicSchema"
-      }
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
     ],
   };
   const referenceJson = {

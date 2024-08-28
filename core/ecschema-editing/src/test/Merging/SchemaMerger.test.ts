@@ -86,8 +86,8 @@ describe("Schema merge tests", () => {
       ],
       customAttributes: [
         {
-          className: "CoreCustomAttributes.DynamicSchema"
-        }
+          className: "CoreCustomAttributes.DynamicSchema",
+        },
       ],
     }, targetContext);
 
@@ -126,8 +126,8 @@ describe("Schema merge tests", () => {
       ],
       customAttributes: [
         {
-          className: "CoreCustomAttributes.DynamicSchema"
-        }
+          className: "CoreCustomAttributes.DynamicSchema",
+        },
       ],
       items: {
         TestCustomAttribute: {

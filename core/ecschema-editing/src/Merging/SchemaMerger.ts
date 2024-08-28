@@ -9,13 +9,13 @@
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
+import { ECEditingStatus, SchemaEditingError } from "../Editing/Exception";
 import { type AnySchemaDifference, getSchemaDifferences, type SchemaDifference, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
 import { type SchemaEdits } from "./Edits/SchemaEdits";
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
 import * as Utils from "../Differencing/Utils";
-import { ECEditingStatus, SchemaEditingError } from "../ecschema-editing";
 
 /**
  * Defines the context of a Schema merging run.
