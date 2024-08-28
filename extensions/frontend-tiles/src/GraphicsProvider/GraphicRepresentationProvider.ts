@@ -179,7 +179,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
 
     const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
     for (const foundSource of foundSources) {
-      const graphicRepresentation = {
+      const graphicRepresentation: GraphicRepresentation = {
         displayName: foundSource.displayName,
         representationId: foundSource.id,
         status: foundSource.status,
@@ -188,7 +188,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
         dataSource: {
           iTwinId: args.dataSource.iTwinId,
           id: foundSource.request.iModelId,
-          versionId: foundSource.request.changesetId,
+          changeId: foundSource.request.changesetId,
           type: foundSource.request.exportType,
         },
       };
