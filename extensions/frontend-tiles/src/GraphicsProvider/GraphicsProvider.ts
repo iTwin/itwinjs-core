@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, Logger} from "@itwin/core-bentley";
-import { IModelApp} from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl} from "./GraphicRepresentationProvider";
-import { loggerCategory} from "../LoggerCategory";
+import { AccessToken, Logger } from "@itwin/core-bentley";
+import { IModelApp } from "@itwin/core-frontend";
+import { obtainGraphicRepresentationUrl } from "./GraphicRepresentationProvider";
+import { loggerCategory } from "../LoggerCategory";
 
 /** Arguments supplied  to [[obtainIModelTilesetUrl]].
  * @beta
