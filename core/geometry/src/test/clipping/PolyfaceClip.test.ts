@@ -5,17 +5,22 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
+import { compareWithTolerance, OrderedSet } from "@itwin/core-bentley";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { FacetIntersectOptions, FacetLocationDetail } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveChain } from "../../curve/CurveCollection";
+import { CurveOps } from "../../curve/CurveOps";
 import { AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
+import { Path } from "../../curve/Path";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { UnionRegion } from "../../curve/UnionRegion";
@@ -1156,6 +1161,83 @@ describe("PolyfaceClip", () => {
     }
     // make a single-face mesh that cuts all the way across . .
     GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "arnoldasSimpleClip");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ConstructClamp", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const options = new StrokeOptions();
+    options.angleTol = Angle.createDegrees(10);
+    let builder = PolyfaceBuilder.create(options);
+    const range = Range3d.createNull();
+    const extrusionLength = 30;
+    const thickness = 0.75;
+
+    // create clamp mesh
+    const line0 = LineSegment3d.createXYXY(20, 6, 1, 6);
+    const arc0 = Arc3d.createXY(Point3d.create(1, 5), 1, AngleSweep.createStartEndDegrees(90, 180));
+    const line1 = LineSegment3d.createXYXY(0, 5, 0, -5);
+    const arc1 = Arc3d.createXY(Point3d.create(1, -5), 1, AngleSweep.createStartEndDegrees(180, 270));
+    const line2 = LineSegment3d.createXYXY(1, -6, 20, -6);
+    const path0 = Path.createArray([line0, arc0, line1, arc1, line2]);
+    const path1 = CurveOps.constructCurveXYOffset(path0, thickness) as CurveChain;
+    path1.reverseChildrenInPlace();
+    const edge0 = LineSegment3d.create(path0.getChild(path0.children.length - 1)!.endPoint(), path1.getChild(0)!.startPoint());
+    const edge1 = LineSegment3d.create(path1.getChild(path1.children.length - 1)!.endPoint(), path0.getChild(0)!.startPoint());
+    const loop = Loop.create(...path0.children, edge0, ...path1.children, edge1);
+    const solid = LinearSweep.create(loop, Vector3d.create(0, 0, extrusionLength), true);
+    if (ck.testDefined(solid, "target solid created"))
+      builder.addLinearSweep(solid);
+    const solidMesh = builder.claimPolyface();
+    ck.testFalse(solidMesh.range(undefined, range).isNull, "solidMesh has positive range");
+
+    // create cylindrical clipper
+    builder = PolyfaceBuilder.create(options);
+    const circle = Arc3d.createCenterNormalRadius(Point3d.create(20, 3, 15), Vector3d.create(0, 1), 7.5);
+    const tool = LinearSweep.create(circle, Vector3d.create(0, 10), true);
+    if (ck.testDefined(tool, "tool solid created"))
+      builder.addLinearSweep(tool);
+    const clipVolume = ConvexClipPlaneSet.createConvexPolyface(builder.claimPolyface());
+
+    // clip the clamp mesh
+    const builders = ClippedPolyfaceBuilders.create(false, true, true);
+    PolyfaceClip.clipPolyfaceInsideOutside(solidMesh, clipVolume.clipper, builders);
+    let clampMesh = builders.claimPolyface(1, true);
+    if (ck.testDefined(clampMesh, "clipped mesh was returned"))
+      clampMesh = PolyfaceQuery.cloneWithMaximalPlanarFacets(clampMesh, options.angleTol.cloneScaled(0.001));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clampMesh);
+
+    // verifications
+    const loopArea = RegionOps.computeXYArea(loop);
+    if (ck.testDefined(loopArea, "loop area successfully computed")) {
+      ck.testLT(0, loopArea, "loop has positive area");
+      ck.testLT(0, clipVolume.volume, "clipper has positive volume");
+      ck.testNearNumber(loopArea * extrusionLength, PolyfaceQuery.sumTetrahedralVolumes(solidMesh), 1, "mesh and solid volumes are close");
+    }
+    if (ck.testDefined(clampMesh)) {
+      let numBadEdges = 0;
+      PolyfaceQuery.announceBoundaryEdges(clampMesh, () => ++numBadEdges, true, true, true);
+      ck.testExactNumber(0, numBadEdges, "clamp mesh has all interior edges");
+
+      // verify that all facets have the correct orientation, with normal pointing outward
+      const compareWithTol = (a: number, b: number) => compareWithTolerance(a, b, Geometry.smallMetricDistance);
+      const rayHits = new OrderedSet<number>(compareWithTol);
+      const addRayHit = (d: FacetLocationDetail) => { if (d.a > 0.1 * thickness) rayHits.add(d.a); return false; };
+      const intersectOptions = new FacetIntersectOptions();
+      intersectOptions.acceptIntersection = addRayHit; // record ray param if beyond ray.origin
+      for (const visitor = clampMesh.createVisitor(); visitor.moveToNextFacet(); ) {
+        rayHits.clear();
+        const ray = PolygonOps.centroidAreaNormal(visitor.point);
+        if (ck.testDefined(ray, "have facet normal")) {
+          PolyfaceQuery.intersectRay3d(clampMesh, ray, intersectOptions);
+          // if a normal points inward, the ray will have an odd # intersections with the mesh
+          ck.testExactNumber(0, rayHits.size % 2, "facet normal points outward");
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ConstructClamp");
     expect(ck.getNumErrors()).equals(0);
   });
 
