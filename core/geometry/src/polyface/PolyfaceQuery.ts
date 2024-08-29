@@ -635,8 +635,8 @@ export class PolyfaceQuery {
     includeMismatch: boolean = true,
     includeNull: boolean = true,
   ): void {
-    if (source === undefined)
-      return undefined;
+    if (source === undefined || (!includeTypical && !includeMismatch && !includeNull))
+      return;
     const edges = new IndexedEdgeMatcher();
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
     visitor.setNumWrap(1);
@@ -648,29 +648,22 @@ export class PolyfaceQuery {
       }
     }
     const boundaryEdges: SortableEdgeCluster[] = [];
-    const nullEdges: SortableEdgeCluster[] = [];
-    const allOtherEdges: SortableEdgeCluster[] = [];
-    edges.sortAndCollectClusters(undefined, boundaryEdges, nullEdges, allOtherEdges);
-    const badList = [];
-    if (includeTypical && boundaryEdges.length > 0)
-      badList.push(boundaryEdges);
-    if (includeNull && nullEdges.length > 0)
-      badList.push(nullEdges);
-    if (includeMismatch && allOtherEdges.length > 0)
-      badList.push(allOtherEdges);
-    if (badList.length === 0)
-      return undefined;
+    edges.sortAndCollectClusters(undefined,
+      includeTypical ? boundaryEdges : undefined,
+      includeNull ? boundaryEdges : undefined,
+      includeMismatch ? boundaryEdges : undefined,
+    );
+    if (boundaryEdges.length === 0)
+      return;
     const sourcePolyface = visitor.clientPolyface()!;
     const pointA = Point3d.create();
     const pointB = Point3d.create();
-    for (const list of badList) {
-      for (const e of list) {
-        const e1 = e instanceof SortableEdge ? e : e[0];
-        const indexA = e1.vertexIndexA;
-        const indexB = e1.vertexIndexB;
-        if (sourcePolyface.data.getPoint(indexA, pointA) && sourcePolyface.data.getPoint(indexB, pointB))
-          announceEdge(pointA, pointB, indexA, indexB, e1.facetIndex);
-      }
+    for (const e of boundaryEdges) {
+      const e1 = e instanceof SortableEdge ? e : e[0];
+      const indexA = e1.vertexIndexA;
+      const indexB = e1.vertexIndexB;
+      if (sourcePolyface.data.getPoint(indexA, pointA) && sourcePolyface.data.getPoint(indexB, pointB))
+        announceEdge(pointA, pointB, indexA, indexB, e1.facetIndex);
     }
   }
   /**
@@ -1008,8 +1001,8 @@ export class PolyfaceQuery {
   }
   /**
    * Return a mesh with
-   *  * clusters of adjacent, coplanar facets merged into larger facets.
-   *  * other facets included unchanged.
+   *  * clusters of adjacent, coplanar facets merged into larger (possibly non-convex) facets.
+   *  * other facets are unchanged.
    * @param mesh existing mesh or visitor.
    * @param maxSmoothEdgeAngle maximum dihedral angle across an edge between facets deemed coplanar. If undefined,
    * uses `Geometry.smallAngleRadians`.
@@ -1067,7 +1060,11 @@ export class PolyfaceQuery {
         partitionNormals[i].toRigidZFrame(localToWorld);
         if (localToWorld.inverse(worldToLocal)) {
           worldToLocal.multiplyPoint3dArrayArrayInPlace(edgeStrings);
-          const graph = HalfEdgeGraphMerge.formGraphFromChains(edgeStrings, true, HalfEdgeMask.BOUNDARY_EDGE);
+          // Regularize adds bridge edges to holes, and adds other edges to aid triangulation.
+          // But we aren't triangulating here. So if we don't have holes, we can skip regularization
+          // to avoid splitting the loop.
+          const regularize = !(chains instanceof Loop);
+          const graph = HalfEdgeGraphMerge.formGraphFromChains(edgeStrings, regularize, HalfEdgeMask.BOUNDARY_EDGE);
           if (graph) {
             HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph,
               new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
