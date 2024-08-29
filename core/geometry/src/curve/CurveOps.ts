@@ -130,7 +130,7 @@ export class CurveOps {
    * @param planeTolerance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
    * @returns chains, possibly wrapped in a [[BagOfCurves]].
    */
-  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance, planeTolerance: number | undefined = Geometry.smallMetricDistance): AnyChain | undefined {
+  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance, planeTolerance: number = Geometry.smallMetricDistance): AnyChain | undefined {
     const collector = new MultiChainCollector(gapTolerance, planeTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);
