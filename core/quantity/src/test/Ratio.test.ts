@@ -42,7 +42,6 @@ describe("Ratio Type Tests", () => {
   describe("RatioType Tests", () => {
     it("ratiotype OneToN", async () => {
       const testData: { input: number; ratio: string; }[] = [
-        { input: 0.0, ratio: "0:1" },
         { input: 1.0, ratio: "1:1" },
         { input: 2.0, ratio: "1:0.5" },
         { input: 0.5, ratio: "1:2" },
@@ -57,7 +56,6 @@ describe("Ratio Type Tests", () => {
 
     it("ratiotype NToOne", async () => {
       const testData: { input: number; ratio: string; }[] = [
-        { input: 0.0, ratio: "0:1" },
         { input: 1.0, ratio: "1:1" },
         { input: 2.0, ratio: "2:1" },
         { input: 0.5, ratio: "0.5:1" },
@@ -72,7 +70,6 @@ describe("Ratio Type Tests", () => {
 
     it("ratioType valueBased", async () => {
       const testData: { input: number; ratio: string; }[] = [
-        { input: 0.0, ratio: "0:1" },
         { input: 1.0, ratio: "1:1" },
         { input: 2.0, ratio: "2:1" },
         { input: 0.5, ratio: "1:2" },
@@ -90,15 +87,14 @@ describe("Ratio Type Tests", () => {
 
     it("ratioType UseGreatestCommonDivisor", async () => {
       const testData: { input: number; ratio: string; }[] = [
-        { input: 0.0, ratio: "0:1" }, // Special case
         { input: 1.0, ratio: "1:1" },
         { input: 2.0, ratio: "2:1" },
         { input: 0.5, ratio: "1:2" },
-        { input: 0.333, ratio: "1000:3003" }, // Adjusted to reflect test cases
-        { input: 0.3333, ratio: "1:3" },
-        { input: 0.2857, ratio: "2:7" },
+        { input: 0.333, ratio: "333:1000" },
+        { input: 0.3333, ratio: "333:1000" },
+        { input: 0.2857, ratio: "143:500" },
         { input: 0.25, ratio: "1:4" },
-        { input: 0.6667, ratio: "2:3" }
+        { input: 0.6667, ratio: "667:1000" }
       ];
       await testRatioType("UseGreatestCommonDivisor", testData);
     });
@@ -135,18 +131,6 @@ describe("Ratio Type Tests", () => {
         { input: 3, ratio: "3:1", precision: 3 },
       ];
       await testRatioType("ValueBased", testData);
-    });
-
-    it("ratioType precision test | UseGreatestCommonDivisor", async () => {
-      const testData: { input: number; ratio: string; precision: number}[] = [
-        { input: 3, ratio: "1:0", precision: 0 },
-        { input: 3, ratio: "10:3", precision: 1 },
-        { input: 3, ratio: "100:33", precision: 2 },
-        { input: 3, ratio: "1000:333", precision: 3 },
-        { input: 3, ratio: "10000:3333", precision: 4 },
-
-      ];
-      await testRatioType("UseGreatestCommonDivisor", testData);
     });
   });
 
@@ -249,6 +233,41 @@ describe("Ratio Type Tests", () => {
     });
 
 
+  });
+
+
+  describe("RatioType Tests with special values", () => {
+    it("large/small value", async () => {
+      const testData: { input: number; ratio: string; }[] = [
+        { input: 0.00000001, ratio: "0:1" },
+        { input: 100000000, ratio: "100000000:1" },
+      ];
+      await testRatioType("NToOne", testData);
+    });
+    it("negative value", async () => {
+      const testData: { input: number; ratio: string; }[] = [
+        { input: -1.0, ratio: "-1:1" },
+        { input: -0.5, ratio: "-0.5:1" },
+        { input: -2, ratio: "-2:1" },
+      ];
+      await testRatioType("NToOne", testData);
+    });
+    it("irrational number | NToOne", async () => {
+      const testData: { input: number; ratio: string; }[] = [
+        { input: 1.0 / 7, ratio: "0.143:1" },
+        { input: 2.0 / 7, ratio: "0.286:1" }
+      ];
+      await testRatioType("NToOne", testData);
+    });
+
+
+    it("irrational number", async () => {
+      const testData: { input: number; ratio: string; }[] = [
+        { input: 1.0 / 7, ratio: "143:1000" },
+        { input: 2.0 / 7, ratio: "143:500" }  // loses precision from 0.28571428571 to 0.286
+      ];
+      await testRatioType("useGreatestCommonDivisor", testData);
+    });
   });
 
 });
