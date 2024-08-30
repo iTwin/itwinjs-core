@@ -738,6 +738,82 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
       });
     });
+
+    it("should find a conflict between on different kind of quantities on primitive properties", async () => {
+      const unitItems = {
+        M: {
+          schemaItemType: "Unit",
+          phenomenon: "ConflictSchema.Length",
+          unitSystem: "ConflictSchema.Metric",
+          definition: "M",
+        },
+        Length: {
+          schemaItemType: "Phenomenon",
+          definition: "LENGTH(1)",
+          label: "length",
+        },
+        Metric: {
+          schemaItemType: "UnitSystem",
+          label: "metric",
+        },
+        KoQ_1: {
+          schemaItemType: "KindOfQuantity",
+          relativeError: 2,
+          persistenceUnit: "ConflictSchema.M",
+        },
+        KoQ_2: {
+          schemaItemType: "KindOfQuantity",
+          relativeError: 2,
+          persistenceUnit: "ConflictSchema.M",
+        },
+      };
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "int",
+                kindOfQuantity: "ConflictSchema.KoQ_2",
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "int",
+                kindOfQuantity: "ConflictSchema.KoQ_1",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyKindOfQuantity);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("path", "TestProperty");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.KoQ_2");
+        expect(conflict).to.have.a.property("target", "ConflictSchema.KoQ_1");
+        expect(conflict).to.have.a.property("description", "The property has different kind of quantities defined.");
+      });
+    });
   });
 
   describe("Base Class conflicts", () => {

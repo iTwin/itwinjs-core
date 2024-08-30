@@ -54,6 +54,7 @@ export enum ConflictCode {
   MixinAppliedMustDeriveFromConstraint = "C-1100",
 
   ConflictingPropertyName = "C-1300",
+  ConflictingPropertyKindOfQuantity = "C-1301",
 
   AbstractConstraintMustNarrowBaseConstraints = "C-1500",
   DerivedConstraintsMustNarrowBaseConstraints = "C-1501",

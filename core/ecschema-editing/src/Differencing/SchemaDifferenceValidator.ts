@@ -12,10 +12,13 @@ import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 import { ISchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 
 /**
- *
- * @param targetSchema
- * @param differences
- * @returns
+ * Validates the given array of schema differences and returns a list of conflicts if the
+ * validation finds violation against rules.
+ * @param differences   An array of schema differences.
+ * @param targetSchema  The target schema reference.
+ * @param sourceSchema  The source schema reference.
+ * @returns             An array of conflicts found when validating the difference.
+ * @internal
  */
 export async function validateDifferences(differences: AnySchemaDifference[], targetSchema: Schema, sourceSchema: Schema) {
   const visitor = new SchemaDifferenceValidationVisitor(targetSchema, sourceSchema);
@@ -367,6 +370,18 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
     if (entry.difference.type) {
       await this.createPropertyConflict(entry, property);
       return;
+    }
+
+    if (entry.difference.kindOfQuantity) {
+      this.addConflict({
+        code: ConflictCode.ConflictingPropertyKindOfQuantity,
+        schemaType: classItem.schemaItemType,
+        itemName: classItem.name,
+        path: property.name,
+        source: entry.difference.kindOfQuantity,
+        target: resolveLazyItemName(property.kindOfQuantity),
+        description: "The property has different kind of quantities defined.",
+      });
     }
 
     if ("enumeration" in entry.difference) {
