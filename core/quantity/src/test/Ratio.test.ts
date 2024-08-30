@@ -7,7 +7,7 @@ import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatProps, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvider } from "../core-quantity";
 
 
-describe("Ratio Type Tests", () => {
+describe("Ratio format tests", () => {
   async function testRatioType(ratioType: string, testData: { input: number; ratio: string; precision?:number}[]) {
     const ratioJson: FormatProps = {
       type: "Ratio",
@@ -30,12 +30,20 @@ describe("Ratio Type Tests", () => {
     assert.isTrue(v_h.isValid);
 
     const ratioFormatterSpec = await FormatterSpec.create(`${ratioType}`, ratioFormat, unitsProvider, v_h); //persisted unit
+    const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, v_h);
 
     for (const entry of testData) {
       if (null != entry.precision)
         ratioFormatterSpec.format.precision = entry.precision;
       const resultRatio = Formatter.formatQuantity(entry.input, ratioFormatterSpec);
       expect(resultRatio).to.equal(entry.ratio);
+
+      const parserRatioResult = Parser.parseQuantityString(entry.ratio, ratioParser);
+      if (!Parser.isParsedQuantity(parserRatioResult)) {
+        assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
+      }
+      expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.input}`).closeTo(entry.input, 0.0001);
+      
     }
   }
 
