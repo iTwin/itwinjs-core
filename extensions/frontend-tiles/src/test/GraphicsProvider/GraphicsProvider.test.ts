@@ -133,7 +133,9 @@ describe("obtainIModelTilesetUrl", () => {
       async (resource) => fetchExports(resource),
       async () => {
         const url = await obtainIModelTilesetUrl({
-          iModel,
+          iTwinId: iModel.iTwinId,
+          iModelId: iModel.iModelId,
+          changesetId: iModel.changeset?.id,
           accessToken,
           requireExactChangeset: args.exact,
         });
