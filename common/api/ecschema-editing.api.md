@@ -202,6 +202,8 @@ export enum ConflictCode {
     // (undocumented)
     ConflictingBaseClass = "C-100",
     // (undocumented)
+    ConflictingClassModifier = "C-103",
+    // (undocumented)
     ConflictingEnumerationType = "C-700",
     // (undocumented)
     ConflictingEnumeratorValue = "C-701",

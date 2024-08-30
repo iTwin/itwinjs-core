@@ -35,13 +35,6 @@ describe("Schema Difference Conflicts", () => {
 
   describe("Different schema conflicts", () => {
     it("should find a conflict if added schema reference has a already used alias.", async () => {
-      const schemaHeader = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "ConflictSchema",
-        version: "1.0.0",
-        alias: "conflict",
-      };
-
       const sourceContext = new SchemaContext();
       await Schema.fromJson({
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -867,6 +860,99 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.property("source", "ConflictSchema.KoQ_2");
         expect(conflict).to.have.a.property("target", "ConflictSchema.KoQ_1");
         expect(conflict).to.have.a.property("description", "The property has different kind of quantities defined.");
+      });
+    });
+  });
+
+  describe("Class modifier conflicts", () => {
+    it("should find a conflict if class has changed modifier from Abstract to Sealed", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            modifier: "Sealed",
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            modifier: "Abstract",
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "TestEntity")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingClassModifier);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestEntity");
+        expect(conflict).to.have.a.property("source", "Sealed");
+        expect(conflict).to.have.a.property("target", "Abstract");
+        expect(conflict).to.have.a.property("description", "Class has conflicting modifiers.");
+      });
+    });
+
+    it("should find a conflict if class has changed modifier from None to Abstract", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            modifier: "Abstract",
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            modifier: "None",
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "TestEntity")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingClassModifier);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestEntity");
+        expect(conflict).to.have.a.property("source", "Abstract");
+        expect(conflict).to.have.a.property("target", "None");
+        expect(conflict).to.have.a.property("description", "Class has conflicting modifiers.");
+      });
+    });
+
+    it("should not find a conflict if class has changed modifier from Sealed to None", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            modifier: "None",
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            modifier: "Sealed",
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "TestEntity")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.be.undefined;
       });
     });
   });

@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { AnySchemaDifference, AnySchemaItemDifference, ClassItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaOtherTypes, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 import { ISchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
@@ -171,7 +171,27 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
     }
 
     if (entry.changeType === "modify" && targetClassItem !== undefined) {
+      await this.visitClassModifierDifference(entry, targetClassItem);
       await this.visitBaseClassDifference(entry, targetClassItem);
+    }
+  }
+
+  /**
+   * Validation the modifiers of all types of ClassItemDifference union.
+   */
+  private async visitClassModifierDifference(entry: ClassItemDifference, targetClass: ECClass) {
+    if (entry.difference.modifier) {
+      const sourceModifier = parseClassModifier(entry.difference.modifier);
+      if (sourceModifier !== undefined && sourceModifier !== ECClassModifier.None) {
+        this.addConflict({
+          code: ConflictCode.ConflictingClassModifier,
+          schemaType: targetClass.schemaItemType,
+          itemName: targetClass.name,
+          source: entry.difference.modifier,
+          target: classModifierToString(targetClass.modifier),
+          description: "Class has conflicting modifiers.",
+        });
+      }
     }
   }
 

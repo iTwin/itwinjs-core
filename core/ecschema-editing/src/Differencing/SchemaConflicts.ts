@@ -46,6 +46,7 @@ export enum ConflictCode {
   ConflictingBaseClass = "C-100",
   RemovingBaseClass = "C-101",
   SealedBaseClass = "C-102",
+  ConflictingClassModifier = "C-103",
 
   ConflictingEnumerationType = "C-700",
   ConflictingEnumeratorValue = "C-701",
