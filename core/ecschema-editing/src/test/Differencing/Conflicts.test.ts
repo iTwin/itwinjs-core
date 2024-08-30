@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -9,16 +8,12 @@ import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing
 import { expect } from "chai";
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Difference Conflict Reporting", () => {
+describe("Schema Difference Conflicts", () => {
 
-  function findConflictItem({ conflicts }: SchemaDifferenceResult, name: string, path?: string) {
+  async function findConflictItem({ conflicts }: SchemaDifferenceResult, name: string, path?: string) {
     return conflicts && conflicts.find((entry) => {
       return entry.itemName === name && (entry.path === path || entry.path);
     });
-  }
-
-  function findDifferenceEntries({ differences }: SchemaDifferenceResult, itemName: string) {
-    return differences.filter((difference) => "itemName" in difference && difference.itemName === itemName);
   }
 
   async function runDifferences(sourceSchemaJson: SchemaProps, targetSchemaJson: SchemaProps) {
@@ -95,31 +90,13 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingItemName,
-        schemaType: "EntityClass",
-        itemName: "TestItem",
-        source: "EntityClass",
-        target: "KindOfQuantity",
-        description: "Target schema already contains a schema item with the name but different type.",
-        difference: {
-          customAttributes: [
-            {
-              className: "ConflictSchema.TestCustomAttributeClass",
-            },
-          ],
-          modifier: "Sealed",
-          properties: [{
-            description: "name of item",
-            label: "Name",
-            name: "Name",
-            priority: 0,
-            type: "PrimitiveProperty",
-            typeName: "string",
-          }],
-          schemaItemType: "EntityClass",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("schemaType", "KindOfQuantity");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("source", "EntityClass");
+        expect(conflict).to.have.a.property("target", "KindOfQuantity");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
       });
     });
 
@@ -210,52 +187,13 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingItemName,
-        schemaType: "RelationshipClass",
-        itemName: "TestItem",
-        source: "RelationshipClass",
-        target: "Mixin",
-        description: "Target schema already contains a schema item with the name but different type.",
-        difference: {
-          customAttributes: [
-            {
-              className: "ConflictSchema.TestCustomAttributeClass",
-            },
-          ],
-          description: "Description of TestRelationship",
-          modifier: "None",
-          schemaItemType: "RelationshipClass",
-          source: {
-            constraintClasses: [
-              "ConflictSchema.TestEntityClass",
-            ],
-            customAttributes: [
-              {
-                className: "ConflictSchema.TestCustomAttributeClass",
-              },
-            ],
-            multiplicity: "(0..*)",
-            polymorphic: true,
-            roleLabel: "refers to",
-          },
-          strength: "Referencing",
-          strengthDirection: "Forward",
-          target: {
-            constraintClasses: [
-              "ConflictSchema.TestEntityClass",
-            ],
-            customAttributes: [
-              {
-                className: "ConflictSchema.TestCustomAttributeClass",
-              },
-            ],
-            multiplicity: "(0..*)",
-            polymorphic: true,
-            roleLabel: "is referenced by",
-          },
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("schemaType", "Mixin");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("source", "RelationshipClass");
+        expect(conflict).to.have.a.property("target", "Mixin");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
       });
     });
 
@@ -311,25 +249,13 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingItemName,
-        schemaType: "Enumeration",
-        itemName: "TestItem",
-        source: "Enumeration",
-        target: "CustomAttributeClass",
-        description: "Target schema already contains a schema item with the name but different type.",
-        difference: {
-          enumerators: [
-            {
-              name: "EnumeratorOne",
-              value: 1,
-            },
-          ],
-          isStrict: undefined,
-          schemaItemType: "Enumeration",
-          type: "int",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("schemaType", "CustomAttributeClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("source", "Enumeration");
+        expect(conflict).to.have.a.property("target", "CustomAttributeClass");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
       });
     });
 
@@ -355,18 +281,13 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingItemName,
-        schemaType: "Phenomenon",
-        itemName: "TestItem",
-        source: "Phenomenon",
-        target: "PropertyCategory",
-        description: "Target schema already contains a schema item with the name but different type.",
-        difference: {
-          definition: "TestPhenomenon",
-          schemaItemType: "Phenomenon",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("schemaType", "PropertyCategory");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("source", "Phenomenon");
+        expect(conflict).to.have.a.property("target", "PropertyCategory");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
       });
     });
 
@@ -447,36 +368,13 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingItemName,
-        schemaType: "Format",
-        itemName: "TestItem",
-        source: "Format",
-        target: "StructClass",
-        description: "Target schema already contains a schema item with the name but different type.",
-        difference: {
-          composite: {
-            spacer: "",
-            units: [
-              {
-                label: "'",
-                name: "ConflictSchema.TestUnit",
-              },
-            ],
-          },
-          decimalSeparator: ",",
-          formatTraits: [
-            "KeepSingleZero",
-            "KeepDecimalPoint",
-            "ShowUnitLabel",
-          ],
-          precision: 8,
-          schemaItemType: "Format",
-          thousandSeparator: ".",
-          type: "Fractional",
-          uomSeparator: "",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("schemaType", "StructClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("source", "Format");
+        expect(conflict).to.have.a.property("target", "StructClass");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
       });
     });
 
@@ -548,15 +446,13 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingItemName,
-        schemaType: "EntityClass",
-        itemName: "TestItem",
-        source: "EntityClass",
-        target: "StructClass",
-        description: "Target schema already contains a schema item with the name but different type.",
-        difference: sourceSchema.items.TestItem,
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("schemaType", "StructClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("source", "EntityClass");
+        expect(conflict).to.have.a.property("target", "StructClass");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
       });
     });
   });
@@ -596,20 +492,14 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingPropertyName,
-        schemaType: "EntityClass",
-        itemName: "TestItem",
-        path: "TestProperty",
-        source: "string",
-        target: "double",
-        description: "Target class already contains a property with a different type.",
-        difference: {
-          name: "TestProperty",
-          type: "PrimitiveProperty",
-          typeName: "string",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("path", "TestProperty");
+        expect(conflict).to.have.a.property("source", "string");
+        expect(conflict).to.have.a.property("target", "double");
+        expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
       });
     });
 
@@ -647,22 +537,14 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingPropertyName,
-        schemaType: "EntityClass",
-        itemName: "TestItem",
-        path: "TestProperty",
-        source: "PrimitiveArrayProperty",
-        target: "PrimitiveProperty",
-        description: "Target class already contains a property with a different type.",
-        difference: {
-          maxOccurs: 2147483647,
-          minOccurs: 0,
-          name: "TestProperty",
-          type: "PrimitiveArrayProperty",
-          typeName: "int",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("path", "TestProperty");
+        expect(conflict).to.have.a.property("source", "[int]");
+        expect(conflict).to.have.a.property("target", "string");
+        expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
       });
     });
 
@@ -712,20 +594,14 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingPropertyName,
-        schemaType: "EntityClass",
-        itemName: "TestItem",
-        path: "TestProperty",
-        source: "ConflictSchema.TestEnum",
-        target: undefined,
-        description: "Target class already contains a property with a different type.",
-        difference: {
-          name: "TestProperty",
-          type: "PrimitiveProperty",
-          typeName: "ConflictSchema.TestEnum",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("path", "TestProperty");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.TestEnum");
+        expect(conflict).to.have.a.property("target", "int");
+        expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
       });
     });
 
@@ -778,20 +654,14 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingPropertyName,
-        schemaType: "EntityClass",
-        itemName: "TestItem",
-        path: "TestProperty",
-        source: "PrimitiveProperty",
-        target: "StructArrayProperty",
-        description: "Target class already contains a property with a different type.",
-        difference: {
-          name: "TestProperty",
-          type: "PrimitiveProperty",
-          typeName: "ConflictSchema.TestEnum",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("path", "TestProperty");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.TestEnum");
+        expect(conflict).to.have.a.property("target", "[ConflictSchema.TestStruct]");
+        expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
       });
     });
 
@@ -858,21 +728,14 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findDifferenceEntries(differences, "TestItem")).has.lengthOf(0);
-      expect(findConflictItem(differences, "TestItem")).deep.equals({
-        code: ConflictCode.ConflictingPropertyName,
-        schemaType: "EntityClass",
-        itemName: "TestItem",
-        path: "TestProperty",
-        source: "NavigationProperty",
-        target: "StructProperty",
-        description: "Target class already contains a property with a different type.",
-        difference: {
-          direction: "Backward",
-          name: "TestProperty",
-          relationshipName: "ConflictSchema.TestRelationship",
-          type: "NavigationProperty",
-        },
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("path", "TestProperty");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.TestRelationship");
+        expect(conflict).to.have.a.property("target", "ConflictSchema.TestStruct");
+        expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
       });
     });
   });
@@ -926,40 +789,40 @@ describe("Difference Conflict Reporting", () => {
 
     it("should find a conflict for changing base classes", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "ConflictingBaseClassEntity")).deep.equals({
-        code: ConflictCode.ConflictingBaseClass,
-        schemaType: "EntityClass",
-        itemName: "ConflictingBaseClassEntity",
-        path: "$baseClass",
-        source: "ConflictSchema.InvalidBaseClassEntity",
-        target: "ConflictSchema.EmptyAbstractEntity",
-        description: "BaseClass is not valid, source class must derive from target.",
+      await expect(findConflictItem(differences, "ConflictingBaseClassEntity")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingBaseClass);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "ConflictingBaseClassEntity");
+        expect(conflict).to.have.a.property("path", "$baseClass");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.InvalidBaseClassEntity");
+        expect(conflict).to.have.a.property("target", "ConflictSchema.EmptyAbstractEntity");
+        expect(conflict).to.have.a.property("description", "BaseClass is not valid, source class must derive from target.");
       });
     });
 
-    it("should find a conflict for invalid base class value", async () => {
+    it("should find a conflict if a base class is removed", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "InvalidBaseClassEntity")).deep.equals({
-        code: ConflictCode.RemovingBaseClass,
-        schemaType: "EntityClass",
-        itemName: "InvalidBaseClassEntity",
-        path: "$baseClass",
-        source: undefined,
-        target: "ConflictSchema.EmptyAbstractEntity",
-        description: "BaseClass cannot be set unset if there has been a baseClass before.",
+      await expect(findConflictItem(differences, "InvalidBaseClassEntity")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.RemovingBaseClass);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "InvalidBaseClassEntity");
+        expect(conflict).to.have.a.property("path", "$baseClass");
+        expect(conflict).to.have.a.property("source", null);
+        expect(conflict).to.have.a.property("target", "ConflictSchema.EmptyAbstractEntity");
+        expect(conflict).to.have.a.property("description", "BaseClass cannot be removed, if there has been a baseClass before.");
       });
     });
 
     it("should find a conflict if change tries to assign a sealed baseclass value", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "InvalidBaseClassEntityWithSealedBaseClass")).deep.equals({
-        code: ConflictCode.SealedBaseClass,
-        schemaType: "EntityClass",
-        itemName: "InvalidBaseClassEntityWithSealedBaseClass",
-        path: "$baseClass",
-        source: "ConflictSchema.SealedBaseClassEntity",
-        target: undefined,
-        description: "BaseClass is sealed.",
+      await expect(findConflictItem(differences, "InvalidBaseClassEntityWithSealedBaseClass")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.SealedBaseClass);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "InvalidBaseClassEntityWithSealedBaseClass");
+        expect(conflict).to.have.a.property("path", "$baseClass");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.SealedBaseClassEntity");
+        expect(conflict).to.have.a.property("target", undefined);
+        expect(conflict).to.have.a.property("description", "BaseClass is sealed.");
       });
     });
   });
@@ -1006,14 +869,14 @@ describe("Difference Conflict Reporting", () => {
       };
 
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "ConflictingMixinEntity")).deep.equals({
-        code: ConflictCode.MixinAppliedMustDeriveFromConstraint,
-        schemaType: "EntityClass",
-        itemName: "ConflictingMixinEntity",
-        path: "$mixins",
-        source: "ConflictSchema.ConflictingMixin",
-        target: undefined,
-        description: "Mixin cannot applied to this class.",
+      await expect(findConflictItem(differences, "ConflictingMixinEntity")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.MixinAppliedMustDeriveFromConstraint);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "ConflictingMixinEntity");
+        expect(conflict).to.have.a.property("path", "$mixins");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.ConflictingMixin");
+        expect(conflict).to.have.a.property("target", undefined);
+        expect(conflict).to.have.a.property("description", "Mixin cannot applied to this class.");
       });
     });
   });
@@ -1073,26 +936,26 @@ describe("Difference Conflict Reporting", () => {
 
     it("should find a conflict for conflicting enumerator value", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "ConflictEnumerators")).deep.equals({
-        code: ConflictCode.ConflictingEnumeratorValue,
-        schemaType: "Enumeration",
-        itemName: "ConflictEnumerators",
-        path: "EnumeratorOne",
-        source: 1000,
-        target: 1,
-        description: "Enumerator values must not differ.",
+      await expect(findConflictItem(differences, "ConflictEnumerators")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingEnumeratorValue);
+        expect(conflict).to.have.a.property("schemaType", "Enumeration");
+        expect(conflict).to.have.a.property("itemName", "ConflictEnumerators");
+        expect(conflict).to.have.a.property("path", "EnumeratorOne");
+        expect(conflict).to.have.a.property("source", 1000);
+        expect(conflict).to.have.a.property("target", 1);
+        expect(conflict).to.have.a.property("description", "Enumerators must have unique values.");
       });
     });
 
     it("should find a conflict for enumerations with different primitive types", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "ConflictEnumerationType")).deep.equals({
-        code: ConflictCode.ConflictingEnumerationType,
-        schemaType: "Enumeration",
-        itemName: "ConflictEnumerationType",
-        source: "string",
-        target: "int",
-        description: "Enumeration has a different primitive type.",
+      await expect(findConflictItem(differences, "ConflictEnumerationType")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingEnumerationType);
+        expect(conflict).to.have.a.property("schemaType", "Enumeration");
+        expect(conflict).to.have.a.property("itemName", "ConflictEnumerationType");
+        expect(conflict).to.have.a.property("source", "string");
+        expect(conflict).to.have.a.property("target", "int");
+        expect(conflict).to.have.a.property("description", "Enumeration has a different primitive type.");
       });
     });
   });
@@ -1156,13 +1019,13 @@ describe("Difference Conflict Reporting", () => {
 
     it("should find a conflict for conflicting KindOfQuantity persistence unit value", async () => {
       const differences = await runDifferences(sourceSchema, targetSchema);
-      expect(findConflictItem(differences, "ConflictKoQ")).deep.equals({
-        code: ConflictCode.ConflictingPersistenceUnit,
-        schemaType: "KindOfQuantity",
-        itemName: "ConflictKoQ",
-        source: "ConflictSchema.SQ_M",
-        target: "ConflictSchema.M",
-        description: "Kind of Quantity has a different persistence unit.",
+      await expect(findConflictItem(differences, "ConflictKoQ")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPersistenceUnit);
+        expect(conflict).to.have.a.property("schemaType", "KindOfQuantity");
+        expect(conflict).to.have.a.property("itemName", "ConflictKoQ");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.SQ_M");
+        expect(conflict).to.have.a.property("target", "ConflictSchema.M");
+        expect(conflict).to.have.a.property("description", "Kind of Quantity has a different persistence unit.");
       });
     });
   });

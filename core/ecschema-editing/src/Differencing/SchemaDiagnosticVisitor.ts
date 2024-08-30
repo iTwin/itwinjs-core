@@ -9,9 +9,9 @@
 import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
-  AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass, ECClassModifier,
-  Enumeration, KindOfQuantity, Mixin, Property, PropertyProps,
-  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, SchemaItemType,
+  AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass,
+  Enumeration, Mixin, Property, PropertyProps,
+  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem,
 } from "@itwin/ecschema-metadata";
 import {
   type AnySchemaItemDifference,
@@ -27,23 +27,7 @@ import {
   type SchemaDifference,
   SchemaOtherTypes,
   type SchemaReferenceDifference,
-  type SchemaType,
 } from "./SchemaDifference";
-import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
-
-/**
- * Recursive synchronous function to figure whether a given class derived from
- * a class with the given baseClassName.
- */
-function derivedFrom(ecClass: ECClass | undefined, baseClassName: string): boolean {
-  if (ecClass === undefined) {
-    return false;
-  }
-  if (ecClass && ecClass.name === baseClassName) {
-    return true;
-  }
-  return derivedFrom(ecClass.getBaseClassSync(), baseClassName);
-}
 
 /**
  * The SchemaDiagnosticVisitor is a visitor implementation for diagnostic entries
@@ -57,18 +41,12 @@ export class SchemaDiagnosticVisitor {
   public readonly schemaItemDifferences: Array<AnySchemaItemDifference>;
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
-  public readonly conflicts: Array<SchemaDifferenceConflict>;
 
   constructor() {
     this.schemaDifferences = [];
     this.schemaItemDifferences = [];
     this.schemaItemPathDifferences = [];
     this.customAttributeDifferences = [];
-    this.conflicts = [];
-  }
-
-  private addConflict(conflict: SchemaDifferenceConflict) {
-    this.conflicts.push(conflict);
   }
 
   /**
@@ -94,6 +72,7 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.CustomAttributeClassDelta:
       case SchemaCompareCodes.FormatDelta:
       case SchemaCompareCodes.InvertedUnitDelta:
+      case SchemaCompareCodes.KoqDelta:
       case SchemaCompareCodes.MixinDelta:
       case SchemaCompareCodes.PhenomenonDelta:
       case SchemaCompareCodes.PropertyCategoryDelta:
@@ -103,8 +82,6 @@ export class SchemaDiagnosticVisitor {
 
       case SchemaCompareCodes.EnumerationDelta:
         return this.visitChangedEnumeration(diagnostic);
-      case SchemaCompareCodes.KoqDelta:
-        return this.visitChangedKindOfQuantity(diagnostic);
 
       case SchemaCompareCodes.EnumeratorDelta:
         return this.visitChangedEnumerator(diagnostic);
@@ -183,17 +160,9 @@ export class SchemaDiagnosticVisitor {
 
   private visitChangedSchemaItem(diagnostic: AnyDiagnostic) {
     const schemaItem = diagnostic.ecDefinition as AnySchemaItem;
-    const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [string, unknown, unknown];
+    const [propertyName, sourceValue, _targetValue] = diagnostic.messageArgs as [string, unknown, unknown];
     if (propertyName === "schemaItemType") {
-      return this.addConflict({
-        code: ConflictCode.ConflictingItemName,
-        schemaType: schemaItem.schemaItemType,
-        itemName: schemaItem.name,
-        source: sourceValue,
-        target: targetValue,
-        description: "Target schema already contains a schema item with the name but different type.",
-        difference: schemaItem.toJSON(),
-      });
+
     }
 
     if (sourceValue === undefined) {
@@ -220,40 +189,10 @@ export class SchemaDiagnosticVisitor {
     (modifyEntry.difference as any)[propertyName] = sourceValue;
   }
 
-  private visitChangedKindOfQuantity(diagnostic: AnyDiagnostic) {
-    const kindOfQuantity = diagnostic.ecDefinition as KindOfQuantity;
-    const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [string, string, string];
-
-    if (propertyName === "persistenceUnit") {
-      return this.addConflict({
-        code: ConflictCode.ConflictingPersistenceUnit,
-        schemaType: SchemaItemType.KindOfQuantity,
-        itemName: kindOfQuantity.name,
-        source: sourceValue,
-        target: targetValue,
-        description: "Kind of Quantity has a different persistence unit.",
-      });
-    }
-
-    return this.visitChangedSchemaItem(diagnostic);
-  }
-
   private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
     if (this.schemaItemPathDifferences.find((entry) => entry.changeType === "add" && entry.itemName === enumeration.name)) {
       return;
-    }
-
-    const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [string, string, string];
-    if (propertyName === "type") {
-      return this.addConflict({
-        code: ConflictCode.ConflictingEnumerationType,
-        schemaType: SchemaItemType.Enumeration,
-        itemName: enumeration.name,
-        source: sourceValue,
-        target: targetValue,
-        description: "Enumeration has a different primitive type.",
-      });
     }
 
     return this.visitChangedSchemaItem(diagnostic);
@@ -281,23 +220,10 @@ export class SchemaDiagnosticVisitor {
     });
   }
 
-  private lookupConflictEntry(code: ConflictCode, schemaType: SchemaType, itemName: string, path: string) {
-    return this.conflicts.find((change) => {
-      return change.code === code
-        && change.schemaType === schemaType
-        && change.itemName === itemName
-        && change.path === path;
-    });
-  }
-
   private visitChangedEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
-    const [enumerator, propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any, any];
+    const [enumerator, propertyName, sourceValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any];
     if (this.lookupEnumeratorEntry("add", enumeration.name, enumerator.name)) {
-      return;
-    }
-
-    if (!this.validateEnumerator(enumeration, enumerator, propertyName, sourceValue, targetValue)) {
       return;
     }
 
@@ -321,23 +247,6 @@ export class SchemaDiagnosticVisitor {
     }
   }
 
-  private validateEnumerator(enumeration: Enumeration, enumerator: AnyEnumerator, propertyName: string, sourceValue: unknown, targetValue: unknown) {
-    if (propertyName === "value") {
-      this.addConflict({
-        code: ConflictCode.ConflictingEnumeratorValue,
-        schemaType: SchemaItemType.Enumeration,
-        itemName: enumeration.name,
-        path: enumerator.name,
-        source: sourceValue,
-        target: targetValue,
-        description: "Enumerator values must not differ.",
-      });
-      return false;
-    }
-
-    return true;
-  }
-
   private visitMissingProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
     this.schemaItemPathDifferences.push({
@@ -351,10 +260,7 @@ export class SchemaDiagnosticVisitor {
 
   private visitChangedProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
-    const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [keyof PropertyProps, any, any];
-    if (!this.validatePropertyChange(property, propertyName, sourceValue, targetValue)) {
-      return;
-    }
+    const [propertyName, sourceValue] = diagnostic.messageArgs as [keyof PropertyProps, any, any];
 
     let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is ClassPropertyDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Property && entry.itemName === property.class.name && entry.path === property.name;
@@ -376,34 +282,9 @@ export class SchemaDiagnosticVisitor {
     }
   }
 
-  private validatePropertyChange(ecProperty: Property, propertyName: string, sourceValue: unknown, targetValue: unknown): boolean {
-    if (propertyName === "type"
-      || propertyName === "primitiveType"
-      || (propertyName === "enumeration" && (sourceValue === undefined || targetValue === undefined))) {
-      if (!this.lookupConflictEntry(ConflictCode.ConflictingPropertyName, ecProperty.class.schemaItemType,
-        ecProperty.class.name, ecProperty.name)) {
-        this.addConflict({
-          code: ConflictCode.ConflictingPropertyName,
-          schemaType: ecProperty.class.schemaItemType,
-          itemName: ecProperty.class.name,
-          path: ecProperty.name,
-          source: sourceValue,
-          target: targetValue,
-          description: "Target class already contains a property with a different type.",
-          difference: ecProperty.toJSON(),
-        });
-        return false;
-      }
-    }
-    return true;
-  }
-
   private visitMissingBaseClass(diagnostic: AnyDiagnostic) {
     const ecClass = diagnostic.ecDefinition as ECClass;
-    const [sourceBaseClass, targetBaseClass] = diagnostic.messageArgs as [ECClass, ECClass];
-    if (!this.validateBaseClassChange(ecClass, sourceBaseClass, targetBaseClass)) {
-      return;
-    }
+    const [sourceBaseClass] = diagnostic.messageArgs as [ECClass, ECClass];
 
     let modifyEntry = this.schemaItemDifferences.find((entry): entry is ClassItemDifference => {
       return entry.changeType === "modify" && entry.schemaType === ecClass.schemaItemType && entry.itemName === ecClass.name;
@@ -419,57 +300,12 @@ export class SchemaDiagnosticVisitor {
       this.schemaItemDifferences.push(modifyEntry);
     }
 
-    modifyEntry.difference.baseClass = sourceBaseClass.fullName;
-  }
-
-  private validateBaseClassChange(targetClass: ECClass, sourceBaseClass?: ECClass, targetBaseClass?: ECClass): boolean {
-    if (sourceBaseClass === undefined) {
-      this.addConflict({
-        code: ConflictCode.RemovingBaseClass,
-        schemaType: targetClass.schemaItemType,
-        itemName: targetClass.name,
-        path: "$baseClass",
-        source: undefined,
-        target: targetBaseClass?.fullName,
-        description: "BaseClass cannot be set unset if there has been a baseClass before.",
-      });
-      return false;
-    }
-
-    if (sourceBaseClass.modifier === ECClassModifier.Sealed) {
-      this.addConflict({
-        code: ConflictCode.SealedBaseClass,
-        schemaType: targetClass.schemaItemType,
-        itemName: targetClass.name,
-        path: "$baseClass",
-        source: sourceBaseClass.fullName,
-        target: targetBaseClass?.fullName,
-        description: "BaseClass is sealed.",
-      });
-      return false;
-    }
-
-    if (targetBaseClass && !derivedFrom(sourceBaseClass, targetBaseClass.name)) {
-      this.addConflict({
-        code: ConflictCode.ConflictingBaseClass,
-        schemaType: targetClass.schemaItemType,
-        itemName: targetClass.name,
-        path: "$baseClass",
-        source: sourceBaseClass.fullName,
-        target: targetBaseClass.fullName,
-        description: "BaseClass is not valid, source class must derive from target.",
-      });
-      return false;
-    }
-    return true;
+    modifyEntry.difference.baseClass = sourceBaseClass !== undefined ? sourceBaseClass.fullName : undefined;
   }
 
   private visitMissingMixinOnClass(diagnostic: AnyDiagnostic) {
     const ecClass = diagnostic.ecDefinition as ECClass;
     const [mixin] = diagnostic.messageArgs as [Mixin];
-    if (!this.validateMixin(ecClass, mixin)) {
-      return;
-    }
 
     let modifyEntry = this.schemaItemDifferences.find((entry): entry is EntityClassMixinDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.EntityClassMixin && entry.itemName === ecClass.name;
@@ -485,23 +321,6 @@ export class SchemaDiagnosticVisitor {
       this.schemaItemDifferences.push(modifyEntry);
     }
     modifyEntry.difference.push(mixin.fullName);
-  }
-
-  private validateMixin(targetClass: ECClass, mixin: Mixin): boolean {
-    if (mixin.appliesTo && !derivedFrom(targetClass, mixin.appliesTo.name)) {
-      this.addConflict({
-        code: ConflictCode.MixinAppliedMustDeriveFromConstraint,
-        schemaType: targetClass.schemaItemType,
-        itemName: targetClass.name,
-        path: "$mixins",
-        source: mixin.fullName,
-        target: undefined,
-        description: "Mixin cannot applied to this class.",
-      });
-      return false;
-    }
-
-    return true;
   }
 
   private visitMissingRelationshipConstraintClass(diagnostic: AnyDiagnostic) {
