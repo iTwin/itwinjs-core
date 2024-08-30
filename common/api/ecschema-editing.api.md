@@ -210,6 +210,8 @@ export enum ConflictCode {
     // (undocumented)
     ConflictingPersistenceUnit = "C-1010",
     // (undocumented)
+    ConflictingPropertyKindOfQuantity = "C-1301",
+    // (undocumented)
     ConflictingPropertyName = "C-1300",
     // (undocumented)
     ConflictingReferenceAlias = "C-002",
@@ -2087,7 +2089,6 @@ export interface SchemaDifference {
 export interface SchemaDifferenceConflict {
     readonly code: ConflictCode;
     readonly description: string;
-    readonly difference?: unknown;
     readonly itemName?: string;
     readonly path?: string;
     readonly schemaType: SchemaType;
