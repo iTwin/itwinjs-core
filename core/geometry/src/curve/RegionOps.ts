@@ -659,7 +659,8 @@ export class RegionOps {
     return SortablePolygon.sortAsAnyRegion(loopAndArea);
   }
   /**
-   * Find all areas bounded by the unstructured, possibly intersecting curves.
+   * Find all xy-areas bounded by the unstructured, possibly intersecting curves.
+   * * For best results, input curves should be parallel to the xy-plane, as z-coordinates are ignored.
    * * A common use case of this method is to assemble the bounding "exterior" loop (or loops) containing the
    * input curves.
    * * This method does not add bridge edges to connect outer loops to inner loops. Each disconnected loop,
