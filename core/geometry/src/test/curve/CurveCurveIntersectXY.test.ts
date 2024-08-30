@@ -983,7 +983,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment3, false, true, 1);
     dx += 20;
     const lineSegment4 = LineSegment3d.create(Point3d.create(100, 15), Point3d.create(105, 15));
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, true, true, 1);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, true, true, 2);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, false, true, 1);
     dx += 20;
@@ -1010,7 +1010,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString3, false, true, 1);
     dx += 20;
     const lineString4 = LineString3d.create(Point3d.create(100, 15), Point3d.create(105, 15));
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, true, true, 1);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, true, true, 2);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, false, true, 1);
     dx += 20;
@@ -1245,11 +1245,11 @@ describe("CurveCurveIntersectXY", () => {
       ),
     );
 
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, true, true, 3);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, true, true, 4);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, true, false, 1);
     dx += 20;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, false, true, 2);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, false, true, 3);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, false, false, 0);
 
@@ -1298,9 +1298,9 @@ describe("CurveCurveIntersectXY", () => {
 
     let dx = 0;
     const dy = 0;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, true, true, 2);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, true, true, 3);
     dx += 20;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, true, false, 2);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, true, false, 3);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, false, true, 0);
     dx += 20;
@@ -1349,15 +1349,52 @@ describe("CurveCurveIntersectXY", () => {
       ),
     );
     const curveChain1 = CurveChainWithDistanceIndex.createCapture(loop);
+    ck.testType(curveChain1.path, Path, "CurveChainWithDistanceIndex stores a Path even when created from a Loop");
 
     let dx = 0, dy = 0;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, true, true, 2);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, true, true, 5);
     dx += 20;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, true, false, 2);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, true, false, 3);
     dx += 20;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, false, true, 0);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, false, true, 2);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, false, false, 0);
+
+    const pathWithCurveChain = Path.create(curveChain1.clone());
+    for (let i = 0; i < pathWithCurveChain.children.length; ++i) {
+      ck.testTrue(
+        pathWithCurveChain.children[i].isAlmostEqual(curveChain1.path.children[i]),
+        "Embedding a CurveChainWithDistanceIndex in a Path loses its distance index",
+      );
+    }
+
+    dx = 0;
+    dy += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, pathWithCurveChain, true, true, 5);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, pathWithCurveChain, true, false, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, pathWithCurveChain, false, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, pathWithCurveChain, false, false, 0);
+
+    const loopWithCurveChain = Loop.create(curveChain1.clone());
+    for (let i = 0; i < loopWithCurveChain.children.length; ++i) {
+      ck.testTrue(
+        loopWithCurveChain.children[i].isAlmostEqual(curveChain1.path.children[i]),
+        "Embedding a CurveChainWithDistanceIndex in a Loop loses its distance index",
+      );
+    }
+
+    dx = 0;
+    dy += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loopWithCurveChain, true, true, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loopWithCurveChain, true, false, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loopWithCurveChain, false, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loopWithCurveChain, false, false, 0);
 
     const path2 = Path.create(
       LineSegment3d.create(Point3d.create(95, 16), Point3d.create(91, 16)),
@@ -1371,11 +1408,11 @@ describe("CurveCurveIntersectXY", () => {
 
     dx = 0;
     dy += 30;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, true, true, 3);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, true, true, 4);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, true, false, 1);
     dx += 20;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, false, true, 2);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, false, true, 3);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, false, false, 0);
 
@@ -1464,11 +1501,11 @@ describe("CurveCurveIntersectXY", () => {
     const curveChain1 = CurveChainWithDistanceIndex.createCapture(path1);
 
     let dx = 0, dy = 0;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, true, true, 2);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, true, true, 3);
     dx += 40;
     captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, true, false, 0);
     dx += 40;
-    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, false, true, 2);
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, false, true, 3);
     dx += 40;
     captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, false, false, 0);
 
