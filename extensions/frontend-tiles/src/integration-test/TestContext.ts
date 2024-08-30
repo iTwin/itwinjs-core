@@ -29,8 +29,8 @@ export class TestContext {
     };
 
     const user = {
-      email: process.env.TEST_USERNAME || "",
-      password: process.env.TEST_PASSWORD || "",
+      email: process.env.MES_INTEGRATION_USERNAME || "",
+      password: process.env.MES_INTEGRATION_PASSWORD || "",
     };
 
     // Generate access token
