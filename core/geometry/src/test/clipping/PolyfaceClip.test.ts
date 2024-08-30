@@ -893,14 +893,14 @@ describe("PolyfaceClip", () => {
       const partitionedIndices = PolyfaceQuery.partitionFacetIndicesByVisibilityVector(meshA, Vector3d.unitZ(), sideAngle);
       const meshes = PolyfaceQuery.clonePartitions(meshA, partitionedIndices);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, 0, dzFront);
-      PolyfaceQuery.markPairedEdgesInvisible(meshes[0] as IndexedPolyface, Angle.createDegrees(5));
-      PolyfaceQuery.markPairedEdgesInvisible(meshes[1] as IndexedPolyface, Angle.createDegrees(5));
+      PolyfaceQuery.markPairedEdgesInvisible(meshes[0], Angle.createDegrees(5));
+      PolyfaceQuery.markPairedEdgesInvisible(meshes[1], Angle.createDegrees(5));
 
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[0], 0, 0, dzFront);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[2], 0, 0, dzSide);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshes[1], 0, 0, dzRear);
-      const front = meshes[0] as IndexedPolyface;
-      const rear = meshes[1] as IndexedPolyface;
+      const front = meshes[0];
+      const rear = meshes[1];
       rear.reverseIndices();
       const cutFill = PolyfaceClip.computeCutFill(front, rear);
 
