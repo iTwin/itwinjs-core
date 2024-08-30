@@ -7,7 +7,7 @@
  */
 
 import { ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { AnySchemaDifference, AnySchemaItemDifference, ClassItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
+import { AnySchemaDifference, AnySchemaItemDifference, ClassItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaOtherTypes, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
 import { ISchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 
@@ -69,7 +69,18 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
    * Visitor implementation for handling SchemaReferenceDifference.
    * @internal
    */
-  public async visitSchemaReferenceDifference(_entry: SchemaReferenceDifference) {
+  public async visitSchemaReferenceDifference(entry: SchemaReferenceDifference) {
+    const sourceSchemaReference = await this._sourceSchema.getReference(entry.difference.name) as Schema;
+    const targetSchemaReference = this._targetSchema.getReferenceNameByAlias(sourceSchemaReference.alias);
+    if (targetSchemaReference && targetSchemaReference !== sourceSchemaReference.name) {
+      this.addConflict({
+        code: ConflictCode.ConflictingReferenceAlias,
+        schemaType: SchemaOtherTypes.SchemaReference,
+        source: entry.difference.name,
+        target: targetSchemaReference,
+        description: "Target schema already references a different schema with this alias.",
+      });
+    }
   }
 
   /**

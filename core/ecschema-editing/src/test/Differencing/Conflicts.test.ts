@@ -33,6 +33,61 @@ describe("Schema Difference Conflicts", () => {
     alias: "conflict",
   };
 
+  describe("Different schema conflicts", () => {
+    it("should find a conflict if added schema reference has a already used alias.", async () => {
+      const schemaHeader = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ConflictSchema",
+        version: "1.0.0",
+        alias: "conflict",
+      };
+
+      const sourceContext = new SchemaContext();
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceB",
+        version: "1.0.0",
+        alias: "ref",
+      }, sourceContext);
+      const sourceSchema = await Schema.fromJson({
+        ...schemaHeader,
+        references: [
+          {
+            name: "ReferenceB",
+            version: "1.0.0",
+          },
+        ],
+      }, sourceContext);
+
+      const targetContext = new SchemaContext();
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceA",
+        version: "1.0.0",
+        alias: "ref",
+      }, targetContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...schemaHeader,
+        references: [
+          {
+            name: "ReferenceA",
+            version: "1.0.0",
+          },
+        ],
+      }, targetContext);
+
+      const differences = await getSchemaDifferences(targetSchema, sourceSchema);
+      await expect(Promise.resolve(differences.conflicts![0])).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingReferenceAlias);
+        expect(conflict).to.have.a.property("schemaType", "SchemaReference");
+        expect(conflict).to.have.a.property("source", "ReferenceB");
+        expect(conflict).to.have.a.property("target", "ReferenceA");
+        expect(conflict).to.have.a.property("description", "Target schema already references a different schema with this alias.");
+      });
+    });
+  });
+
   describe("Different schema item type conflicts", () => {
     it("should find a conflict between EntityClass and KindOfQuantity types", async () => {
       const sourceSchema = {
