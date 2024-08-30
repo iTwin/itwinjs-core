@@ -238,6 +238,7 @@ export class Formatter {
           throw new QuantityError(QuantityStatus.UnsupportedUnit, `The Format ${spec.format.name} has an invalid persistence unit.`);
         compositeStrings.length = 0; // clear the array
         compositeStrings.push(this.formatRatio(unitValue, spec));
+        break; // only one unit for ratio
       }
 
     }
@@ -560,16 +561,17 @@ export class Formatter {
     if (null === spec.format.ratioType)
       throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
 
-    if (spec.format.hasUnits && spec.format.units && spec.format.units[0][0].phenomenon !== 'Units.SLOPE')
+    if (spec.format.hasUnits && spec.format.units && spec.format.units[0][0].phenomenon !== 'Units.SLOPE') // TODO - <Naron>: this should be handled at convert?
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `The Format ${spec.format.name} has an invalid presentation unit.`);
 
     const precisionScale = Math.pow(10.0, spec.format.precision);
-    let reciprocal = 0;
-    if ((Math.abs(magnitude) > 1/precisionScale))
-      reciprocal = 1.0 / magnitude;
 
-    if (reciprocal === 0.0)
+    let reciprocal = 0;
+
+    if (magnitude === 0.0)
       return "0:1";
+    else
+      reciprocal = 1.0/magnitude;
 
     switch (spec.format.ratioType) {
       case RatioType.OneToN:
@@ -582,16 +584,15 @@ export class Formatter {
         else
           return "1:" + this.formatMagnitude(reciprocal, spec);
       case RatioType.UseGreatestCommonDivisor:
-        reciprocal = Math.round(reciprocal * precisionScale)/precisionScale;
-        let numerator = reciprocal * precisionScale;
+        magnitude = Math.round(magnitude * precisionScale)/precisionScale;
+        let numerator = magnitude * precisionScale;
         let denominator = precisionScale;
 
         let gcd = FractionalNumeric.getGreatestCommonFactor(numerator, denominator);
         numerator /= gcd;
         denominator /= gcd;
 
-        return this.formatMagnitude(denominator, spec) + ":" + this.formatMagnitude(numerator, spec);
-
+        return this.formatMagnitude(numerator, spec) + ":" + this.formatMagnitude(denominator, spec);
       default:
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid ratio type specified.`);
     }

@@ -71,7 +71,6 @@ const unitData: UnitDefinition[] = [
   { name: "Units.CUB_YRD", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
   { name: "Units.CUB_M", phenomenon: "Units.VOLUME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: ["cm"] },
 
-  // TODO - <Naron>: whats the displayLabel and altDisplayLabels here?
   { name: "Units.VERTICAL_PER_HORIZONTAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "ft/ft", altDisplayLabels: ["ft/ft"] },
   // { name: "Units.HORIZONTAL_PER_VERTICAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m/m", altDisplayLabels: ["m/m"] },
 ];
