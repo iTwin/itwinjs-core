@@ -162,7 +162,10 @@ export class SchemaDiagnosticVisitor {
     const schemaItem = diagnostic.ecDefinition as AnySchemaItem;
     const [propertyName, sourceValue, _targetValue] = diagnostic.messageArgs as [string, unknown, unknown];
     if (propertyName === "schemaItemType") {
-
+      // If the schema item type is different, the whole item is added as "new" item. The
+      // difference validator will then figure whether there is a conflict with items of
+      // of the same name.
+      return this.visitMissingSchemaItem(diagnostic);
     }
 
     if (sourceValue === undefined) {
@@ -261,6 +264,10 @@ export class SchemaDiagnosticVisitor {
   private visitChangedProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
     const [propertyName, sourceValue] = diagnostic.messageArgs as [keyof PropertyProps, any, any];
+
+    if (isPropertyTypeName(property, propertyName)) {
+      return this.visitMissingProperty(diagnostic);
+    }
 
     let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is ClassPropertyDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Property && entry.itemName === property.class.name && entry.path === property.name;
@@ -442,4 +449,12 @@ export class SchemaDiagnosticVisitor {
     }
     return;
   }
+}
+
+function isPropertyTypeName(property: Property, propertyName: string) {
+  return (propertyName === "type") ||
+    (property.isEnumeration() && propertyName === "enumeration") ||
+    (property.isPrimitive() && propertyName === "primitiveType") ||
+    (property.isStruct() && propertyName === "structClass") ||
+    (property.isNavigation() && propertyName === "relationshipClass");
 }

@@ -26,30 +26,22 @@ export async function validateDifferences(differences: AnySchemaDifference[], ta
 
   await walker.traverse(differences);
 
-  for (const [search, replace] of visitor.replacements) {
-    const index = differences.findIndex((entry) => entry === search);
-    if (index > -1) {
-      differences[index] = replace;
-    }
-  }
-
   return visitor.conflicts;
 }
 
 /**
+ * The SchemaDifferenceValidationVisitor class is an implementation of ISchemaDifferenceVisitor and
+ * validates the given SchemaDifferences if the violate against some EC Rules.
  * @internal
  */
 class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
 
   public readonly conflicts: Array<SchemaDifferenceConflict>;
-  public readonly replacements: Array<[AnySchemaDifference, AnySchemaDifference]>;
-
   private readonly _sourceSchema: Schema;
   private readonly _targetSchema: Schema;
 
   constructor(targetSchema: Schema, sourceSchema: Schema) {
     this.conflicts = [];
-    this.replacements = [];
     this._targetSchema = targetSchema;
     this._sourceSchema = sourceSchema;
   }
@@ -58,70 +50,42 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
     this.conflicts.push(conflict);
   }
 
-  private async createPropertyConflict(entry: ClassPropertyDifference, targetProperty: Property) {
-    const sourceClass = await this._sourceSchema.getItem(targetProperty.class.name) as ECClass;
-    const sourceProperty = await sourceClass.getProperty(targetProperty.name) as Property;
-
-    this.addConflict({
-      code: ConflictCode.ConflictingPropertyName,
-      schemaType: targetProperty.class.schemaItemType,
-      itemName: targetProperty.class.name,
-      path: targetProperty.name,
-      source: resolvePropertyTypeName(sourceProperty),
-      target: resolvePropertyTypeName(targetProperty),
-      description: "Target class already contains a property with a different type.",
-    });
-
-    // Since the property can't merged with this conflict, the "modify" entry is replaced with a
-    // full item body add entry.
-    this.replaceDifference(entry, {
-      changeType: "add",
-      schemaType: SchemaOtherTypes.Property,
-      itemName: targetProperty.class.name,
-      path: targetProperty.name,
-      difference: sourceProperty.toJSON(),
-    });
-  }
-
-  private replaceDifference(difference: AnySchemaDifference, replacer: AnySchemaDifference) {
-    this.replacements.push([difference, replacer]);
-  }
-
   private async getSchemaItem<T extends SchemaItem>(name: string): Promise<T> {
     const item = await this._targetSchema.getItem<T>(name);
     if (item === undefined) {
-      throw new Error();
+      throw new Error(`Schema Item ${name} could not be located.`);
     }
     return item;
   }
 
+  /**
+   * Visitor implementation for handling SchemaDifference.
+   * @internal
+   */
   public async visitSchemaDifference(_entry: SchemaDifference) {
-    // Nothing to validate
   }
 
+  /**
+   * Visitor implementation for handling SchemaReferenceDifference.
+   * @internal
+   */
   public async visitSchemaReferenceDifference(_entry: SchemaReferenceDifference) {
-    // Nothing to validate
   }
 
-  public async visitSchemaItemDifference(entry: AnySchemaItemDifference, targetSchemaItem: SchemaItem) {
-    if ("schemaItemType" in entry.difference) {
+  /**
+   * Shared schema item validation for all types of AnySchemaItemDifference union.
+   */
+  private async visitSchemaItemDifference(entry: AnySchemaItemDifference, targetSchemaItem: SchemaItem | undefined) {
+    // If the item shall be added, but the target schema already has an item with this name,
+    // will produce an ConflictingItemName conflict.
+    if (entry.changeType === "add" && targetSchemaItem !== undefined) {
       this.addConflict({
         code: ConflictCode.ConflictingItemName,
         schemaType: targetSchemaItem.schemaItemType,
         itemName: targetSchemaItem.name,
-        source: entry.difference.schemaItemType,
+        source: entry.schemaType,
         target: targetSchemaItem.schemaItemType,
         description: "Target schema already contains a schema item with the name but different type.",
-      });
-
-      // Since the item can't merged with this conflict, the "modify" entry is replaced with a
-      // full item body add entry.
-      const sourceItem = await this._sourceSchema.getItem(entry.itemName) as SchemaItem;
-      this.replaceDifference(entry, {
-        changeType: "add",
-        schemaType: entry.schemaType,
-        itemName: entry.itemName,
-        difference: sourceItem.toJSON() as any,
       });
       return false;
     }
@@ -129,7 +93,10 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
     return true;
   }
 
-  public async visitBaseClassDifference(entry: ClassItemDifference, targetClassItem: ECClass) {
+  /**
+   * Shared base-class validation for all types of ClassItemDifference union.
+   */
+  private async visitBaseClassDifference(entry: ClassItemDifference, targetClassItem: ECClass) {
     if (entry.difference.baseClass === undefined && targetClassItem.baseClass !== undefined) {
       this.addConflict({
         code: ConflictCode.RemovingBaseClass,
@@ -183,41 +150,55 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
     }
   }
 
-  public async visitClassDifference(entry: ClassItemDifference) {
-    if (entry.changeType !== "modify") {
-      return;
-    }
-
-    const targetClassItem = await this.getSchemaItem<ECClass>(entry.itemName);
+  /**
+   * Shared validation for all types of ClassItemDifference union.
+   */
+  private async visitClassDifference(entry: ClassItemDifference) {
+    const targetClassItem = await this._targetSchema.getItem<ECClass>(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, targetClassItem)) {
       return;
     }
 
-    await this.visitBaseClassDifference(entry, targetClassItem);
+    if (entry.changeType === "modify" && targetClassItem !== undefined) {
+      await this.visitBaseClassDifference(entry, targetClassItem);
+    }
   }
 
+  /**
+   * Visitor implementation for handling ConstantDifference.
+   * @internal
+   */
   public async visitConstantDifference(entry: ConstantDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitSchemaItemDifference(entry, await this.getSchemaItem(entry.itemName));
-    }
+    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
   }
 
+  /**
+   * Visitor implementation for handling CustomAttributeClassDifference.
+   * @internal
+   */
   public async visitCustomAttributeClassDifference(entry: CustomAttributeClassDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitClassDifference(entry);
-    }
+    await this.visitClassDifference(entry);
   }
 
+  /**
+   * Visitor implementation for handling CustomAttributeDifference.
+   * @internal
+   */
   public async visitCustomAttributeInstanceDifference(_entry: CustomAttributeDifference) {
-    // Nothing to validate
   }
 
+  /**
+   * Visitor implementation for handling EntityClassDifference.
+   * @internal
+   */
   public async visitEntityClassDifference(entry: EntityClassDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitClassDifference(entry);
-    }
+    await this.visitClassDifference(entry);
   }
 
+  /**
+   * Visitor implementation for handling EntityClassMixinDifference.
+   * @internal
+   */
   public async visitEntityClassMixinDifference(entry: EntityClassMixinDifference) {
     const targetSchemaClass = await this.getSchemaItem<EntityClass>(entry.itemName);
     for (const addedMixin of entry.difference) {
@@ -245,34 +226,34 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
     }
   }
 
+  /**
+   * Visitor implementation for handling EnumerationDifference.
+   * @internal
+   */
   public async visitEnumerationDifference(entry: EnumerationDifference) {
-    if (entry.changeType !== "modify") {
-      return;
-    }
-
-    const enumeration = await this.getSchemaItem<Enumeration>(entry.itemName);
+    const enumeration = await this._targetSchema.getItem<Enumeration>(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, enumeration)) {
       return;
     }
 
-    if (entry.difference.type) {
-      this.addConflict({
-        code: ConflictCode.ConflictingEnumerationType,
-        schemaType: SchemaItemType.Enumeration,
-        itemName: enumeration.name,
-        source: entry.difference.type,
-        target: primitiveTypeToString(enumeration.type!),
-        description: "Enumeration has a different primitive type.",
-      });
+    if (entry.changeType === "modify" && enumeration !== undefined) {
+      if (entry.difference.type) {
+        this.addConflict({
+          code: ConflictCode.ConflictingEnumerationType,
+          schemaType: SchemaItemType.Enumeration,
+          itemName: enumeration.name,
+          source: entry.difference.type,
+          target: primitiveTypeToString(enumeration.type!),
+          description: "Enumeration has a different primitive type.",
+        });
+      }
     }
   }
 
-  public async visitEnumerationPropertyDifference(entry: ClassPropertyDifference, property: Property) {
-    if ("enumeration" in entry.difference) {
-      await this.createPropertyConflict(entry, property);
-    }
-  }
-
+  /**
+   * Visitor implementation for handling EnumeratorDifference.
+   * @internal
+   */
   public async visitEnumeratorDifference(entry: EnumeratorDifference) {
     if (entry.changeType !== "modify") {
       return;
@@ -297,149 +278,154 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
     }
   }
 
+  /**
+   * Visitor implementation for handling FormatDifference.
+   * @internal
+   */
   public async visitFormatDifference(entry: FormatDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitSchemaItemDifference(entry, await this.getSchemaItem(entry.itemName));
-    }
+    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
   }
 
+  /**
+   * Visitor implementation for handling InvertedUnitDifference.
+   * @internal
+   */
   public async visitInvertedUnitDifference(entry: InvertedUnitDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitSchemaItemDifference(entry, await this.getSchemaItem(entry.itemName));
-    }
+    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
   }
 
+  /**
+   * Visitor implementation for handling KindOfQuantityDifference.
+   * @internal
+   */
   public async visitKindOfQuantityDifference(entry: KindOfQuantityDifference) {
-    if (entry.changeType !== "modify") {
-      return;
-    }
-
-    const kindOfQuantity = await this.getSchemaItem<KindOfQuantity>(entry.itemName);
+    const kindOfQuantity = await this._targetSchema.getItem<KindOfQuantity>(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, kindOfQuantity)) {
       return;
     }
 
-    if (entry.difference.persistenceUnit) {
-      this.addConflict({
-        code: ConflictCode.ConflictingPersistenceUnit,
-        schemaType: SchemaItemType.KindOfQuantity,
-        itemName: kindOfQuantity.name,
-        source: entry.difference.persistenceUnit,
-        target: resolveLazyItemName(kindOfQuantity.persistenceUnit),
-        description: "Kind of Quantity has a different persistence unit.",
-      });
+    if (entry.changeType === "modify" && kindOfQuantity !== undefined) {
+      if (entry.difference.persistenceUnit) {
+        this.addConflict({
+          code: ConflictCode.ConflictingPersistenceUnit,
+          schemaType: SchemaItemType.KindOfQuantity,
+          itemName: kindOfQuantity.name,
+          source: entry.difference.persistenceUnit,
+          target: resolveLazyItemName(kindOfQuantity.persistenceUnit),
+          description: "Kind of Quantity has a different persistence unit.",
+        });
+      }
     }
   }
 
+  /**
+   * Visitor implementation for handling MixinClassDifference.
+   * @internal
+   */
   public async visitMixinDifference(entry: MixinClassDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitClassDifference(entry);
-    }
+    await this.visitClassDifference(entry);
   }
 
-  public async visitNavigationPropertyDifference(entry: ClassPropertyDifference, property: Property) {
-    if ("relationshipName" in entry.difference) {
-      await this.createPropertyConflict(entry, property);
-    }
-  }
-
+  /**
+   * Visitor implementation for handling PhenomenonDifference.
+   * @internal
+   */
   public async visitPhenomenonDifference(entry: PhenomenonDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitSchemaItemDifference(entry, await this.getSchemaItem(entry.itemName));
-    }
+    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
   }
 
-  public async visitPrimitivePropertyDifference(entry: ClassPropertyDifference, property: Property) {
-    if ("primitiveType" in entry.difference) {
-      await this.createPropertyConflict(entry, property);
-    }
-  }
-
+  /**
+   * Visitor implementation for handling ClassPropertyDifference.
+   * @internal
+   */
   public async visitPropertyDifference(entry: ClassPropertyDifference) {
-    if (entry.changeType !== "modify") {
-      return;
-    }
+    const targetClass = await this.getSchemaItem<ECClass>(entry.itemName);
+    const targetProperty = await targetClass.getProperty(entry.path);
 
-    const classItem = await this.getSchemaItem<ECClass>(entry.itemName);
-    const property = await classItem.getProperty(entry.path);
+    if (entry.changeType === "add" && targetProperty !== undefined) {
+      const sourceClass = await this._sourceSchema.getItem(targetProperty.class.name) as ECClass;
+      const sourceProperty = await sourceClass.getProperty(targetProperty.name) as Property;
 
-    if (property === undefined) {
-      return;
-    }
-
-    if (entry.difference.type) {
-      await this.createPropertyConflict(entry, property);
-      return;
-    }
-
-    if (entry.difference.kindOfQuantity) {
       this.addConflict({
-        code: ConflictCode.ConflictingPropertyKindOfQuantity,
-        schemaType: classItem.schemaItemType,
-        itemName: classItem.name,
-        path: property.name,
-        source: entry.difference.kindOfQuantity,
-        target: resolveLazyItemName(property.kindOfQuantity),
-        description: "The property has different kind of quantities defined.",
+        code: ConflictCode.ConflictingPropertyName,
+        schemaType: targetProperty.class.schemaItemType,
+        itemName: targetProperty.class.name,
+        path: targetProperty.name,
+        source: resolvePropertyTypeName(sourceProperty),
+        target: resolvePropertyTypeName(targetProperty),
+        description: "Target class already contains a property with a different type.",
       });
+
+      return;
     }
 
-    if ("enumeration" in entry.difference) {
-      return this.visitEnumerationPropertyDifference(entry, property);
-    }
-    if ("relationshipName" in entry.difference) {
-      return this.visitNavigationPropertyDifference(entry, property);
-    }
-    if ("primitiveType" in entry.difference) {
-      return this.visitPrimitivePropertyDifference(entry, property);
-    }
-    if ("typeName" in entry.difference) {
-      return this.visitStructPropertyDifference(entry, property);
+    if (entry.changeType === "modify" && targetProperty !== undefined) {
+      if (entry.difference.kindOfQuantity) {
+        this.addConflict({
+          code: ConflictCode.ConflictingPropertyKindOfQuantity,
+          schemaType: targetClass.schemaItemType,
+          itemName: targetClass.name,
+          path: targetProperty.name,
+          source: entry.difference.kindOfQuantity,
+          target: resolveLazyItemName(targetProperty.kindOfQuantity),
+          description: "The property has different kind of quantities defined.",
+        });
+      }
     }
   }
 
+  /**
+   * Visitor implementation for handling PropertyCategoryDifference.
+   * @internal
+   */
   public async visitPropertyCategoryDifference(entry: PropertyCategoryDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitSchemaItemDifference(entry, await this.getSchemaItem(entry.itemName));
-    }
+    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
   }
 
+  /**
+   * Visitor implementation for handling RelationshipClassDifference.
+   * @internal
+   */
   public async visitRelationshipClassDifference(entry: RelationshipClassDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitClassDifference(entry);
-    }
+    await this.visitClassDifference(entry);
   }
 
+  /**
+   * Visitor implementation for handling RelationshipConstraintDifference.
+   * @internal
+   */
   public async visitRelationshipConstraintDifference(_entry: RelationshipConstraintDifference) {
-    // Nothing to validate
   }
 
+  /**
+   * Visitor implementation for handling RelationshipConstraintClassDifference.
+   * @internal
+   */
   public async visitRelationshipConstraintClassDifference(_entry: RelationshipConstraintClassDifference) {
-    // Nothing to validate
   }
 
+  /**
+   * Visitor implementation for handling StructClassDifference.
+   * @internal
+   */
   public async visitStructClassDifference(entry: StructClassDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitClassDifference(entry);
-    }
+    await this.visitClassDifference(entry);
   }
 
-  public async visitStructPropertyDifference(entry: ClassPropertyDifference, property: Property) {
-    if ("typeName" in entry.difference) {
-      await this.createPropertyConflict(entry, property);
-    }
-  }
-
+  /**
+   * Visitor implementation for handling UnitDifference.
+   * @internal
+   */
   public async visitUnitDifference(entry: UnitDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitSchemaItemDifference(entry, await this.getSchemaItem(entry.itemName));
-    }
+    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
   }
 
+  /**
+   * Visitor implementation for handling UnitSystemDifference.
+   * @internal
+   */
   public async visitUnitSystemDifference(entry: UnitSystemDifference) {
-    if (entry.changeType === "modify") {
-      await this.visitSchemaItemDifference(entry, await this.getSchemaItem(entry.itemName));
-    }
+    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
   }
 }
 
