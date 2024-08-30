@@ -184,7 +184,7 @@ describe("CurveChainWithDistanceIndex", () => {
     ck.testDefined(partialCurveChain, "partialCurveChain is defined");
     if (partialCurveChain) {
       const length = partialCurveChain.quickLength();
-      ck.testSmallRelative(length - radius, "partial curve length equals circle radius");
+      ck.testCoordinate(length, radius, "partial curve length equals circle radius");
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "clonePartialCurve");
