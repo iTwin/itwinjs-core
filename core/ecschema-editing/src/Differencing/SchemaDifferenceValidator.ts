@@ -115,7 +115,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
         itemName: targetClassItem.name,
         path: "$baseClass",
         source: null,
-        target: resolveLazyItemName(targetClassItem.baseClass),
+        target: resolveLazyItemFullName(targetClassItem.baseClass),
         description: "BaseClass cannot be removed, if there has been a baseClass before.",
       });
       return;
@@ -137,7 +137,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
         itemName: targetClassItem.name,
         path: "$baseClass",
         source: sourceBaseClass.fullName,
-        target: resolveLazyItemName(targetClassItem.baseClass),
+        target: resolveLazyItemFullName(targetClassItem.baseClass),
         description: "BaseClass is sealed.",
       });
       return;
@@ -155,7 +155,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
         itemName: targetClassItem.name,
         path: "$baseClass",
         source: sourceBaseClass.fullName,
-        target: resolveLazyItemName(targetClassItem.baseClass),
+        target: resolveLazyItemFullName(targetClassItem.baseClass),
         description: "BaseClass is not valid, source class must derive from target.",
       });
     }
@@ -342,7 +342,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
           schemaType: SchemaItemType.KindOfQuantity,
           itemName: kindOfQuantity.name,
           source: entry.difference.persistenceUnit,
-          target: resolveLazyItemName(kindOfQuantity.persistenceUnit),
+          target: resolveLazyItemFullName(kindOfQuantity.persistenceUnit),
           description: "Kind of Quantity has a different persistence unit.",
         });
       }
@@ -370,14 +370,16 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
    * @internal
    */
   public async visitPropertyDifference(entry: ClassPropertyDifference) {
-    const targetClass = await this.getSchemaItem<ECClass>(entry.itemName);
+    const targetClass = await this._targetSchema.getItem(entry.itemName) as ECClass;
     const targetProperty = await targetClass.getProperty(entry.path);
 
-    if (entry.changeType === "add" && targetProperty !== undefined) {
-      const sourceClass = await this._sourceSchema.getItem(targetProperty.class.name) as ECClass;
-      const sourceProperty = await sourceClass.getProperty(targetProperty.name) as Property;
+    const sourceClass = await this._sourceSchema.getItem(entry.itemName) as ECClass;
+    const sourceProperty = await sourceClass.getProperty(entry.path) as Property;
 
-      this.addConflict({
+    // If property shall be added but there is already a property with this name
+    // in target, a ConflictingPropertyName is issued.
+    if (entry.changeType === "add" && targetProperty !== undefined) {
+      return this.addConflict({
         code: ConflictCode.ConflictingPropertyName,
         schemaType: targetProperty.class.schemaItemType,
         itemName: targetProperty.class.name,
@@ -386,21 +388,23 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
         target: resolvePropertyTypeName(targetProperty),
         description: "Target class already contains a property with a different type.",
       });
-
-      return;
     }
 
     if (entry.changeType === "modify" && targetProperty !== undefined) {
       if (entry.difference.kindOfQuantity) {
-        this.addConflict({
-          code: ConflictCode.ConflictingPropertyKindOfQuantity,
-          schemaType: targetClass.schemaItemType,
-          itemName: targetClass.name,
-          path: targetProperty.name,
-          source: entry.difference.kindOfQuantity,
-          target: resolveLazyItemName(targetProperty.kindOfQuantity),
-          description: "The property has different kind of quantities defined.",
-        });
+        const sourceKoQ = await sourceProperty.kindOfQuantity;
+        const targetKoQ = await targetProperty.kindOfQuantity;
+        if (!targetKoQ || sourceKoQ && resolveLazyItemName(sourceKoQ.persistenceUnit) !== resolveLazyItemName(targetKoQ.persistenceUnit)) {
+          this.addConflict({
+            code: ConflictCode.ConflictingPropertyKindOfQuantity,
+            schemaType: targetClass.schemaItemType,
+            itemName: targetClass.name,
+            path: targetProperty.name,
+            source: entry.difference.kindOfQuantity,
+            target: resolveLazyItemFullName(targetProperty.kindOfQuantity),
+            description: "The property has different kind of quantities with conflicting units defined.",
+          });
+        }
       }
     }
   }
@@ -465,8 +469,17 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
  * @param lazyItem  LazyLoaded item
  * @returns         The full name of the item or undefined item was not set.
  */
-function resolveLazyItemName(lazyItem?: LazyLoadedSchemaItem<SchemaItem>) {
+function resolveLazyItemFullName(lazyItem?: LazyLoadedSchemaItem<SchemaItem>) {
   return lazyItem && lazyItem.fullName;
+}
+
+/**
+ * Helper method to resolve the schema item name from lazy loaded schema items.
+ * @param lazyItem  LazyLoaded item
+ * @returns         The full name of the item or undefined item was not set.
+ */
+function resolveLazyItemName(lazyItem?: LazyLoadedSchemaItem<SchemaItem>) {
+  return lazyItem && lazyItem.name;
 }
 
 /**
@@ -477,7 +490,7 @@ function resolveLazyItemName(lazyItem?: LazyLoadedSchemaItem<SchemaItem>) {
 function resolvePropertyTypeName(property: Property) {
   const [prefix, suffix] = property.isArray() ? ["[", "]"] : ["", ""];
   if (property.isEnumeration())
-    return `${prefix}${resolveLazyItemName(property.enumeration)}${suffix}`;
+    return `${prefix}${resolveLazyItemFullName(property.enumeration)}${suffix}`;
   if (property.isPrimitive())
     return `${prefix}${primitiveTypeToString(property.primitiveType)}${suffix}`;
   if (property.isStruct())

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ConflictCode } from "../../Differencing/SchemaConflicts";
+import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
 import { Schema, SchemaContext, SchemaProps } from "@itwin/ecschema-metadata";
 import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
@@ -71,12 +71,13 @@ describe("Schema Difference Conflicts", () => {
       }, targetContext);
 
       const differences = await getSchemaDifferences(targetSchema, sourceSchema);
-      await expect(Promise.resolve(differences.conflicts![0])).to.be.eventually.fulfilled.then((conflict) => {
+      expect(differences.conflicts).to.have.a.lengthOf(1).and.satisfies(([conflict]: SchemaDifferenceConflict[]) => {
         expect(conflict).to.have.a.property("code", ConflictCode.ConflictingReferenceAlias);
         expect(conflict).to.have.a.property("schemaType", "SchemaReference");
         expect(conflict).to.have.a.property("source", "ReferenceB");
         expect(conflict).to.have.a.property("target", "ReferenceA");
         expect(conflict).to.have.a.property("description", "Target schema already references a different schema with this alias.");
+        return true;
       });
     });
   });
@@ -786,35 +787,55 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
       });
     });
+  });
 
-    it("should find a conflict between on different kind of quantities on primitive properties", async () => {
-      const unitItems = {
-        M: {
-          schemaItemType: "Unit",
-          phenomenon: "ConflictSchema.Length",
-          unitSystem: "ConflictSchema.Metric",
-          definition: "M",
-        },
-        Length: {
-          schemaItemType: "Phenomenon",
-          definition: "LENGTH(1)",
-          label: "length",
-        },
-        Metric: {
-          schemaItemType: "UnitSystem",
-          label: "metric",
-        },
-        KoQ_1: {
-          schemaItemType: "KindOfQuantity",
-          relativeError: 2,
-          persistenceUnit: "ConflictSchema.M",
-        },
-        KoQ_2: {
-          schemaItemType: "KindOfQuantity",
-          relativeError: 2,
-          persistenceUnit: "ConflictSchema.M",
-        },
-      };
+  describe("Different Kind of quantity on property conflicts", () => {
+    const unitItems = {
+      M: {
+        schemaItemType: "Unit",
+        phenomenon: "ConflictSchema.Length",
+        unitSystem: "ConflictSchema.Metric",
+        definition: "M",
+      },
+      SQ_M: {
+        schemaItemType: "Unit",
+        label: "m²",
+        phenomenon: "ConflictSchema.AREA",
+        unitSystem: "ConflictSchema.Metric",
+        definition: "M(2)",
+      },
+      Length: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+        label: "length",
+      },
+      AREA: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(2)",
+        label: "area",
+      },
+      Metric: {
+        schemaItemType: "UnitSystem",
+        label: "metric",
+      },
+      KoQ_1: {
+        schemaItemType: "KindOfQuantity",
+        relativeError: 2,
+        persistenceUnit: "ConflictSchema.M",
+      },
+      KoQ_2: {
+        schemaItemType: "KindOfQuantity",
+        relativeError: 2,
+        persistenceUnit: "ConflictSchema.SQ_M",
+      },
+      KoQ_3: {
+        schemaItemType: "KindOfQuantity",
+        relativeError: 2,
+        persistenceUnit: "ConflictSchema.SQ_M",
+      },
+    };
+
+    it("should find a conflict of kind of quantities persistence unit differs", async () => {
       const sourceSchema = {
         ...schemaHeader,
         items: {
@@ -859,7 +880,98 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.property("path", "TestProperty");
         expect(conflict).to.have.a.property("source", "ConflictSchema.KoQ_2");
         expect(conflict).to.have.a.property("target", "ConflictSchema.KoQ_1");
-        expect(conflict).to.have.a.property("description", "The property has different kind of quantities defined.");
+        expect(conflict).to.have.a.property("description", "The property has different kind of quantities with conflicting units defined.");
+      });
+    });
+
+    it("should find a conflict of kind of quantities persistence unit is unset on target", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "int",
+                kindOfQuantity: "ConflictSchema.KoQ_2",
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "int",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyKindOfQuantity);
+        expect(conflict).to.have.a.property("schemaType", "EntityClass");
+        expect(conflict).to.have.a.property("itemName", "TestItem");
+        expect(conflict).to.have.a.property("path", "TestProperty");
+        expect(conflict).to.have.a.property("source", "ConflictSchema.KoQ_2");
+        expect(conflict).to.have.a.property("target", undefined);
+        expect(conflict).to.have.a.property("description", "The property has different kind of quantities with conflicting units defined.");
+      });
+    });
+
+    it("should not find a conflict if kind of quantities differed but persistence unit is same", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "int",
+                kindOfQuantity: "ConflictSchema.KoQ_3",
+              },
+            ],
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          TestItem: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "int",
+                kindOfQuantity: "ConflictSchema.KoQ_2",
+              },
+            ],
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "TestItem")).to.be.eventually.fulfilled.then((conflict) => {
+        expect(conflict).to.be.undefined;
       });
     });
   });
