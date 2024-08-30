@@ -29,6 +29,7 @@ describe("ECSql Query", () => {
   let imodel6: SnapshotDb;
 
   before(async () => {
+
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
@@ -93,6 +94,18 @@ describe("ECSql Query", () => {
         },
       },
       {
+        query: "SELECT ECInstanceId A, ECClassId B FROM Bis.Element LIMIT 1", expected: {
+          a: "0x19",
+          b: "0x4c",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B FROM Bis.Element) LIMIT 1", expected: {
+          a: "0x19",
+          b: "0x4c",
+        },
+      },
+      {
         query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1", expected: {
           a: "0x1",
           b: "0xa8",
@@ -104,6 +117,26 @@ describe("ECSql Query", () => {
       },
       {
         query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -130,6 +163,102 @@ describe("ECSql Query", () => {
           },
           "model.id": "0x1",
           "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+          "id": "0x1",
+          "className": "BisCore.PartitionOriginatesFromRepository",
+          "sourceId": "0x1c",
+          "sourceClassName": "BisCore.PhysicalPartition",
+          "targetId": "0x12",
+          "targetClassName": "BisCore.RepositoryLink",
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+          "id": "0x1",
+          "className": "BisCore.PartitionOriginatesFromRepository",
+          "sourceId": "0x1c",
+          "sourceClassName": "BisCore.PhysicalPartition",
+          "targetId": "0x12",
+          "targetClassName": "BisCore.RepositoryLink",
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "0x40",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "0x40",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "0x40",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "0x40",
         },
       },
     ];

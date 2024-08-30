@@ -10,6 +10,7 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./FormatterSpec";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
+import { Quantity } from "../Quantity";
 
 /**  rounding additive
  * @internal
@@ -179,15 +180,15 @@ export class Formatter {
     let componentText = "";
     if (!isLastPart) {
       componentText = Formatter.integerPartToText(compositeValue, spec);
+      if(spec.format.minWidth) { // integerPartToText does not do this padding
+        componentText = this.countAndPad(componentText, spec.format.minWidth);
+      }
     } else {
       componentText = Formatter.formatMagnitude(compositeValue, spec);
     }
 
     if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
       componentText = componentText + spec.format.uomSeparator + label;
-    } else {
-      if (!isLastPart)
-        componentText = `${componentText}:`;
     }
 
     return componentText;
@@ -232,7 +233,7 @@ export class Formatter {
       }
     }
 
-    return compositeStrings.join(spec.format.spacer ? spec.format.spacer : "");
+    return compositeStrings.join(spec.format.spacerOrDefault);
   }
 
   /** Format a quantity value into a single text string. Imitate how formatting done by server method NumericFormatSpec::FormatDouble.
@@ -247,7 +248,7 @@ export class Formatter {
       posMagnitude = Math.abs(Formatter.roundDouble(magnitude, spec.format.roundFactor));
 
     const isSci = ((posMagnitude > 1.0e12) || spec.format.type === FormatType.Scientific);
-    const isDecimal = (isSci || spec.format.type === FormatType.Decimal);
+    const isDecimal = (isSci || spec.format.type === FormatType.Decimal || spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth);
     const isFractional = (!isDecimal && spec.format.type === FormatType.Fractional);
     /* const usesStops = spec.format.type === FormatType.Station; */
     const isPrecisionZero = spec.format.precision === DecimalPrecision.Zero;
@@ -355,7 +356,22 @@ export class Formatter {
         formattedValue = stationString + fractionString;
       }
     }
+
+    if(spec.format.minWidth) {
+      formattedValue = this.countAndPad(formattedValue, spec.format.minWidth);
+    }
+
     return formattedValue;
+  }
+
+  private static countAndPad(value: string, minWidth: number): string {
+    const regex = /[\d,.]/g;
+    const matches = value.match(regex);
+    const count = matches ? matches.length : 0;
+    if (count < minWidth) {
+      value = value.padStart(minWidth, "0");
+    }
+    return value;
   }
 
   /** Format a quantity value into a single text string based on the current format specification of this class.
@@ -367,25 +383,32 @@ export class Formatter {
     let prefix = "";
     let suffix = "";
     let formattedValue = "";
+    if(spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) {
+      const result = this.processBearingAndAzimuth(magnitude, spec);
+      magnitude = result.magnitude;
+      prefix = result.prefix ?? "";
+      suffix = result.suffix ?? "";
+    }
+
     switch (spec.format.showSignOption) {
       case ShowSignOption.NegativeParentheses:
         if (valueIsNegative) {
-          prefix = "(";
-          suffix = ")";
+          prefix += "(";
+          suffix = `)${suffix}`;
         }
         break;
 
       case ShowSignOption.OnlyNegative:
         if (valueIsNegative)
-          prefix = "-";
+          prefix += "-";
 
         break;
 
       case ShowSignOption.SignAlways:
         if (valueIsNegative)
-          prefix = "-";
+          prefix += "-";
         else
-          prefix = "+";
+          prefix += "+";
 
         break;
 
@@ -414,10 +437,113 @@ export class Formatter {
     else
       formattedValue = formattedMagnitude;
 
-    if (spec.format.minWidth && spec.format.minWidth < formattedValue.length)
-      formattedValue.padStart(spec.format.minWidth, " ");
-
     return formattedValue;
   }
 
+  private static processBearingAndAzimuth(magnitude: number, spec: FormatterSpec): {magnitude: number, prefix?: string, suffix?: string} {
+    const type = spec.format.type;
+    if (type !== FormatType.Bearing && type !== FormatType.Azimuth)
+      return {magnitude};
+
+    const revolution = this.getRevolution(spec);
+    magnitude = this.normalizeAngle(magnitude, revolution);
+    const quarterRevolution = revolution / 4;
+
+    if (type === FormatType.Bearing) {
+      let quadrant = 0;
+      while (magnitude > quarterRevolution) {
+        magnitude -= quarterRevolution;
+        quadrant++;
+      }
+      let prefix, suffix: string;
+
+      // Quadrants are
+      // 1 0
+      // 2 3
+      // For quadrants 0 and 2 we have to subtract the angle from quarterRevolution degrees because they go clockwise
+      if (quadrant === 0 || quadrant === 2)
+        magnitude = quarterRevolution - magnitude;
+
+      // TODO: at some point we will want to open this for localization, in the first release it's going to be hard coded
+      if (quadrant === 0 || quadrant === 1)
+        prefix = "N";
+
+      if (quadrant === 2 || quadrant === 3)
+        prefix = "S";
+
+      if (quadrant === 0 || quadrant === 3)
+        suffix = "E";
+
+      if (quadrant === 1 || quadrant === 2)
+        suffix = "W";
+
+      // special case, if in quadrant 2 and value is very small, turn suffix to E because S00:00:00E is preferred over S00:00:00W
+      if (quadrant === 2 && spec.unitConversions.length > 0) {
+        // To determine if value is small, we need to convert it to the smallest unit presented and use the provided precision on it
+        const unitConversion = spec.unitConversions[spec.unitConversions.length - 1].conversion;
+        const smallestFormattedValue = (magnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD;
+
+        const precisionScale = Math.pow(10.0, spec.format.precision);
+        const floor = Math.floor((smallestFormattedValue) * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+        if(floor === 0) {
+          suffix = "E";
+        }
+      }
+
+      return {magnitude, prefix, suffix: suffix!};
+    }
+
+    if (type === FormatType.Azimuth) {
+      let azimuthBase = quarterRevolution; // default base is North
+      if (spec.format.azimuthBase !== undefined) {
+        if (spec.azimuthBaseConversion === undefined) {
+          throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.name}'s azimuth base.`);
+        }
+        const azBaseQuantity: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
+        const azBaseConverted = azBaseQuantity.convertTo(spec.persistenceUnit, spec.azimuthBaseConversion);
+        if (azBaseConverted === undefined || !azBaseConverted.isValid) {
+          throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.persistenceUnit.name}.`);
+        }
+        azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
+      }
+
+      if (azimuthBase === quarterRevolution && spec.format.azimuthCounterClockwiseOrDefault)
+        return {magnitude}; // no conversion necessary, the input is already using the result parameters (east base and counter clockwise)
+
+      // subtract the base from the actual value
+      magnitude -= azimuthBase;
+      if (spec.format.azimuthCounterClockwiseOrDefault)
+        return {magnitude: this.normalizeAngle(magnitude, revolution)};
+
+      // turn it into a clockwise angle
+      magnitude = revolution - magnitude;
+      // normalize the result as it may have become negative or exceed the revolution
+      magnitude = this.normalizeAngle(magnitude, revolution);
+    }
+
+    return {magnitude};
+  }
+
+  private static normalizeAngle(magnitude: number, revolution: number): number {
+    magnitude = magnitude % revolution; // Strip anything that goes around more than once
+
+    if (magnitude < 0) // If the value is negative, we want to normalize it to a positive angle
+      magnitude += revolution;
+
+    return magnitude;
+  }
+
+  private static getRevolution(spec: FormatterSpec): number {
+    if (spec.revolutionConversion === undefined) {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing revolution unit conversion for calculating ${spec.name}'s revolution.`);
+    }
+
+    const revolution: Quantity = new Quantity(spec.format.revolutionUnit, 1.0);
+    const converted = revolution.convertTo(spec.persistenceUnit, spec.revolutionConversion);
+    if (converted === undefined || !converted.isValid) {
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert revolution unit to ${spec.persistenceUnit.name}.`);
+    }
+
+    return converted.magnitude;
+  }
 }

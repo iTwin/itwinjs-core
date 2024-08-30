@@ -273,7 +273,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(4, 0), Point3d.create(6, 2), Point3d.create(8, 0),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // test closest approach global fractions
@@ -451,7 +451,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(4, 0), Point3d.create(6, 2), Point3d.create(8, 0),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // test intersectionXY global fractions
@@ -588,7 +588,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(4, 2, 1), Point3d.create(6, 2, -1), Point3d.create(8, 2, 1),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // test intersectionXY global fractions

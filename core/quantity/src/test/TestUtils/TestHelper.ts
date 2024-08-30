@@ -24,6 +24,7 @@ interface UnitDefinition {
 const unitData: UnitDefinition[] = [
   // Angles ( base unit radian )
   { name: "Units.RAD", phenomenon: "Units.ANGLE", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
+  { name: "Units.REVOLUTION", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 1.0, denominator: 6.283185307179586, offset: 0.0 }, displayLabel: "r", altDisplayLabels: ["rev"] },
   // 1 rad = 180.0/PI °
   { name: "Units.ARC_DEG", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 180.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "°", altDisplayLabels: ["deg", "^"] },
   { name: "Units.ARC_MINUTE", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },

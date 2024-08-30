@@ -119,7 +119,7 @@ function ensureDirectoryExists(dir: string) {
   }
 }
 
-describe("ECSqlRowPerformance", () => {
+describe("ECSqlRowPerformanceTests", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ECSqlRowPerformance");
   const reporter = new Reporter();
   const eCSqlRowConfig = require(path.join(__dirname, "ECSqlRowConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-var-requires
