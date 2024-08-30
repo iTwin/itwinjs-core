@@ -225,19 +225,20 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
   }
 }
 /**
- * `CurveChainWithDistanceIndex` is a CurvePrimitive whose fractional parameterization is proportional to true
- * distance along a CurveChain.
+ * `CurveChainWithDistanceIndex` is a [[CurvePrimitive]] whose fractional parameterization is proportional to true
+ * distance along a path.
  * * For example if the total length of the chain is `L`, then the distance along the chain from parameters `t0`
  * to `t1` is easily computed as `L*(t1-t0)`.
- * * A `CurveChainWithDistanceIndex` can be created from any `CurveChain`, but as with any `CurvePrimitive`, closure
- * (and planarity) is only implied by containment in a `Loop`; in other words, the type of a
- * `CurveChainWithDistanceIndex`'s underlying `CurveChain` has no implications.
+ * * In this way the `CurveChainWithDistanceIndex` provides a global arc length parameterization for a [[CurveChain]].
+ * * A `CurveChainWithDistanceIndex` can be created from any [[CurveChain]], but a [[Path]] is stored internally.
+ * * Adding a `CurveChainWithDistanceIndex` to a `CurveChain` does not preserve the distance index; instead the
+ * internal path children are added directly to the `CurveChain`.
  * @public
  */
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
   /** String name for schema properties */
   public readonly curvePrimitiveType = "curveChainWithDistanceIndex";
-  private readonly _path: CurveChain;
+  private readonly _path: Path;
   private readonly _fragments: PathFragment[];
   private readonly _totalLength: number; // matches final fragment distance1.
   private static _numCalls = 0;
@@ -251,7 +252,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   // final assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
   private constructor(path: CurveChain, fragments: PathFragment[]) {
     super();
-    this._path = path instanceof Path ? path : Path.create(...path.children); // always a Path!
+    this._path = path instanceof Path ? path : Path.create(...path.children);
     this._fragments = fragments;
     this._totalLength = fragments.length > 0 ? fragments[fragments.length - 1].chainDistance1 : 0;
   }
@@ -260,8 +261,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param transform transform to apply in the clone.
    */
   public cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined {
-    const c = this._path.clone();
-    if (c instanceof CurveChain && c.tryTransformInPlace(transform))
+    const c = this._path.clone() as Path;
+    if (c.tryTransformInPlace(transform))
       return CurveChainWithDistanceIndex.createCapture(c);
     return undefined;
   }
@@ -269,7 +270,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * Reference to the contained path.
    * * Do not modify the path. The distance index will be wrong.
    */
-  public get path(): CurveChain {
+  public get path(): Path {
     return this._path;
   }
   /**
@@ -281,7 +282,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   }
   /** Return a deep clone */
   public clone(): CurveChainWithDistanceIndex {
-    const c = this._path.clone() as CurveChain;
+    const c = this._path.clone() as Path;
     return CurveChainWithDistanceIndex.createCapture(c);
   }
   /** Return a deep clone */
@@ -465,14 +466,14 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return flatChain;
   }
   /**
-   * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`
-   * @param path primitive array to be CAPTURED (not cloned)
+   * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`.
+   * @param path chain to be CAPTURED (not cloned)
+   * @param options how finely to stroke the path to create the distance index
    */
   public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex {
     path = this.flattenNestedChains(path);  // nested chains not allowed
     const fragments = DistanceIndexConstructionContext.createPathFragmentIndex(path, options);
-    const result = new CurveChainWithDistanceIndex(path, fragments);
-    return result;
+    return new CurveChainWithDistanceIndex(path, fragments);
   }
   /**
    * Return the PathFragment object at the given `distance` along the chain.
