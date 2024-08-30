@@ -56,7 +56,7 @@ export class MultiChainCollector {
    * @param gapTolerance tolerance for calling endpoints identical
    * @param planeTolerance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
    */
-  public constructor(gapTolerance = Geometry.smallMetricDistance, planeTolerance: number | undefined = Geometry.smallMetricDistance) {
+  public constructor(gapTolerance = Geometry.smallMetricDistance, planeTolerance?: number) {
     this._chains = [];
     this._gapTolerance = gapTolerance;
     this._snapTolerance = Geometry.smallMetricDistance;
