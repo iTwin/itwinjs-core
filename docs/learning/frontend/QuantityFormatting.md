@@ -183,7 +183,8 @@ Common Terms:
 - Unit/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label.
 - [UnitsProvider]($quantity) - A class that locates the UnitProps for a unit given name or label. This class also provides a [UnitConversion]($quantity) to convert from one unit to another.
 - Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
-- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel.
+- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel. IModels define the persistence unit through [KindOfQuantity](../../bis/ec/kindofquantity.md) objects.
+- KindOfQuantity = An object that defines a persistence unit and presentation formats.
 - Format/FormatProp - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
   - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
 - FormatterSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the UnitsProvider during the formatting process.
@@ -195,7 +196,7 @@ For a detailed description of all the setting supported by FormatProp see the EC
 
 ### Formatting Examples
 
-Below are a couple examples of formatting values using methods directly from the @itwinjs/core-quantity package. The UnitsProvider used in the examples below can be seen [here](https://github.com/iTwin/itwinjs-core/blob/f3c8ee1d57ebb3e7b097a7e09201969fb57773ea/core/quantity/src/test/TestUtils/TestHelper.ts#L79). As discussed above, there are UnitProviders that can read units defined in the active IModel, and there is a basic provider that can be used when not IModel is open.
+Below are a couple examples of formatting values using methods directly from the @itwinjs/core-quantity package. The UnitsProvider used in the examples below can be seen in [TestHelper](https://github.com/iTwin/itwinjs-core/blob/master/core/quantity/src/test/TestUtils/TestHelper.ts). As discussed above, there are UnitProviders that can read units defined in the active IModel, and there is a basic provider that can be used when not IModel is open.
 
 #### Numeric Format
 
