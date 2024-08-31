@@ -693,7 +693,7 @@ export class PolyfaceQuery {
    * Collect boundary edges.
    * * Return the edges as the simplest collection of chains of line segments.
    * @param source polyface or visitor.
-   * @param includeTypical true to in include typical boundary edges with a single adjacent facet.
+   * @param includeTypical true to include typical boundary edges with a single adjacent facet.
    * @param includeMismatch true to include edges with more than 2 adjacent facets.
    * @param includeNull true to include edges with identical start and end vertex indices.
    */
@@ -983,13 +983,13 @@ export class PolyfaceQuery {
   }
   /**
    * Search for edges with only 1 adjacent facet.
-   * * Chain them into loops.
-   * * Emit the loops to the announceLoop function.
+   * * Accumulate them into chains.
+   * * Emit the chains to the `announceChain` callback.
    */
   public static announceBoundaryChainsAsLineString3d(
-    mesh: Polyface | PolyfaceVisitor, announceLoop: (points: LineString3d) => void,
+    mesh: Polyface | PolyfaceVisitor, announceChain: (points: LineString3d) => void,
   ): void {
-    const collector = new MultiChainCollector(Geometry.smallMetricDistance, 1000);
+    const collector = new MultiChainCollector(Geometry.smallMetricDistance); // no planarity tolerance needed
     PolyfaceQuery.announceBoundaryEdges(
       mesh,
       (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number) => collector.captureCurve(LineSegment3d.create(pointA, pointB)),
@@ -997,7 +997,7 @@ export class PolyfaceQuery {
       false,
       false,
     );
-    collector.announceChainsAsLineString3d(announceLoop);
+    collector.announceChainsAsLineString3d(announceChain);
   }
   /**
    * Return a mesh with

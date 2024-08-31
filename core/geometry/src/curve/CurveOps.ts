@@ -90,7 +90,7 @@ export class CurveOps {
    * @returns object with named chains, insideOffsets, outsideOffsets
    */
   public static collectInsideAndOutsideXYOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains?: AnyChain } {
-    const collector = new MultiChainCollector(gapTolerance);
+    const collector = new MultiChainCollector(gapTolerance, gapTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);
     }
