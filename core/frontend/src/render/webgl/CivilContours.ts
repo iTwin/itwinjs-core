@@ -105,11 +105,13 @@ export class CivilContours implements WebGLDisposable {
       return false;
 
     // setup an efficient way to compare feature subcategories with lists in terrains
-    const terrainMap = new Map<number, Id64.Uint32Set>();
-    for (let i = 0, len = contours.terrains.length; i < len; ++i) {
-      const subCats = contours.terrains[i].subCategories;
-      if (subCats !== undefined)
-        terrainMap.set(i, new Id64.Uint32Set(subCats));
+    const subCatMap = new Id64.Uint32Map<number>();
+    for (let index = 0, len = contours.terrains.length; index < len; ++index) {
+      const subCats = contours.terrains[index].subCategories;
+      if (subCats !== undefined) {
+        for (const subCat of subCats)
+          subCatMap.setById(subCat, index);
+      }
     }
 
     // NB: We currently use 3 RGBA values per feature as follows:
@@ -121,34 +123,31 @@ export class CivilContours implements WebGLDisposable {
     //      A = weight major/minor - upper 4 bits = major, the 4 bits is a 1.5 based 3-bit weight value with one fraction bit
     //                               This gives a weight range of 1.5 to 9 in 0.5 increments
     //  [2]
-    //      RG = interval major lower/upper (limited to 16 bits)
-    //      BA = interval minor lower/upper (limited to 16 bits)
+    //      RG = major index count lower/upper (limited to 16? bits)
+    //      BA = minor interval distance lower/upper (limited to 16? bits)
     for (const feature of map.iterable(scratchPackedFeature)) {
-      const i = feature.index;
-      const dataIndex = i * 4 * 3;
-
-      for (const [index, ids] of terrainMap) {
-        if (ids.hasPair(feature.subCategoryId)) {
-          const contour = contours.terrains[index];
-          data.setByteAtIndex(dataIndex + 0, contour.majorContour.color.colors.r);
-          data.setByteAtIndex(dataIndex + 1, contour.majorContour.color.colors.g);
-          data.setByteAtIndex(dataIndex + 2, contour.majorContour.color.colors.b);
-          const lineCodeMaj = LineCode.valueFromLinePixels(contour.majorContour.pattern);
-          const lineCodeMin = LineCode.valueFromLinePixels(contour.minorContour.pattern);
-          data.setByteAtIndex(dataIndex + 3, (lineCodeMaj << 4) | (lineCodeMin & 0xf));
-          data.setByteAtIndex(dataIndex + 4, contour.minorContour.color.colors.r);
-          data.setByteAtIndex(dataIndex + 5, contour.minorContour.color.colors.g);
-          data.setByteAtIndex(dataIndex + 6, contour.minorContour.color.colors.b);
-          const wtMaj = Math.floor((Math.min(9, Math.max(1.5, contour.majorContour.pixelWidth)) - 1.5) * 2 + 0.5);
-          const wtMin = Math.floor((Math.min(9, Math.max(1.5, contour.minorContour.pixelWidth)) - 1.5) * 2 + 0.5);
-          data.setByteAtIndex(dataIndex + 7, (wtMaj << 4) | (wtMin & 0xf));
-          const intervalMaj = Math.min(0xffff, Math.max (0, contour.majorContour.interval));
-          data.setOvrFlagsAtIndex(dataIndex + 8, intervalMaj);
-          const intervalMin = Math.min(0xffff, Math.max (0, contour.minorContour.interval));
-          data.setOvrFlagsAtIndex(dataIndex + 10, intervalMin);
-        } else {
-          data.setByteAtIndex(dataIndex + 3, 255); // no contour defined for this feature
-        }
+      const dataIndex = feature.index * 4 * 3;
+      const index = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper);
+      if (index !== undefined) {
+        const contour = contours.terrains[index];
+        data.setByteAtIndex(dataIndex + 0, contour.majorContour.color.colors.r);
+        data.setByteAtIndex(dataIndex + 1, contour.majorContour.color.colors.g);
+        data.setByteAtIndex(dataIndex + 2, contour.majorContour.color.colors.b);
+        const lineCodeMaj = LineCode.valueFromLinePixels(contour.majorContour.pattern);
+        const lineCodeMin = LineCode.valueFromLinePixels(contour.minorContour.pattern);
+        data.setByteAtIndex(dataIndex + 3, (lineCodeMaj << 4) | (lineCodeMin & 0xf));
+        data.setByteAtIndex(dataIndex + 4, contour.minorContour.color.colors.r);
+        data.setByteAtIndex(dataIndex + 5, contour.minorContour.color.colors.g);
+        data.setByteAtIndex(dataIndex + 6, contour.minorContour.color.colors.b);
+        const wtMaj = Math.floor((Math.min(9, Math.max(1.5, contour.majorContour.pixelWidth)) - 1.5) * 2 + 0.5);
+        const wtMin = Math.floor((Math.min(9, Math.max(1.5, contour.minorContour.pixelWidth)) - 1.5) * 2 + 0.5);
+        data.setByteAtIndex(dataIndex + 7, (wtMaj << 4) | (wtMin & 0xf));
+        const intervalMaj = Math.min(0xffff, Math.max (0, contour.majorContour.interval));
+        data.setOvrFlagsAtIndex(dataIndex + 8, intervalMaj);
+        const intervalMin = Math.min(0xffff, Math.max (0, contour.minorContour.interval));
+        data.setOvrFlagsAtIndex(dataIndex + 10, intervalMin);
+      } else {
+        data.setByteAtIndex(dataIndex + 3, 255); // no contour defined for this feature
       }
     }
 
