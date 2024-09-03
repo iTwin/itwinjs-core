@@ -1220,6 +1220,7 @@ describe("PolyfaceClip", () => {
       let numBadEdges = 0;
       PolyfaceQuery.announceBoundaryEdges(clampMesh, () => ++numBadEdges, true, true, true);
       ck.testExactNumber(0, numBadEdges, "clamp mesh has all interior edges");
+      ck.testTrue(clampMesh.data.edgeVisible.every((visible) => visible), "clamp mesh has no hidden edges");
 
       // verify that all facets have the correct orientation, with normal pointing outward
       const compareWithTol = (a: number, b: number) => compareWithTolerance(a, b, Geometry.smallMetricDistance);
