@@ -84,7 +84,9 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
+  /** The index of the changeset to revert to */
   toIndex: ChangesetIndex;
+  /** If present, schema changes are skipped during the revert operation. */
   skipSchemaChanges?: true;
 };
 
