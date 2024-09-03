@@ -13,11 +13,12 @@ import {
 } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
 import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
+import { GraphicType } from "./common/render/GraphicType";
 
 /**
  * @public

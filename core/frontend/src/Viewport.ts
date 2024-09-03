@@ -39,7 +39,6 @@ import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FrameStats, FrameStatsCollector } from "./render/FrameStats";
-import { GraphicType } from "./render/GraphicBuilder";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
@@ -65,6 +64,7 @@ import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
+import { GraphicType } from "./common/render/GraphicType";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -1119,7 +1119,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   protected initialize(): void {
   }
 
-  /** @internal */
+  /** @internal because subclasses must derive from ScreenViewport or OffScreenviewport. */
   protected constructor(target: RenderTarget) {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
@@ -3134,7 +3134,6 @@ export class ScreenViewport extends Viewport {
     logo.onmousemove = logo.onmousedown = logo.onmouseup = (ev) => ev.stopPropagation();
   }
 
-  /** @internal */
   protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
     super(target);
     this.canvas = canvas;
@@ -3724,7 +3723,6 @@ export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
   private _drawingToSheetTransform?: Transform;
 
-  /** @internal */
   protected constructor(target: RenderTarget) {
     super(target);
   }

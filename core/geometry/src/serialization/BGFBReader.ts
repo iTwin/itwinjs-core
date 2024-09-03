@@ -109,7 +109,7 @@ export class BGFBReader {
   public readInterpolationCurve3d(header: BGFBAccessors.InterpolationCurve): InterpolationCurve3d | undefined {
     const xyzArray = header.fitPointsArray();
     if (xyzArray instanceof Float64Array){
-    const knots = header.knotsArray();
+      const knots = header.knotsArray();
       const options = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray), knots ? NumberArray.create(knots) : undefined);
       const startTangent = header.startTangent();
       const endTangent = header.endTangent();
@@ -258,13 +258,13 @@ return undefined;
       if (offsetToTransitionSpiralTable !== null)
         return this.readTransitionSpiral(offsetToTransitionSpiralTable);
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve) {
-        const offsetToInterpolationCurveTable = variant.geometry(new BGFBAccessors.InterpolationCurve());
-        if (offsetToInterpolationCurveTable !== null)
+      const offsetToInterpolationCurveTable = variant.geometry(new BGFBAccessors.InterpolationCurve());
+      if (offsetToInterpolationCurveTable !== null)
         return this.readInterpolationCurve3d(offsetToInterpolationCurveTable);
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagAkimaCurve) {
-          const offsetToAkimaCurveTable = variant.geometry(new BGFBAccessors.AkimaCurve());
-          if (offsetToAkimaCurveTable !== null)
-            return this.readAkimaCurve3d(offsetToAkimaCurveTable);
+      const offsetToAkimaCurveTable = variant.geometry(new BGFBAccessors.AkimaCurve());
+      if (offsetToAkimaCurveTable !== null)
+        return this.readAkimaCurve3d(offsetToAkimaCurveTable);
     }
     return undefined;
   }

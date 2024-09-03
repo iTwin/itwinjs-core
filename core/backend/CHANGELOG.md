@@ -1,6 +1,90 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 28 Jun 2024 17:05:10 GMT and should not be manually modified.
+This log was last generated on Wed, 28 Aug 2024 17:28:58 GMT and should not be manually modified.
+
+## 4.8.5
+Wed, 28 Aug 2024 17:27:23 GMT
+
+_Version update only_
+
+## 4.8.4
+Thu, 22 Aug 2024 17:37:06 GMT
+
+_Version update only_
+
+## 4.8.3
+Fri, 16 Aug 2024 18:18:14 GMT
+
+_Version update only_
+
+## 4.8.2
+Thu, 15 Aug 2024 15:33:49 GMT
+
+_Version update only_
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+_Version update only_
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:37 GMT
+
+### Updates
+
+- Append a test for null handling using updateElement
+- Able to recover from when ExclusiveRootClassId is NULL for overflow table
+- SchemaSync.pull() should not obtain write-lock on container
+- Update changed elements process options for bounding box calculations
+- set a fake codeService that always throws for verifyCode if code is not null if codeServiceDb is not available
+- delete briefcase .bim file on a failed download
+- Don't throw an error if sourceMap is null/undefined
+- keep sourceMap undefined/null in targetProps
+- Added a function `computeLayoutTextBlockResult` to get the results of calculating a TextBlock's layout.
+- revise @beta apis for Settings and Workspaces to allow loading dictionaries from iModel and WorkspaceDbs
+- Add RPC method queryAllUsedSpatialSubCategories() to fetch all subcategories of used spatial categories and 3D elements.
+- Make cleanDeletedBlocks interruptible, and remove function from CloudContainer object. Add it to CloudSqlite namespace
+- Add static metadata to OpenTelemetry spans
+- produceTextAnnotationGeometry aligns the anchor point with the origin.
+- Update IModel.changeset when changes are made by another process.
+- Begin deprecating @internal APIs.
+- Improve TextAnnotation layout to use Unicode line-breaking algorithm for wrapping long lines.
+- Deprecate the internal `nativeDb` fields of IModelDb, ECDb, and SQLiteDb, to be removed in 5.0
+- Add LockControl.releaseAllLocks, which throws if the briefcase contains local changes.
+- Fix bugs with TextAnnotation wrapping and justification.
+- deleteElementTree handles case where GeometryStream refers to LineStyle
+- BriefcaseDb.closeAndReopen now refreshes the changeset property in case another process pulled changes
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
+
+## 4.7.7
+Fri, 19 Jul 2024 14:52:42 GMT
+
+_Version update only_
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:55 GMT
+
+### Updates
+
+- Add static metadata to OpenTelemetry spans
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+### Updates
+
+- Able to recover from when ExclusiveRootClassId is NULL for overflow table
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:23 GMT
+
+### Updates
+
+- Update IModel.changeset when changes are made by another process.
 
 ## 4.7.3
 Thu, 27 Jun 2024 21:09:02 GMT

@@ -57,6 +57,7 @@ export enum ECEditingStatus {
   SetIsReadOnly,
   SetPriority,
   SetCategory,
+  SetKindOfQuantity,
   SetMinOccurs,
   SetMaxOccurs,
   SetExtendedTypeName,

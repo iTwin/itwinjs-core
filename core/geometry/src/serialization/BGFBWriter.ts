@@ -150,8 +150,7 @@ export class BGFBWriter {
     const fitPointsOffset = this.writeDoubleArray(curve.copyFitPointsFloat64Array());
     const knotOffset = props.knots ? this.writeDoubleArray(props.knots) : 0;
 
-      // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
-  BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
+    BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
     BGFBAccessors.InterpolationCurve.addFitPoints(this.builder, fitPointsOffset);
     if (props.order)
       BGFBAccessors.InterpolationCurve.addOrder(this.builder, props.order);
@@ -165,21 +164,22 @@ export class BGFBWriter {
       BGFBAccessors.InterpolationCurve.addIsChordLenKnots(this.builder, props.isChordLenKnots);
     if (props.isNaturalTangents)
       BGFBAccessors.InterpolationCurve.addIsNaturalTangents(this.builder, props.isNaturalTangents);
+    // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
     if (props.startTangent !== undefined) {
       const startTangentOffset = BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
-          XYZ.x(props.startTangent), XYZ.y(props.startTangent), XYZ.z(props.startTangent));
-          BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
+        XYZ.x(props.startTangent), XYZ.y(props.startTangent), XYZ.z(props.startTangent));
+        BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
     }
     if (props.endTangent !== undefined) {
-      const endTangentOffset = BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
-          XYZ.x(props.endTangent), XYZ.y(props.endTangent), XYZ.z(props.endTangent));
-          BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
-          }
+      const endTangentOffset = BGFBAccessors.DVector3d.createDVector3d(this.builder,
+        XYZ.x(props.endTangent), XYZ.y(props.endTangent), XYZ.z(props.endTangent));
+        BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
+    }
     if (knotOffset !== 0)
       BGFBAccessors.InterpolationCurve.addKnots(this.builder, knotOffset);
     const headerOffset = BGFBAccessors.InterpolationCurve.endInterpolationCurve(this.builder);
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve, headerOffset, 0);
-    }
+  }
 
   public writeAkimaCurve3dAsFBVariantGeometry(curve: AkimaCurve3d): number | undefined {
     const fitPointsOffset = this.writeDoubleArray(curve.copyFitPointsFloat64Array());
@@ -187,7 +187,7 @@ export class BGFBWriter {
     BGFBAccessors.AkimaCurve.addPoints(this.builder, fitPointsOffset);
     const headerOffset = BGFBAccessors.AkimaCurve.endAkimaCurve(this.builder);
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagAkimaCurve, headerOffset, 0);
-    }
+  }
 
   public writeBsplineCurve3dAsFBVariantGeometry(bcurve: BSplineCurve3d): number | undefined {
     const data = SerializationHelpers.createBSplineCurveData(bcurve.polesRef, bcurve.poleDimension, bcurve.knotsRef, bcurve.numPoles, bcurve.order);

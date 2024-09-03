@@ -14,6 +14,8 @@
 - `fractional`
 - `scientific`
 - `station`
+- `bearing` (only supported in quantity package, not in ec yet)
+- `azimuth` (only supported in quantity package, not in ec yet)
 
 **precision** defines the precision to show the formatted value.
 
@@ -27,6 +29,7 @@ The allowable value are dependent on the type:
 **minWidth** Determines the minimum number of characters included within parsed format. The count includes digits and separator chars (Decimal and Thousand).
 Note: The number of chars defined does not override the precision, if the combination of precision and trailZeroes takes precedence over minWidth.
 The width of the formatted string is filled, if needed, with the number of "0"'s needed to reach the minWidth.
+For composite formats the minWidth applies to each of the components, not to the complete result.
 
 **showSignOption** determines how positive and negative signs are shown in a parsed format.
 
@@ -72,9 +75,9 @@ The supported options are:
 
 **thousandSeparator** the character used to separate the integer part of a value in groups of 3 digits. If not defined a localized separator will be used.
 
-**uomSeparator** the character used to separate the magnitude and the Unit label.
+**uomSeparator** the character used to separate the magnitude and the Unit label. For composite formats, this applies to each component.
 
-- Example: If the spacer is set to `-`, the Quantity is now displayed as `4-in`. If the spacer is the default, the Quantity is `4 in`.
+- Example: If set to `-`, the Quantity is now displayed as `4-in`. Default is a single space character `4 in`.
 
 **scientificType** determines the type of scientific format to use. Only valid when the type is scientific.
 
@@ -89,6 +92,14 @@ Supported scientific type:
 
 **stationSeparator** the character used to separate the station and off set portions of a `station` formatted value.
 
+**azimuthBase** A numeric value indicating the base when type is set to azimuth. If set, the `azimuthBaseUnit` has to also be set to indicate which unit this value is in. Defaults to north (quarter rotation). The value is indicated from east counter-clockwise.
+
+**azimuthBaseUnit** Required if `azimuthBase` is set. A unit name which the base value is in. The unit has to match the phenomenon used on the presentation and persistence units.
+
+**azimuthCounterClockwise** Only applies when the type is set to azimuth. Indicates whether the value should be formatted counter-clockwise from the base. Defaults to false.
+
+**revolutionUnit** Required if `type` is set to either bearing or azimuth. The name of a unit which represents a full revolution in the phenomenon used by the presentation and persistence units. This means a value of "1" in that unit represents a full revolution (like 360 represents a full revolution in degrees).
+
 ## Sub-Elements
 
 [Composite](#composite) _(0..1)_
@@ -97,16 +108,17 @@ Supported scientific type:
 
 #### Attributes
 
-**spacer** character used between segments of the composite.
+**spacer** character used between segments of the composite. Defaults to a single space character if unset.
 
 **includeZero** determines whether to keep a segment of the composite even if its magnitude is zero. By default, this is true.
 
 **units (1..4)** an optional array of unit + label override objects.
-  - A single units entry formats a value like `42.42 ft`.
-  - If multiple units are specified they should be in decreasing magnitude and value split among the units like `42 ft 5.02 in`.
-  - Unit labels are optional. If not specified, the label will be set as the unit's diplay label.
-  - If a unit label is explicitly set to an empty string, no label will be shown for that unit and the label will remain an empty string.
-  - Unit labels specified in the composite format definition can be overriden as part of the format override in a KindOfQuantity. See [format override](./kindofquantity.md/#format-overrides).
+
+- A single units entry formats a value like `42.42 ft`.
+- If multiple units are specified they should be in decreasing magnitude and value split among the units like `42 ft 5.02 in`.
+- Unit labels are optional. If not specified, the label will be set as the unit's diplay label.
+- If a unit label is explicitly set to an empty string, no label will be shown for that unit and the label will remain an empty string.
+- Unit labels specified in the composite format definition can be overriden as part of the format override in a KindOfQuantity. See [format override](./kindofquantity.md/#format-overrides).
 
 ## Examples
 

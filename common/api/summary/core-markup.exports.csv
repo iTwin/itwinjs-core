@@ -1,29 +1,29 @@
 sep=;
-Release Tag;API Item
-public;ArrowTool 
-public;CircleTool 
-public;CloudTool 
-public;DistanceTool 
-public;EditTextTool 
-public;EllipseTool 
-public;Handles
-internal;initSvgExt(): void
-public;LineTool 
-public;Markup
-public;MarkupApp
-public;MarkupColor
-public;MarkupData 
-public;MarkupSelected
-public;MarkupSvgData
-public;class MarkupTool 
-public;class ModifyHandle
-public;PlaceTextTool 
-public;PolygonTool 
-public;RectangleTool 
-public;class RedlineTool 
-public;SelectTool 
-public;SketchTool 
-public;SymbolTool 
-internal;Title 
-public;UndoManager
-public;WidthAndHeight
+Release Tag;API Item Type;API Item Name
+public;class;ArrowTool
+public;class;CircleTool
+public;class;CloudTool
+public;class;DistanceTool
+public;class;EditTextTool
+public;class;EllipseTool
+public;class;Handles
+internal;function;initSvgExt
+public;class;LineTool
+public;class;Markup
+public;class;MarkupApp
+public;interface;MarkupColor
+public;interface;MarkupData
+public;class;MarkupSelected
+public;interface;MarkupSvgData
+public;class;MarkupTool
+public;class;ModifyHandle
+public;class;PlaceTextTool
+public;class;PolygonTool
+public;class;RectangleTool
+public;class;RedlineTool
+public;class;SelectTool
+public;class;SketchTool
+public;class;SymbolTool
+internal;class;Title
+public;class;UndoManager
+public;interface;WidthAndHeight

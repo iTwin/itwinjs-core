@@ -42,27 +42,27 @@ export function* getItemNamesFromFormatString(formatString: string): Iterable<st
 }
 /** @beta */
 export enum FormatTraits {
-  Uninitialized = 0x0,
+  Uninitialized = 0,
   /** Show trailing zeroes to requested precision. */
-  TrailZeroes = 0x1,
+  TrailZeroes = 1 << 0,
   /** Indicates that the fractional part of the number is required when the fraction is zero */
-  KeepSingleZero = 0x2,
+  KeepSingleZero = 1 << 1,
   /** Zero magnitude returns blank display value */
-  ZeroEmpty = 0x4,
+  ZeroEmpty = 1 << 2,
   /** Show decimal point when value to right of decimal is empty */
-  KeepDecimalPoint = 0x8,
+  KeepDecimalPoint = 1 << 3,
   /** Use the rounding factor. Not yet supported  */
-  ApplyRounding = 0x10,
+  ApplyRounding = 1 << 4,
   /** Show a dash between whole value and fractional value */
-  FractionDash = 0x20,
+  FractionDash = 1 << 5,
   /** Append the quantity's unit label */
-  ShowUnitLabel = 0x40,
+  ShowUnitLabel = 1 << 6,
   /** Prepend unit label. Not yet supported */
-  PrependUnitLabel = 0x80,
+  PrependUnitLabel = 1 << 7,
   /** show a grouping in each group of 1000. */
-  Use1000Separator = 0x100,
+  Use1000Separator = 1 << 8,
   /** Indicates that if an exponent value is positive to not include a `+`. By default a sign, `+` or `-`, is always shown. Not yet supported */
-  ExponentOnlyNegative = 0x200,
+  ExponentOnlyNegative = 1 << 9,
 }
 
 /** Precision for Fractional formatted value types. Range from Whole (1/1) through 1/256.
@@ -108,6 +108,10 @@ export enum FormatType {
   Scientific,
   /** Civil Engineering Stationing (ie 1+00). */
   Station,
+  /** Bearing angle e.g. N05:00:00E. Requires provided quantities to be of the angle phenomenon */
+  Bearing,
+  /** Azimuth angle e.g. 45°30'00". Requires provided quantities to be of the angle phenomenon */
+  Azimuth,
 }
 
 /** required if type is scientific
@@ -250,6 +254,8 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
     case "scientific": return FormatType.Scientific;
     case "station": return FormatType.Station;
     case "fractional": return FormatType.Fractional;
+    case "bearing": return FormatType.Bearing;
+    case "azimuth": return FormatType.Azimuth;
     default:
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
@@ -262,6 +268,8 @@ export function formatTypeToString(type: FormatType): string {
     case FormatType.Scientific: return "Scientific";
     case FormatType.Station: return "Station";
     case FormatType.Fractional: return "Fractional";
+    case FormatType.Bearing: return "Bearing";
+    case FormatType.Azimuth: return "Azimuth";
   }
 }
 
@@ -309,6 +317,8 @@ export function parsePrecision(precision: number, type: FormatType, formatName: 
     case FormatType.Decimal:
     case FormatType.Scientific:
     case FormatType.Station:
+    case FormatType.Bearing:
+    case FormatType.Azimuth:
       return parseDecimalPrecision(precision, formatName);
     case FormatType.Fractional:
       return parseFractionalPrecision(precision, formatName);

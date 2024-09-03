@@ -175,6 +175,7 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
+import { QueryRowFormat } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
@@ -190,6 +191,7 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
+import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -1321,6 +1323,16 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
+
+// @beta
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+    graphemeCharIndexes: number[];
+    paragraphIndex: number;
+    runLayoutResult: RunLayoutResult;
+}
+
+// @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @public
@@ -1445,6 +1457,16 @@ export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, 
 
 // @beta
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
+
+// @beta
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+
+// @beta
+export interface DeleteElementTreeArgs {
+    iModel: IModelDb;
+    maxPasses?: number;
+    topElement: Id64String;
+}
 
 // @public
 export class DetailCallout extends Callout {
@@ -1815,6 +1837,11 @@ export class ECSqlInsertResult {
 }
 
 // @public
+export interface ECSqlRowArg {
+    rowFormat?: QueryRowFormat;
+}
+
+// @public
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     bindArray(parameter: number | string, val: any[]): void;
@@ -1838,11 +1865,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
+    // @internal (undocumented)
+    formatCurrentRow(currentResp: any, rowFormat?: QueryRowFormat): any[] | object;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
     // @internal
     getNativeSql(): string;
-    getRow(): any;
+    getRow(args?: ECSqlRowArg): any;
     getValue(columnIx: number): ECSqlValue;
     get isPrepared(): boolean;
     next(): IteratorResult<any>;
@@ -3969,6 +3998,28 @@ export class LockConflict extends IModelError {
     readonly briefcaseId: BriefcaseId;
 }
 
+// @public
+export interface LockControl {
+    // @internal
+    [_close]: () => void;
+    // @internal
+    [_elementWasCreated]: (id: Id64String) => void;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    [_releaseAllLocks]: () => Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
+    checkExclusiveLock(id: Id64String, type: string, operation: string): void;
+    checkSharedLock(id: Id64String, type: string, operation: string): void;
+    holdsExclusiveLock(id: Id64String): boolean;
+    holdsSharedLock(id: Id64String): boolean;
+    readonly isServerBased: boolean;
+    releaseAllLocks(): Promise<void>;
+}
+
 // @internal (undocumented)
 export type LockMap = Map<Id64String, LockState_2>;
 
@@ -4697,6 +4748,10 @@ export namespace SchemaSync {
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    withReadonlyAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
@@ -5095,6 +5150,9 @@ export class SqliteChangesetReader implements IDisposable {
     static openFile(args: {
         readonly fileName: string;
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openGroup(args: {
+        readonly changesetFiles: string[];
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     static openLocalChanges(args: {
         iModel: IModelJsNative.DgnDb;
         includeInMemoryChanges?: true;
@@ -5102,6 +5160,11 @@ export class SqliteChangesetReader implements IDisposable {
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
+    writeToFile(args: {
+        fileName: string;
+        containsSchemaChanges: boolean;
+        overwriteFile?: boolean;
+    }): void;
 }
 
 // @beta
