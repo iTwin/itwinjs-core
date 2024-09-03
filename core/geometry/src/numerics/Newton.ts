@@ -132,8 +132,8 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
    * Constructor for 1D newton iteration with derivatives.
    * @param func function that returns both function value and derivative.
    */
-  public constructor(func: NewtonEvaluatorRtoRD) {
-    super();
+  public constructor(func: NewtonEvaluatorRtoRD, maxIterations?: number) {
+    super(undefined, undefined, maxIterations);
     this._func = func;
     this.setTarget(0);
   }
@@ -207,8 +207,8 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
    * Constructor for 1D newton iteration with approximate derivatives.
    * @param func function that only returns function value (and not derivative).
    */
-  public constructor(func: NewtonEvaluatorRtoR) {
-    super();
+  public constructor(func: NewtonEvaluatorRtoR, maxIterations?: number) {
+    super(undefined, undefined, maxIterations);
     this._func = func;
     this.derivativeH = 1.0e-8;
   }
@@ -297,8 +297,7 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
    * Constructor for 2D newton iteration with derivatives.
    * @param func function that returns both function value and derivative.
    */
-  public constructor(func: NewtonEvaluatorRRtoRRD) {
-    const maxIterations = 100;  // Was default (15). We observed 49 iters to achieve 1e-11 tol with tangent geometry.
+  public constructor(func: NewtonEvaluatorRRtoRRD, maxIterations?: number) {
     super(undefined, undefined, maxIterations);
     this._func = func;
     this._currentStep = Vector2d.createZero();
@@ -319,7 +318,6 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
   }
   /** Update the current uv parameter by currentStep, i.e., compute `X_{n+1} := X_n - dX = (u_n - du, v_n - dv)`. */
   public applyCurrentStep(): boolean {
-    // print approximations for debug
     // console.log("(" + (this._currentUV.x - this._currentStep.x) + "," + (this._currentUV.y - this._currentStep.y) + ")");
     return this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y);
   }
@@ -328,18 +326,15 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
    * compute `dX = (du, dv)`.
    */
   public computeStep(): boolean {
-    if (this._func.evaluate(this._currentUV.x, this._currentUV.y)) {
-      const fA = this._func.currentF;
-      if (  // Given X_{n+1} = X_n - dX = X_n - JInv(X_n) F(X_n), we solve J(X_n) dX = F(X_n) for dX:
-        SmallSystem.linearSystem2d(
-          fA.vectorU.x, fA.vectorV.x, // x_u(X_n), x_v(X_n): 1st row of J evaluated at X_n
-          fA.vectorU.y, fA.vectorV.y, // y_u(X_n), y_v(X_n): 2nd row of J evaluated at X_n
-          fA.origin.x, fA.origin.y,   // F(X_n) := (x(X_n), y(X_n))
-          this._currentStep,          // dX
-        )
-      )
-        return true;
-    }
+    if (!this._func.evaluate(this._currentUV.x, this._currentUV.y))
+      return false;
+    const fA = this._func.currentF;
+    const jCol0 = fA.vectorU;
+    const jCol1 = fA.vectorV;
+    const fX = fA.origin;
+    // Given X_{n+1} = X_n - dX = X_n - JInv(X_n) F(X_n), we solve J(X_n) dX = F(X_n) for dX:
+    if (SmallSystem.linearSystem2d(jCol0.x, jCol1.x, jCol0.y, jCol1.y, fX.x, fX.y, this._currentStep))
+      return true;
     return false;
   }
   /**

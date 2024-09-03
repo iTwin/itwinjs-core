@@ -19,7 +19,7 @@ import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
 import { Range3d } from "@itwin/core-geometry";
-import { AnimationNodeId } from "../common/render/AnimationNodeId";
+import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 
 /** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
  * @internal

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { QuantityError } from "../Exception";
 import { Format } from "../Formatter/Format";
 import { DecimalPrecision, FormatTraits, formatTypeToString, parseFormatTrait } from "../Formatter/FormatEnums";
-import { FormatProps } from "../Formatter/Interfaces";
+import { CustomFormatProps, FormatProps } from "../Formatter/Interfaces";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 describe("Formatting tests:", () => {
@@ -815,4 +815,122 @@ describe("Formatting tests:", () => {
     assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
   });
 
+  it("deserialization of custom Formats is consistent", async () => {
+    const unitsProvider = new TestUnitsProvider();
+    const formatProps: CustomFormatProps = {
+      formatTraits: ["KeepSingleZero", "ApplyRounding", "KeepDecimalPoint", "ShowUnitLabel", "Use1000Separator"],
+      precision: 6,
+      type: "Decimal",
+      uomSeparator: " ",
+      custom: {
+        foo: "bar",
+      },
+    };
+
+    const format = await Format.createFromJSON("test", unitsProvider, formatProps);
+
+    const jsonObj: FormatProps = format.toJSON();
+
+    // Assertions
+    // eslint-disable-next-line guard-for-in
+    for (const key in formatProps) {
+      assert(jsonObj.hasOwnProperty(key), `jsonObj is missing property ${key}`);
+      const formatPropValue = formatProps[key as keyof FormatProps];
+      const jsonObjValue = jsonObj[key as keyof FormatProps];
+
+      assert(typeof formatPropValue === typeof jsonObjValue, `Property ${key} types do not match`);
+      if (Array.isArray(formatPropValue) && Array.isArray(jsonObjValue)) {
+        expect(formatPropValue).to.have.members(jsonObjValue, `Property ${key} does not match`);
+      } else {
+        expect(formatPropValue).to.deep.equal(jsonObjValue, `Property ${key} does not match`);
+      }
+    }
+  });
+
+  it("deserialization of Formats is consistent", async () => {
+    const unitsProvider = new TestUnitsProvider();
+    const formatPropsArray: FormatProps[] = [
+      {
+        formatTraits: ["KeepSingleZero", "ApplyRounding", "KeepDecimalPoint", "ShowUnitLabel", "Use1000Separator"],
+        precision: 6,
+        type: "Decimal",
+        uomSeparator: " ",
+      },
+      {
+
+        formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+        precision: 8,
+        type: "Fractional",
+        uomSeparator: "",
+        composite: {
+          includeZero: true,
+          spacer: "",
+          units: [
+            {
+              label: "'",
+              name: "Units.FT",
+            },
+            {
+              label: "\"",
+              name: "Units.IN",
+            },
+          ],
+        },
+      },
+      {
+        formatTraits: ["TrailZeroes", "KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+        minWidth: 6,
+        precision: 3,
+        type: "Bearing",
+        uomSeparator: "",
+        revolutionUnit: "Units.REVOLUTION",
+        composite: {
+          includeZero: true,
+          spacer: "",
+          units: [
+            { name: "Units.ARC_DEG", label: "°" },
+          ],
+        },
+      },
+      {
+        formatTraits: ["TrailZeroes", "KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+        minWidth: 4,
+        precision: 1,
+        type: "Azimuth",
+        uomSeparator: "",
+        revolutionUnit: "Units.REVOLUTION",
+        azimuthBase: 270.0,
+        azimuthBaseUnit: "Units.ARC_DEG",
+        azimuthCounterClockwise: false,
+        composite: {
+          includeZero: true,
+          spacer: "",
+          units: [
+            { name: "Units.ARC_DEG", label: "°" },
+          ],
+        },
+      },
+    ];
+
+    for (const formatProps of formatPropsArray) {
+      const format = await Format.createFromJSON("test", unitsProvider, formatProps);
+
+      const jsonObj: FormatProps = format.toJSON();
+
+      // Assertions
+      // eslint-disable-next-line guard-for-in
+      for (const key in formatProps) {
+        assert(jsonObj.hasOwnProperty(key), `jsonObj is missing property ${key}`);
+        const formatPropValue = formatProps[key as keyof FormatProps];
+        const jsonObjValue = jsonObj[key as keyof FormatProps];
+
+        assert(typeof formatPropValue === typeof jsonObjValue, `Property ${key} types do not match`);
+        if (Array.isArray(formatPropValue) && Array.isArray(jsonObjValue)) {
+          expect(formatPropValue).to.have.members(jsonObjValue, `Property ${key} does not match`);
+        } else {
+          expect(formatPropValue).to.deep.equal(jsonObjValue, `Property ${key} does not match`);
+        }
+      }
+    }
+  });
 });

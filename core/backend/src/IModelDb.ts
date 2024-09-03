@@ -812,6 +812,7 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
+   * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
@@ -2996,10 +2997,16 @@ export class BriefcaseDb extends IModelDb {
     if (this.briefcaseId === BriefcaseIdValue.Unassigned)
       return;
 
-    if (this[_nativeDb].hasUnsavedChanges())
+    if (this[_nativeDb].hasUnsavedChanges()) {
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push with unsaved changes");
-    if (!this[_nativeDb].hasPendingTxns())
-      return; // nothing to push
+    } else if (!this[_nativeDb].hasPendingTxns()) {
+      // Nothing to push.
+      if (!arg.retainLocks) {
+        await this.locks.releaseAllLocks();
+      }
+
+      return;
+    }
 
     // pushing changes requires a writeable briefcase
     await this.executeWritable(async () => {

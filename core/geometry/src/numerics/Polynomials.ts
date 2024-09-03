@@ -1537,7 +1537,7 @@ export class SmallSystem {
    * Return the line fraction at which the line is closest to a space point as viewed in xy only.
    * @param pointA0 start point
    * @param pointA1 end point
-   * @param spacePoint homogeneous point in space
+   * @param spacePoint point in space
    */
   public static lineSegment3dXYClosestPointUnbounded(pointA0: XAndY, pointA1: XAndY, spacePoint: XAndY): number | undefined {
     // Considering only x,y parts....
@@ -1554,7 +1554,7 @@ export class SmallSystem {
    * Return the line fraction at which the line is closest to a space point
    * @param pointA0 start point
    * @param pointA1 end point
-   * @param spacePoint homogeneous point in space
+   * @param spacePoint point in space
    */
   public static lineSegment3dClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined {
     const ux = pointA1.x - pointA0.x;

@@ -10,10 +10,10 @@ import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Tran
 import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { GraphicType } from "./render/GraphicBuilder";
 import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
+import { GraphicType } from "./common/render/GraphicType";
 
 /**
  * @public

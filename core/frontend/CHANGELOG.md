@@ -1,6 +1,76 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 28 Jun 2024 17:05:11 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Aug 2024 18:19:52 GMT and should not be manually modified.
+
+## 4.8.3
+Fri, 16 Aug 2024 18:18:14 GMT
+
+_Version update only_
+
+## 4.8.2
+Thu, 15 Aug 2024 15:33:49 GMT
+
+_Version update only_
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+_Version update only_
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:37 GMT
+
+### Updates
+
+- Fixed planar masks when using new tiles
+- Improve resolution of planar clip masks
+- Fixed new tiles not updating planar clip mask immediately.
+- Fixed performance problem for planar clip masks
+- Fix missing login dialog for some ArcGIS services
+- Fix error reading ArcGIS Map service capabilities when Kerberos authentication is used
+- fixed material issues with frontend schedule scripts
+- Check validity of OCP CRS before using it.
+- Trigger additional `onMouseMotion` call for tools to react to the last AccuSnap.
+- Allow elements in edit scope to be updated by schedule scripts.
+- Add support for gLTF extention EXT_mesh_gpu_instancing, that allows assigning unique identifiers to individual instances of a mesh, which can be used to look up per-instance data in the structural metadata table. This version also contains a fix to support absolute tile URLs in 3D tiles tileset.json
+- Load up front all subcategories of used spatial categories and 3D elements when creating a default view.
+- Update ThirdPartyNotices.md
+- Provide WorkerProxy to simplify use of Worker scripts, and enable creation of graphics on Workers using GraphicDescriptionBuilder.
+- Fix Viewport's never-drawn elements overriding the display style's excluded elements.
+- Promote ScreenViewport and OffScreenViewport constructors.
+- Include the extents of all TiledGraphicsProviders when computing ViewingSpace extents.
+- Add support for creating textures and materials in a Worker.
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
+
+## 4.7.7
+Fri, 19 Jul 2024 14:52:42 GMT
+
+### Updates
+
+- Fix Viewport's never-drawn elements overriding the display style's excluded elements.
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:55 GMT
+
+### Updates
+
+- Fix missing login dialog for some ArcGIS services
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+### Updates
+
+- Improve resolution of planar clip masks
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:23 GMT
+
+_Version update only_
 
 ## 4.7.3
 Thu, 27 Jun 2024 21:09:02 GMT

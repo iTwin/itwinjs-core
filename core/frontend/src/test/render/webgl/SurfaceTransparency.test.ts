@@ -18,9 +18,9 @@ import { Primitive } from "../../../render/webgl/Primitive";
 import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags";
 import { MeshGraphic } from "../../../render/webgl/Mesh";
 import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { createBlankConnection } from "../../createBlankConnection";
-import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { MeshArgs } from "../../../render/MeshArgs";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const colors = new ColorIndex();
@@ -51,7 +51,7 @@ function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture):
   if (texture)
     args.textureMapping = { texture, uvParams: [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ] };
 
-  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
   return IModelApp.renderSystem.createMesh(params)!;
 }
 
