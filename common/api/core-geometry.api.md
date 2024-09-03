@@ -1729,7 +1729,7 @@ export class CurveLocationDetailPair {
 export class CurveOps {
     static appendXYOffsets(curves: AnyCurve | AnyCurve[] | undefined, offset: number, result: AnyCurve[]): number;
     static collectChains(fragments: AnyCurve[], gapTolerance?: number, planeTolerance?: number): AnyChain | undefined;
-    static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance?: number, planeTolerance?: number): void;
+    static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance?: number, _planeTolerance?: number): void;
     static collectInsideAndOutsideXYOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
         insideOffsets: AnyCurve[];
         outsideOffsets: AnyCurve[];
