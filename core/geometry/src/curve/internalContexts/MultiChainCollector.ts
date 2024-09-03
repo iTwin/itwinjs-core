@@ -329,7 +329,10 @@ export class MultiChainCollector {
     }
     return bag;
   }
-  /** Return chains as individual calls to announceChain. */
+  /**
+   * Return chains as individual calls to announceChain.
+   * * Does not use planeTolerance.
+  */
   public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void, options?: StrokeOptions): void {
     const chains = this._chains;
     if (chains.length === 1) {
