@@ -1129,10 +1129,11 @@ describe("Triangulation", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("createTriangulatedGraphFromPoints", () => {
+  it("TriangulatePoints", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const points = [[0, 0, 0], [5, 0, 0], [0, 2, 0], [5, 2, 0]];
-    const pts = IModelJson.Reader.parsePointArray(points);
+    let pts = IModelJson.Reader.parsePointArray(points);
     const graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
     graph.announceFaceLoops(
       (_graph: HalfEdgeGraph, seed: HalfEdge) => {
@@ -1142,6 +1143,17 @@ describe("Triangulation", () => {
         );
       },
     );
+    // non-planar test case from Ron
+    pts = [Point3d.create(-100, -100, 0), Point3d.create(100, -100, 100), Point3d.create(100, 100, 0), Point3d.create(-100, 100, 100)];
+    const polyface = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
+    if (ck.testDefined(polyface, "builder produced a mesh")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface);
+      for (const visitor = polyface.createVisitor(); visitor.moveToNextFacet(); ) {
+        ck.testExactNumber(visitor.numEdgesThisFacet, 3, "each mesh facet is a triangle");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulatePoints");
+    expect(ck.getNumErrors()).equals(0);
   });
 
   it("TriangulatorHang", () => {
