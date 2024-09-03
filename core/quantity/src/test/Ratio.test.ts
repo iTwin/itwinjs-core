@@ -30,7 +30,7 @@ describe("Ratio format tests", () => {
     assert.isTrue(v_h.isValid);
 
     const ratioFormatterSpec = await FormatterSpec.create(`${ratioType}`, ratioFormat, unitsProvider, v_h); //persisted unit
-    const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, v_h);
+    const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, v_h); // persistence unit
 
     for (const entry of testData) {
       if (null != entry.precision)
@@ -43,7 +43,7 @@ describe("Ratio format tests", () => {
         assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
       }
       expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.input}`).closeTo(entry.input, 0.0001);
-      
+
     }
   }
 
