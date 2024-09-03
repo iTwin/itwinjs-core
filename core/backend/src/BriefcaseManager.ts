@@ -446,8 +446,8 @@ export class BriefcaseManager {
 
   /** @internal */
   public static async revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void> {
-    if (!db.isOpen || db[_nativeDb].isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
-      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
+    if (!db.isOpen || db[_nativeDb].isReadonly())
+      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to revert timeline changes");
 
     let currentIndex = db.changeset.index;
     if (currentIndex === undefined)
