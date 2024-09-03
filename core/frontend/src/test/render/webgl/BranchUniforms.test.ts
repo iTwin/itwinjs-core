@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { dispose } from "@itwin/core-bentley";
-import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
 import { ViewRect } from "../../../common/ViewRect";
 import { createEmptyRenderPlan } from "../../../render/RenderPlan";
@@ -15,9 +15,8 @@ import { ClipStack } from "../../../render/webgl/ClipStack";
 import { Target } from "../../../render/webgl/Target";
 import { ClipStyle, EmptyLocalization } from "@itwin/core-common";
 import { BranchUniforms } from "../../../render/webgl/BranchUniforms";
-import { ScreenViewport, Viewport } from "../../../Viewport";
-import { IModelConnection, SpatialViewState } from "../../../core-frontend";
-import { Vector3d } from "@itwin/core-geometry";
+import { ScreenViewport } from "../../../Viewport";
+import { SpatialViewState } from "../../../core-frontend";
 import { createBlankConnection } from "../../createBlankConnection";
 
 function makeClipVolume(): ClipVolume {
