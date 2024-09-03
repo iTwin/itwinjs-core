@@ -157,7 +157,7 @@ function logResponse(request: SerializedRpcRequest, statusCode: number, resultOb
     path: request.path,
     operation: request.operation,
     statusCode,
-    error: resultObj instanceof Error ? resultObj : undefined,
+    errorObj: resultObj instanceof Error ? resultObj : undefined,
   };
 
   if (statusCode < 400)
