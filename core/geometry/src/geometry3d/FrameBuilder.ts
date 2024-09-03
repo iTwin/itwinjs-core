@@ -245,7 +245,8 @@ export class FrameBuilder {
    * * x axis in direction of first nonzero vector present or implied by the input.
    * * y axis is perpendicular to x and contains (in positive side) the next vector present or implied by the input.
    * * The calculation favors the first points found. It does not try to get a "best" plane.
-   * @param defaultUpVector optional vector to cross with vector0 to create vector1 when it is unknown
+   * @param defaultUpVector optional vector to cross with vector0 to create vector1 when it is unknown.
+   * The z-column of the returned frame points into the same halfspace as this vector.
    * @param params any number of geometric objects to examine in [[announce]] for point/vector data sufficient to construct a frame.
    * If the last argument is a `Transform`, it is populated with the computed frame and returned.
    * @returns computed localToWorld frame, or undefined if insufficient data.
