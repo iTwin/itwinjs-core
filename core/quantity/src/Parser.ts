@@ -9,7 +9,7 @@
 import { QuantityConstants } from "./Constants";
 import { QuantityError, QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
-import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
+import { FormatTraits, FormatType, RatioType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { ParserSpec } from "./ParserSpec";
 import { Quantity } from "./Quantity";
@@ -663,6 +663,10 @@ export class Parser {
       return this.parseAzimuthFormat(inString, parserSpec);
     }
 
+    if (parserSpec.format.type === FormatType.Ratio) {
+      return this.parseRatioFormat(inString, parserSpec);
+    }
+
     return this.parseAndProcessTokens(inString, parserSpec.format, parserSpec.unitConversions);
   }
 
@@ -688,9 +692,9 @@ export class Parser {
       });
     }
 
-    if(format.type === FormatType.Bearing || format.type === FormatType.Azimuth) {
+    if(format.type === FormatType.Bearing || format.type === FormatType.Azimuth || format.type === FormatType.Ratio) {
       // throw error indicating to call parseQuantityString instead
-      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Bearing and Azimuth format must be parsed using a ParserSpec. Call parseQuantityString instead.`);
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Bearing, Azimuth or Ratio format must be parsed using a ParserSpec. Call parseQuantityString instead.`);
     }
 
     return this.parseAndProcessTokens(inString, format, unitsConversions);
@@ -795,6 +799,64 @@ export class Parser {
 
     return { ok: true, value: magnitude };
   }
+
+  private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult | ParseQuantityError {
+    if (!inString || !inString.includes(":")) {
+        return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+    }
+
+    const parts = inString.split(":");
+    if (parts.length !== 2) {
+        return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+    }
+
+    const numerator = parseFloat(parts[0]);
+    const denominator = parseFloat(parts[1]);
+
+    if (isNaN(numerator) || isNaN(denominator)) {
+        return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+    }
+
+    if (denominator === 0) {
+        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+    }
+
+    let magnitude = 0.0;
+    switch (spec.format.ratioType) {
+        case RatioType.OneToN:
+            if (numerator !== 1) {
+                return { ok: false, error: ParseError.InvalidParserSpec }; // Consider this as a misconfiguration
+            }
+            magnitude = 1.0 / denominator;
+            break;
+
+        case RatioType.NToOne:
+            if (denominator !== 1) {
+                return { ok: false, error: ParseError.InvalidParserSpec };
+            }
+            magnitude = numerator;
+            break;
+
+        case RatioType.ValueBased:
+            if (magnitude > 1.0) {
+                magnitude = numerator / denominator;
+            } else {
+                magnitude = 1.0 / (denominator / numerator);
+            }
+            break;
+
+        case RatioType.UseGreatestCommonDivisor:
+            magnitude = numerator / denominator;
+            break;
+
+        default:
+            return { ok: false, error: ParseError.InvalidParserSpec };
+    }
+
+    return { ok: true, value: magnitude };
+}
+
+
 
   // TODO: The following two methods are redundant with Formatter. We should consider consolidating them.
   private static normalizeAngle(magnitude: number, revolution: number): number {
