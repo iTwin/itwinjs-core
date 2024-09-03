@@ -21,6 +21,7 @@ import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
+import { IModelApp } from "../../IModelApp";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)
@@ -70,8 +71,6 @@ export class BranchUniforms {
   private readonly _scratchVIModelMatrix = Transform.createIdentity();
   private readonly _zeroPoint = new Point3d(0, 0, 0);
 
-  public overrideClipStyle = false;
-
   public get stack(): BranchStack { return this._stack; }
 
   public constructor(target: Target) {
@@ -105,7 +104,18 @@ export class BranchUniforms {
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
-    this.overrideClipStyle = !!branch.overrideClipStyle;
+
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp) {
+
+      /** If the branch has disableClipStyle set, we set these alphas to 0, therefore disabling the clip style.
+      * Otherwise, we leave it to the viewport's clip style.
+      */
+      const style = vp.view.displayStyle.settings.clipStyle;
+      this.clipStack.insideColor.alpha = branch.disableClipStyle ? 0 : (style.insideColor ? 1 : 0);
+      this.clipStack.outsideColor.alpha = branch.disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
+      this.clipStack.intersectionStyle.alpha = branch.disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
+    }
 
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);

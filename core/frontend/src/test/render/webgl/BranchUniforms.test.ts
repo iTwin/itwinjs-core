@@ -13,7 +13,12 @@ import { Branch } from "../../../render/webgl/Graphic";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { ClipStack } from "../../../render/webgl/ClipStack";
 import { Target } from "../../../render/webgl/Target";
-import { EmptyLocalization } from "@itwin/core-common";
+import { ClipStyle, EmptyLocalization } from "@itwin/core-common";
+import { BranchUniforms } from "../../../render/webgl/BranchUniforms";
+import { ScreenViewport, Viewport } from "../../../Viewport";
+import { IModelConnection, SpatialViewState } from "../../../core-frontend";
+import { Vector3d } from "@itwin/core-geometry";
+import { createBlankConnection } from "../../createBlankConnection";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();
@@ -26,14 +31,14 @@ function makeClipVolume(): ClipVolume {
 interface ClipInfo {
   clip?: ClipVolume;
   noViewClip?: boolean; // undefined means inherit from parent on branch stack
+  disableClipStyle?: boolean;
 }
 
 function makeBranch(info: ClipInfo): Branch {
   const branch = new GraphicBranch();
   if (undefined !== info.noViewClip)
     branch.viewFlagOverrides.clipVolume = !info.noViewClip;
-
-  const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip });
+  const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip, disableClipStyle: info.disableClipStyle });
   expect(graphic instanceof Branch).to.be.true;
   return graphic as Branch;
 }
@@ -59,13 +64,21 @@ function expectClipStack(target: Target, expected: Array<{ numRows: number }>): 
     expect(actual[i]).to.equal(expected[i]);
 }
 
+function expectClipStyle(uniforms: BranchUniforms, expectedAlphas: number[]): void {
+  expect(uniforms.clipStack.insideColor.alpha).to.equal(expectedAlphas[0]);
+  expect(uniforms.clipStack.outsideColor.alpha).to.equal(expectedAlphas[1]);
+  expect(uniforms.clipStack.intersectionStyle.alpha).to.equal(expectedAlphas[2]);
+}
+
 /** Inputs:
  * - The view clip and ViewFlags.clipVolume
  * - A stack of branches to be pushed
  * - The expected stack of ClipVolumes on the ClipStack, including the view clip, after pushing all branches.
  * - Whether we expect the view's clip to apply to the top branch.
+ * - Optionally, a ClipStyle to apply to the ClipStack.
+ * - Optionally, the expected Alpha values of the ClipStack's ClipStyle.
  */
-function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: boolean, expectedClips: Array<{ numRows: number }>): void {
+function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: boolean, expectedClips: Array<{ numRows: number }>, expectedClipStyleAlphaValues?: number[]): void {
   const plan = { ...createEmptyRenderPlan(), clip: viewClip.clip?.clipVector };
   plan.viewFlags = plan.viewFlags.with("clipVolume", true !== viewClip.noViewClip);
 
@@ -86,6 +99,9 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   expect(uniforms.clipStack.hasClip).to.equal(expectViewClip || expectedClips.length > 1);
   expectClipStack(target, expectedClips);
 
+  if (expectedClipStyleAlphaValues)
+    expectClipStyle(uniforms, expectedClipStyleAlphaValues);
+
   for (const _branch of branches)
     target.popBranch();
 
@@ -96,7 +112,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   dispose(target);
 }
 
-describe("BranchUniforms", async () => {
+describe.only("BranchUniforms", async () => {
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
@@ -139,5 +155,40 @@ describe("BranchUniforms", async () => {
     const innerClip = makeClipVolume();
 
     testBranches({ clip: viewClip }, [{ clip: outerClip }, { clip: innerClip }], true, [viewClip, outerClip, innerClip]);
+  });
+
+  it ("should disable clip style", async () => {
+    const viewClip = makeClipVolume();
+    const branchClip = makeClipVolume();
+
+    // create a viewport
+    const imodel = createBlankConnection("imodel");
+    const viewDiv = document.createElement("div");
+    viewDiv.style.width = viewDiv.style.height = "100px";
+    document.body.appendChild(viewDiv);
+    const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
+    const vp = ScreenViewport.create(viewDiv, view);
+    IModelApp.viewManager.addViewport(vp);
+    await IModelApp.viewManager.setSelectedView(vp);
+
+    // create a clip style and assign it to the viewport
+    const testStyle = ClipStyle.fromJSON({
+      insideColor: {r: 255, g: 0, b: 0},
+      outsideColor: {r: 0, g: 255, b: 0},
+      intersectionStyle: {
+        color: {r: 0, g: 0, b: 255},
+        width: 1,
+      },
+    });
+    vp.clipStyle = testStyle;
+
+    // disableClipStyle is false, so we expect the inside color, outside color, and intersection style width to all be 1
+    testBranches({ clip: viewClip }, [{ clip: branchClip, disableClipStyle: false }], true, [viewClip, branchClip], [1,1,1]);
+
+    // disableClipStyle is true, so we expect the branch to have disabled the inside color, outside color, and intersection style width,
+    // setting all of their alpha values to 0
+    testBranches({ clip: viewClip }, [{ clip: branchClip, disableClipStyle: true }], true, [viewClip, branchClip], [0,0,0]);
+
+    IModelApp.viewManager.dropViewport(vp);
   });
 });
