@@ -361,6 +361,19 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
     });
   }, VariablePrecision.High);
 
+  frag.addUniform("u_invView", VariableType.Mat4, (prog) => {
+    prog.addProgramUniform("u_invView", (uniform, params) => {
+      const viewMatrix = params.target.uniforms.frustum.viewMatrix;
+      const invViewMatrix = viewMatrix.matrix.clone();
+
+      const invertedMatrix = invViewMatrix.inverse();
+      if (invViewMatrix) {
+        uniform.setMatrix4(invertedMatrix);
+      } else {
+      }
+    });
+  }, VariablePrecision.High);
+
   builder.vert.headerComment = "//!V! AmbientOcclusion";
   builder.frag.headerComment = "//!F! AmbientOcclusion";
 
