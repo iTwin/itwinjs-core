@@ -84,17 +84,19 @@ export class Checker {
     offsetMesh: false,
   };
   /**
-   * Constructor that allows setting statics in `GeometryCoreTestIO` as a debugging convenience.
+   * Constructor that allows overriding debug statics in `GeometryCoreTestIO` as a convenience.
+   * * This is typically used with `.only` test scope.
+   * * Note that by default these statics are set to false.
    * * Do not push to server an invocation that passes true.
+   * * We don't pass `enableLongTests`, as this static is typically set globally (and infrequently).
    */
-  public constructor(enableConsole: boolean = false, enableSave: boolean = false, enableLongTests: boolean = false) {
+  public constructor(enableConsole: boolean = false, enableSave: boolean = false) {
     this._numErrors = 0;
     this._numOK = 0;
     this._savedErrors = 0;
     this._savedOK = 0;
     GeometryCoreTestIO.enableConsole = enableConsole;
     GeometryCoreTestIO.enableSave = enableSave;
-    GeometryCoreTestIO.enableLongTests = enableLongTests;
   }
   public getNumErrors(): number {
     return this._savedErrors + this._numErrors;

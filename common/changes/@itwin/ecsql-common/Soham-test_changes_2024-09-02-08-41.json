@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecsql-common",
+      "comment": "Added support for CTE without columns",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecsql-common"
+}
