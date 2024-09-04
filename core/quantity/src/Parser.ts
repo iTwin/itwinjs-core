@@ -868,12 +868,15 @@ export class Parser {
 
   // helper method for parse ratio string
   private static validateNumeratorAndDenominator(numerator: number, denominator: number, requiredNumerator?: number, requiredDenominator?: number): QuantityParseResult {
-    if (numerator !== requiredNumerator) {
+
+    // numerator is different from what ratioType speciied
+    if (requiredNumerator){
+      if (numerator !== requiredNumerator)
         return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
-    }
-    if (denominator === 0) {
+      if (denominator === 0)
         return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
     }
+
     if (requiredDenominator !== undefined && denominator !== requiredDenominator) {
         return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
     }
