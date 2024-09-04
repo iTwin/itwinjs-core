@@ -18,11 +18,11 @@ import { Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 import { BatchOptions } from "../../common/render/BatchOptions";
 
-function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
+function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number): { width: number, height: number } {
   const maxSize = System.instance.maxTextureSize;
-  const nRgba = nEntries * nRgbaPerEntry * nTables + nExtraRgba;
+  const nRgba = Math.ceil(nEntries * nRgbaPerEntry);
 
-  if (nRgba < maxSize)
+  if (nRgba <= maxSize)
     return { width: nRgba, height: 1 };
 
   // Make roughly square to reduce unused space in last row
@@ -76,7 +76,7 @@ export class CivilContours implements WebGLDisposable {
 
   private _initialize(map: RenderFeatureTable, contours: CivilContourDisplay | undefined): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
-    const dims = computeWidthAndHeight(nFeatures, 3);
+    const dims = computeWidthAndHeight(nFeatures, 1/8);
     const width = dims.width;
     const height = dims.height;
     assert(width * height >= nFeatures);
@@ -106,6 +106,7 @@ export class CivilContours implements WebGLDisposable {
 
     // setup an efficient way to compare feature subcategories with lists in terrains
     const subCatMap = new Id64.Uint32Map<number>();
+    // NB: index should be a max of 14 - has to fit in 4 bits and 15 is reserved for no terrain def
     for (let index = 0, len = contours.terrains.length; index < len; ++index) {
       const subCats = contours.terrains[index].subCategories;
       if (subCats !== undefined) {
@@ -114,42 +115,22 @@ export class CivilContours implements WebGLDisposable {
       }
     }
 
-    // NB: We currently use 3 RGBA values per feature as follows:
-    //  [0]
-    //      RGB = rgb major
-    //      A = lineCode major/minor -  upper 4 bits = major, a value of 255 for A indicates no contour defined for this feature
-    //  [1]
-    //      RGB = rgb minor
-    //      A = weight major/minor - upper 4 bits = major, the 4 bits is a 1.5 based 3-bit weight value with one fraction bit
-    //                               This gives a weight range of 1.5 to 9 in 0.5 increments
-    //  [2]
-    //      RG = major index count lower/upper (limited to 16? bits)
-    //      BA = minor interval distance lower/upper (limited to 16? bits)
+    // NB: We currently use 1/2 of one component of RGBA value per feature as follows:
+    //   [0] R/G/B/A = index pair - lower 4 bits = ndx n, upper 4 bits = ndx n+1
+    let even = false;
+    let byteOut = 0;
+    let dataIndex = 0;
     for (const feature of map.iterable(scratchPackedFeature)) {
-      const dataIndex = feature.index * 4 * 3;
-      const index = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper);
-      if (index !== undefined) {
-        const contour = contours.terrains[index];
-        data.setByteAtIndex(dataIndex + 0, contour.majorContour.color.colors.r);
-        data.setByteAtIndex(dataIndex + 1, contour.majorContour.color.colors.g);
-        data.setByteAtIndex(dataIndex + 2, contour.majorContour.color.colors.b);
-        const lineCodeMaj = LineCode.valueFromLinePixels(contour.majorContour.pattern);
-        const lineCodeMin = LineCode.valueFromLinePixels(contour.minorContour.pattern);
-        data.setByteAtIndex(dataIndex + 3, (lineCodeMaj << 4) | (lineCodeMin & 0xf));
-        data.setByteAtIndex(dataIndex + 4, contour.minorContour.color.colors.r);
-        data.setByteAtIndex(dataIndex + 5, contour.minorContour.color.colors.g);
-        data.setByteAtIndex(dataIndex + 6, contour.minorContour.color.colors.b);
-        const wtMaj = Math.floor((Math.min(9, Math.max(1.5, contour.majorContour.pixelWidth)) - 1.5) * 2 + 0.5);
-        const wtMin = Math.floor((Math.min(9, Math.max(1.5, contour.minorContour.pixelWidth)) - 1.5) * 2 + 0.5);
-        data.setByteAtIndex(dataIndex + 7, (wtMaj << 4) | (wtMin & 0xf));
-        const intervalMaj = Math.min(0xffff, Math.max (0, contour.majorContour.interval));
-        data.setOvrFlagsAtIndex(dataIndex + 8, intervalMaj);
-        const intervalMin = Math.min(0xffff, Math.max (0, contour.minorContour.interval));
-        data.setOvrFlagsAtIndex(dataIndex + 10, intervalMin);
-      } else {
-        data.setByteAtIndex(dataIndex + 3, 255); // no contour defined for this feature
-      }
+      dataIndex = Math.floor (feature.index * 0.5);
+      even = (feature.index & 1) === 0;
+      const terrainNdx  = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper) ?? 0xf; // index 15 means no contours
+      if (even)
+        byteOut = terrainNdx;
+      else
+        data.setByteAtIndex(dataIndex, (terrainNdx << 4) | byteOut);
     }
+    if (even) // not written
+      data.setByteAtIndex(dataIndex, byteOut);
 
     return true;
   }
