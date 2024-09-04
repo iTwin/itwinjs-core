@@ -74,7 +74,6 @@ function expectClipStyle(uniforms: BranchUniforms, expectedAlphas: number[]): vo
  * - A stack of branches to be pushed
  * - The expected stack of ClipVolumes on the ClipStack, including the view clip, after pushing all branches.
  * - Whether we expect the view's clip to apply to the top branch.
- * - Optionally, a ClipStyle to apply to the ClipStack.
  * - Optionally, the expected Alpha values of the ClipStack's ClipStyle.
  */
 function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: boolean, expectedClips: Array<{ numRows: number }>, expectedClipStyleAlphaValues?: number[]): void {
