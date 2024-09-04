@@ -267,7 +267,7 @@ export class Ray3d implements BeJSONFunctions {
    * Return a transform for rigid axes at ray origin with z in ray direction.
    * * If the direction vector is zero, axes default to identity (from [[Matrix3d.createRigidHeadsUp]])
    */
-  public toRigidZFrame(result?: Transform): Transform | undefined {
+  public toRigidZFrame(result?: Transform): Transform {
     const axes = Ray3d._workMatrix = Matrix3d.createRigidHeadsUp(this.direction, AxisOrder.ZXY, Ray3d._workMatrix);
     return Transform.createOriginAndMatrix(this.origin, axes, result);
   }
