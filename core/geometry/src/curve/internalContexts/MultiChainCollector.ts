@@ -38,13 +38,13 @@ import { StrokeOptions } from "../StrokeOptions";
  * @internal
  */
 export class MultiChainCollector {
-  /** accumulated chains */
+  /** Accumulated chains. */
   private _chains: CurvePrimitive[][];
-  /** largest gap distance to close */
+  /** Largest gap distance to close. */
   private _gapTolerance: number;
-  /** end point snap tolerance (assumed to be as tight or tighter than gapTolerance) */
+  /** End point snap tolerance (assumed to be as tight or tighter than gapTolerance). */
   private _snapTolerance: number;
-  /** planarity tolerance, used to determine whether to return a Path or Loop in `grabResult(true)`. If undefined, always Path. */
+  /** Planarity tolerance, used to determine whether to return a Path or Loop in `grabResult(true)`. If undefined, always Path. */
   private _planeTolerance: number | undefined;
 
   private static _staticPointA: Point3d;
