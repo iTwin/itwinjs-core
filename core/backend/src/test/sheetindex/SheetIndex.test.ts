@@ -150,21 +150,15 @@ describe("SheetIndex", () => {
       const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
       expect(folder).to.not.be.undefined;
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetIndexOwnsEntries.classFullName, { sourceId: sheetIndexId, targetId: folderId });
       const parentRel11 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: sheetIndex1Id, targetId: folderId });
       expect(parentRel11).to.not.be.undefined;
 
       folder!.parent = new SheetIndexOwnsEntries(sheetIndex2Id);
       folder!.update();
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetIndexOwnsEntries.classFullName, { sourceId: sheetIndexId, targetId: folderId });
       const parentRel12 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: sheetIndex1Id, targetId: folderId });
       expect(parentRel12).to.be.undefined;
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetIndexOwnsEntries.classFullName, { sourceId: sheetIndexId, targetId: folderId });
       const parentRel22 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: sheetIndex2Id, targetId: folderId });
       expect(parentRel22).to.not.be.undefined;
     });
@@ -191,26 +185,18 @@ describe("SheetIndex", () => {
       sheetRef!.sheet = new SheetReferenceRefersToSheet(sheet1Id);
       sheetRef!.update();
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet1Id });
       const refersRel11 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet1Id });
       expect(refersRel11).to.not.be.undefined;
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet2Id });
       const parentRel12 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet2Id });
       expect(parentRel12).to.be.undefined;
 
       sheetRef!.sheet = new SheetReferenceRefersToSheet(sheet2Id);
       sheetRef!.update();
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet1Id });
       const refersRel21 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet1Id });
       expect(refersRel21).to.be.undefined;
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet2Id });
       const parentRel22 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet2Id });
       expect(parentRel22).to.not.be.undefined;
     });
@@ -239,21 +225,15 @@ describe("SheetIndex", () => {
       sheetIndexRef!.sheetIndex = new SheetIndexReferenceRefersToSheetIndex(sheetIndex2Id);
       sheetIndexRef!.update();
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex2Id });
       const parentRel11 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex2Id });
       expect(parentRel11).to.not.be.undefined;
 
       sheetIndexRef!.sheetIndex = new SheetIndexReferenceRefersToSheetIndex(sheetIndex3Id);
       sheetIndexRef!.update();
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex2Id });
       const refersRel21 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex2Id });
       expect(refersRel21).to.be.undefined;
 
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex3Id });
       const parentRel22 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex3Id });
       expect(parentRel22).to.not.be.undefined;
     });
@@ -273,8 +253,7 @@ describe("SheetIndex", () => {
 
       const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
       expect(folder).to.not.be.undefined;
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetIndexOwnsEntries.classFullName, { sourceId: sheetIndexId, targetId: folderId });
+
       const relationship = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: sheetIndexId, targetId: folderId });
       expect(relationship).to.not.be.undefined;
       expect(relationship?.classFullName).equals(SheetIndexOwnsEntries.classFullName);
@@ -313,8 +292,7 @@ describe("SheetIndex", () => {
       expect(Id64.isValidId64(folder2Id)).to.be.true;
       const folder2 = iModel.elements.tryGetElement<SheetIndexFolder>(folder2Id);
       expect(folder2).to.not.be.undefined;
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetIndexFolderOwnsEntries.classFullName, { sourceId: folder1Id, targetId: folder2Id });
+
       const relationship = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: folder1Id, targetId: folder2Id });
       expect(relationship).to.not.be.undefined;
       expect(relationship?.classFullName).equals(SheetIndexFolderOwnsEntries.classFullName);
@@ -366,8 +344,7 @@ describe("SheetIndex", () => {
 
       const ref = iModel.elements.tryGetElement<SheetReference>(sheetRefId);
       expect(ref).to.not.be.undefined;
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheetId });
+
       const relationship = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheetId });
       expect(relationship).to.not.be.undefined;
       expect(relationship?.classFullName).equals(SheetReferenceRefersToSheet.classFullName);
@@ -435,8 +412,7 @@ describe("SheetIndex", () => {
 
       const ref = iModel.elements.tryGetElement<SheetIndexReference>(sheetIndexRefId);
       expect(ref).to.not.be.undefined;
-      // Need to register class scheme?
-      // const relationship = iModel.relationships.tryGetInstance(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheetId });
+
       const relationship = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex2Id });
       expect(relationship).to.not.be.undefined;
       expect(relationship?.classFullName).equals(SheetIndexReferenceRefersToSheetIndex.classFullName);
