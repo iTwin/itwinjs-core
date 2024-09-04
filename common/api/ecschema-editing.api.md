@@ -764,15 +764,15 @@ export enum ECEditingStatus {
     // (undocumented)
     AddCustomAttributeToProperty = 196641,
     // (undocumented)
-    AddEnumerator = 196660,
+    AddEnumerator = 196662,
     // (undocumented)
-    AddMixin = 196659,
+    AddMixin = 196661,
     // (undocumented)
-    AddPresentationOverride = 196664,
+    AddPresentationOverride = 196666,
     // (undocumented)
-    AddPresentationUnit = 196663,
+    AddPresentationUnit = 196665,
     // (undocumented)
-    AddSchemaReference = 196682,
+    AddSchemaReference = 196684,
     // (undocumented)
     BaseClassIsNotElement = 196616,
     // (undocumented)
@@ -786,49 +786,49 @@ export enum ECEditingStatus {
     // (undocumented)
     CreateElementUniqueAspect = 196632,
     // (undocumented)
-    CreateEnumerationArrayProperty = 196673,
+    CreateEnumerationArrayProperty = 196675,
     // (undocumented)
-    CreateEnumerationArrayPropertyFromProps = 196674,
+    CreateEnumerationArrayPropertyFromProps = 196676,
     // (undocumented)
-    CreateEnumerationProperty = 196669,
+    CreateEnumerationProperty = 196671,
     // (undocumented)
-    CreateEnumerationPropertyFromProps = 196670,
+    CreateEnumerationPropertyFromProps = 196672,
     // (undocumented)
-    CreateFormatOverride = 196665,
+    CreateFormatOverride = 196667,
     // (undocumented)
     CreateNavigationProperty = 196643,
     // (undocumented)
     CreateNavigationPropertyFromProps = 196644,
     // (undocumented)
-    CreatePrimitiveArrayProperty = 196671,
+    CreatePrimitiveArrayProperty = 196673,
     // (undocumented)
-    CreatePrimitiveArrayPropertyFromProps = 196672,
+    CreatePrimitiveArrayPropertyFromProps = 196674,
     // (undocumented)
-    CreatePrimitiveProperty = 196667,
+    CreatePrimitiveProperty = 196669,
     // (undocumented)
-    CreatePrimitivePropertyFromProps = 196668,
+    CreatePrimitivePropertyFromProps = 196670,
     // (undocumented)
     CreateSchemaItemFailed = 196629,
     // (undocumented)
     CreateSchemaItemFromProps = 196630,
     // (undocumented)
-    CreateStructArrayProperty = 196677,
+    CreateStructArrayProperty = 196679,
     // (undocumented)
-    CreateStructArrayPropertyFromProps = 196678,
+    CreateStructArrayPropertyFromProps = 196680,
     // (undocumented)
-    CreateStructProperty = 196675,
+    CreateStructProperty = 196677,
     // (undocumented)
-    CreateStructPropertyFromProps = 196676,
+    CreateStructPropertyFromProps = 196678,
     // (undocumented)
-    DeleteClass = 196680,
+    DeleteClass = 196682,
     // (undocumented)
-    DeleteProperty = 196679,
+    DeleteProperty = 196681,
     // (undocumented)
     EC_EDITING_ERROR_BASE = 196608,
     // (undocumented)
     EnumeratorDoesNotExist = 196624,
     // (undocumented)
-    IncrementSchemaMinorVersion = 196684,
+    IncrementSchemaMinorVersion = 196686,
     // (undocumented)
     InvalidBaseClass = 196623,
     // (undocumented)
@@ -870,45 +870,45 @@ export enum ECEditingStatus {
     // (undocumented)
     SetCategory = 196651,
     // (undocumented)
-    SetClassName = 196681,
+    SetClassName = 196683,
     // (undocumented)
     SetDescription = 196647,
     // (undocumented)
-    SetEnumeratorDescription = 196662,
+    SetEnumeratorDescription = 196664,
     // (undocumented)
-    SetEnumeratorLabel = 196661,
+    SetEnumeratorLabel = 196663,
     // (undocumented)
-    SetExtendedTypeName = 196653,
+    SetExtendedTypeName = 196655,
     // (undocumented)
     SetInvertsUnit = 196645,
     // (undocumented)
     SetIsReadOnly = 196649,
     // (undocumented)
-    SetKindOfQuantity = 196650,
+    SetKindOfQuantity = 196652,
     // (undocumented)
-    SetLabel = 196646,
+    SetLabel = 196648,
     // (undocumented)
-    SetMaxLength = 196655,
+    SetMaxLength = 196657,
     // (undocumented)
-    SetMaxOccurs = 196652,
+    SetMaxOccurs = 196654,
     // (undocumented)
-    SetMaxValue = 196657,
+    SetMaxValue = 196659,
     // (undocumented)
-    SetMinLength = 196654,
+    SetMinLength = 196656,
     // (undocumented)
-    SetMinOccurs = 196651,
+    SetMinOccurs = 196653,
     // (undocumented)
-    SetMinValue = 196656,
+    SetMinValue = 196658,
     // (undocumented)
     SetPriority = 196650,
     // (undocumented)
-    SetPropertyCategoryPriority = 196666,
+    SetPropertyCategoryPriority = 196668,
     // (undocumented)
-    SetPropertyName = 196658,
+    SetPropertyName = 196660,
     // (undocumented)
-    SetSchemaVersion = 196683,
+    SetSchemaAlias = 196687,
     // (undocumented)
-    SetSchemaVersion = 196684,
+    SetSchemaVersion = 196685,
     // (undocumented)
     SetSourceConstraint = 196635,
     // (undocumented)
