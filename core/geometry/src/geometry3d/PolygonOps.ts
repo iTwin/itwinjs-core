@@ -518,10 +518,10 @@ export class PolygonOps {
     return s;
   }
   /**
-   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting)
-   * * origin at the centroid of the (3D) polygon
-   * * normal is a unit vector perpendicular to the plane
-   * * 'a' member is the area.
+   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting):
+   * * `origin` at the centroid of the (3D) polygon
+   * * `direction` is the unit vector perpendicular to the plane
+   * * `a` is the area.
    * @param points
    */
   public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
@@ -843,19 +843,16 @@ export class PolygonOps {
   public static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number {
     if (loops instanceof IndexedXYZCollection)
       return this.orientLoopsCCWForOutwardNormalInPlace([loops], outwardNormal);
-    const orientations: number[] = [];
     const unitNormal = Vector3d.create();
     // orient individually ... (no hole analysis)
     let numReverse = 0;
     for (const loop of loops) {
       if (this.unitNormal(loop, unitNormal)) {
         const q = unitNormal.dotProduct(outwardNormal);
-        orientations.push(q);
-        if (q <= 0.0)
+        if (q < 0.0) {
           loop.reverseInPlace();
-        numReverse++;
-      } else {
-        orientations.push(0.0);
+          numReverse++;
+        }
       }
     }
     return numReverse;
