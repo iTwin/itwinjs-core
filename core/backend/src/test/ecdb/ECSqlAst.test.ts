@@ -608,6 +608,22 @@ describe("ECSql Abstract Syntax Tree", () => {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
+  it("parse cte without columns", async () => {
+    const tests = [
+      {
+        orignalECSql: "WITH cte AS (SELECT * FROM meta.ECClassDef) SELECT * FROM cte",
+        expectedECSql: "WITH [cte] AS (SELECT [ECInstanceId], [ECClassId], [Schema], [Name], [DisplayLabel], [Description], [Type], [Modifier], [CustomAttributeContainerType], [RelationshipStrength], [RelationshipStrengthDirection] FROM [ECDbMeta].[ECClassDef]) SELECT [ECInstanceId], [ECClassId], [Schema], [Name], [DisplayLabel], [Description], [Type], [Modifier], [CustomAttributeContainerType], [RelationshipStrength], [RelationshipStrengthDirection] FROM [cte]",
+      },
+      {
+        orignalECSql: "WITH cte AS (SELECT * FROM meta.ECClassDef) SELECT cte.ECInstanceId FROM cte",
+        expectedECSql: "WITH [cte] AS (SELECT [ECInstanceId], [ECClassId], [Schema], [Name], [DisplayLabel], [Description], [Type], [Modifier], [CustomAttributeContainerType], [RelationshipStrength], [RelationshipStrengthDirection] FROM [ECDbMeta].[ECClassDef]) SELECT [cte].[ECInstanceId] FROM [cte]",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+    }
+  });
   it("parse SELECT (<subquery>) FROM", async () => {
     const tests = [
       {
@@ -697,6 +713,10 @@ describe("ECSql Abstract Syntax Tree", () => {
     const tests = [
       {
         orignalECSql: "INSERT INTO Bis.Subject(ECInstanceId) VALUES(1)",
+        expectedECSql: "INSERT INTO [BisCore].[Subject] ([ECInstanceId]) VALUES(1)",
+      },
+      {
+        orignalECSql: "INSERT INTO ONLY Bis.Subject(ECInstanceId) VALUES(1)",
         expectedECSql: "INSERT INTO [BisCore].[Subject] ([ECInstanceId]) VALUES(1)",
       },
     ];
