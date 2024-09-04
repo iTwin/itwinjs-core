@@ -800,58 +800,73 @@ export class Parser {
     return { ok: true, value: magnitude };
   }
 
-  private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult | ParseQuantityError {
-    if (!inString || !inString.includes(":")) {
+  private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
+    if (!inString || !inString.includes(":"))
         return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
-    }
 
     const parts = inString.split(":");
-    if (parts.length !== 2) {
-        return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
-    }
+    if (parts.length !== 2)
+        throw new QuantityError(QuantityStatus.UnableToConvertParseTokensToQuantity, `Invalid ratio: ${inString}, needs to be in form x:y`);
 
     const numerator = parseFloat(parts[0]);
     const denominator = parseFloat(parts[1]);
 
-    if (isNaN(numerator) || isNaN(denominator)) {
-        return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
-    }
+    if (isNaN(numerator) || isNaN(denominator))
+        return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+        // TODO - Naron: there is also a QuantityStatus.NoValueOrUnitFoundInString
 
-    if (denominator === 0) {
-        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+    // special corner cases
+    if (spec.format.units && spec.outUnit){
+      if (spec.format.units[0][0].name === spec.outUnit.name && numerator === 0 && denominator === 1)
+        return { ok: true, value: 0.0 };
+      // if (spec.format.units[0][0].name is invert of spec.outUnit && numerator === 1 && denominator === 0)
+      //   return { ok: true, value: 0.0 };
+    } else {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, 'Missing presentation unit or persistence unit for ratio format.');
     }
 
     let magnitude = 0.0;
     switch (spec.format.ratioType) {
         case RatioType.OneToN:
-            if (numerator !== 1) {
-                return { ok: false, error: ParseError.InvalidParserSpec }; // Consider this as a misconfiguration
-            }
+            if (numerator !== 1)
+              return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+            if (denominator === 0)
+              return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
             magnitude = 1.0 / denominator;
             break;
 
         case RatioType.NToOne:
-            if (denominator !== 1) {
-                return { ok: false, error: ParseError.InvalidParserSpec };
-            }
+            if (denominator !== 1)
+                return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
             magnitude = numerator;
             break;
 
         case RatioType.ValueBased:
-            if (magnitude > 1.0) {
-                magnitude = numerator / denominator;
-            } else {
-                magnitude = 1.0 / (denominator / numerator);
+            if (magnitude > 1.0){
+              if (denominator !== 1)
+                return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+              magnitude = numerator;
+            }
+            else{
+              if (numerator !== 1)
+                return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+              if (denominator === 0)
+                return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+              magnitude = 1.0 / denominator;
             }
             break;
 
         case RatioType.UseGreatestCommonDivisor:
+            if (denominator === 0)
+              return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
             magnitude = numerator / denominator;
             break;
 
         default:
-            return { ok: false, error: ParseError.InvalidParserSpec };
+            throw new QuantityError(QuantityStatus.InvalidJson, `Unsupported ratio type: ${spec.format.ratioType}`);
     }
+
+    // TODO: convert the magnitude to OutUnit, the invert unit conversion is not handled here yet
 
     return { ok: true, value: magnitude };
 }
