@@ -42,7 +42,11 @@ describe("Ratio format tests", () => {
       if (!Parser.isParsedQuantity(parserRatioResult)) {
         assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
       }
-      expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.input}`).closeTo(entry.input, 0.0001);
+
+      if (null != entry.precision)
+        expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.input}`).closeTo(entry.input, 0.1 ** entry.precision);
+      else
+        expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.input}`).closeTo(entry.input, 0.001);
 
     }
   }
