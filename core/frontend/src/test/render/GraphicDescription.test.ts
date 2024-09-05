@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Angle, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { Angle, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
@@ -21,13 +21,17 @@ import { _textures } from "../../common/internal/Symbols";
 import { Material } from "../../render/webgl/Material";
 import { IModelConnection } from "../../IModelConnection";
 
-function expectRange(range: Readonly<Range3d>, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
-  expect(range.low.x).to.equal(lx);
-  expect(range.low.y).to.equal(ly);
-  expect(range.low.z).to.equal(lz);
-  expect(range.high.x).to.equal(hx);
-  expect(range.high.y).to.equal(hy);
-  expect(range.high.z).to.equal(hz);
+function expectRange(range: Readonly<Range3d>, translation: XYAndZ | undefined, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
+  if (!translation) {
+    translation = { x: 0, y: 0, z: 0 };
+  }
+
+  expect(range.low.x).to.equal(lx - translation.x);
+  expect(range.low.y).to.equal(ly - translation.y);
+  expect(range.low.z).to.equal(lz - translation.z);
+  expect(range.high.x).to.equal(hx - translation.x);
+  expect(range.high.y).to.equal(hy - translation.y);
+  expect(range.high.z).to.equal(hz - translation.z);
 }
 
 function expectFeature(index: number, featureTable: RenderFeatureTable, expected: ModelFeature): void {
@@ -132,7 +136,7 @@ describe("GraphicDescriptionBuilder", () => {
     const mesh = branch.branch.entries[0] as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
     expect(mesh.primitives.length).to.equal(1);
-    expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
+    expectRange(mesh.meshRange, undefined, -5, -2.5, 0, 5, 2.5, 0);
 
     const gfPrim = mesh.primitives[0].toPrimitive();
     const geom = gfPrim.cachedGeometry.asMesh!;
@@ -179,7 +183,7 @@ describe("GraphicDescriptionBuilder", () => {
     const mesh = branch.branch.entries[0] as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
     expect(mesh.primitives.length).to.equal(2);
-    expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
+    expectRange(mesh.meshRange, undefined, -5, -2.5, 0, 5, 2.5, 0);
 
     const gfPrim = mesh.primitives[0].toPrimitive();
     const geom = gfPrim.cachedGeometry.asMesh!;
@@ -220,7 +224,7 @@ describe("GraphicDescriptionBuilder", () => {
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     const mesh = branch.branch.entries[0] as MeshGraphic;
     expect(mesh.primitives.length).to.equal(1);
-    expectRange(mesh.meshRange, -5, -2.5, 0, 5, 2.5, 0);
+    expectRange(mesh.meshRange, undefined, -5, -2.5, 0, 5, 2.5, 0);
   });
 
   it("creates a view-independent graphic", async () => {
@@ -281,7 +285,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batchDescr.noEmphasis).to.be.undefined;
     expect(batchDescr.modelId).to.equal("0x123");
     expect(batchDescr.isVolumeClassifier).to.be.undefined;
-    expectRange(Range3d.fromJSON(batchDescr.range), 0, 0, 2, 10, 5, 2);
+    expectRange(Range3d.fromJSON(batchDescr.range), descr.translation, 0, 0, 2, 10, 5, 2);
 
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     expect(branch instanceof Branch).to.be.true;
@@ -300,7 +304,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batch.featureTable.numFeatures).to.equal(1);
     expectFeature(0, batch.featureTable, { elementId: "0x123", geometryClass: GeometryClass.Primary, subCategoryId: "0", modelId: "0x123" });
 
-    expectRange(batch.range, 0, 0, 2, 10, 5, 2);
+    expectRange(batch.range, descr.translation, 0, 0, 2, 10, 5, 2);
 
     const mesh = batch.graphic as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
@@ -332,7 +336,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batchDescr.featureTable.multiModel).to.be.false;
     expect(batchDescr.featureTable.numSubCategories).to.be.undefined;
     expect(batchDescr.modelId).to.equal("0x456");
-    expectRange(Range3d.fromJSON(batchDescr.range), 0, 0, 2, 10, 5, 2);
+    expectRange(Range3d.fromJSON(batchDescr.range), descr.translation, 0, 0, 2, 10, 5, 2);
 
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     expect(branch instanceof Branch).to.be.true;
@@ -345,7 +349,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batch.featureTable.numFeatures).to.equal(1);
     expectFeature(0, batch.featureTable, { elementId: "0x123", modelId: "0x456", subCategoryId: "0x789", geometryClass: GeometryClass.Construction });
 
-    expectRange(batch.range, 0, 0, 2, 10, 5, 2);
+    expectRange(batch.range, descr.translation, 0, 0, 2, 10, 5, 2);
 
     const mesh = batch.graphic as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
@@ -381,7 +385,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batchDescr.featureTable.multiModel).to.be.false;
     expect(batchDescr.featureTable.numSubCategories).to.be.undefined;
     expect(batchDescr.modelId).to.equal("0xb1");
-    expectRange(Range3d.fromJSON(batchDescr.range), 1, 1, 1, 3, 3, 3);
+    expectRange(Range3d.fromJSON(batchDescr.range), descr.translation, 1, 1, 1, 3, 3, 3);
 
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
     expect(branch instanceof Branch).to.be.true;
@@ -393,7 +397,7 @@ describe("GraphicDescriptionBuilder", () => {
     expect(batch.featureTable.batchModelId).to.equal("0xb1");
     expect(batch.featureTable.numFeatures).to.equal(3);
 
-    expectRange(batch.range, 1, 1, 1, 3, 3, 3);
+    expectRange(batch.range, descr.translation, 1, 1, 1, 3, 3, 3);
 
     expectFeature(0, batch.featureTable, { elementId: "0xa1", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
     expectFeature(1, batch.featureTable, { elementId: "0xa2", subCategoryId: "0xc1", geometryClass: GeometryClass.Construction, modelId: "0xb1" });
@@ -685,7 +689,7 @@ describe("GraphicDescriptionBuilder", () => {
       expect(d.batch).not.to.be.undefined;
       expect(d.batch!.featureTable.numFeatures).to.equal(3);
       expectTransientId(d.batch!.modelId, 2);
-      expectRange(Range3d.fromJSON(d.batch!.range), 0, 0, -4, 10, 20, 2);
+      expectRange(Range3d.fromJSON(d.batch!.range), d.translation, 0, 0, -4, 10, 20, 2);
 
       expect(d.primitives.length).to.equal(3);
       expect(d.primitives[0].type).to.equal("mesh");

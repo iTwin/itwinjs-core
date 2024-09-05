@@ -258,9 +258,9 @@ export class PolylineCompressionContext {
    * @param points
    * @param perpendicularDistance
    */
-  public static compressColinearWrapInPlace(points: Point3d[], tolerance: number) {
+  public static compressColinearWrapInPlace(points: Point3d[], duplicatePointTolerance: number, colinearPointTolerance: number) {
     const lastIndex = points.length - 1;
-    if (lastIndex >= 3 && points[0].distance(points[lastIndex]) < tolerance) {
+    if (lastIndex >= 3 && points[0].distance(points[lastIndex]) < duplicatePointTolerance) {
       // indices of 3 points potentially colinear.
       const indexA = lastIndex - 1;
       const indexB = 0;
@@ -272,7 +272,7 @@ export class PolylineCompressionContext {
       const fraction = Geometry.conditionalDivideFraction(uDotV, uDotU);
       if (fraction !== undefined && fraction > 0.0 && fraction < 1.0) {
         const h2 = vectorV.magnitudeSquared() - fraction * fraction * uDotU;
-        if (Math.sqrt(Math.abs(h2)) < tolerance) {
+        if (Math.sqrt(Math.abs(h2)) < colinearPointTolerance) {
           points[0] = points[indexA];
           points.pop();
         }

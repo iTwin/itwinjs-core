@@ -1328,8 +1328,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (surface.capped && contour.isAnyRegionType) {
       const contourA = surface.getSweepContourRef();
       contourA.purgeFacets();
-      contourA.emitFacets(this, true, undefined);
-      contourA.emitFacets(this, false, sweepTransform);
+      const reverseNearCap = contourA.localToWorld.matrix.dotColumnZ(sweepVector) > 0;
+      contourA.emitFacets(this, reverseNearCap, undefined);
+      contourA.emitFacets(this, !reverseNearCap, sweepTransform);
     }
   }
   /** Add facets from a ruled sweep. */
