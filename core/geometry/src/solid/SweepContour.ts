@@ -76,10 +76,6 @@ export class SweepContour {
   public static createForPolygon(points: MultiLineStringDataVariant, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, points);
     if (localToWorld) {
-      if (defaultNormal !== undefined) {
-        if (localToWorld.matrix.dotColumnZ(defaultNormal))
-          localToWorld.matrix.scaleColumnsInPlace(1.0, -1.0, -1.0);
-      }
       const linestrings = LineString3d.createArrayOfLineString3d(points);
       const loops = [];
       for (const ls of linestrings) {
