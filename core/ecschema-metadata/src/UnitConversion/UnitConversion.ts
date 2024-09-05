@@ -2,10 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import almostEqual = require("almost-equal");
 import { Constant } from "../Metadata/Constant";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemType } from "../ECObjects";
+
+/**
+ * Checks if two numbers are approximately equal within a given tolerance.
+ * @param a - The first number to compare.
+ * @param b - The second number to compare.
+ * @param epsilon - The tolerance within which the numbers are considered equal.
+ * @returns True if the numbers are approximately equal, false otherwise.
+ */
+function almostEqual(a: number, b: number, epsilon: number = 2.2204460492503131e-16): boolean {
+  return Math.abs(a - b) < epsilon;
+}
 
 /**
  * Class used for storing calculated conversion between two Units [[UnitConverter.calculateConversion]] and converting values from one Unit to another [[UnitConverter.evaluate]]

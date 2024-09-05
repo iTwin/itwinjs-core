@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "make almost-equal import CommonJS compatible",
+      "comment": "almost-equal dependency",
       "type": "none"
     }
   ],
