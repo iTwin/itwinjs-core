@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "almost-equal dependency",
+      "comment": "remove almost-equal dependency",
       "type": "none"
     }
   ],
