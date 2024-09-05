@@ -136,7 +136,7 @@ describe("GraphicDescriptionBuilder", () => {
     const mesh = branch.branch.entries[0] as MeshGraphic;
     expect(mesh instanceof MeshGraphic).to.be.true;
     expect(mesh.primitives.length).to.equal(1);
-    expectRange(mesh.meshRange, descr.translation, -5, -2.5, 0, 5, 2.5, 0);
+    expectRange(mesh.meshRange, undefined, -5, -2.5, 0, 5, 2.5, 0);
 
     const gfPrim = mesh.primitives[0].toPrimitive();
     const geom = gfPrim.cachedGeometry.asMesh!;
