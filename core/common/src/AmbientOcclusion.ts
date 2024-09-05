@@ -16,7 +16,7 @@ export namespace AmbientOcclusion {
   export interface Props {
     /** If defined, represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges. If undefined, the bias defaults to 0.25. */
     readonly bias?: number;
-    /** If defined, if the distance in linear depth from the current sample to first sample is greater than this value, sampling stops in the current direction. If undefined, the zLengthCap defaults to 0.0025.  The full range of linear depth is 0 to 1. */
+    /** If defined, if the distance in linear depth from the current sample to first sample is greater than this value, sampling stops in the current direction. If undefined, the zLengthCap defaults to 0.00007.  The full range of linear depth is 0 to 1. */
     readonly zLengthCap?: number;
     /** If defined, the maximum distance from the camera's near plane in meters at which ambient occlusion will be applied. If undefined, the maximum distance defaults to 10000. */
     readonly maxDistance?: number;
@@ -35,7 +35,7 @@ export namespace AmbientOcclusion {
   /** Describes the properties with which ambient occlusion should be drawn. These properties correspond to a horizon-based ambient occlusion approach. */
   export class Settings implements Props {
     private static _defaultBias: number = 0.25;
-    private static _defaultZLengthCap: number = 0.0025;
+    private static _defaultZLengthCap: number = 0.00007;
     private static _defaultMaxDistance: number = 10000.0;
     private static _defaultIntensity: number = 1.0;
     private static _defaultTexelStepSize: number = 1;
