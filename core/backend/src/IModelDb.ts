@@ -3008,7 +3008,6 @@ export class BriefcaseDb extends IModelDb {
     if (nativeDb.hasUnsavedChanges()) {
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot revert with unsaved changes");
     }
-
     if (nativeDb.hasPendingTxns()) {
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot revert with pending txns");
     }
@@ -3050,6 +3049,11 @@ export class BriefcaseDb extends IModelDb {
       };
       await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
       this.clearCaches();
+    } catch (err) {
+      if (!arg.retainLocks) {
+        await this.locks.releaseAllLocks();
+        throw err;
+      }
     } finally {
       this.abandonChanges();
     }
