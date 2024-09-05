@@ -115,7 +115,7 @@ export class GraphicDescriptionBuilderImpl extends GraphicAssembler implements G
           // In this case we need to modify the qOrigin of the graphic that will get created later since we have translated the origin.
           // We can't modify it directly, but if we temporarily modify the range of the mesh used to create it the qOrigin will get created properly.
           // Range is shared (not cloned) by all meshes and the mesh list itself, so modifying the range of the meshlist will modify it for all meshes.
-          // We will then later add this offset back to the range once all of the graphics have been created because it is needed unmodified for locate.
+          // This will become the range in local coordinates of the batch, if we are creating a batch.
           transformOrigin = verts.range.center;
           if (!meshesRangeOffset) {
             meshes.range?.low.subtractInPlace(transformOrigin);
