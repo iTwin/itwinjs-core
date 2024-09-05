@@ -101,7 +101,8 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 5669 # iTwin.js/iTwin Connector Frameworks/iTwin.connector-framework
       artifactName: Connector-Framework Docs
-      buildTag: hasDocs
+      # buildTag: hasDocs
+      specificBuild: 3165994
       useCurrentDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
 
   # The .updated.json is cached to track when the docs were last updated
