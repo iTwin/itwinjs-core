@@ -1034,7 +1034,6 @@ export class ClippedPolyfaceBuilders {
     buildClosureFaces?: boolean;
     builderA?: PolyfaceBuilder;
     builderB?: PolyfaceBuilder;
-    // (undocumented)
     claimPolyface(selector: 0 | 1, fixup: boolean, tolerance?: number): IndexedPolyface | undefined;
     static create(keepInside?: boolean, keepOutside?: boolean, buildSideFaces?: boolean): ClippedPolyfaceBuilders;
 }
@@ -1729,8 +1728,8 @@ export class CurveLocationDetailPair {
 // @public
 export class CurveOps {
     static appendXYOffsets(curves: AnyCurve | AnyCurve[] | undefined, offset: number, result: AnyCurve[]): number;
-    static collectChains(fragments: AnyCurve[], gapTolerance?: number, planeTolerance?: number | undefined): AnyChain | undefined;
-    static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance?: number, planeTolerance?: number | undefined): void;
+    static collectChains(fragments: AnyCurve[], gapTolerance?: number, planeTolerance?: number): AnyChain | undefined;
+    static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance?: number, _planeTolerance?: number): void;
     static collectInsideAndOutsideXYOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): {
         insideOffsets: AnyCurve[];
         outsideOffsets: AnyCurve[];
@@ -4684,7 +4683,7 @@ export class PolyfaceData {
 
 // @public
 export class PolyfaceQuery {
-    static announceBoundaryChainsAsLineString3d(mesh: Polyface | PolyfaceVisitor, announceLoop: (points: LineString3d) => void): void;
+    static announceBoundaryChainsAsLineString3d(mesh: Polyface | PolyfaceVisitor, announceChain: (points: LineString3d) => void): void;
     static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined, announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): void;
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSilhouetteEdges(source: Polyface | PolyfaceVisitor, announce: (pointA: Point3d, pointB: Point3d, vertexIndexA: number, vertexIndexB: number, facetIndex: number) => void, vectorToEye: Vector3d, sideAngle?: Angle): void;
@@ -4704,10 +4703,10 @@ export class PolyfaceQuery {
     static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
     static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): IndexedPolyface;
     static cloneOffset(source: IndexedPolyface, signedOffsetDistance: number, offsetOptions?: OffsetMeshOptions): IndexedPolyface;
-    static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
+    static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): IndexedPolyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
     static cloneWithDanglingEdgesRemoved(source: Polyface | PolyfaceVisitor): IndexedPolyface;
-    static cloneWithMaximalPlanarFacets(mesh: Polyface | PolyfaceVisitor, maxSmoothEdgeAngle?: Angle): IndexedPolyface | undefined;
+    static cloneWithMaximalPlanarFacets(mesh: Polyface | PolyfaceVisitor, maxSmoothEdgeAngle?: Angle): IndexedPolyface;
     static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface;
     static collectBoundaryEdges(source: Polyface | PolyfaceVisitor, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): AnyChain | undefined;
     static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons?: boolean): number[][];
@@ -5240,7 +5239,7 @@ export class Ray3d implements BeJSONFunctions {
     setFrom(source: Ray3d): void;
     setFromJSON(json?: any): void;
     toJSON(): any;
-    toRigidZFrame(result?: Transform): Transform | undefined;
+    toRigidZFrame(result?: Transform): Transform;
     transformInPlace(transform: Transform): void;
     tryNormalizeInPlaceWithAreaWeight(a: number): boolean;
     trySetDirectionMagnitudeInPlace(magnitude?: number): boolean;
