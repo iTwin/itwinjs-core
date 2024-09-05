@@ -20,6 +20,8 @@ import { addRenderOrderConstants, readDepthAndOrder } from "./FeatureSymbology";
 import { addWindowToTexCoords, assignFragColor } from "./Fragment";
 import { addViewport } from "./Viewport";
 import { createViewportQuadBuilder } from "./ViewportQuad";
+import { Matrix4 } from "../Matrix";
+import { Matrix4d } from "@itwin/core-geometry";
 
 // 'PB' indicates a shader variation when only the pickbuffer is available
 // 'DB' indicates a shader variation when the real floating point depth buffer is available.
@@ -128,19 +130,25 @@ const computeAmbientOcclusion = `
 
 const computePositionFromDepth = `
 vec4 computePositionFromDepth(vec2 tc, float nonLinearDepth) {
+  vec4 posEC;
+
   if (kFrustumType_Perspective == u_frustum.z) {
     vec2 xy = vec2((tc.x * 2.0 - 1.0), ((1.0 - tc.y) * 2.0 - 1.0));
-    vec4 posEC = u_invProj * vec4(xy, nonLinearDepth, 1.0);
+    posEC = u_invProj * vec4(xy, nonLinearDepth, 1.0);
     posEC = posEC / posEC.w;
-    return posEC;
   } else {
     float top = u_frustumPlanes.x;
     float bottom = u_frustumPlanes.y;
     float left = u_frustumPlanes.z;
     float right = u_frustumPlanes.w;
-    return vec4(mix(left, right, tc.x), mix(bottom, top, tc.y), nonLinearDepth, 1.0);
+    posEC = vec4(mix(left, right, tc.x), mix(bottom, top, tc.y), nonLinearDepth, 1.0);
   }
+
+  // Convert the position from view space to world space
+  vec4 worldPos = u_invView * posEC;
+  return worldPos;
 }
+
 `;
 
 const computeNormalFromDepth = `
@@ -285,6 +293,13 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
         params.target.ambientOcclusionSettings.intensity,
         params.target.ambientOcclusionSettings.texelStepSize]);
       uniform.setUniform4fv(hbaoSettings);
+    });
+  }, VariablePrecision.High);
+
+  frag.addUniform("u_invView", VariableType.Mat4, (prog) => {
+    prog.addProgramUniform("u_invView", (uniform, params) => {
+      const invViewMatrix = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!);
+      uniform.setMatrix4(Matrix4.fromMatrix4d(invViewMatrix));
     });
   }, VariablePrecision.High);
 
