@@ -94,8 +94,12 @@ async function testGraphicCreator(vp: Viewport) {
   }
 
   const viewCenter = vp.view.getCenter();
-  const circles = new Float64Array([viewCenter.x, viewCenter.y, viewCenter.z, 1000]);
-  const graphicResult = await createCircleGraphic(circles, new Uint32Array([ColorDef.blue.tbgr]), 1, vp.iModel);
+  const circles = new Float64Array([
+    viewCenter.x, viewCenter.y, viewCenter.z, 100,
+    viewCenter.x + 100, viewCenter.y, viewCenter.z, 100,
+    viewCenter.x + 400, viewCenter.y + 400, viewCenter.z, 100]);
+  const colors = new Uint32Array([ColorDef.red.tbgr, ColorDef.blue.tbgr, ColorDef.green.tbgr]);
+  const graphicResult = await createCircleGraphic(circles, colors, 1, vp.iModel);
 
   // Unpackage the context from the Worker.
   const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(graphicResult.context, vp.iModel);
