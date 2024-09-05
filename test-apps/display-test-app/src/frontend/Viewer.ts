@@ -4,10 +4,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, Id64String } from "@itwin/core-bentley";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
+import { Arc3d, ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   createWorkerProxy,
+  GraphicType,
   HitDetail,
   IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
   PaddingPercent, ScreenViewport, TiledGraphicsProvider, TileTreeReference, Tool, Viewport, ViewState,
@@ -69,6 +70,68 @@ class FeatureProvider implements TiledGraphicsProvider {
   }
 }
 
+export function getCirclesData(center: Point3d) {
+  const xyzRadius = new Float64Array([
+    center.x, center.y, center.z, 100,
+    center.x + 100, center.y, center.z, 100,
+    center.x + 400, center.y + 400, center.z, 100]);
+
+  return {
+    xyzRadius,
+    colors: new Uint32Array([ColorDef.red.tbgr, ColorDef.blue.tbgr, ColorDef.green.tbgr]),
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function testGraphicCreatorMain(vp: Viewport) {
+  const modelId = vp.iModel.transientIds.getNext();
+
+  const builder = IModelApp.renderSystem.createGraphic({
+    type: GraphicType.Scene,
+    computeChordTolerance: () => 0.01,
+    pickable: {
+      modelId,
+      id: modelId,
+    },
+  });
+
+  const circlesData = getCirclesData(vp.view.getCenter());
+  const circles = circlesData.xyzRadius;
+  const colors = circlesData.colors;
+
+  const numCircles = circlesData.xyzRadius.length / 4;
+  // Add each circle to the builder.
+  for (let i = 0; i < numCircles; i++) {
+    // Set the next circle's color.
+    const color = ColorDef.fromJSON(colors[i]);
+    builder.setSymbology(color, color, 1);
+
+    // Assign a unique Id to the circle so it can be interacted with by the user.
+    const circleId = vp.iModel.transientIds.getNext();
+    builder.activatePickableId(circleId);
+
+    // Add the circle to the builder.
+    const offset = i * 4;
+    const center = new Point3d(circles[offset], circles[offset + 1], circles[offset + 2]);
+    const radius = circles[offset + 3];
+    const circle = Arc3d.createXY(center, radius);
+
+    builder.addArc(circle, true, true);
+  }
+  const graphic = builder.finish();
+
+  const inst = FeatureProvider.getInstance(vp);
+  inst.trees.push(TileTreeReference.createFromRenderGraphic({
+    graphic,
+    iModel: vp.iModel,
+    modelId,
+    getToolTip: async (hit: HitDetail) => {
+      return `sourceId: ${hit.sourceId}`;
+    },
+  }));
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function testGraphicCreator(vp: Viewport) {
   // Instantiate a reusable WorkerProxy for use by the createCircleGraphic function.
   const worker = createWorkerProxy<GraphicCreator>("./lib/scripts/ExampleWorker.js");
@@ -93,13 +156,8 @@ async function testGraphicCreator(vp: Viewport) {
     return result;
   }
 
-  const viewCenter = vp.view.getCenter();
-  const circles = new Float64Array([
-    viewCenter.x, viewCenter.y, viewCenter.z, 100,
-    viewCenter.x + 100, viewCenter.y, viewCenter.z, 100,
-    viewCenter.x + 400, viewCenter.y + 400, viewCenter.z, 100]);
-  const colors = new Uint32Array([ColorDef.red.tbgr, ColorDef.blue.tbgr, ColorDef.green.tbgr]);
-  const graphicResult = await createCircleGraphic(circles, colors, 1, vp.iModel);
+  const circlesData = getCirclesData(vp.view.getCenter());
+  const graphicResult = await createCircleGraphic(circlesData.xyzRadius, circlesData.colors, 0.01, vp.iModel);
 
   // Unpackage the context from the Worker.
   const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(graphicResult.context, vp.iModel);
@@ -378,6 +436,7 @@ export class Viewer extends Window {
       click: async () => {
         // await testCalculator();
         await testGraphicCreator(this.viewport);
+        // testGraphicCreatorMain(this.viewport);
       },
       tooltip: "Test Worker",
     }));
