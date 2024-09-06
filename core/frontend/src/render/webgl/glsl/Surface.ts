@@ -659,8 +659,18 @@ const computeContourNdx = `
   uint lutIndex = uint(decodeUInt24(g_featureAndMaterialIndex.xyz));
   bool odd = bool(lutIndex & 1u);
   lutIndex /= 2u;
+  uint byteSel = lutIndex & 0x3u;
+  lutIndex /= 4u;
   ivec2 coords = ivec2(lutIndex % u_contourLUTWidth, lutIndex / u_contourLUTWidth);
-  uint contourNdx = uint(texelFetch(u_contourLUT, coords, 0).r * 255.0 + 0.5);
+  uvec4 contourNdx4 = uvec4(texelFetch(u_contourLUT, coords, 0) * 255.0 + 0.5);
+#if 0
+  uvec4 byteMask[4] = uvec4[]( uvec4(1u, 0u, 0u, 0u), uvec4(0u, 1u, 0u, 0u), uvec4(0u, 0u, 1u, 0u), uvec4(0u, 0u, 0u, 1u) );
+  // ERROR: 0:215: 'dot' : no matching overloaded function found, ERROR: 0:215: '=' : cannot convert from 'const mediump float' to 'highp uint'
+  uint contourNdx = dot(contourNdx4, byteMask[byteSel]);
+#else
+  uvec2 contourNdx2 = bool(byteSel & 2u) ? contourNdx4.ba : contourNdx4.rg;
+  uint contourNdx = bool(byteSel & 1u) ? contourNdx2.g : contourNdx2.r;
+#endif
   return float(odd ? contourNdx >> 4u : contourNdx & 0xFu);
 `;
 
@@ -689,7 +699,7 @@ const applyContours = `
 
 #if 1
   uint contourDefsNdx[maxDefs] = uint[](0u, 2u, 3u, 5u, 6u);
-  uint intervalsPairNdx[maxDefs] = uint[](1u, 1u, 4u, 5u, 7u);
+  uint intervalsPairNdx[maxDefs] = uint[](1u, 1u, 4u, 4u, 7u);
   vec4 rgbf = u_contourDefs[contourDefsNdx[contourNdxC]];
   vec4 intervalsPair = u_contourDefs[intervalsPairNdx[contourNdxC]];
   // intervals.r => minor interval distance, intervals.g => major index count
