@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix incorrect bounding box for RenderGraphic created from GraphicDescription.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
