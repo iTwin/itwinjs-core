@@ -302,10 +302,18 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Create a [[TileTreeReference]] that displays a pre-defined [[RenderGraphic]].
-   * The reference can be used by a [[TiledGraphicsProvider]] or as a [[DynamicSpatialClassifier]]. For example:
+   * The reference can be used to add dynamic content to a [[Viewport]]'s scene as a [[TiledGraphicsProvider]], as in the following example:
    * ```ts
    * [[include:TileTreeReference_createFromRenderGraphic]]
    *```
+   * Or, it can be used as a [[DynamicSpatialClassifier]] to contextualize a reality model, like so:
+   * ```ts
+   * [[include:TileTreeReference_DynamicClassifier]]
+   * ```
+   * It can also be used to mask out portions of the background map or terrain, as shown below:
+   * ```ts
+   * [[include:TileTreeReference_DynamicClipMask]]
+   * ```
    * @beta
    */
   public static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference {
