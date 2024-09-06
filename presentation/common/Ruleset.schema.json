@@ -45,8 +45,7 @@
         }
       },
       "required": [
-        "label",
-        "value"
+        "label"
       ],
       "type": "object"
     },
