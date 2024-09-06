@@ -59,16 +59,16 @@ export class CivilContours implements WebGLDisposable {
   public readonly target: Target;
   private readonly _options: BatchOptions;
   private _lut?: Texture2DHandle;
-  private _lutParams = new Float32Array(3);
+  private _lutWidth = 0;
   private _cleanup?: CivilContoursCleanup;
 
   /** For tests. */
   public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
-  public get isUniform() { return 2 === this._lutParams[0] && 1 === this._lutParams[1]; }
+  // public get isUniform() { return 2 === this._lutParams[0] && 1 === this._lutParams[1]; }
 
   public getUniformOverrides(): Uint8Array {
-    assert(this.isUniform);
+    // assert(this.isUniform);
     assert(undefined !== this._lut);
     assert(undefined !== this._lut.dataBytes);
     return this._lut.dataBytes;
@@ -81,8 +81,7 @@ export class CivilContours implements WebGLDisposable {
     const height = dims.height;
     assert(width * height >= nFeatures);
 
-    this._lutParams[0] = width;
-    this._lutParams[1] = height;
+    this._lutWidth = width;
 
     if (contours && contours.terrains.length > 0) {
       const data = new Uint8Array(width * height * 4);
@@ -90,7 +89,7 @@ export class CivilContours implements WebGLDisposable {
       if (this.buildLookupTable(creator, map, contours))
         return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
     }
-    this._lutParams[0] = 0; // flag to indicate no contours
+    this._lutWidth = 0; // flag to indicate no contours
     return undefined;
   }
 
@@ -171,12 +170,12 @@ export class CivilContours implements WebGLDisposable {
       const contours: CivilContourDisplay | undefined = this.target.plan.contours;
       if (contours && contours.terrains.length > 0)
         this._update(features, this._lut, contours);
-      this._lutParams[0] = 0; // flag to indicate no contours
+      this._lutWidth = 0; // flag to indicate no contours
     }
   }
 
-  public bindLUTParams(uniform: UniformHandle): void {
-    uniform.setUniform2fv(this._lutParams);
+  public bindLUTWidth(uniform: UniformHandle): void {
+    uniform.setUniform1ui(this._lutWidth);
   }
 
   public bindLUT(uniform: UniformHandle): void {

@@ -654,8 +654,14 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
 }
 
 const computeContourNdx = `
-  float contourNdx = 15.0;  // temp stub for now
-  return contourNdx;
+  if (u_contourLUTWidth == 0u)
+      return 15.0;
+  uint lutIndex = uint(decodeUInt24(g_featureAndMaterialIndex.xyz));
+  bool odd = bool(lutIndex & 1u);
+  lutIndex /= 2u;
+  ivec2 coords = ivec2(lutIndex % u_contourLUTWidth, lutIndex / u_contourLUTWidth);
+  uint contourNdx = uint(texelFetch(u_contourLUT, coords, 0).r * 255.0 + 0.5);
+  return float(odd ? contourNdx >> 4u : contourNdx & 0xFu);
 `;
 
 const unpack2BytesVec4 = `
@@ -741,17 +747,17 @@ float computeWorldHeight(vec4 rawPosition) {
   builder.addFunctionComputedVarying("v_contourNdx", VariableType.Float, "computeContourNdx", computeContourNdx);
   builder.addFunctionComputedVaryingWithArgs("v_height", VariableType.Float, "computeWorldHeight(rawPosition)", computeWorldHeight);
 
-  const contourDefsSize = 8;
-  builder.frag.addUniformArray("u_contourDefs", VariableType.Vec4, contourDefsSize, (prog) => {
-    prog.addGraphicUniform("u_contourDefs", (uniform, _params) => {
-      // TODO: set contour definition uniforms
-      const tempData: number[] = [ 15, 15, 15, 15, 15, 15, 15, 15 ];
-      uniform.setUniform4fv(tempData);
+  builder.vert.addUniform("u_contourLUT", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_contourLUT", (_uniform, _params) => {
+      // TODO: figure out and load LUT texture (params.geometry.asLUT!).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
     });
   });
-  builder.frag.addFunction(unpack2BytesVec4);
-  builder.frag.addFunction(unpackAndNormalize2BytesVec4);
-  builder.frag.set(FragmentShaderComponent.ApplyContours, applyContours);
+
+  builder.vert.addUniform("u_contourLUTWidth", VariableType.Uint, (prog) => {
+    prog.addGraphicUniform("u_contourLUTWidth", (uniform, _params) => {
+      uniform.setUniform1ui(0); // TODO: load real uniform value for this
+    });
+  });
 
   builder.vert.addUniform("u_modelToWorld", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_modelToWorld", (uniform, params) => {
@@ -759,6 +765,17 @@ float computeWorldHeight(vec4 rawPosition) {
     });
   });
 
+  const contourDefsSize = 8;
+  builder.frag.addUniformArray("u_contourDefs", VariableType.Vec4, contourDefsSize, (prog) => {
+    prog.addGraphicUniform("u_contourDefs", (uniform, _params) => {
+      // TODO: load real contour definition uniforms
+      const tempData: number[] = [ 15, 15, 15, 15, 15, 15, 15, 15 ];
+      uniform.setUniform4fv(tempData);
+    });
+  });
+  builder.frag.addFunction(unpack2BytesVec4);
+  builder.frag.addFunction(unpackAndNormalize2BytesVec4);
+  builder.frag.set(FragmentShaderComponent.ApplyContours, applyContours);
 }
 
 /** @internal */
