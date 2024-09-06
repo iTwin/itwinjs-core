@@ -12,7 +12,7 @@ import { QuantityProps, UnitConversionProps, UnitProps } from "./Interfaces";
  * Checks if two numbers are approximately equal within given relative tolerance.
  * @param a - The first number to compare.
  * @param b - The second number to compare.
- * @param tolerance - Tolerance, scales based on the input number values.
+ * @param tolerance - Tolerance, scales based on the input number values (multiplied by 1 + abs(a) + abs(b)).
  * @returns True if the numbers are approximately equal, false otherwise.
  */
 export function almostEqual(a: number, b: number, tolerance: number = 2.2204460492503131e-16): boolean {
