@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64 } from "@itwin/core-bentley";
-import { ColorDef, Feature, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
+import { Id64, assert } from "@itwin/core-bentley";
+import { ColorDef, Feature, PlanarClipMaskMode, PlanarClipMaskPriority, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
 import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, LocateFilterStatus, LocateResponse, PrimitiveTool, RenderGraphic, SpatialClassifiersState, SpatialModelState, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { Point3d, Sphere as SpherePrimitive } from "@itwin/core-geometry";
 import { parseArgs } from "@itwin/frontend-devtools";
@@ -228,6 +228,124 @@ export class DynamicClassifierTool extends PrimitiveTool {
     if (undefined !== outside && outside >= SpatialClassifierOutsideDisplay.Off && outside <= SpatialClassifierOutsideDisplay.Dimmed) {
       this._outside = outside;
     }
+
+    return this.run();
+  }
+}
+
+/** Allows the user to place spheres used to mask out the background map.
+ * Left-click to place a sphere.
+ * Right-click to apply the mask
+ */
+export class DynamicClipMaskTool extends PrimitiveTool {
+  private _graphic?: RenderGraphic;
+  private _spheres?: Spheres;
+  private _radius = 250;
+  private _transparency = 0;
+  private _invert = false;
+
+  public static override toolId = "DtaClipMask";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 4; }
+
+  public override requireWriteableTarget(): boolean {
+    return false;
+  }
+
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
+  public override async onUnsuspend(): Promise<void> {
+    this.showPrompt();
+  }
+
+  private setupAndPromptForNextAction(): void {
+    this.initLocateElements(false, false);
+    IModelApp.locateManager.options.allowDecorations = true;
+    this.showPrompt();
+  }
+
+  private showPrompt() {
+    IModelApp.notifications.outputPrompt("Enter sphere center");
+  }
+
+  public override async onDataButtonDown(ev: BeButtonEvent) {
+    if (!ev.viewport) {
+      return EventHandled.No;
+    }
+
+    if (!this._spheres) {
+      this._spheres = new Spheres(ev.viewport.iModel, this._radius);
+    }
+
+    this._spheres.add(ev.point);
+    this._graphic?.dispose();
+    this._graphic = this._spheres.toGraphic(false);
+    ev.viewport?.invalidateDecorations();
+
+    this.setupAndPromptForNextAction();
+    return EventHandled.No;
+  }
+
+  public override async onResetButtonUp(ev: BeButtonEvent) {
+    if (ev.viewport) {
+      this.applyClipMask(ev.viewport);
+    }
+
+    await this.exitTool();
+    return EventHandled.No;
+  }
+
+  private applyClipMask(viewport: Viewport): void {
+    if (!this._spheres) {
+      return;
+    }
+
+    const ref = TileTreeReference.createFromRenderGraphic({
+      iModel: viewport.iModel,
+      graphic: this._spheres.toGraphic(false),
+      modelId: this._spheres.modelId,
+    });
+
+    viewport.addTiledGraphicsProvider({
+      forEachTileTreeRef: (_, func) => func(ref),
+    });
+
+    viewport.changeBackgroundMapProps({
+      planarClipMask: {
+        mode: PlanarClipMaskMode.Priority,
+        priority: PlanarClipMaskPriority.BackgroundMap,
+        transparency: this._transparency,
+        invert: this._invert,
+      },
+    });
+
+    viewport.invalidateRenderPlan();
+  }
+
+  public override decorate(context: DecorateContext) {
+    if (this._graphic) {
+      context.addDecoration(GraphicType.Scene, IModelApp.renderSystem.createGraphicOwner(this._graphic));
+    }
+  }
+
+  public override decorateSuspended(context: DecorateContext) {
+    this.decorate(context);
+  }
+
+  public override async onRestartTool() {
+    return this.exitTool();
+  }
+
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
+    const args = parseArgs(input);
+
+    this._radius = args.getFloat("r") ?? this._radius;
+    this._invert = args.getBoolean("i") ?? this._invert;
+    this._transparency = args.getFloat("t") ?? this._transparency;
+    // ###TODO specify tile tree priority
 
     return this.run();
   }
