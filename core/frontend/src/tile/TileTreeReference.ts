@@ -310,7 +310,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * ```ts
    * [[include:TileTreeReference_DynamicClassifier]]
    * ```
-   * It can also be used to mask out portions of the background map or terrain, as shown below:
+   * It can also be used to mask out portions of the background map or terrain via [PlanarClipMaskSettings]($common), as shown below:
    * ```ts
    * [[include:TileTreeReference_DynamicClipMask]]
    * ```
