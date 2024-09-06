@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { almostEqual } from "../Quantity";
 
 describe("Quantity", () => {
-  it.only("almost-equal", async () => {
+  it("almost-equal", async () => {
     expect(almostEqual(1.0, 1.0)).to.be.true;
     expect(almostEqual(1.0, 1.1)).to.be.false;
     expect(almostEqual(1.0, 1.0000000000000002)).to.be.true;
