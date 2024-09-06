@@ -52,7 +52,7 @@ export class PlanarClipMaskState {
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
       context.viewport.forEachTileTreeRef((ref) => {
         const tree = ref.treeOwner.load();
-        if (tree && tree.modelId !== classifiedModelId && ref.planarclipMaskPriority > thisPriority)
+        if (tree && tree.modelId !== classifiedModelId && ref.planarClipMaskPriority > thisPriority)
           viewTrees.push(ref);
       });
 

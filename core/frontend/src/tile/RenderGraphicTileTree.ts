@@ -36,7 +36,7 @@ export interface RenderGraphicTileTreeArgs {
   viewFlags?: ViewFlagOverrides;
   /** A function that returns a tooltip describing a pickable [Feature]($common) inside your [[graphic]] when the user hovers the mouse over it. */
   getToolTip?: (hit: HitDetail) => Promise<HTMLElement | string | undefined>;
-  /** Optionally overrides the default [[TileTreeReference.planarclipMaskPriority]]. */
+  /** Optionally overrides the default [[TileTreeReference.planarClipMaskPriority]]. */
   planarClipMaskPriority?: number;
 }
 
@@ -142,7 +142,7 @@ class GraphicRef extends TileTreeReference {
   }
 
   public override get treeOwner() { return this._owner; }
-  public override get planarclipMaskPriority(): number { return this._planarClipMaskPriority ?? super.planarclipMaskPriority; }
+  public override get planarClipMaskPriority(): number { return this._planarClipMaskPriority ?? super.planarClipMaskPriority; }
 
   public override canSupplyToolTip(hit: HitDetail): boolean {
     return undefined !== this._getToolTip && this._modelId === hit.modelId;

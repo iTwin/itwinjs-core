@@ -251,11 +251,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
   public get isGlobal(): boolean { return false; }
 
-  /**  Return the clip mask priority for this model - models will be clipped by any other viewed model with a higher proirity.
-   * BIM models have highest prioirty and are never clipped.
-   * @alpha
+  /** The [PlanarClipMaskPriority]($common) of this tile tree used to determine which tile trees contribute to a clip mask when
+   * using [PlanarClipMaskMode.Priority]($common).
+   * @beta
    */
-  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
+  public get planarClipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
