@@ -11,7 +11,6 @@ import { FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarCl
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
-import { SpatialViewState } from "./SpatialViewState";
 import { Range3d } from "@itwin/core-geometry";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.

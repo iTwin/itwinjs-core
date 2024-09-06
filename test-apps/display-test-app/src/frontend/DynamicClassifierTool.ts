@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, assert } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 import { ColorDef, Feature, PlanarClipMaskMode, PlanarClipMaskPriority, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, LocateFilterStatus, LocateResponse, PrimitiveTool, RenderGraphic, SpatialClassifiersState, SpatialModelState, TileTreeReference, Viewport } from "@itwin/core-frontend";
+import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, LocateFilterStatus, LocateResponse, PrimitiveTool, RenderGraphic, SpatialClassifiersState, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { Point3d, Sphere as SpherePrimitive } from "@itwin/core-geometry";
 import { parseArgs } from "@itwin/frontend-devtools";
 
@@ -300,9 +300,10 @@ export class DynamicClipMaskTool extends PrimitiveTool {
   }
 
   private applyClipMask(viewport: Viewport): void {
-    for (const provider of viewport.tiledGraphicsProviders) {
-      if ((provider as any).isDynamicClipMask) {
-        viewport.dropTiledGraphicsProvider(provider);
+    type DynamicClipMaskProvider = TiledGraphicsProvider & { isDynamicClipMask: true | undefined };
+    for (const p of viewport.tiledGraphicsProviders) {
+      if ((p as DynamicClipMaskProvider).isDynamicClipMask) {
+        viewport.dropTiledGraphicsProvider(p);
       }
     }
 
@@ -317,7 +318,7 @@ export class DynamicClipMaskTool extends PrimitiveTool {
       planarClipMaskPriority: this._priority,
     });
 
-    const provider = {
+    const provider: DynamicClipMaskProvider = {
       forEachTileTreeRef: (_: Viewport, func: (_ref: TileTreeReference) => void) => func(ref),
       isDynamicClipMask: true,
     };
