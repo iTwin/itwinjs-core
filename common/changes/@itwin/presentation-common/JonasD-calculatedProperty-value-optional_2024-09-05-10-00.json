@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Make calculated property value optional",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
