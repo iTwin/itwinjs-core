@@ -12524,7 +12524,7 @@ export abstract class TileTreeReference {
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;
     protected get _isLoadingComplete(): boolean;
-    // @alpha
+    // @beta
     get planarclipMaskPriority(): number;
     // @internal
     resetTreeOwner(): void;
