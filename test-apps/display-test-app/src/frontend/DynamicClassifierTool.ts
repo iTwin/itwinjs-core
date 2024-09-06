@@ -299,6 +299,12 @@ export class DynamicClipMaskTool extends PrimitiveTool {
   }
 
   private applyClipMask(viewport: Viewport): void {
+    for (const provider of viewport.tiledGraphicsProviders) {
+      if ((provider as any).isDynamicClipMask) {
+        viewport.dropTiledGraphicsProvider(provider);
+      }
+    }
+
     if (!this._spheres) {
       return;
     }
@@ -309,9 +315,11 @@ export class DynamicClipMaskTool extends PrimitiveTool {
       modelId: this._spheres.modelId,
     });
 
-    viewport.addTiledGraphicsProvider({
-      forEachTileTreeRef: (_, func) => func(ref),
-    });
+    const provider = {
+      forEachTileTreeRef: (_: Viewport, func: (_ref: TileTreeReference) => void) => func(ref),
+      isDynamicClipMask: true,
+    };
+    viewport.addTiledGraphicsProvider(provider);
 
     viewport.changeBackgroundMapProps({
       planarClipMask: {
