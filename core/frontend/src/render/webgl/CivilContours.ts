@@ -174,17 +174,12 @@ export class CivilContours implements WebGLDisposable {
     }
   }
 
-  public bindLUTWidth(uniform: UniformHandle): void {
+  public bindContourLUTWidth(uniform: UniformHandle): void {
     uniform.setUniform1ui(this._lutWidth);
   }
 
-  public bindLUT(uniform: UniformHandle): void {
+  public bindContourLUT(uniform: UniformHandle): void {
     if (this._lut)
-      this._lut.bindSampler(uniform, TextureUnit.FeatureSymbology);
+      this._lut.bindSampler(uniform, TextureUnit.CivilContour);
   }
-
-  // TODO?
-  // public bindUniformSymbologyFlags(uniform: UniformHandle): void {
-  //   uniform.setUniform1f(this._uniformSymbologyFlags);
-  // }
 }

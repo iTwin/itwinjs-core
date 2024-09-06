@@ -37,7 +37,7 @@ import { addRenderPass } from "./RenderPass";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
-import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { addInstancedRtcMatrix, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
 import { Npc } from "@itwin/core-common";
@@ -662,12 +662,12 @@ const computeContourNdx = `
   uint byteSel = lutIndex & 0x3u;
   lutIndex /= 4u;
   ivec2 coords = ivec2(lutIndex % u_contourLUTWidth, lutIndex / u_contourLUTWidth);
-  uvec4 contourNdx4 = uvec4(texelFetch(u_contourLUT, coords, 0) * 255.0 + 0.5);
-#if 0
-  uvec4 byteMask[4] = uvec4[]( uvec4(1u, 0u, 0u, 0u), uvec4(0u, 1u, 0u, 0u), uvec4(0u, 0u, 1u, 0u), uvec4(0u, 0u, 0u, 1u) );
-  // ERROR: 0:215: 'dot' : no matching overloaded function found, ERROR: 0:215: '=' : cannot convert from 'const mediump float' to 'highp uint'
-  uint contourNdx = dot(contourNdx4, byteMask[byteSel]);
+#if 1
+  vec4 contourNdx4 = texelFetch(u_contourLUT, coords, 0);
+  vec4 byteMask[4] = vec4[]( vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1) );
+  uint contourNdx = uint(dot(contourNdx4, byteMask[byteSel]) * 255.0 + 0.5);
 #else
+  uvec4 contourNdx4 = uvec4(texelFetch(u_contourLUT, coords, 0) * 255.0 + 0.5);
   uvec2 contourNdx2 = bool(byteSel & 2u) ? contourNdx4.ba : contourNdx4.rg;
   uint contourNdx = bool(byteSel & 1u) ? contourNdx2.g : contourNdx2.r;
 #endif
@@ -743,8 +743,7 @@ const applyContours = `
 
 /** @internal */
 function addApplyContours(builder: ProgramBuilder) {
-  // TODO: Why is usesInstancedGeometry not good enough here?  e.g.: //!V! Surface: Translucent-Instanced
-  const modelPos = builder.vert.usesInstancedGeometry && (undefined !== builder.vert.find("g_instancedRtcMatrix")) ? "(g_instancedRtcMatrix * rawPosition)" : "rawPosition";
+  const modelPos = builder.vert.usesInstancedGeometry ? "(g_instancedRtcMatrix * rawPosition)" : "rawPosition";
 
   const computeWorldHeight = `
 float computeWorldHeight(vec4 rawPosition) {
@@ -757,15 +756,20 @@ float computeWorldHeight(vec4 rawPosition) {
   builder.addFunctionComputedVarying("v_contourNdx", VariableType.Float, "computeContourNdx", computeContourNdx);
   builder.addFunctionComputedVaryingWithArgs("v_height", VariableType.Float, "computeWorldHeight(rawPosition)", computeWorldHeight);
 
+  if (builder.vert.usesInstancedGeometry)
+    addInstancedRtcMatrix(builder.vert);
+
   builder.vert.addUniform("u_contourLUT", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_contourLUT", (_uniform, _params) => {
-      // TODO: figure out and load LUT texture (params.geometry.asLUT!).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
+    prog.addGraphicUniform("u_contourLUT", (uniform, params) => {
+      // TODO: figure out and load LUT texture
+      params.target.uniforms.batch.bindContourLUT(uniform);
     });
   });
 
   builder.vert.addUniform("u_contourLUTWidth", VariableType.Uint, (prog) => {
-    prog.addGraphicUniform("u_contourLUTWidth", (uniform, _params) => {
-      uniform.setUniform1ui(0); // TODO: load real uniform value for this
+    prog.addGraphicUniform("u_contourLUTWidth", (uniform, params) => {
+      // uniform.setUniform1ui(0); // TODO: load real uniform value for this
+      params.target.uniforms.batch.bindContourLUTWidth(uniform);
     });
   });
 
@@ -779,7 +783,7 @@ float computeWorldHeight(vec4 rawPosition) {
   builder.frag.addUniformArray("u_contourDefs", VariableType.Vec4, contourDefsSize, (prog) => {
     prog.addGraphicUniform("u_contourDefs", (uniform, _params) => {
       // TODO: load real contour definition uniforms
-      const tempData: number[] = [ 15, 15, 15, 15, 15, 15, 15, 15 ];
+      const tempData: number[] = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
       uniform.setUniform4fv(tempData);
     });
   });

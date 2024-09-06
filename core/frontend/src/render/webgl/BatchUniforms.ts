@@ -15,6 +15,7 @@ import { Target } from "./Target";
 import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
 import { OvrFlags } from "./RenderFlags";
+import { CivilContours } from "./CivilContours";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
@@ -30,6 +31,7 @@ export class BatchUniforms {
 
   private _overrides?: FeatureOverrides;
   private _sensors?: ThematicSensors;
+  private _civilContours?: CivilContours;
   private _batchId = new Float32Array(4);
 
   private _scratchBytes = new Uint8Array(4);
@@ -88,6 +90,17 @@ export class BatchUniforms {
   public bindThematicSensors(uniform: UniformHandle): void {
     if (undefined !== this._sensors)
       this._sensors.bindTexture(uniform);
+  }
+
+  public bindContourLUT(uniform: UniformHandle): void {
+    // Note we can't use sync() here because a different texture may have been assigned to the desired texture unit
+    if (undefined !== this._civilContours)
+      this._civilContours.bindContourLUT(uniform);
+  }
+
+  public bindContourLUTWidth(uniform: UniformHandle): void {
+    if (undefined !== this._civilContours && !sync(this, uniform))
+      this._civilContours.bindContourLUTWidth(uniform);
   }
 
   public bindLUT(uniform: UniformHandle): void {
