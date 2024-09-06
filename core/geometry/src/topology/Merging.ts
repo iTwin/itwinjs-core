@@ -593,8 +593,8 @@ export class HalfEdgeGraphMerge {
 
   /**
    * * Input is random linestrings, not necessarily loops
-   * * Graph gets full splitEdges, regularize, and triangulate.
-   * @returns triangulated graph, or undefined if bad data.
+   * * Graph gets full splitEdges, regularize (optional), and triangulate.
+   * @returns graph, or undefined if bad data.
    */
   public static formGraphFromChains(chains: MultiLineStringDataVariant, regularize: boolean = true, mask: HalfEdgeMask = HalfEdgeMask.PRIMARY_EDGE): HalfEdgeGraph | undefined {
     if (chains.length < 1)
