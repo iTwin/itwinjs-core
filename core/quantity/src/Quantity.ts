@@ -14,6 +14,7 @@ import { QuantityProps, UnitConversionProps, UnitProps } from "./Interfaces";
  * @param b - The second number to compare.
  * @param tolerance - Tolerance, scales based on the input number values (multiplied by 1, abs(a) or abs(b), whichever is biggest).
  * @returns True if the numbers are approximately equal, false otherwise.
+ * @internal
  */
 export function almostEqual(a: number, b: number, tolerance: number = 2.2204460492503131e-16): boolean {
   const absDiff = Math.abs(a - b);

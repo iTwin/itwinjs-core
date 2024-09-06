@@ -6,7 +6,7 @@
 
 import { BentleyError } from '@itwin/core-bentley';
 
-// @public
+// @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
 
 // @beta

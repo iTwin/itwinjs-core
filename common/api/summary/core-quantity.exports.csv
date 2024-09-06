@@ -1,6 +1,6 @@
 sep=;
 Release Tag;API Item Type;API Item Name
-public;function;almostEqual
+internal;function;almostEqual
 beta;interface;AlternateUnitLabelsProvider
 beta;class;BadUnit
 beta;class;BaseFormat
