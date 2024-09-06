@@ -15,7 +15,7 @@ describe("Quantity", () => {
 
     const tolerance = 0.0001;
     expect(almostEqual(1.0, 1.0001, tolerance)).to.be.true;
-    expect(almostEqual(1.0, 1.0005, tolerance)).to.be.false;
+    expect(almostEqual(1.0, 1.0002, tolerance)).to.be.false;
     expect(almostEqual(10000.01, 10000.02, tolerance)).to.be.true;
   });
 });
