@@ -840,7 +840,7 @@ export class Parser {
           break;
 
       case RatioType.ValueBased:
-          if (magnitude > 1.0) {
+          if (numerator > denominator) {
               const valueBasedGreaterResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, 1);
               if (!valueBasedGreaterResult.ok) return valueBasedGreaterResult;
               magnitude = numerator;
