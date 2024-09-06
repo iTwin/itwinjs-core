@@ -21,9 +21,11 @@ import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { SmallSystem } from "../../numerics/Polynomials";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -715,6 +717,60 @@ describe("Arc3d", () => {
     ck.testPoint3d(circularArc4.center, Point3d.create(0.75, 0, 0.75));
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartTangentEnd");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it.only("createCircularStartEndRadius", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+
+    const start = Point3d.createZero();
+    const end = Point3d.create(1,1,1);
+    const mid = start.interpolate(0.5, end);
+    const helperPoint = Point3d.create(1, -1, 0);
+    const radius = start.distance(end) * 0.75;
+
+    const arc0 = Arc3d.createCircularStartEndRadius(start, end, radius, helperPoint);
+    if (ck.testType(arc0, Arc3d, "returned an arc")) {
+      ck.testPoint3d(start, arc0.startPoint(), "constructed arc has expected start point");
+      ck.testPoint3d(end, arc0.endPoint(), "constructed arc has expected end point");
+      ck.testCoordinate(radius, arc0.circularRadius() ?? 0, "constructed arc has expected radius");
+      ck.testCoordinate(0, arc0.matrixRef.dotColumnZ(Vector3d.createStartEnd(arc0.center, helperPoint)), "helperPoint is in plane of constructed arc");
+      const intersectFractions = Vector2d.createZero();
+      SmallSystem.lineSegment3dClosestApproachUnbounded(arc0.center, helperPoint, start, end, intersectFractions);
+      ck.testTrue(0 < intersectFractions.x && intersectFractions.x < 1, "center and helperPoint on opposite sides of chord");
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [start, end], x0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [mid, helperPoint], x0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc0, x0);
+
+    x0 += 5;
+    const helperNormal = Vector3d.create(1, -1, 0);
+    const arc1 = Arc3d.createCircularStartEndRadius(start, end, radius, helperNormal);
+    if (ck.testType(arc1, Arc3d, "returned an arc")) {
+      ck.testPoint3d(start, arc1.startPoint(), "constructed arc has expected start point");
+      ck.testPoint3d(end, arc1.endPoint(), "constructed arc has expected end point");
+      ck.testCoordinate(radius, arc1.circularRadius() ?? 0, "constructed arc has expected radius");
+      ck.testNearNumber(helperNormal.radiansTo(arc1.matrixRef.columnZ()), 0, Geometry.smallAngleRadians, "constructed arc has expected normal");
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [start, end], x0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [mid, mid.plus(helperNormal)], x0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc1, x0);
+
+    const end2 = start;
+    const arc2 = Arc3d.createCircularStartEndRadius(start, end2, radius, helperPoint);
+    if (ck.testType(arc2, LineSegment3d, "trivial chord yields line segment")) {
+      ck.testPoint3d(start, arc2.startPoint(), "constructed arc has expected start point");
+      ck.testPoint3d(end2, arc2.endPoint(), "constructed arc has expected end point");
+    }
+
+    const arc4 = Arc3d.createCircularStartEndRadius(start, end, radius * 0.1, helperPoint);
+    if (ck.testType(arc4, LineSegment3d, "insufficient radius yields line segment")) {
+      ck.testPoint3d(start, arc4.startPoint(), "constructed arc has expected start point");
+      ck.testPoint3d(end, arc4.endPoint(), "constructed arc has expected end point");
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartEndRadius");
     expect(ck.getNumErrors()).equals(0);
   });
 });
