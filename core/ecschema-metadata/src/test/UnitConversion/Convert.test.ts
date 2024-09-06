@@ -8,6 +8,7 @@ import { expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { UnitConverter } from "../../UnitConversion/UnitConverter";
+import { almostEqual } from "@itwin/core-quantity";
 
 interface TestData {
   from: string;
@@ -16,18 +17,8 @@ interface TestData {
   expect: number;
 }
 
-/**
- * Checks if two numbers are approximately equal within a given tolerance.
- * @param a - The first number to compare.
- * @param b - The second number to compare.
- * @param epsilon - The tolerance within which the numbers are considered equal.
- * @returns True if the numbers are approximately equal, false otherwise.
- */
-function almostEqual(a: number, b: number, epsilon: number = 1.19209290e-7): boolean {
-  return Math.abs(a - b) < epsilon;
-}
-
 describe("Unit Conversion tests", () => {
+  const tolerance = 1.19209290e-7;
   const context = new SchemaContext();
   const testData: TestData[] = JSON.parse(
     fs.readFileSync(path.join(__dirname, "..", "assets", "./UnitTests.json"), "utf-8"),
@@ -47,9 +38,9 @@ describe("Unit Conversion tests", () => {
       const map = await converter.calculateConversion(fromFullName, toFullName);
       const actual = map.evaluate(test.input);
       expect(
-        almostEqual(test.expect, actual),
+        almostEqual(test.expect, actual, tolerance),
         `${test.input} ${test.from} in ${test.to} should be ${test.expect}
-         and not ${actual} error = ${Math.abs(test.expect - actual)} > ${1.19209290e-7}`,
+         and not ${actual} error = ${Math.abs(test.expect - actual)} > ${tolerance}`,
       ).to.be.true;
     });
   });
