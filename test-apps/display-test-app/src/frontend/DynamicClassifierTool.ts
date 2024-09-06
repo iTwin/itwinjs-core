@@ -243,6 +243,7 @@ export class DynamicClipMaskTool extends PrimitiveTool {
   private _radius = 250;
   private _transparency = 0;
   private _invert = false;
+  private _priority?: number;
 
   public static override toolId = "DtaClipMask";
   public static override get minArgs() { return 0; }
@@ -313,6 +314,7 @@ export class DynamicClipMaskTool extends PrimitiveTool {
       iModel: viewport.iModel,
       graphic: this._spheres.toGraphic(false),
       modelId: this._spheres.modelId,
+      planarClipMaskPriority: this._priority,
     });
 
     const provider = {
@@ -324,7 +326,7 @@ export class DynamicClipMaskTool extends PrimitiveTool {
     viewport.changeBackgroundMapProps({
       planarClipMask: {
         mode: PlanarClipMaskMode.Priority,
-        priority: PlanarClipMaskPriority.BackgroundMap,
+        priority: undefined !== this._priority ? this._priority - 1 : PlanarClipMaskPriority.BackgroundMap,
         transparency: this._transparency,
         invert: this._invert,
       },
@@ -353,7 +355,7 @@ export class DynamicClipMaskTool extends PrimitiveTool {
     this._radius = args.getFloat("r") ?? this._radius;
     this._invert = args.getBoolean("i") ?? this._invert;
     this._transparency = args.getFloat("t") ?? this._transparency;
-    // ###TODO specify tile tree priority
+    this._priority = args.getInteger("p") ?? this._priority;
 
     return this.run();
   }
