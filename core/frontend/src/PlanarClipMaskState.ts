@@ -45,13 +45,13 @@ export class PlanarClipMaskState {
   }
 
   // Returns the TileTreeReferences for the models that need to be drawn to create the planar clip mask, and extend the maskRange if needed.
-  public getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined {
+  public getTileTrees(context: SceneContext, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined {
     if (this.settings.mode === PlanarClipMaskMode.Priority) {
       // For priority mode we simply want refs for all viewed models if the priority is higher than the mask priority.
       // For this case, we don't need a maskRange so leave it as null.
       const viewTrees = new Array<TileTreeReference>();
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
-      view.forEachTileTreeRef((ref) => {
+      context.viewport.forEachTileTreeRef((ref) => {
         const tree = ref.treeOwner.load();
         if (tree && tree.modelId !== classifiedModelId && ref.planarclipMaskPriority > thisPriority)
           viewTrees.push(ref);
@@ -65,8 +65,8 @@ export class PlanarClipMaskState {
     // Keep calling this until loaded so that the range is valid.
     if (!this._allLoaded) {
       this._tileTreeRefs = new Array<TileTreeReference>();
-      if (this.settings.modelIds) {
-        view.collectMaskRefs(this.settings.modelIds, this._tileTreeRefs, maskRange);
+      if (this.settings.modelIds && context.viewport.view.isSpatialView()) {
+        context.viewport.view.collectMaskRefs(this.settings.modelIds, this._tileTreeRefs, maskRange);
       }
       this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
       maskRange.clone(this._maskRange);
@@ -77,10 +77,10 @@ export class PlanarClipMaskState {
   }
 
   // Returns any potential FeatureSymbology overrides for drawing the planar clip mask.
-  public getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined {
+  public getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined {
     this._usingViewportOverrides = false;
     // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
-    const overrideModels = view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode);
+    const overrideModels = context.viewport.view.isSpatialView() ? context.viewport.view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode) : undefined;
 
     const noSubCategoryOrElementIds = !this.settings.subCategoryOrElementIds;
     if (noSubCategoryOrElementIds && !overrideModels)
