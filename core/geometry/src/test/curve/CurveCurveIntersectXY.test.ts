@@ -1216,8 +1216,6 @@ describe("CurveCurveIntersectXY", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    let dx = 0;
-    const dy = 0;
     const path1 = Path.create(
       Arc3d.create(
         Point3d.create(95, 16), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, -90),
@@ -1245,6 +1243,8 @@ describe("CurveCurveIntersectXY", () => {
       ),
     );
 
+    let dx = 0;
+    const dy = 0;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, true, true, 4);
     dx += 20;
     captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, true, false, 1);
@@ -1582,6 +1582,41 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain1, curveChain2, false, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionCurveChainVsCurveChain");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionSingleChild", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const loop = Loop.create(
+      LineString3d.create(Point3d.create(85, 0), Point3d.create(85, 15), Point3d.create(95, 15), Point3d.create(85, 0)),
+    );
+    const path1 = Path.create(LineString3d.create(Point3d.create(75, 10), Point3d.create(80, 10)));
+    const curveChain1 = CurveChainWithDistanceIndex.createCapture(path1);
+
+    let dx = 0, dy = 0;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, true, true, 2);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, true, false, 0);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, false, true, 2);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, false, false, 0);
+
+    const path2 = Path.create(LineSegment3d.create(Point3d.create(95, 10), Point3d.create(100, 10)));
+    const curveChain2 = CurveChainWithDistanceIndex.createCapture(path2);
+
+    dx = 0;
+    dy += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, true, true, 2);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, true, false, 0);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, false, true, 2);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersect", "intersectionSingleChild");
     expect(ck.getNumErrors()).equals(0);
   });
   it("IntersectXYWithTolerance", () => {
