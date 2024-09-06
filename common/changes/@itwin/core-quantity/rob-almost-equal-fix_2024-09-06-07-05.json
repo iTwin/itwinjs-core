@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "New almostEqual method for comparing numbers",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
