@@ -719,8 +719,8 @@ describe("Arc3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartTangentEnd");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("createCircularStartEndRadius", () => {
-    const ck = new Checker(true, true);
+  it("createCircularStartEndRadius", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
 
