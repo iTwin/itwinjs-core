@@ -9,7 +9,7 @@ This content modifier allows including additional calculated properties into the
 | Name                                  | Required? | Type                                                              | Default     |
 | ------------------------------------- | --------- | ----------------------------------------------------------------- | ----------- |
 | [`label`](#attribute-label)           | Yes       | `string`                                                          |             |
-| [`value`](#attribute-value)           | Yes       | [ECExpression](../advanced/ECExpressions.md)                      |             |
+| [`value`](#attribute-value)           | No        | [ECExpression](../advanced/ECExpressions.md)                      |             |
 | [`categoryId`](#attribute-categoryid) | No        | `string \| CategoryIdentifier`                                    | No override |
 | [`renderer`](#attribute-renderer)     | No        | [`RendererSpecification`](./RendererSpecification.md)             | No override |
 | [`editor`](#attribute-editor)         | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | No override |
@@ -35,10 +35,11 @@ Specifies label of the calculated property. Supports [localization](../advanced/
 Defines an expression to calculate the value. The expression can use [ECInstance](../advanced/ECExpressions.md#ecinstance)
 and [Ruleset Variables](../advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
 
-|                 |                                              |
-| --------------- | -------------------------------------------- |
-| **Type**        | [ECExpression](../advanced/ECExpressions.md) |
-| **Is Required** | Yes                                          |
+|                   |                                              |
+| ----------------- | -------------------------------------------- |
+| **Type**          | [ECExpression](../advanced/ECExpressions.md) |
+| **Is Required**   | No                                           |
+| **Default Value** | `undefined`                                  |
 
 ```ts
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Value.Ruleset]]

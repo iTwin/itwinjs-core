@@ -245,7 +245,8 @@ export class FrameBuilder {
    * * x axis in direction of first nonzero vector present or implied by the input.
    * * y axis is perpendicular to x and contains (in positive side) the next vector present or implied by the input.
    * * The calculation favors the first points found. It does not try to get a "best" plane.
-   * @param defaultUpVector optional vector to cross with vector0 to create vector1 when it is unknown
+   * @param defaultUpVector optional vector to cross with vector0 to create vector1 when it is unknown.
+   * The z-column of the returned frame points into the same halfspace as this vector.
    * @param params any number of geometric objects to examine in [[announce]] for point/vector data sufficient to construct a frame.
    * If the last argument is a `Transform`, it is populated with the computed frame and returned.
    * @returns computed localToWorld frame, or undefined if insufficient data.
@@ -253,17 +254,17 @@ export class FrameBuilder {
   public static createRightHandedFrame(defaultUpVector: Vector3d | undefined, ...params: any[]): Transform | undefined {
     // if last arg is a Transform, remove it from the array and use for the return value
     let frame = (params.length > 0 && params[params.length - 1] instanceof Transform) ? params.pop() as Transform : undefined;
+    const flipFrame = (f: Transform): Transform => {
+      if (defaultUpVector && f.matrix.dotColumnZ(defaultUpVector) < 0.0)
+        f.matrix.scaleColumnsInPlace(1, -1, -1);
+      return f;
+    };
     const builder = new FrameBuilder();
     for (const data of params) {
       builder.announce(data);
       builder.applyDefaultUpVector(defaultUpVector);
-      if (frame = builder.getValidatedFrame(false, frame)) {
-        if (defaultUpVector) {
-          if (frame.matrix.dotColumnZ(defaultUpVector) < 0.0)
-            frame.matrix.scaleColumnsInPlace(1, -1, -1);
-        }
-        return frame;
-      }
+      if (frame = builder.getValidatedFrame(false, frame))
+        return flipFrame(frame);
     }
     const evaluatePrimitiveFrame = (curve: CurvePrimitive, result?: Transform): Transform | undefined => {
       return curve.fractionToFrenetFrame(0.0, result);
@@ -271,12 +272,13 @@ export class FrameBuilder {
     // try direct evaluation of curve primitives using the above lambda
     for (const data of params) {
       if (data instanceof CurvePrimitive) {
-        return evaluatePrimitiveFrame(data, frame);
+        if (frame = evaluatePrimitiveFrame(data, frame))
+          return flipFrame(frame);
       } else if (data instanceof CurveCollection) {
         const children = data.collectCurvePrimitives();
         for (const curve of children) {
           if (frame = evaluatePrimitiveFrame(curve, frame))
-            return frame;
+            return flipFrame(frame);
         }
       }
     }

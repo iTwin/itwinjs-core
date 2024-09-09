@@ -786,7 +786,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
    * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
-   * for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset()
+   * for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use [[CurveOps.constructCurveXYOffset]]
    * instead.
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
