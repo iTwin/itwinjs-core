@@ -6413,7 +6413,7 @@ export abstract class MapLayerImageryProvider {
     protected readonly _settings: ImageMapLayerSettings;
     // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
-    // @alpha (undocumented)
+    // @public
     get supportsMapFeatureInfo(): boolean;
     // @internal (undocumented)
     get tileSize(): number;
