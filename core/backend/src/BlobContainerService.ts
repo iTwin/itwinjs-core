@@ -84,7 +84,7 @@ export namespace BlobContainer {
     /** Metadata of the container. */
     metadata: Metadata;
     /** Base URI of container */
-    baseUri?: string;
+    baseUri: string;
   }
 
   /** The URI and Id of the container. */
