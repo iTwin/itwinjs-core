@@ -84,17 +84,19 @@ export class Checker {
     offsetMesh: false,
   };
   /**
-   * Constructor that allows setting statics in `GeometryCoreTestIO` as a debugging convenience.
+   * Constructor that allows overriding debug statics in `GeometryCoreTestIO` as a convenience.
+   * * This is typically used with `.only` test scope.
+   * * Note that by default these statics are set to false.
    * * Do not push to server an invocation that passes true.
+   * * We don't pass `enableLongTests`, as this static is typically set globally (and infrequently).
    */
-  public constructor(enableConsole: boolean = false, enableSave: boolean = false, enableLongTests: boolean = false) {
+  public constructor(enableConsole: boolean = false, enableSave: boolean = false) {
     this._numErrors = 0;
     this._numOK = 0;
     this._savedErrors = 0;
     this._savedOK = 0;
     GeometryCoreTestIO.enableConsole = enableConsole;
     GeometryCoreTestIO.enableSave = enableSave;
-    GeometryCoreTestIO.enableLongTests = enableLongTests;
   }
   public getNumErrors(): number {
     return this._savedErrors + this._numErrors;
@@ -354,23 +356,42 @@ export class Checker {
       return this.announceOK();
     return this.announceError("expect same Transform", dataA, dataB, params);
   }
-  /** Return true if 2 numbers are almost equal. */
+  /**
+   * Return true if 2 numbers are almost equal within default fraction tolerance.
+   * * See also [[testExactNumber]], [[testNearNumber]], [[testSmallRelative]], [[testCoordinate]], [[testCoordinateWithToleranceFactor]]
+   */
+  public testFraction(dataA: number, dataB: number, ...params: any[]): boolean {
+    if (Geometry.isSameCoordinate(dataA, dataB, Geometry.smallFraction))
+      return this.announceOK();
+    return this.announceError("Expect same coordinate", dataA, dataB, params);
+  }
+  /**
+   * Return true if 2 numbers are almost equal within default metric tolerance.
+   * * See also [[testExactNumber]], [[testNearNumber]], [[testFraction]], [[testSmallRelative]], [[testCoordinateWithToleranceFactor]]
+   */
   public testCoordinate(dataA: number, dataB: number, ...params: any[]): boolean {
     if (Geometry.isSameCoordinate(dataA, dataB))
       return this.announceOK();
     return this.announceError("Expect same coordinate", dataA, dataB, params);
   }
+  /**
+   * Return true if 2 numbers are almost equal within scaled default metric tolerance.
+   * * See also [[testExactNumber]], [[testNearNumber]], [[testFraction]], [[testSmallRelative]], [[testCoordinate]]
+   */
   public testCoordinateWithToleranceFactor(dataA: number, dataB: number, toleranceFactor: number, ...params: any[]): boolean {
     if (Geometry.isSameCoordinateWithToleranceFactor(dataA, dataB, toleranceFactor))
       return this.announceOK();
-    return this.announceError("Expect same coordinate", dataA, dataB, params);
+    return this.announceError("Expect same coordinate with tol factor", dataA, dataB, params);
   }
   public testNumberInRange1d(dataA: number, range: Range1d, ...params: any[]): boolean {
     if (range.containsX(dataA))
       return this.announceOK();
     return this.announceError("Expect number in range", dataA, range, params);
   }
-
+  /**
+   * Return true if the number is almost zero within default fraction tolerance.
+   * * See also [[testExactNumber]], [[testNearNumber]], [[testFraction]], [[testCoordinate]], [[testCoordinateWithToleranceFactor]]
+   */
   public testSmallRelative(dataA: number, ...params: any[]): boolean {
     if (Geometry.isSmallRelative(dataA))
       return this.announceOK();
@@ -406,11 +427,23 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect perpendicular", dataA, dataB, params);
   }
-  /** Return true for exact numeric equality. */
+  /**
+   * Return true for exact numeric equality.
+   * * See also [[testNearNumber]], [[testFraction]], [[testSmallRelative]], [[testCoordinate]], [[testCoordinateWithToleranceFactor]]
+   */
   public testExactNumber(dataA: number, dataB: number, ...params: any[]): boolean {
     if (dataA === dataB)
       return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
+  }
+  /**
+   * Return true for numeric equality within tolerance.
+   * * See also [[testExactNumber]], [[testFraction]], [[testSmallRelative]], [[testCoordinate]], [[testCoordinateWithToleranceFactor]]
+   */
+  public testNearNumber(dataA: number, dataB: number, tolerance: number, ...params: any[]): boolean {
+    if (Geometry.isSameCoordinate(dataA, dataB, tolerance))
+      return this.announceOK();
+    return this.announceError("Expect nearby number", dataA, dataB, params);
   }
   /** Return true for exact numeric equality. */
   public testString(dataA: string, dataB: string, ...params: any[]): boolean {
