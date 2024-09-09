@@ -83,6 +83,8 @@ export namespace BlobContainer {
     expiration: Date;
     /** Metadata of the container. */
     metadata: Metadata;
+    /** Base URI of container */
+    baseUri?: string;
   }
 
   /** The URI and Id of the container. */
