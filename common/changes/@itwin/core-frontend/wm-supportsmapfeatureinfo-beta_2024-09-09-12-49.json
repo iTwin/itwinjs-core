@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Change MapLayerImageryProvider.supportsMapFeatureInfo from alpha to beta",
+      "comment": "Change MapLayerImageryProvider.supportsMapFeatureInfo from alpha to public",
       "type": "none"
     }
   ],
