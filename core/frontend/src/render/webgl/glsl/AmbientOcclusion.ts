@@ -103,7 +103,9 @@ const computeAmbientOcclusion = `
       float curNonLinearDepth = computeNonLinearDepth(db);
       vec3 curViewPos = computePositionFromDepth(newCoords, curNonLinearDepth).xyz;
       vec3 diffVec = curViewPos.xyz - viewPos.xyz;
-      float zLength = abs(curLinearDepth - linearDepth);
+      // float zLength = abs(curLinearDepth - linearDepth);
+      float zLength = length(diffVec);
+
 
       float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
       float weight = smoothstep(0.0, 1.0, zLengthCap / zLength);
