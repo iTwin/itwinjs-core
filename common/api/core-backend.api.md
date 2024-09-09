@@ -446,7 +446,7 @@ export namespace BlobContainer {
         ownerGuid?: GuidString;
     }
     export interface TokenProps {
-        baseUri?: string;
+        baseUri: string;
         expiration: Date;
         metadata: Metadata;
         provider: Provider;
