@@ -8,6 +8,7 @@ import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPrio
 import { GraphicType, IModelApp, IModelConnection, Pixel, SnapshotConnection, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
+import { Point2d } from "@itwin/core-geometry";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
@@ -140,7 +141,14 @@ describe.only("Planar clip mask (#integration)", () => {
       },
     });
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
-    builder.addRangeBox(imodel.projectExtents);
+
+    const minX = 288874;
+    const minY = 3803761;
+    const maxX = 289160;
+    const maxY = 3803959;
+    builder.addShape2d([
+      new Point2d(minX, minY), new Point2d(maxX, minY), new Point2d(maxX, maxY), new Point2d(minX, maxY), new Point2d(minX, minY)
+    ], 0);
 
     const treeRef = TileTreeReference.createFromRenderGraphic({
       iModel: imodel,
