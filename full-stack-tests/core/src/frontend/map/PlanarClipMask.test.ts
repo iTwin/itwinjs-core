@@ -127,10 +127,12 @@ describe.only("Planar clip mask (#integration)", () => {
   });
 
   it("is not masked if priority threshold > DesignModel", async () => {
+    // This just proves that the next test doesn't just *look* like it passed because the dynamic geometry is naturally drawing
+    // in front of the map.
     await expectPixels({ mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.DesignModel }, "map");
   });
 
-  it.only("is masked by priority by dynamic geometry", async () => {
+  function addDynamicGeometry(vp: Viewport): void {
     const modelId = imodel.transientIds.getNext();
     const builder = IModelApp.renderSystem.createGraphic({
       type: GraphicType.Scene,
@@ -148,23 +150,31 @@ describe.only("Planar clip mask (#integration)", () => {
     const maxY = 3803959;
     builder.addShape2d([
       new Point2d(minX, minY), new Point2d(maxX, minY), new Point2d(maxX, maxY), new Point2d(minX, maxY), new Point2d(minX, minY)
-    ], 0);
+    ], 10); // put it under the map
 
     const treeRef = TileTreeReference.createFromRenderGraphic({
       iModel: imodel,
       graphic: builder.finish(),
       modelId,
     });
+    
+    vp.addTiledGraphicsProvider({
+      forEachTileTreeRef: (_, func) => {
+        func(treeRef);
+      },
+    });
 
+    vp.changeViewedModels([]);
+  }
+
+  it.only("is not masked by dynamic geometry by default", async () => {
+    await expectPixels(undefined, "map", addDynamicGeometry);
+  });
+
+  it.only("is masked by priority by dynamic geometry", async () => {
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
-    },
-      "dynamic",
-      (vp) => {
-        vp.addTiledGraphicsProvider({ forEachTileTreeRef: (_, func) => func(treeRef) });
-        vp.changeViewedModels([]);
-      },
-    );
+    }, "dynamic", addDynamicGeometry);
   });
 });
