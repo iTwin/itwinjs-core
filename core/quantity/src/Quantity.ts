@@ -9,6 +9,20 @@
 import { QuantityError, QuantityStatus } from "./Exception";
 import { QuantityProps, UnitConversionInvert, UnitConversionProps, UnitProps } from "./Interfaces";
 
+/**
+ * Checks if two numbers are approximately equal within given relative tolerance.
+ * @param a - The first number to compare.
+ * @param b - The second number to compare.
+ * @param tolerance - Tolerance, scales based on the input number values (multiplied by 1, abs(a) or abs(b), whichever is biggest).
+ * @returns True if the numbers are approximately equal, false otherwise.
+ * @internal
+ */
+export function almostEqual(a: number, b: number, tolerance: number = 2.2204460492503131e-16): boolean {
+  const absDiff = Math.abs(a - b);
+  const scaledTolerance = Math.max(1, Math.abs(a), Math.abs(b)) * tolerance;
+  return absDiff <= scaledTolerance;
+}
+
 /** The Quantity class is convenient container to specify both the magnitude and unit of a quantity. This class is commonly
  * returned as the result of parsing a string that represents a quantity.
  * @beta
