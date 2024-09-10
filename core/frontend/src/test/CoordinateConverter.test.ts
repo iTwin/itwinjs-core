@@ -18,7 +18,7 @@ class Connection extends BlankConnection {
       projectExtents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       rootSubject: { name: "geoservices-test" },
       key: "",
-    });
+    }, {} as any);
   }
 
   public override get isClosed(): boolean {

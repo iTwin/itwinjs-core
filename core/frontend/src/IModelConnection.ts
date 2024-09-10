@@ -54,6 +54,11 @@ export interface BlankConnectionProps {
   iTwinId?: GuidString;
 }
 
+export interface IModelReadAPI {
+  getConnectionProps(): Promise<Omit<IModelConnectionProps, "key">>;
+  getTooltipMessage(elementId: string): Promise<{ lines: string[] }>;
+}
+
 /** A connection to a [IModelDb]($backend) hosted on the backend.
  * @public
  * @extensions
@@ -213,7 +218,10 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal */
-  protected constructor(iModelProps: IModelConnectionProps) {
+  protected constructor(
+    iModelProps: IModelConnectionProps,
+    private readonly _iModelReadApi: IModelReadAPI,
+  ) {
     super(iModelProps);
     super.initialize(iModelProps.name!, iModelProps);
     this.models = new IModelConnection.Models(this);
@@ -388,7 +396,7 @@ export abstract class IModelConnection extends IModel {
     return this[_requestSnap](props);
   }
 
-  private _toolTipRpc = new OneAtATimeAction<string[]>(async (id: string) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id));
+  private _toolTipRpc = new OneAtATimeAction<string[]>(async (id: string) => this._iModelReadApi.getTooltipMessage(id).then((res) => res.lines));
   /** Request a tooltip from the backend.
    * @note If another call to this method occurs before preceding call(s) return, all preceding calls will be abandoned - only the most recent will resolve. Therefore callers must gracefully handle Promise rejected with AbandonedError.
    */
@@ -738,7 +746,7 @@ export class BlankConnection extends IModelConnection {
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
       iTwinId: props.iTwinId,
-    });
+    }, {} as any);
   }
 
   /** There are no connections to the backend to close in the case of a BlankConnection.
@@ -778,13 +786,13 @@ export class SnapshotConnection extends IModelConnection {
   /** Open an IModelConnection to a read-only snapshot iModel from a file name.
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
-  public static async openFile(filePath: string): Promise<SnapshotConnection> {
+  public static async openFile(filePath: string, iModelReadApiFactory: (key: string) => IModelReadAPI): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     RpcManager.setIModel({ iModelId: "undefined", key: filePath });
 
-    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath);
+    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath); // This should be IPC
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
-    const connection = new SnapshotConnection(openResponse);
+    const connection = new SnapshotConnection(openResponse, iModelReadApiFactory(openResponse.key));
     connection.routingContext = routingContext;
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -799,7 +807,7 @@ export class SnapshotConnection extends IModelConnection {
 
     const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
-    const connection = new SnapshotConnection(openResponse);
+    const connection = new SnapshotConnection(openResponse, {} as any);
     connection.routingContext = routingContext;
     connection._isRemote = true;
     IModelConnection.onOpen.raiseEvent(connection);

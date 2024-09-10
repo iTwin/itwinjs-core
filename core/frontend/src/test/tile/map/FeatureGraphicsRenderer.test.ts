@@ -26,7 +26,7 @@ export class TestConnection extends BlankConnection {
   public fromIModelCount = 0;
   private _noGcsDefined = true;
   public constructor(iModelProps: IModelConnectionProps, geoServicesOpts: Partial<GeoServicesOptions>, noGcsDefined?: boolean) {
-    super(iModelProps);
+    super(iModelProps, {} as any);
 
     if (noGcsDefined !== undefined)
       this._noGcsDefined = noGcsDefined;
