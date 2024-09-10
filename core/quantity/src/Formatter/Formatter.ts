@@ -10,7 +10,7 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./FormatterSpec";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, RatioType, ScientificType, ShowSignOption } from "./FormatEnums";
-import { Quantity } from "../Quantity";
+import { applyConversion, Quantity } from "../Quantity";
 
 /**  rounding additive
  * @internal
@@ -211,10 +211,10 @@ export class Formatter {
 
       if (i > 0 && unitConversion.factor < 1.0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
-      if (i > 0 && unitConversion.offset !== 0)
+      if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
-      let unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD; // offset should only ever be defined for major unit
+      let unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
 
       if (0 === i) {
         const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
@@ -234,7 +234,7 @@ export class Formatter {
       }
 
       if (spec.format.type === FormatType.Ratio){
-        if ( spec.persistenceUnit.phenomenon !== 'Units.SLOPE')
+        if ( spec.persistenceUnit.phenomenon !== "Units.SLOPE")
           throw new QuantityError(QuantityStatus.UnsupportedUnit, `The Format ${spec.format.name} has an invalid persistence unit.`);
         compositeStrings.length = 0; // clear the array
         compositeStrings.push(this.formatRatio(unitValue, spec));
@@ -491,7 +491,7 @@ export class Formatter {
       if (quadrant === 2 && spec.unitConversions.length > 0) {
         // To determine if value is small, we need to convert it to the smallest unit presented and use the provided precision on it
         const unitConversion = spec.unitConversions[spec.unitConversions.length - 1].conversion;
-        const smallestFormattedValue = (magnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD;
+        const smallestFormattedValue = applyConversion(magnitude, unitConversion) + this.FPV_MINTHRESHOLD;
 
         const precisionScale = Math.pow(10.0, spec.format.precision);
         const floor = Math.floor((smallestFormattedValue) * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
@@ -561,7 +561,7 @@ export class Formatter {
     if (null === spec.format.ratioType)
       throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
 
-    if (spec.format.hasUnits && spec.format.units && spec.format.units[0][0].phenomenon !== 'Units.SLOPE') // TODO - <Naron>: this should be handled at convert?
+    if (spec.format.hasUnits && spec.format.units && spec.format.units[0][0].phenomenon !== "Units.SLOPE") // TODO - <Naron>: this should be handled at convert?
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `The Format ${spec.format.name} has an invalid presentation unit.`);
 
     const precisionScale = Math.pow(10.0, spec.format.precision);
@@ -575,24 +575,24 @@ export class Formatter {
 
     switch (spec.format.ratioType) {
       case RatioType.OneToN:
-        return "1:" + this.formatMagnitude(reciprocal, spec);
+        return `1:${  this.formatMagnitude(reciprocal, spec)}`;
       case RatioType.NToOne:
-        return this.formatMagnitude(magnitude, spec) + ":1";
+        return `${this.formatMagnitude(magnitude, spec)  }:1`;
       case RatioType.ValueBased:
         if (magnitude > 1.0)
-          return this.formatMagnitude(magnitude, spec) + ":1";
+          return `${this.formatMagnitude(magnitude, spec)  }:1`;
         else
-          return "1:" + this.formatMagnitude(reciprocal, spec);
+          return `1:${  this.formatMagnitude(reciprocal, spec)}`;
       case RatioType.UseGreatestCommonDivisor:
         magnitude = Math.round(magnitude * precisionScale)/precisionScale;
         let numerator = magnitude * precisionScale;
         let denominator = precisionScale;
 
-        let gcd = FractionalNumeric.getGreatestCommonFactor(numerator, denominator);
+        const gcd = FractionalNumeric.getGreatestCommonFactor(numerator, denominator);
         numerator /= gcd;
         denominator /= gcd;
 
-        return this.formatMagnitude(numerator, spec) + ":" + this.formatMagnitude(denominator, spec);
+        return `${this.formatMagnitude(numerator, spec)  }:${  this.formatMagnitude(denominator, spec)}`;
       default:
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid ratio type specified.`);
     }
