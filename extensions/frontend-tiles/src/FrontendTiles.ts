@@ -92,6 +92,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     },
     format: "IMDL",
     urlPrefix: args.urlPrefix,
+    includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,
   };
 
