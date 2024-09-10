@@ -451,15 +451,15 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param start start point of the arc
    * @param end end point of the arc
    * @param helper a third point near the arc in its plane, or a vector in the direction of the arc normal
-   * @returns the constructed arc, or line segment if desired arc cannot be constructed
+   * @returns the constructed arc, or undefined if desired arc cannot be constructed
    */
-  public static createCircularStartEndRadius(start: Point3d, end: Point3d, radius: number, helper: Point3d | Vector3d): Arc3d | LineSegment3d {
+  public static createCircularStartEndRadius(start: Point3d, end: Point3d, radius: number, helper: Point3d | Vector3d): Arc3d | undefined {
     // Construct a line segment from start to end. It is a chord of the circle,
     // so the circle center is on its perpendicular bisector.
     const semiChordLen2 = 0.25 * start.distanceSquared(end);
     const radius2 = radius * radius;
     if (radius2 < semiChordLen2)
-      return LineSegment3d.create(start, end);
+      return undefined;
     const height = Math.sqrt(radius2 - semiChordLen2); // Pythagoras gives us distance from chord to center
     const normal = Vector3d.createZero(this._workVectorU);
     const vecToCenter = Vector3d.createZero(this._workVectorV);
@@ -470,7 +470,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       normal.setFrom(helper);
     // the normal and chord direction give us the side of the chord on which the center resides
     if (!normal.normalizeInPlace() || !normal.crossProductStartEnd(start, end, vecToCenter).scaleToLength(height, vecToCenter))
-      return LineSegment3d.create(start, end);
+      return undefined;
     const center = Point3d.createZero();
     start.interpolate(0.5, end, center).addInPlace(vecToCenter);
     const vector0 = Vector3d.createStartEnd(center, start, this._workVectorW);

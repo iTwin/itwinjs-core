@@ -757,18 +757,11 @@ describe("Arc3d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [mid, mid.plus(helperNormal)], x0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc1, x0);
 
-    const end2 = start;
-    const arc2 = Arc3d.createCircularStartEndRadius(start, end2, radius, helperPoint);
-    if (ck.testType(arc2, LineSegment3d, "trivial chord yields line segment")) {
-      ck.testPoint3d(start, arc2.startPoint(), "constructed arc has expected start point");
-      ck.testPoint3d(end2, arc2.endPoint(), "constructed arc has expected end point");
-    }
+    const arc2 = Arc3d.createCircularStartEndRadius(start, start, radius, helperPoint);
+    ck.testUndefined(arc2, "trivial chord returns undefined");
 
-    const arc4 = Arc3d.createCircularStartEndRadius(start, end, radius * 0.1, helperPoint);
-    if (ck.testType(arc4, LineSegment3d, "insufficient radius yields line segment")) {
-      ck.testPoint3d(start, arc4.startPoint(), "constructed arc has expected start point");
-      ck.testPoint3d(end, arc4.endPoint(), "constructed arc has expected end point");
-    }
+    const arc3 = Arc3d.createCircularStartEndRadius(start, end, radius * 0.1, helperPoint);
+    ck.testUndefined(arc3, "insufficient radius yields undefined");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartEndRadius");
     expect(ck.getNumErrors()).equals(0);
