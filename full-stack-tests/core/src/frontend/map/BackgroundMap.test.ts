@@ -117,33 +117,4 @@ describe("Background map (#integration)", () => {
         await expectPixelTypes(vp, test[0], test[1], test[2], test[3], test[4]);
     });
   });
-
-  it.only("is masked by design model", async () => {
-    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      vp.viewFlags = vp.viewFlags.with("lighting", false).with("backgroundMap", true);
-      vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
-        planarClipMask: {
-          mode: PlanarClipMaskMode.Priority,
-          priority: PlanarClipMaskPriority.BackgroundMap,
-        },
-      });
-
-      await vp.waitForAllTilesToRender();
-      vp.invalidateRenderPlan();
-      await vp.waitForAllTilesToRender();
-
-      const cx = Math.floor(vp.viewRect.width / 2);
-      const cy = Math.floor(vp.viewRect.height / 2);
-
-      // Test what's rendered to the screen.
-      const expectColor = (x: number, y: number, expectedColor: "bg" | "map") => {
-        const actualColor = vp.readColor(x, y);
-        console.log(JSON.stringify(actualColor));
-        expect(actualColor.equalsColorDef(vp.view.backgroundColor)).to.equal("bg" === expectedColor);
-      };
-      
-      expectColor(1, 1, "map");
-      expectColor(cx, cy, "bg");
-    });
-  });
 });
