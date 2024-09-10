@@ -94,7 +94,7 @@ describe("Schema Differences", () => {
     const targetSchema = await Schema.fromJson(targetJson, targetContext);
 
     differenceResult = await getSchemaDifferences(targetSchema, sourceSchema);
-    expect(differenceResult.conflicts).equals(undefined, "This test suite should not have conflicts.");
+    expect(differenceResult.conflicts, `This test suite should not have conflicts.\n${JSON.stringify(differenceResult.conflicts, null, 2)}`).to.be.undefined;
     expect(differenceResult.differences).has.a.lengthOf(27, "Unexpected count of differences.");
   });
 

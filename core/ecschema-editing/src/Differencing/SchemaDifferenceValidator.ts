@@ -50,14 +50,6 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
     this.conflicts.push(conflict);
   }
 
-  private async getSchemaItem<T extends SchemaItem>(name: string): Promise<T> {
-    const item = await this._targetSchema.getItem<T>(name);
-    if (item === undefined) {
-      throw new Error(`Schema Item ${name} could not be located.`);
-    }
-    return item;
-  }
-
   /**
    * Visitor implementation for handling SchemaDifference.
    * @internal
@@ -109,7 +101,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
    */
   private async visitBaseClassDifference(entry: ClassItemDifference, targetClassItem: ECClass) {
     if (entry.difference.baseClass === undefined && targetClassItem.baseClass !== undefined) {
-      this.addConflict({
+      return this.addConflict({
         code: ConflictCode.RemovingBaseClass,
         schemaType: targetClassItem.schemaItemType,
         itemName: targetClassItem.name,
@@ -118,38 +110,27 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
         target: resolveLazyItemFullName(targetClassItem.baseClass),
         description: "BaseClass cannot be removed, if there has been a baseClass before.",
       });
-      return;
     }
 
     if (entry.difference.baseClass === undefined) {
       return;
     }
 
-    const sourceBaseClass = await this._sourceSchema.lookupItem<ECClass>(entry.difference.baseClass);
-    if (sourceBaseClass === undefined) {
-      return;
-    }
-
+    const sourceBaseClass = await this._sourceSchema.lookupItem(entry.difference.baseClass) as ECClass;
     if (sourceBaseClass.modifier === ECClassModifier.Sealed) {
-      this.addConflict({
+      return this.addConflict({
         code: ConflictCode.SealedBaseClass,
         schemaType: targetClassItem.schemaItemType,
         itemName: targetClassItem.name,
         path: "$baseClass",
         source: sourceBaseClass.fullName,
-        target: resolveLazyItemFullName(targetClassItem.baseClass),
+        target: resolveLazyItemFullName(targetClassItem.baseClass) || null,
         description: "BaseClass is sealed.",
       });
-      return;
     }
 
-    const baseClassKey = targetClassItem.baseClass as Readonly<SchemaItemKey>;
-    if (baseClassKey === undefined) {
-      return;
-    }
-
-    if (!await derivedFrom(sourceBaseClass, baseClassKey.name)) {
-      this.addConflict({
+    if (targetClassItem.baseClass && !await this.derivedFrom(sourceBaseClass, targetClassItem.baseClass)) {
+      return this.addConflict({
         code: ConflictCode.ConflictingBaseClass,
         schemaType: targetClassItem.schemaItemType,
         itemName: targetClassItem.name,
@@ -181,8 +162,8 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
    */
   private async visitClassModifierDifference(entry: ClassItemDifference, targetClass: ECClass) {
     if (entry.difference.modifier) {
-      const sourceModifier = parseClassModifier(entry.difference.modifier);
-      if (sourceModifier !== undefined && sourceModifier !== ECClassModifier.None) {
+      const changedModifier = parseClassModifier(entry.difference.modifier);
+      if (changedModifier !== undefined && changedModifier !== ECClassModifier.None) {
         this.addConflict({
           code: ConflictCode.ConflictingClassModifier,
           schemaType: targetClass.schemaItemType,
@@ -231,25 +212,20 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
    * @internal
    */
   public async visitEntityClassMixinDifference(entry: EntityClassMixinDifference) {
-    const targetSchemaClass = await this.getSchemaItem<EntityClass>(entry.itemName);
+    const targetEntityClass = await this._targetSchema.getItem(entry.itemName) as EntityClass;
     for (const addedMixin of entry.difference) {
       // To validate the added mixins, the instance from the source schema it fetched,
       // otherwise validation gets too complicated as the mixin must not be existing in
       // the current target schema, it could also be added to the schema.
-      const sourceMixin = await this._sourceSchema.lookupItem<Mixin>(addedMixin);
-      const sourceSchemaItem = await this._sourceSchema.getItem<EntityClass>(entry.itemName);
-      if (sourceMixin === undefined) {
-        return;
-      }
-
-      const appliesTo = sourceMixin.appliesTo as Readonly<SchemaItemKey>;
-      if (appliesTo && !await derivedFrom(sourceSchemaItem, appliesTo.name)) {
+      const sourceMixin = await this._sourceSchema.lookupItem(addedMixin) as Mixin;
+      const sourceSchemaItem = await this._sourceSchema.getItem(entry.itemName) as EntityClass;
+      if (sourceMixin.appliesTo && !await this.derivedFrom(sourceSchemaItem, sourceMixin.appliesTo)) {
         this.addConflict({
           code: ConflictCode.MixinAppliedMustDeriveFromConstraint,
-          schemaType: targetSchemaClass.schemaItemType,
-          itemName: targetSchemaClass.name,
+          schemaType: targetEntityClass.schemaItemType,
+          itemName: targetEntityClass.name,
           path: "$mixins",
-          source: sourceMixin.fullName,
+          source: addedMixin,
           target: undefined,
           description: "Mixin cannot applied to this class.",
         });
@@ -290,7 +266,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
       return;
     }
 
-    const enumeration = await this.getSchemaItem<Enumeration>(entry.itemName);
+    const enumeration = await this._targetSchema.getItem(entry.itemName) as Enumeration;
     const enumerator = enumeration.getEnumeratorByName(entry.path);
     if (!enumerator) {
       return;
@@ -462,6 +438,28 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
   public async visitUnitSystemDifference(entry: UnitSystemDifference) {
     await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
   }
+
+  /**
+   * Recursive synchronous function to figure whether a given class derived from
+   * a class with the given baseClass name.
+   */
+  private async derivedFrom(ecClass: ECClass | undefined, baseClassKey: Readonly<SchemaItemKey>): Promise<boolean> {
+    if (ecClass === undefined) {
+      return false;
+    }
+
+    // First check for name which must be same in any case...
+    if (ecClass.name === baseClassKey.name) {
+      // ... then check if the class is in the same schema as the expected base class...
+      if(ecClass.schema.name === baseClassKey.schemaName)
+        return true;
+      // ... if not, whether it's in the other schema, which could be the case if the base class
+      // gets added to the target schema...
+      if(ecClass.schema.name === this._sourceSchema.name || ecClass.schema.name === this._targetSchema.name)
+        return true;
+    }
+    return this.derivedFrom(await ecClass.baseClass, baseClassKey);
+  }
 }
 
 /**
@@ -498,18 +496,4 @@ function resolvePropertyTypeName(property: Property) {
   if (property.isNavigation())
     return `${prefix}${property.relationshipClass.fullName}${suffix}`;
   return propertyTypeToString(property.propertyType);
-}
-
-/**
- * Recursive synchronous function to figure whether a given class derived from
- * a class with the given baseClassName.
- */
-async function derivedFrom(ecClass: ECClass | undefined, baseClassName: string): Promise<boolean> {
-  if (ecClass === undefined) {
-    return false;
-  }
-  if (ecClass && ecClass.name === baseClassName) {
-    return true;
-  }
-  return derivedFrom(await ecClass.baseClass, baseClassName);
 }
