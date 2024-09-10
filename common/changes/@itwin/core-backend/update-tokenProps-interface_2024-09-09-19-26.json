@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "base uri added to BlobContainer.TokenProps interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
