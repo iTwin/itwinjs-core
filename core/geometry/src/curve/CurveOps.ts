@@ -90,7 +90,7 @@ export class CurveOps {
    * @returns object with named chains, insideOffsets, outsideOffsets
    */
   public static collectInsideAndOutsideXYOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains?: AnyChain } {
-    const collector = new MultiChainCollector(gapTolerance);
+    const collector = new MultiChainCollector(gapTolerance, gapTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);
     }
@@ -130,7 +130,7 @@ export class CurveOps {
    * @param planeTolerance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
    * @returns chains, possibly wrapped in a [[BagOfCurves]].
    */
-  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance, planeTolerance: number | undefined = Geometry.smallMetricDistance): AnyChain | undefined {
+  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance, planeTolerance?: number): AnyChain | undefined {
     const collector = new MultiChainCollector(gapTolerance, planeTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);
@@ -138,16 +138,16 @@ export class CurveOps {
     return collector.grabResult(true);
   }
   /**
-   * Restructure curve fragments as Paths and Loops, to be stroked and passed into the callback.
+   * Restructure curve fragments, to be stroked and passed into the callback.
    * * Chain formation is dependent upon input fragment order, as a greedy algorithm is employed.
    * @param fragments fragments to be chained and stroked
    * @param announceChain callback to process each stroked Path and Loop
    * @param strokeOptions options for stroking the chains
    * @param gapTolerance distance to be treated as "effectively zero" when assembling fragments head-to-tail. Also used for removing duplicate points in the stroked chains.
-   * @param planeTolerance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
+   * @param _planeTolerance unused, pass undefined
    */
-  public static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance: number = Geometry.smallMetricDistance, planeTolerance: number | undefined = Geometry.smallMetricDistance) {
-    const collector = new MultiChainCollector(gapTolerance, planeTolerance);
+  public static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance: number = Geometry.smallMetricDistance, _planeTolerance?: number) {
+    const collector = new MultiChainCollector(gapTolerance); // no planarity tolerance needed
     for (const s of fragments) {
       collector.captureCurve(s);
     }

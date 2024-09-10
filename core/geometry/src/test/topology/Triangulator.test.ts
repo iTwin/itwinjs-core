@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -24,7 +25,7 @@ import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SweepContour } from "../../solid/SweepContour";
-import { HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
@@ -1128,4 +1129,114 @@ describe("Triangulation", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("TriangulatePoints", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const points = [[0, 0, 0], [5, 0, 0], [0, 2, 0], [5, 2, 0]];
+    let pts = IModelJson.Reader.parsePointArray(points);
+    const graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    graph.announceFaceLoops(
+      (_graph: HalfEdgeGraph, seed: HalfEdge) => {
+        return ck.testTrue(
+          seed.isMaskSet(HalfEdgeMask.EXTERIOR) || seed.countEdgesAroundFace() === 3,
+          `expect face ${seed.id} is a triangle`,
+        );
+      },
+    );
+    // non-planar test case from Ron
+    pts = [Point3d.create(-100, -100, 0), Point3d.create(100, -100, 100), Point3d.create(100, 100, 0), Point3d.create(-100, 100, 100)];
+    const polyface = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
+    if (ck.testDefined(polyface, "builder produced a mesh")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface);
+      for (const visitor = polyface.createVisitor(); visitor.moveToNextFacet(); ) {
+        ck.testExactNumber(visitor.numEdgesThisFacet, 3, "each mesh facet is a triangle");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulatePoints");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("TriangulatorHang", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const skipTranslate = false; // false: non-overlapping output meshes; true: output as-is for debugging
+    const drawCircles = false;   // true: output a circle at each point for debugging
+    const xMargin = 10;
+    const yMargin = 10;
+    let x0 = 0;
+    let y0 = 0;
+    let z0 = 0;
+
+    const testTriangulation = (points: Point3d[], range: Range3d, tol: number | undefined, name: string): number => {
+      const delta = Point3d.create(x0, y0, z0);
+      let numSharpEdges = 0;
+      const options = new StrokeOptions();
+      options.chordTol = tol;
+      if (!skipTranslate)
+        delta.subtractInPlace(range.low);
+      if (GeometryCoreTestIO.enableSave && drawCircles) {
+        const hull: Point3d[] = [];
+        const interior: Point3d[] = [];
+        Point3dArray.computeConvexHullXY(points, hull, interior, true);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hull, 0.2, delta.x, delta.y, delta.z);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior, 0.1, delta.x, delta.y, delta.z);
+      }
+      const mesh = PolyfaceBuilder.pointsToTriangulatedPolyface(points, options);
+      if (ck.testDefined(mesh, `computed triangulation of ${name}`)) {
+        ck.testTrue(PolyfaceQuery.isPolyfaceManifold(mesh, true), "triangulation is manifold");
+        const sharpEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, Angle.createDegrees(75), true);
+        numSharpEdges = sharpEdges.length;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, delta.x, delta.y, delta.z);
+      }
+      return numSharpEdges;
+    };
+
+    interface Dataset {
+      points: Point3d[];
+      range: Range3d;
+      name: string;
+    };
+    const data: Dataset[] = [];
+
+    // Minimal subset of dtmPointsSmall.imjs that reproduced an infinite loop:
+    // * Numbered points are on the convex hull
+    // * All points are essentially xy-colinear except 2
+    // * B and D are xy-near the hull
+    // * A and C are skirt points "underneath" the hull
+    const minimumPts = [
+      Point3d.create(29.38440446735313, -46.664765115079454, 49.58476279246775), // 0
+      Point3d.create(78.7791513050385, -46.66476333748565, 47.07249011143456),   // 1
+      Point3d.create(78.77823641152756, -46.66476229743052, 45.60256502436375),  // A
+      Point3d.create(51.51740469722874, -46.66476418232037, 48.26649267203187),  // B
+      Point3d.create(51.5164898037178, -46.66476314226524, 46.79656758496107),   // C
+      Point3d.create(55.21859962987817, 29.55516271079307, 48.370060922134726),  // 2
+      Point3d.create(50.334340847282135, -46.66476423327051, 48.33850061288565), // D
+    ];
+    data.push({ points: minimumPts, range: Range3d.create(...minimumPts), name: "7 points" });
+
+    const filenames = ["dtmPointsSmall.imjs", "dtmPointsMedium.imjs"];
+    if (GeometryCoreTestIO.enableLongTests)
+      filenames.push("dtmPointsLarge.imjs");
+    for (const name of filenames) {
+      const points = IModelJson.Reader.parsePointArray(JSON.parse(fs.readFileSync(`./src/test/data/polyface/${name}`, "utf8")));
+      data.push({ points, range: Range3d.create(...points), name });
+    }
+
+    for (const datum of data) {
+      let minNumSharpEdges = Geometry.largeCoordinateResult;
+      for (const tol of [undefined, 1.0e-5, 1.0e-4, 1.0e-3, 2.0e-3]) {
+        const numSharpEdges = testTriangulation(datum.points, datum.range, tol, datum.name);
+        ck.testLE(numSharpEdges, minNumSharpEdges, "larger tolerance should reduce sharp edge count");
+        minNumSharpEdges = Math.min(numSharpEdges, minNumSharpEdges);
+        if (!skipTranslate)
+          x0 += datum.range.xLength() + xMargin;  // as meshes progress left to right, more skirt points vanish
+      }
+      if (!skipTranslate) {
+        x0 = z0 = 0;
+        y0 += datum.range.yLength() + yMargin;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

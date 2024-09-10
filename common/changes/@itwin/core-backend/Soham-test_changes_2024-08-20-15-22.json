@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added support for CTE in subquery for the command \"PRAGMA parseTree\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

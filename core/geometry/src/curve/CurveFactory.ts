@@ -256,9 +256,10 @@ export class CurveFactory {
   /**
    * If `arcB` is a continuation of `arcA`, extend `arcA` (in place) to include the range of `arcB`
    * * This only succeeds if the two arcs are part of identical complete arcs and end of `arcA` matches the beginning of `arcB`.
-   * * "Reversed"
-   * @param arcA
-   * @param arcB
+   * @param arcA first arc, modified in place
+   * @param arcB second arc, unmodified
+   * @param allowReversed whether to consolidate even when second arc is reversed
+   * @returns whether `arcA` was modified
    */
   public static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse: boolean = false): boolean {
     if (arcA.center.isAlmostEqual(arcB.center)) {
@@ -283,7 +284,6 @@ export class CurveFactory {
           return true;
         }
       }
-
     }
     return false;
   }

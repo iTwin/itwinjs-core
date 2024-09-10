@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.9.0-dev.5",
+  "version": "4.9.0-dev.22",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -45,12 +45,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.9.0-dev.5",
-    "@itwin/core-bentley": "workspace:^4.9.0-dev.5",
-    "@itwin/core-common": "workspace:^4.9.0-dev.5",
-    "@itwin/core-geometry": "workspace:^4.9.0-dev.5",
-    "@itwin/core-orbitgt": "workspace:^4.9.0-dev.5",
-    "@itwin/core-quantity": "workspace:^4.9.0-dev.5"
+    "@itwin/appui-abstract": "workspace:^4.9.0-dev.22",
+    "@itwin/core-bentley": "workspace:^4.9.0-dev.22",
+    "@itwin/core-common": "workspace:^4.9.0-dev.22",
+    "@itwin/core-geometry": "workspace:^4.9.0-dev.22",
+    "@itwin/core-orbitgt": "workspace:^4.9.0-dev.22",
+    "@itwin/core-quantity": "workspace:^4.9.0-dev.22"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -92,7 +92,7 @@
   ],
   "dependencies": {
     "@itwin/cloud-agnostic-core": "^2.2.4",
-    "@itwin/object-storage-core": "^2.2.4",
+    "@itwin/object-storage-core": "^2.2.5",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",

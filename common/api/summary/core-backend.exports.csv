@@ -116,6 +116,7 @@ beta;class;ECSchemaXmlContext
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
 public;class;ECSqlInsertResult
+public;interface;ECSqlRowArg
 public;class;ECSqlStatement
 public;class;ECSqlValue
 public;class;ECSqlValueIterator
