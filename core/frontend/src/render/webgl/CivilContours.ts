@@ -65,21 +65,13 @@ export class CivilContours implements WebGLDisposable {
   /** For tests. */
   public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
-  // public get isUniform() { return 2 === this._lutParams[0] && 1 === this._lutParams[1]; }
-
-  public getUniformOverrides(): Uint8Array {
-    // assert(this.isUniform);
-    assert(undefined !== this._lut);
-    assert(undefined !== this._lut.dataBytes);
-    return this._lut.dataBytes;
-  }
 
   private _initialize(map: RenderFeatureTable, contours: CivilContourDisplay | undefined): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims = computeWidthAndHeight(nFeatures, 1/8);
     const width = dims.width;
     const height = dims.height;
-    assert(width * height >= nFeatures);
+    assert(width * height * 1/8 >= nFeatures);
 
     this._lutWidth = width;
 
@@ -170,7 +162,8 @@ export class CivilContours implements WebGLDisposable {
       const contours: CivilContourDisplay | undefined = this.target.plan.contours;
       if (contours && contours.terrains.length > 0)
         this._update(features, this._lut, contours);
-      this._lutWidth = 0; // flag to indicate no contours
+      else
+        this._lutWidth = 0; // flag to indicate no contours
     }
   }
 

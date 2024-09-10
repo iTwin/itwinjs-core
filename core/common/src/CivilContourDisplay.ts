@@ -10,30 +10,47 @@ import { compareNumbers, Id64String } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 
 export interface CivilContourProps {
-  /** See [[CivilContour.color]]. */
-  color?: ColorDefProps;
-  /** See [[CivilContour.pixelWidth]]. */
-  pixelWidth?: number;
-  /** See [[CivilContour.dashedPattern]]. */
-  pattern?: number;
-  /** See [[CivilContour.interval]]. */
-  interval?: number;
+  /** See [[CivilContour.majorColor]]. */
+  majorColor?: ColorDefProps;
+  /** See [[CivilContour.minorColor]]. */
+  minorColor?: ColorDefProps;
+  /** See [[CivilContour.majorPixelWidth]]. */
+  majorPixelWidth?: number;
+  /** See [[CivilContour.minorPixelWidth]]. */
+  minorPixelWidth?: number;
+  /** See [[CivilContour.MajorPatterIndex]]. */
+  majorPattern?: number;
+  /** See [[CivilContour.MinorPatterIndex]]. */
+  minorPattern?: number;
+  /** See [[CivilContour.minorInterval]]. */
+  minorInterval?: number;
+  /** See [[CivilContour.majorIntervalCount]]. */
+  majorIntervalCount?: number;
 }
 
 export class CivilContour {
-  /** Color that this contour line will use. */
-  public readonly color: ColorDef;
-  /** A width in pixels of this contour line. */
-  public readonly pixelWidth: number;
-  /** If non-zero, use as a 32-bit pattern for this contour line; bits that are 1 represent where the pattern is visible. */
-  public readonly pattern: number;
-  /** The interval for this particular contour's occurence in the associated terrain. */
-  public readonly interval: number;
+  /** Color that a major contour line will use. */
+  public readonly majorColor: ColorDef;
+  /** Color that a minor contour line will use. */
+  public readonly minorColor: ColorDef;
+  /** A width in pixels of a major contour line. (Range 1.5 to 9 in 0.5 increments) */
+  public readonly majorPixelWidth: number;
+  /** A width in pixels of a minor contour line. (Range 1.5 to 9 in 0.5 increments) */
+  public readonly minorPixelWidth: number;
+  /** A pattern index defining the pattern for a major contour line (0 is solid). */
+  public readonly majorPattern: number;
+  /** A pattern index defining the pattern for a minor contour line (0 is solid). */
+  public readonly minorPattern: number;
+  /** The interval for the minor contour in the associated terrain in meters. */
+  public readonly minorInterval: number;
+  /** The count of minor contour intervals that define a major interval (integer > 0) */
+  public readonly majorIntervalCount: number;
 
   public static readonly defaults = new CivilContour({});
 
   public equals(other: CivilContour): boolean {
-    if (!this.color.equals(other.color) || this.pixelWidth !== other.pixelWidth || this.pattern !== other.pattern || this.interval !== other.interval) {
+    if (!this.majorColor.equals(other.majorColor) || !this.minorColor.equals(other.minorColor) || this.majorPixelWidth !== other.majorPixelWidth || this.minorPixelWidth !== other.minorPixelWidth ||
+         this.majorPattern !== other.majorPattern|| this.minorPattern !== other.minorPattern || this.minorInterval !== other.minorInterval  || this.majorIntervalCount !== other.majorIntervalCount ) {
       return false;
     }
     return true;
@@ -46,13 +63,21 @@ export class CivilContour {
    */
   public static compare(lhs: CivilContour, rhs: CivilContour): number {
     let diff = 0;
-    if ((diff = compareNumbers(lhs.color.getRgb(), rhs.color.getRgb())) !== 0)
+    if ((diff = compareNumbers(lhs.majorColor.getRgb(), rhs.majorColor.getRgb())) !== 0)
       return diff;
-    if ((diff = compareNumbers(lhs.pixelWidth, rhs.pixelWidth)) !== 0)
+    if ((diff = compareNumbers(lhs.minorColor.getRgb(), rhs.minorColor.getRgb())) !== 0)
       return diff;
-    if ((diff = compareNumbers(lhs.pattern, rhs.pattern)) !== 0)
+    if ((diff = compareNumbers(lhs.majorPixelWidth, rhs.majorPixelWidth)) !== 0)
       return diff;
-    if ((diff = compareNumbers(lhs.interval, rhs.interval)) !== 0)
+    if ((diff = compareNumbers(lhs.minorPixelWidth, rhs.minorPixelWidth)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.majorPattern, rhs.majorPattern)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.minorPattern, rhs.minorPattern)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.minorInterval, rhs.minorInterval)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.majorIntervalCount, rhs.majorIntervalCount)) !== 0)
       return diff;
 
     return diff;
@@ -60,15 +85,23 @@ export class CivilContour {
 
   private constructor(json?: CivilContourProps) {
     if (undefined === json) {
-      this.color = ColorDef.black;
-      this.pixelWidth = 1;
-      this.pattern = 0;
-      this.interval = 5;
+      this.majorColor = ColorDef.black;
+      this.minorColor = ColorDef.black;
+      this.majorPixelWidth = 4;
+      this.minorPixelWidth = 2;
+      this.majorPattern = 0;
+      this.minorPattern = 0;
+      this.minorInterval = 1;
+      this.majorIntervalCount = 5;
     } else {
-      this.color = json.color ? ColorDef.create(json.color) : ColorDef.black;
-      this.pixelWidth = json.pixelWidth ?? 1;
-      this.pattern = json.pattern ?? 0;
-      this.interval = json.interval ?? 5;
+      this.majorColor = json.majorColor ? ColorDef.create(json.majorColor) : ColorDef.black;
+      this.minorColor = json.minorColor ? ColorDef.create(json.minorColor) : ColorDef.black;
+      this.majorPixelWidth = json.majorPixelWidth ?? 4;
+      this.minorPixelWidth = json.minorPixelWidth ?? 2;
+      this.majorPattern = json.majorPattern ?? 0;
+      this.minorPattern = json.minorPattern ?? 0;
+      this.minorInterval = json.minorInterval ?? 1;
+      this.majorIntervalCount = json.majorIntervalCount ?? 5;
     }
   }
 
@@ -79,43 +112,51 @@ export class CivilContour {
   public toJSON(): CivilContourProps {
     const props: CivilContourProps = {};
 
-    if (!this.color.equals(ColorDef.black))
-      props.color = this.color.toJSON();
+    if (!this.majorColor.equals(ColorDef.black))
+      props.majorColor = this.majorColor.toJSON();
 
-    if (1 !== this.pixelWidth)
-      props.pixelWidth = this.pixelWidth;
+    if (!this.minorColor.equals(ColorDef.black))
+      props.minorColor = this.majorColor.toJSON();
 
-    if (0 !== this.pattern)
-      props.pattern = this.pattern;
+    if (4 !== this.majorPixelWidth)
+      props.majorPixelWidth = this.majorPixelWidth;
 
-    if (5 !== this.interval)
-      props.interval = this.interval;
+    if (2 !== this.minorPixelWidth)
+      props.minorPixelWidth = this.minorPixelWidth;
+
+    if (0 !== this.majorPattern)
+      props.majorPattern = this.majorPattern;
+
+    if (0 !== this.minorPattern)
+      props.minorPattern = this.minorPattern;
+
+    if (1 !== this.minorInterval)
+      props.minorInterval = this.minorInterval;
+
+    if (5 !== this.majorIntervalCount)
+      props.majorIntervalCount = this.majorIntervalCount;
 
     return props;
   }
 }
 
 export interface CivilTerrainProps {
-  /** See [[CivilTerrain.majorContour]]. */
-  majorContour?: CivilContourProps;
-  /** See [[CivilTerrain.minorContour]]. */
-  minorContour?: CivilContourProps;
+  /** See [[CivilTerrain.contourDef]]. */
+  contourDef?: CivilContourProps;
   /** See [[CivilTerrain.subCategories]]. */
   subCategories?: Id64String[];
 }
 
 export class CivilTerrain {
-  /** How the major contours for this terrain should appear. */
-  public readonly majorContour: CivilContour;
-  /** How the minor contours for this terrain should appear. */
-  public readonly minorContour: CivilContour;
+  /** How the contours for this terrain should appear. */
+  public readonly contourDef: CivilContour;
   /** List of subcategory IDs to which this terrain styling will be applied. */
   public readonly subCategories: Id64String[];
 
   public static readonly defaults = new CivilTerrain({});
 
   public equals(other: CivilTerrain): boolean {
-    if (!this.majorContour.equals(other.majorContour) || !this.minorContour.equals(other.minorContour)) {
+    if (!this.contourDef.equals(other.contourDef)) {
       return false;
     }
     if (this.subCategories.length !== other.subCategories.length)
@@ -130,12 +171,10 @@ export class CivilTerrain {
 
   private constructor(json?: CivilTerrainProps) {
     if (undefined === json) {
-      this.majorContour = CivilContour.fromJSON({});
-      this.minorContour = CivilContour.fromJSON({});
+      this.contourDef = CivilContour.fromJSON({});
       this.subCategories = [];
     } else {
-      this.majorContour = json.majorContour ? CivilContour.fromJSON(json.majorContour) : CivilContour.fromJSON({});
-      this.minorContour = json.minorContour ? CivilContour.fromJSON(json.minorContour) : CivilContour.fromJSON({});
+      this.contourDef = json.contourDef ? CivilContour.fromJSON(json.contourDef) : CivilContour.fromJSON({});
       this.subCategories = json.subCategories ? [...json.subCategories] : [];
     }
   }
@@ -147,11 +186,8 @@ export class CivilTerrain {
   public toJSON(): CivilTerrainProps {
     const props: CivilTerrainProps = {};
 
-    if (!this.majorContour.equals(CivilContour.defaults))
-      props.majorContour = this.majorContour.toJSON();
-
-    if (!this.minorContour.equals(CivilContour.defaults))
-      props.minorContour = this.minorContour.toJSON();
+    if (!this.contourDef.equals(CivilContour.defaults))
+      props.contourDef = this.contourDef.toJSON();
 
     if (this.subCategories.length > 0)
       props.subCategories = [...this.subCategories];

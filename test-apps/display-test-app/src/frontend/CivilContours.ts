@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
-import { dispose, IDisposable } from "@itwin/core-bentley";
+import { assert, dispose, IDisposable } from "@itwin/core-bentley";
 import {
-  ColorInputProps, ComboBox, ComboBoxHandler, ComboBoxProps, convertHexToRgb, createButton, createColorInput, createComboBox, createNumericInput,
+  ColorInputProps, ComboBox, ComboBoxProps, convertHexToRgb, createButton, createColorInput, createComboBox, createNumericInput,
   createSlider, createTextBox, NumericInputProps, Slider,
   SliderProps,
   TextBox,
   TextBoxProps,
 } from "@itwin/frontend-devtools";
-import { CivilContour, CivilContourDisplay, CivilContourDisplayProps, CivilTerrainProps, LinePixels, RgbColor } from "@itwin/core-common";
-import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { CivilContourDisplay, CivilContourDisplayProps, CivilTerrainProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { Viewport, ViewState } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 // size of widget or panel
@@ -30,8 +29,7 @@ export class CivilContoursSettings implements IDisposable {
   private _currentTerrainProps: CivilTerrainProps = {};
 
   public constructor(vp: Viewport, parent: HTMLElement) {
-    this._currentTerrainProps.majorContour = {};
-    this._currentTerrainProps.minorContour = {};
+    this._currentTerrainProps.contourDef = {};
     this._currentTerrainProps.subCategories = [];
 
     this._vp = vp;
@@ -158,34 +156,34 @@ export class CivilContoursSettings implements IDisposable {
 
   private updateInterval(interval: number | undefined, major: boolean): void {
     if (major)
-      this._currentTerrainProps.majorContour!.interval = interval;
+      this._currentTerrainProps.contourDef!.majorIntervalCount = interval;
     else // minor
-      this._currentTerrainProps.minorContour!.interval = interval;
+      this._currentTerrainProps.contourDef!.minorInterval = interval;
     console.log(JSON.stringify(this._currentTerrainProps));
   }
 
   private updateColor(rgb: RgbColor | undefined, major: boolean): void {
     if (major)
-      this._currentTerrainProps.majorContour!.color = rgb?.toColorDef().toJSON();
+      this._currentTerrainProps.contourDef!.majorColor = rgb?.toColorDef().toJSON();
     else // minor
-      this._currentTerrainProps.minorContour!.color = rgb?.toColorDef().toJSON();
+      this._currentTerrainProps.contourDef!.minorColor = rgb?.toColorDef().toJSON();
     console.log(JSON.stringify(this._currentTerrainProps));
   }
 
   private updateWeight(weight: number | undefined, major: boolean): void {
     if (major)
-      this._currentTerrainProps.majorContour!.pixelWidth = weight;
+      this._currentTerrainProps.contourDef!.majorPixelWidth = weight;
     else // minor
-      this._currentTerrainProps.minorContour!.pixelWidth = weight;
+      this._currentTerrainProps.contourDef!.minorPixelWidth = weight;
     console.log(JSON.stringify(this._currentTerrainProps));
   }
 
   private updateStyle(style: number, major: boolean): void {
     const linePixels = LinePixels.Invalid !== style ? style : undefined;
     if (major)
-      this._currentTerrainProps.majorContour!.pattern = linePixels;
+      this._currentTerrainProps.contourDef!.majorPattern = linePixels;
     else // minor
-      this._currentTerrainProps.minorContour!.pattern = linePixels;
+      this._currentTerrainProps.contourDef!.minorPattern = linePixels;
     console.log(JSON.stringify(this._currentTerrainProps));
   }
 
@@ -194,7 +192,7 @@ export class CivilContoursSettings implements IDisposable {
 
     const label = document.createElement("label");
     label.htmlFor = major ? "major_interval" : "minor_interval";
-    label.innerText = "Interval ";
+    label.innerText = major ? "Major Count " : "Minor Interval ";
     div.appendChild(label);
 
     const props: NumericInputProps = {
@@ -268,16 +266,16 @@ export class CivilContoursSettings implements IDisposable {
 
   public addStyle(parent: HTMLElement, value: LinePixels, major: boolean): ComboBox {
     const entries = [
-      { name: "Solid", value: LinePixels.Solid },
-      { name: "Code1", value: LinePixels.Code1 },
-      { name: "Code2", value: LinePixels.Code2 },
-      { name: "Code3", value: LinePixels.Code3 },
-      { name: "Code4", value: LinePixels.Code4 },
-      { name: "Code5", value: LinePixels.Code5 },
-      { name: "Code6", value: LinePixels.Code6 },
-      { name: "Code7", value: LinePixels.Code7 },
-      { name: "Hidden Line", value: LinePixels.HiddenLine },
-      { name: "Invisible", value: LinePixels.Invisible },
+      { name: "Solid", value: 0 },
+      { name: "Code1", value: 1 },
+      { name: "Code2", value: 2 },
+      { name: "Code3", value: 3 },
+      { name: "Code4", value: 4 },
+      { name: "Code5", value: 5 },
+      { name: "Code6", value: 6 },
+      { name: "Code7", value: 7 },
+      { name: "Hidden Line", value: 8 },
+      { name: "Invisible", value: 9 },
     ];
 
     const props: ComboBoxProps = {

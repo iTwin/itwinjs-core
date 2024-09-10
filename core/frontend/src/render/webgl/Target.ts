@@ -526,6 +526,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.uniforms.thematic.update(this);
 
+    this.uniforms.contours.update(this);
+
     this.uniforms.atmosphere.update(this);
 
     // NB: This must be done after changeFrustum() as some of the uniforms depend on the frustum.
