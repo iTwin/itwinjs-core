@@ -316,6 +316,7 @@ export class DynamicClipMaskTool extends PrimitiveTool {
       graphic: this._spheres.toGraphic(false),
       modelId: this._spheres.modelId,
       planarClipMaskPriority: this._priority,
+      getToolTip: async () => Promise.resolve("dynamic clip mask geometry"),
     });
 
     const provider: DynamicClipMaskProvider = {
