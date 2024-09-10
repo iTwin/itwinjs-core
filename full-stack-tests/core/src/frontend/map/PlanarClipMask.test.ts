@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { CompressedId64Set, Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
-import { IModelConnection, Pixel, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { GraphicType, IModelApp, IModelConnection, Pixel, SnapshotConnection, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 
@@ -129,7 +129,34 @@ describe.only("Planar clip mask (#integration)", () => {
     await expectPixels({ mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.DesignModel }, "map");
   });
 
-  it("is masked by priority by dynamic geometry", async () => {
-    
+  it.only("is masked by priority by dynamic geometry", async () => {
+    const modelId = imodel.transientIds.getNext();
+    const builder = IModelApp.renderSystem.createGraphic({
+      type: GraphicType.Scene,
+      computeChordTolerance: () => 0,
+      pickable: {
+        modelId,
+        id: modelId,
+      },
+    });
+    builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
+    builder.addRangeBox(imodel.projectExtents);
+
+    const treeRef = TileTreeReference.createFromRenderGraphic({
+      iModel: imodel,
+      graphic: builder.finish(),
+      modelId,
+    });
+
+    await expectPixels({
+      mode: PlanarClipMaskMode.Priority,
+      priority: PlanarClipMaskPriority.BackgroundMap,
+    },
+      "dynamic",
+      (vp) => {
+        vp.addTiledGraphicsProvider({ forEachTileTreeRef: (_, func) => func(treeRef) });
+        vp.changeViewedModels([]);
+      },
+    );
   });
 });
