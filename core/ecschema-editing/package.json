@@ -42,7 +42,6 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
