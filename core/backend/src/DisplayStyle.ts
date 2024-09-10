@@ -77,18 +77,17 @@ export abstract class DisplayStyle extends DefinitionElement {
 
     if (settings.excludedElements) {
       const excluded: Id64Array = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
-      for (let i = 0; i < excluded.length; /* */) {
-        const remapped = context.findTargetElementId(excluded[i]);
-        if (Id64.invalid === remapped)
-          excluded.splice(i, 1);
-        else
-          excluded[i++] = remapped;
+      const excludedTargetElements: Id64Array = [];
+      for (const excludedElement of excluded) {
+        const remapped = context.findTargetElementId(excludedElement);
+        if (Id64.isValid(remapped))
+          excludedTargetElements.push(remapped);
       }
 
-      if (0 === excluded.length)
+      if (0 === excludedTargetElements.length)
         delete settings.excludedElements;
       else
-        settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
+        settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excludedTargetElements));
     }
 
     if (settings.renderTimeline) {
