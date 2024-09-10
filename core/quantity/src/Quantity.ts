@@ -75,7 +75,7 @@ function invert(input: number): number {
  * @internal
  */
 export function almostZero(value: number): boolean {
-  return Math.abs(value) < 1.0e-16;
+  return almostEqual(value, 0.0);
 }
 
 /**
