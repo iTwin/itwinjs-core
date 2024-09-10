@@ -12,7 +12,7 @@ import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType, RatioType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { ParserSpec } from "./ParserSpec";
-import { Quantity } from "./Quantity";
+import { applyConversion, Quantity } from "./Quantity";
 
 /** Possible parser errors
  * @beta
@@ -622,7 +622,7 @@ export class Parser {
           }
         }
         if (conversion) {
-          value = (value * conversion.factor) + conversion.offset;
+          value = applyConversion(value, conversion);
         }
         mag = mag + value;
         compositeUnitIndex++;
@@ -802,18 +802,18 @@ export class Parser {
 
   private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     if (!inString || !inString.includes(":"))
-        return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
     const parts = inString.split(":");
     if (parts.length !== 2)
-        throw new QuantityError(QuantityStatus.UnableToConvertParseTokensToQuantity, `Invalid ratio: ${inString}, needs to be in form x:y`);
+      throw new QuantityError(QuantityStatus.UnableToConvertParseTokensToQuantity, `Invalid ratio: ${inString}, needs to be in form x:y`);
 
     const numerator = parseFloat(parts[0]);
     const denominator = parseFloat(parts[1]);
 
     if (isNaN(numerator) || isNaN(denominator))
-        return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
-        // TODO - Naron: there is also a QuantityStatus.NoValueOrUnitFoundInString
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+    // TODO - Naron: there is also a QuantityStatus.NoValueOrUnitFoundInString
 
     // special corner cases
     if (spec.format.units && spec.outUnit){
@@ -822,49 +822,54 @@ export class Parser {
       // if (spec.format.units[0][0].name is invert of spec.outUnit && numerator === 1 && denominator === 0)
       //   return { ok: true, value: 0.0 };
     } else {
-      throw new QuantityError(QuantityStatus.MissingRequiredProperty, 'Missing presentation unit or persistence unit for ratio format.');
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, "Missing presentation unit or persistence unit for ratio format.");
     }
 
     let magnitude = 0.0;
     switch (spec.format.ratioType) {
       case RatioType.OneToN:
-          const oneToNResult = Parser.validateNumeratorAndDenominator(numerator, denominator, 1, undefined);
-          if (!oneToNResult.ok) return oneToNResult;
-          magnitude = 1.0 / denominator;
-          break;
+        const oneToNResult = Parser.validateNumeratorAndDenominator(numerator, denominator, 1, undefined);
+        if (!oneToNResult.ok)
+          return oneToNResult;
+        magnitude = 1.0 / denominator;
+        break;
 
       case RatioType.NToOne:
-          const nToOneResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, 1);
-          if (!nToOneResult.ok) return nToOneResult;
-          magnitude = numerator;
-          break;
+        const nToOneResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, 1);
+        if (!nToOneResult.ok)
+          return nToOneResult;
+        magnitude = numerator;
+        break;
 
       case RatioType.ValueBased:
-          if (magnitude > 1.0) {
-              const valueBasedGreaterResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, 1);
-              if (!valueBasedGreaterResult.ok) return valueBasedGreaterResult;
-              magnitude = numerator;
-          } else {
-              const valueBasedLesserResult = Parser.validateNumeratorAndDenominator(numerator, denominator, 1, undefined);
-              if (!valueBasedLesserResult.ok) return valueBasedLesserResult;
-              magnitude = 1.0 / denominator;
-          }
-          break;
+        if (magnitude > 1.0) {
+          const valueBasedGreaterResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, 1);
+          if (!valueBasedGreaterResult.ok)
+            return valueBasedGreaterResult;
+          magnitude = numerator;
+        } else {
+          const valueBasedLesserResult = Parser.validateNumeratorAndDenominator(numerator, denominator, 1, undefined);
+          if (!valueBasedLesserResult.ok)
+            return valueBasedLesserResult;
+          magnitude = 1.0 / denominator;
+        }
+        break;
 
       case RatioType.UseGreatestCommonDivisor:
-          const gcdResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, undefined);
-          if (!gcdResult.ok) return gcdResult;
-          magnitude = numerator / denominator;
-          break;
+        const gcdResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, undefined);
+        if (!gcdResult.ok)
+          return gcdResult;
+        magnitude = numerator / denominator;
+        break;
 
-        default:
-            throw new QuantityError(QuantityStatus.InvalidJson, `Unsupported ratio type: ${spec.format.ratioType}`);
+      default:
+        throw new QuantityError(QuantityStatus.InvalidJson, `Unsupported ratio type: ${spec.format.ratioType}`);
     }
 
     // TODO: convert the magnitude to OutUnit, the invert unit conversion is not handled yet in unit conversion
 
     return { ok: true, value: magnitude };
-}
+  }
 
   // helper method for parse ratio string
   private static validateNumeratorAndDenominator(numerator: number, denominator: number, requiredNumerator?: number, requiredDenominator?: number): QuantityParseResult {
@@ -878,11 +883,10 @@ export class Parser {
     }
 
     if (requiredDenominator !== undefined && denominator !== requiredDenominator) {
-        return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
     }
     return { ok: true, value: 0.0 }; // place holder
-}
-
+  }
 
   // TODO: The following two methods are redundant with Formatter. We should consider consolidating them.
   private static normalizeAngle(magnitude: number, revolution: number): number {
