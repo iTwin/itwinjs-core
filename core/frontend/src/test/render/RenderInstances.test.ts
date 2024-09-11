@@ -137,7 +137,14 @@ describe.only("RenderInstances", () => {
     });
 
     builder.setSymbology(ColorDef.red, ColorDef.red, 1, LinePixels.Solid);
-    builder.addLineString2d([new Point2d(0, 0), new Point2d(5, 0)], 0);
+    //builder.addLineString2d([new Point2d(0, 0), new Point2d(5, 0)], 0);
+    builder.addShape2d([
+      new Point2d(-5, -5),
+      new Point2d(5, -5),
+      new Point2d(5, 5),
+      new Point2d(-5, 5),
+      new Point2d(-5, -5),
+    ], 0);
     const template = builder.finishTemplate();
 
     // Create 4 instances each in one of the corners of a 100x100-pixel viewport.
