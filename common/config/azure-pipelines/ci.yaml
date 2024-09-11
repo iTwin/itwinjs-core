@@ -47,3 +47,4 @@ jobs:
       - template: ./templates/core-build.yaml
         parameters:
           nodeVersion: 20.x
+          runRushAudit: false
