@@ -61,6 +61,9 @@ jobs:
     displayName: Create branch for next release
     dependsOn: CheckPrevCommit
     condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    steps:
+      - bash: |
+          echo "Creating branch..."
 
         # steps:
         #   - checkout: self
@@ -254,7 +257,9 @@ jobs:
     displayName: Update master to next minor version
     dependsOn: Bump
     condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-
+    steps:
+      - bash: |
+          echo "Update Master..."
         # steps:
         #   - checkout: self
         #   - task: NodeTool@0
