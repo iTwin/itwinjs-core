@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { CompressedId64Set, Id64 } from "@itwin/core-bentley";
+import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
-import { GraphicType, IModelApp, IModelConnection, Pixel, SnapshotConnection, TileTreeReference, Viewport } from "@itwin/core-frontend";
+import { GraphicType, IModelApp, IModelConnection, Pixel, SnapshotConnection, TileTreeReference, Viewport, readElementGraphics } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { Point2d } from "@itwin/core-geometry";
@@ -167,10 +167,37 @@ describe.only("Planar clip mask (#integration)", () => {
     vp.changeViewedModels([]);
   }
 
-  it.only("is not masked by dynamic geometry by default", async () => {
+  it("is not masked by dynamic geometry by default", async () => {
     await expectPixels(undefined, "map", addDynamicGeometry);
   });
 
+  it.only("is masked by dynamic element geometry", async () => {
+    const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
+      elementId: "0x29",
+      id: Guid.createValue(),
+      toleranceLog10: -3,
+    }))!;
+
+    const graphic = (await readElementGraphics(bytes, imodel, "0x1c", true, { tileId: "dynamic-clip" }))!;
+    const treeRef = TileTreeReference.createFromRenderGraphic({
+      iModel: imodel,
+      graphic,
+      modelId: "0x1c",
+    });
+  
+    await expectPixels({
+      mode: PlanarClipMaskMode.Priority,
+      priority: PlanarClipMaskPriority.BackgroundMap,
+    }, "model", (vp) => {
+      vp.changeViewedModels([]);
+      vp.addTiledGraphicsProvider({
+        forEachTileTreeRef: (_, func) => {
+          func(treeRef);
+        },
+      });
+    });
+  });
+  
   it.only("is masked by priority by dynamic geometry", async () => {
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
