@@ -7,6 +7,8 @@ import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReference
 /**
  * A bis:InformationReferenceElement used to organize bis:Sheet instances into a hierarchy with the assistance
  * of [[bis:SheetIndexFolder]] and other [[bis:SheetIndex]] instances.
+ *
+ * See the doc site for more information about [SheetIndex](https://www.itwinjs.org/bis/domains/drawings-sheets/#sheet-index).
  * @beta
  */
 export class SheetIndex extends InformationReferenceElement {
