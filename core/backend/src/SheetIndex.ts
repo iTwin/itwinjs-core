@@ -4,18 +4,6 @@ import { IModelDb } from "./IModelDb";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "./NavigationRelationship";
 
-/** Argument for the creating `SheetIndex`
- * @beta
- */
-export interface SheetIndexArg {
-  /** Insert into this IModelDb */
-  iModelDb: IModelDb;
-  /** The Id of the Model that contains the SheetIndex and provides the scope for its name. */
-  modelId: Id64String;
-  /** The name (codeValue) of the SheetIndex */
-  name: string;
-}
-
 /** Argument for creating a `SheetIndexFolder`
  * @beta
  */
@@ -69,25 +57,31 @@ export class SheetIndex extends InformationReferenceElement {
   }
 
   /** Create a SheetIndex
+   * @param iModelDb The IModelDb
+   * @param modelId The Id of the Model that contains the SheetIndex and provides the scope for its name.
+   * @param name The name (codeValue) of the SheetIndex
    * @returns The newly constructed SheetIndex
    * @throws [[IModelError]] if there is a problem creating the SheetIndex
    */
-  public static create(arg: SheetIndexArg): SheetIndex {
+  public static create(iModelDb: IModelDb, modelId: Id64String, name: string): SheetIndex {
     const props: ElementProps = {
       classFullName: this.classFullName,
-      code: this.createCode(arg.iModelDb, arg.modelId, arg.name).toJSON(),
-      model: arg.modelId,
+      code: this.createCode(iModelDb, modelId, name).toJSON(),
+      model: modelId,
     };
-    return new this(props, arg.iModelDb);
+    return new this(props, iModelDb);
   }
 
   /** Insert a SheetIndex
+   * @param iModelDb The IModelDb
+   * @param modelId The Id of the Model that contains the SheetIndex and provides the scope for its name.
+   * @param name The name (codeValue) of the SheetIndex
    * @returns The Id of the newly inserted SheetIndex
    * @throws [[IModelError]] if there is a problem inserting the SheetIndex
    */
-  public static insert(arg: SheetIndexArg): Id64String {
-    const instance = this.create(arg);
-    const elements = arg.iModelDb.elements;
+  public static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String {
+    const instance = this.create(iModelDb, modelId, name);
+    const elements = iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
     return instance.id;
   }
@@ -132,8 +126,8 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
     const parent = this.createParentRelationshipProps(arg.iModelDb, arg.parentId);
     const props: SheetIndexEntryProps = {
       classFullName: this.classFullName,
-      model: arg.sheetIndexModel,
-      code: this.createCode(arg.iModelDb, arg.sheetIndexModel, arg.name),
+      model: arg.sheetIndexModelId,
+      code: this.createCode(arg.iModelDb, arg.sheetIndexModelId, arg.name),
       entryPriority: arg.priority,
       parent,
     };
