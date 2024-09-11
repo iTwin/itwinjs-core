@@ -1,4 +1,4 @@
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, EntityReferenceSet, IModelError, RelatedElementProps, SheetIndexEntryProps, SheetIndexFolderProps, SheetIndexReferenceProps, SheetReferenceProps } from "@itwin/core-common";
+import { BisCodeSpec, Code, CodeScopeProps, CodeScopeSpec, CodeSpec, ElementProps, EntityReferenceSet, IModelError, RelatedElementProps, SheetIndexEntryProps, SheetIndexFolderProps, SheetIndexReferenceProps, SheetReferenceProps } from "@itwin/core-common";
 import { InformationReferenceElement, Sheet } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
@@ -52,6 +52,14 @@ export class SheetIndex extends InformationReferenceElement {
    * @param codeValue The SheetIndex name
    */
   public static createCode(iModel: IModelDb, scopeSheetIndexModelId: CodeScopeProps, codeValue: string): Code {
+    try {
+      const indexSpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndex, CodeScopeSpec.Type.Model);
+      iModel.codeSpecs.insert(indexSpec);
+    } catch (error) {
+      if (!(error instanceof IModelError) || error.errorNumber !== IModelStatus.DuplicateName)
+        throw error;
+    }
+
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.sheetIndex);
     return new Code({ spec: codeSpec.id, scope: scopeSheetIndexModelId, value: codeValue });
   }
@@ -110,6 +118,14 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
    * @param codeValue The name of the entry
    */
   public static createCode(iModelDb: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    try {
+      const entrySpec = CodeSpec.create(iModelDb, BisCodeSpec.sheetIndexEntry, CodeScopeSpec.Type.ParentElement);
+      iModelDb.codeSpecs.insert(entrySpec);
+    } catch (error) {
+      if (!(error instanceof IModelError) || error.errorNumber !== IModelStatus.DuplicateName)
+        throw error;
+    }
+
     const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.sheetIndexEntry);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
