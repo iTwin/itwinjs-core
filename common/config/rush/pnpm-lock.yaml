@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.9.17
+      '@bentley/imodeljs-native': 4.9.19
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.2.4
       '@itwin/core-bentley': workspace:*
@@ -58,7 +58,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
-      '@bentley/imodeljs-native': 4.9.17
+      '@bentley/imodeljs-native': 4.9.19
       '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
@@ -190,7 +190,6 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': ^4.0.2
-      '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -216,7 +215,6 @@ importers:
       '@itwin/core-quantity': link:../quantity
       '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
-      '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -323,7 +321,6 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': ^4.0.2
-      '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -331,7 +328,6 @@ importers:
       '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
       '@xmldom/xmldom': ~0.8.5
-      almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
@@ -342,15 +338,12 @@ importers:
       rimraf: ^3.0.2
       sinon: ^17.0.1
       typescript: ~5.3.3
-    dependencies:
-      almost-equal: 1.1.0
     devDependencies:
       '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-quantity': link:../quantity
       '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
-      '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -3716,8 +3709,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.9.17:
-    resolution: {integrity: sha512-a3SI4Z4/FnfBsZkWe0Yvmo3Cpt3g9/DvCNQFect5sv67Obj5ObVKKW2qlnXbzQou6hOzE1Gv9qx/lrMi33drMA==}
+  /@bentley/imodeljs-native/4.9.19:
+    resolution: {integrity: sha512-XBBGXlssJUK7uUcgDlXMn9X5DTDIJQ2xAtfWDHWZs2CyswZy9+HQem8/q/WHjgs1V/70Sg7g3PqdmBF9796ZDg==}
     requiresBuild: true
     dev: false
 
@@ -4897,10 +4890,6 @@ packages:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
     dev: true
 
-  /@types/almost-equal/1.1.0:
-    resolution: {integrity: sha512-yNHeyIo9wrVvK2YIWPBZsh10w06jXX1vBD2JnGxel4fQ+v/skYXjpzSvZ2rxpEAsyyzmxy+VXgk0DLoFM0u7fg==}
-    dev: true
-
   /@types/argparse/1.0.38:
     resolution: {integrity: sha512-ebDJ9b0e702Yr7pWgB0jzm+CX4Srzz8RcXtLJDJB+BSccqMa36uyH/zUsSYao5+BD1ytv3k3rPYCq4mAE1hsXA==}
     dev: false
@@ -5808,10 +5797,6 @@ packages:
       fast-uri: 3.0.1
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
-    dev: false
-
-  /almost-equal/1.1.0:
-    resolution: {integrity: sha512-0V/PkoculFl5+0Lp47JoxUcO0xSxhIBvm+BxHdD/OgXNmdRpRHCFnKVuUoWyS9EzQP+otSGv0m9Lb4yVkQBn2A==}
     dev: false
 
   /ansi-align/3.0.1:
