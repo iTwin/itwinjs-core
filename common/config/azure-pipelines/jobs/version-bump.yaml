@@ -60,7 +60,7 @@ jobs:
   - job: CreateBranch
     displayName: Create branch for next release
     dependsOn: CheckPrevCommit
-    condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(variables['Build.SourceBranch'], 'refs/heads/mikeN/rc-dist-tag'))
     steps:
       - bash: |
           echo "Creating branch..."
@@ -256,7 +256,7 @@ jobs:
   - job: UpdateMaster
     displayName: Update master to next minor version
     dependsOn: Bump
-    condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/mikeN/rc-dist-tag'))
     steps:
       - bash: |
           echo "Update Master..."
