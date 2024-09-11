@@ -50,7 +50,7 @@ and [Ruleset Variables](../advanced/ECExpressions.md#ruleset-variables-user-sett
 
 ### Attribute: `type`
 
-Specifies return type of the calculated property.
+Specifies return type of the calculated property. If unsupported type is provided, calculated property won't appear in the property pane.
 
 |                   |                                              |
 | ----------------- | -------------------------------------------- |
@@ -62,7 +62,7 @@ Specifies return type of the calculated property.
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Type.Ruleset]]
 ```
 
-![Example of using "type" attribute](./media/calculatedpropertiesspecification-with-value-attribute.png)
+![Example of using "type" attribute](./media/calculatedpropertiesspecification-with-type-attribute.png)
 
 ### Attribute: `categoryId`
 
