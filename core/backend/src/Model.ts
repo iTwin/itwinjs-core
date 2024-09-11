@@ -437,8 +437,7 @@ export abstract class GroupInformationModel extends InformationModel {
   public static override get className(): string { return "GroupInformationModel"; }
 }
 
-/** A container for persisting SheetIndexEntry and SheetIndex elements.
- * @see [[SheetIndexPartition]]
+/** A sub-model of a [[SheetIndexPartition]] serving as a container for persisting [[SheetIndexEntry]] and [[SheetIndex]] elements.
  * @beta
  */
 export class SheetIndexModel extends InformationModel {

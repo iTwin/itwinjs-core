@@ -1339,9 +1339,8 @@ export class SpatialLocationPartition extends InformationPartitionElement {
   public static override get className(): string { return "SpatialLocationPartition"; }
 }
 
-/** A SheetIndexPartition element establishes a *Sheet Index* modeling perspective for its parent Subject
- * A SheetIndexPartition is always sub-modeled by a SheetIndexModel.
- * @see [[SheetIndexModel]]
+/** A SheetIndexPartition element establishes a [[SheetIndex]] modeling perspective for its parent [[Subject]].
+ * A SheetIndexPartition is always sub-modeled by a [[SheetIndexModel]].
  * @beta
  */
 export class SheetIndexPartition extends InformationPartitionElement {
