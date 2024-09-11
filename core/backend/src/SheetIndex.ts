@@ -4,6 +4,50 @@ import { IModelDb } from "./IModelDb";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "./NavigationRelationship";
 
+/** Argument for the creating `SheetIndex`
+ * @beta
+ */
+export interface SheetIndexArg {
+  /** Insert into this IModelDb */
+  iModelDb: IModelDb;
+  /** The Id of the Model that contains the SheetIndex and provides the scope for its name. */
+  modelId: Id64String;
+  /** The name (codeValue) of the SheetIndex */
+  name: string;
+}
+
+/** Argument for creating a `SheetIndexFolder`
+ * @beta
+ */
+export interface SheetIndexFolderArg {
+  /** iModelDb The iModel */
+  iModelDb: IModelDb;
+  /** The [[SheetIndexModel]] */
+  sheetIndexModel: Id64String;
+  /** The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this SheetIndexEntry */
+  parentId: Id64String;
+  /** The name of the SheetIndexEntry */
+  name: string;
+  /** The priority of the SheetIndexEntry */
+  priority: number;
+}
+
+/** Argument for creating a `SheetIndexReference`
+ * @beta
+ */
+export interface SheetIndexReferenceArg extends SheetIndexFolderArg {
+  /** The Sheet Index referenced by the SheetIndexReference */
+  sheetIndexId: Id64String;
+}
+
+/** Argument for creating a `SheetReference`
+ * @beta
+ */
+export interface SheetReferenceArg extends SheetIndexFolderArg {
+  /** The Sheet referenced by the SheetReference */
+  sheetId: Id64String;
+}
+
 /**
  * A bis:InformationReferenceElement used to organize bis:Sheet instances into a hierarchy with the assistance
  * of [[bis:SheetIndexFolder]] and other [[bis:SheetIndex]] instances.
@@ -25,31 +69,25 @@ export class SheetIndex extends InformationReferenceElement {
   }
 
   /** Create a SheetIndex
-   * @param iModelDb The IModelDb
-   * @param modelId The Id of the Model that contains the SheetIndex and provides the scope for its name.
-   * @param name The name (codeValue) of the SheetIndex
    * @returns The newly constructed SheetIndex
    * @throws [[IModelError]] if there is a problem creating the SheetIndex
    */
-  public static create(iModelDb: IModelDb, modelId: Id64String, name: string): SheetIndex {
+  public static create(arg: SheetIndexArg): SheetIndex {
     const props: ElementProps = {
       classFullName: this.classFullName,
-      code: this.createCode(iModelDb, modelId, name).toJSON(),
-      model: modelId,
+      code: this.createCode(arg.iModelDb, arg.modelId, arg.name).toJSON(),
+      model: arg.modelId,
     };
-    return new this(props, iModelDb);
+    return new this(props, arg.iModelDb);
   }
 
   /** Insert a SheetIndex
-   * @param iModelDb Insert into this IModelDb
-   * @param modelId The Id of the Model that contains the SheetIndex and provides the scope for its name.
-   * @param name The name (codeValue) of the SheetIndex
    * @returns The Id of the newly inserted SheetIndex
    * @throws [[IModelError]] if there is a problem inserting the SheetIndex
    */
-  public static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String {
-    const instance = this.create(iModelDb, modelId, name);
-    const elements = iModelDb.elements;
+  public static insert(arg: SheetIndexArg): Id64String {
+    const instance = this.create(arg);
+    const elements = arg.iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
     return instance.id;
   }
@@ -89,19 +127,14 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
     return { id, relClassName: relClass.classFullName };
   }
 
-  protected static createProps(
-    iModelDb: IModelDb,
-    sheetIndexModel: Id64String,
-    parentId: Id64String,
-    name: string,
-    priority: number,
-  ) {
-    const parent = this.createParentRelationshipProps(iModelDb, parentId);
+  protected static createProps(arg: SheetIndexFolderArg) {
+    // SheetIndexFolderArg is used as a base type here since it shares properties with all other SheetIndexEntries
+    const parent = this.createParentRelationshipProps(arg.iModelDb, arg.parentId);
     const props: SheetIndexEntryProps = {
       classFullName: this.classFullName,
-      model: sheetIndexModel,
-      code: this.createCode(iModelDb, sheetIndexModel, name),
-      entryPriority: priority,
+      model: arg.sheetIndexModel,
+      code: this.createCode(arg.iModelDb, arg.sheetIndexModel, arg.name),
+      entryPriority: arg.priority,
       parent,
     };
     return props;
@@ -115,43 +148,21 @@ export class SheetIndexFolder extends SheetIndexEntry {
   public static override get className(): string { return "SheetIndexFolder"; }
 
   /** Create a new SheetIndexFolder
-   * @param iModelDb The iModel
-   * @param sheetIndexModel The [[SheetIndexModel]]
-   * @param parentId The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this Entry
-   * @param name The name of the SheetIndexFolder
-   * @param priority The priority of the SheetIndexFolder
    * @returns The newly constructed SheetIndexFolder element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(
-    iModelDb: IModelDb,
-    sheetIndexModel: Id64String,
-    parentId: Id64String,
-    name: string,
-    priority: number,
-  ) {
-    const props: SheetIndexFolderProps = this.createProps(iModelDb, sheetIndexModel, parentId, name, priority);
-    return new this(props, iModelDb);
+  public static create(arg: SheetIndexFolderArg) {
+    const props: SheetIndexFolderProps = this.createProps(arg);
+    return new this(props, arg.iModelDb);
   }
 
   /** Create a new SheetIndexFolder
-   * @param iModelDb The iModel
-   * @param sheetIndexModel The [[SheetIndexModel]]
-   * @param parentId The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this Entry
-   * @param name The name of the SheetIndexFolder
-   * @param priority The priority of the SheetIndexFolder
    * @returns The Id of the newly inserted SheetIndexFolder element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    sheetIndexModel: Id64String,
-    parentId: Id64String,
-    name: string,
-    priority: number,
-  ): Id64String {
-    const instance = this.create(iModelDb, sheetIndexModel, parentId, name, priority);
-    const elements = iModelDb.elements;
+  public static insert(arg: SheetIndexFolderArg): Id64String {
+    const instance = this.create(arg);
+    const elements = arg.iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
     return instance.id;
   }
@@ -162,8 +173,10 @@ export class SheetIndexFolder extends SheetIndexEntry {
 */
 export class SheetIndexReference extends SheetIndexEntry {
   public static override get className(): string { return "SheetIndexReference"; }
+
   /** The bis:SheetIndex that this bis:SheetIndexReference is pointing to. */
   public sheetIndex?: SheetIndexReferenceRefersToSheetIndex;
+
   protected constructor(props: SheetIndexReferenceProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.sheetIndex) {
@@ -187,50 +200,24 @@ export class SheetIndexReference extends SheetIndexEntry {
   }
 
   /** Create a new SheetIndexReference
-   * @param iModelDb The iModel
-   * @param sheetIndexModel The [[SheetIndexModel]]
-   * @param parentId The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this Entry
-   * @param name The name of the SheetIndexReference
-   * @param priority The priority of the SheetIndexReference
-   * @param sheetIndexId The Sheet Index referenced by the SheetIndexReference
    * @returns The newly constructed SheetIndexReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(
-    iModelDb: IModelDb,
-    sheetIndexModel: Id64String,
-    parentId: Id64String,
-    name: string,
-    priority: number,
-    sheetIndexId?: Id64String,
-  ) {
+  public static create(arg: SheetIndexReferenceArg) {
     const props: SheetIndexReferenceProps = {
-      ...this.createProps(iModelDb, sheetIndexModel, parentId, name, priority),
-      sheetIndex: sheetIndexId ? this.createReferenceRelationshipProps(sheetIndexId) : undefined,
+      ...this.createProps(arg),
+      sheetIndex: arg.sheetIndexId ? this.createReferenceRelationshipProps(arg.sheetIndexId) : undefined,
     };
-    return new this(props, iModelDb);
+    return new this(props, arg.iModelDb);
   }
 
   /** Create a new SheetIndexReference
-   * @param iModelDb The iModel
-   * @param sheetIndexModel The [[SheetIndexModel]]
-   * @param parentId The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this Entry
-   * @param name The name of the SheetIndexReference
-   * @param priority The priority of the SheetIndexReference
-   * @param sheetIndexId The Sheet Index referenced by the SheetIndexReference
    * @returns The Id of the newly inserted SheetIndexReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    sheetIndexModel: Id64String,
-    parentId: Id64String,
-    name: string,
-    priority: number,
-    sheetIndexId?: Id64String,
-  ): Id64String {
-    const instance = this.create(iModelDb, sheetIndexModel, parentId, name, priority, sheetIndexId);
-    const elements = iModelDb.elements;
+  public static insert(arg: SheetIndexReferenceArg): Id64String {
+    const instance = this.create(arg);
+    const elements = arg.iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
     return instance.id;
   }
@@ -247,8 +234,10 @@ export class SheetIndexReference extends SheetIndexEntry {
 */
 export class SheetReference extends SheetIndexEntry {
   public static override get className(): string { return "SheetReference"; }
+
   /** The bis:Sheet that this bis:SheetReference is pointing to. */
   public sheet: SheetReferenceRefersToSheet | undefined;
+
   protected constructor(props: SheetReferenceProps, iModel: IModelDb) {
     super(props, iModel);
     if (props.sheet) {
@@ -272,50 +261,24 @@ export class SheetReference extends SheetIndexEntry {
   }
 
   /** Create a new SheetReference
-   * @param iModelDb The iModel
-   * @param sheetIndexModel The [[SheetIndexModel]]
-   * @param parentId The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this Entry
-   * @param name The name of the SheetReference
-   * @param priority The priority of the SheetReference
-   * @param sheetId The Sheet referenced by the SheetReference
    * @returns The newly constructed SheetReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(
-    iModelDb: IModelDb,
-    sheetIndexModel: Id64String,
-    parentId: Id64String,
-    name: string,
-    priority: number,
-    sheetId?: Id64String,
-  ) {
+  public static create(arg: SheetReferenceArg) {
     const props: SheetReferenceProps = {
-      ...this.createProps(iModelDb, sheetIndexModel, parentId, name, priority),
-      sheet: sheetId ? this.createReferenceRelationshipProps(sheetId) : undefined,
+      ...this.createProps(arg),
+      sheet: arg.sheetId ? this.createReferenceRelationshipProps(arg.sheetId) : undefined,
     };
-    return new this(props, iModelDb);
+    return new this(props, arg.iModelDb);
   }
 
   /** Insert a new SheetReference
-   * @param iModelDb The iModel
-   * @param sheetIndexModel The [[SheetIndexModel]]
-   * @param parentId The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this Entry
-   * @param name The name of the SheetReference
-   * @param priority The priority of the SheetReference
-   * @param sheetId The Sheet referenced by the SheetReference
    * @returns The Id of the newly inserted SheetReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(
-    iModelDb: IModelDb,
-    sheetIndexModel: Id64String,
-    parentId: Id64String,
-    name: string,
-    priority: number,
-    sheetId?: Id64String,
-  ): Id64String {
-    const instance = this.create(iModelDb, sheetIndexModel, parentId, name, priority, sheetId);
-    const elements = iModelDb.elements;
+  public static insert(arg: SheetReferenceArg): Id64String {
+    const instance = this.create(arg);
+    const elements = arg.iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
     return instance.id;
   }
