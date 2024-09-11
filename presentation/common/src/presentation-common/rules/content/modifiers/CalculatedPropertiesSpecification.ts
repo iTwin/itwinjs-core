@@ -49,4 +49,11 @@ export interface CalculatedPropertiesSpecification {
    * @type integer
    */
   priority?: number;
+
+  /**
+   * Specifies return type of the calculated property
+   *
+   * Type can have these values: `string`, `boolean`, `bool`, `dateTime`, `double`, `int`, `long`
+   */
+  type?: `string` | `boolean` | `bool` | `dateTime` | `double` | `int` | `long`;
 }

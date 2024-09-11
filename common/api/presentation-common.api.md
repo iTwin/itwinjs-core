@@ -131,6 +131,7 @@ export interface CalculatedPropertiesSpecification {
     label: string;
     priority?: number;
     renderer?: CustomRendererSpecification;
+    type?: `string` | `boolean` | `bool` | `dateTime` | `double` | `int` | `long`;
     value?: string;
 }
 

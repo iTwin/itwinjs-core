@@ -10,6 +10,7 @@ This content modifier allows including additional calculated properties into the
 | ------------------------------------- | --------- | ----------------------------------------------------------------- | ----------- |
 | [`label`](#attribute-label)           | Yes       | `string`                                                          |             |
 | [`value`](#attribute-value)           | No        | [ECExpression](../advanced/ECExpressions.md)                      |             |
+| [`type`](#attribute-type)             | No        | `string`                                                          | `string`    |
 | [`categoryId`](#attribute-categoryid) | No        | `string \| CategoryIdentifier`                                    | No override |
 | [`renderer`](#attribute-renderer)     | No        | [`RendererSpecification`](./RendererSpecification.md)             | No override |
 | [`editor`](#attribute-editor)         | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | No override |
@@ -46,6 +47,22 @@ and [Ruleset Variables](../advanced/ECExpressions.md#ruleset-variables-user-sett
 ```
 
 ![Example of using "value" attribute](./media/calculatedpropertiesspecification-with-value-attribute.png)
+
+### Attribute: `type`
+
+Specifies return type of the calculated property.
+
+|                   |                                              |
+| ----------------- | -------------------------------------------- |
+| **Type**          | `"string" \| "int" \| "long" \| "dateTime" \| "boolean" \| "bool" \| "double"` |
+| **Is Required**   | No                                           |
+| **Default Value** | `string`                                  |
+
+```ts
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Type.Ruleset]]
+```
+
+![Example of using "type" attribute](./media/calculatedpropertiesspecification-with-value-attribute.png)
 
 ### Attribute: `categoryId`
 
