@@ -9,7 +9,7 @@
 import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSubCategoryProps, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -65,14 +65,14 @@ export abstract class DisplayStyle extends DefinitionElement {
 
     const settings = targetElementProps.jsonProperties.styles;
     if (settings.subCategoryOvr) {
-      for (let i = 0; i < settings.subCategoryOvr.length; /* */) {
-        const ovr = settings.subCategoryOvr[i];
-        ovr.subCategory = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
-        if (Id64.invalid === ovr.subCategory)
-          settings.subCategoryOvr.splice(i, 1);
-        else
-          i++;
+      const targetOverrides: DisplayStyleSubCategoryProps[] = [];
+      for (const ovr of settings.subCategoryOvr) {
+        ovr.subCategory;
+        const targetSubCategoryId = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
+        if (Id64.isValid(targetSubCategoryId))
+          targetOverrides.push({...ovr, subCategory: targetSubCategoryId});
       }
+      settings.subCategoryOvr = targetOverrides;
     }
 
     if (settings.excludedElements) {
