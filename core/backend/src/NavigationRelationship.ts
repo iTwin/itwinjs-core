@@ -104,7 +104,7 @@ export class FolderContainsRepositories extends ElementOwnsChildElements {
   }
 }
 
-/** Relates a [[SheetIndexFolder]] and [[Entries]] that it owns.
+/** Relates a [[SheetIndexFolder]] and [[SheetIndexEntry]]'s that it owns.
  * @beta
  */
 export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
@@ -114,7 +114,7 @@ export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
   }
 }
 
-/** Relates a [[SheetIndex]] and [[Entries]] that it owns.
+/** Relates a [[SheetIndex]] and [SheetIndexEntry]]'s that it owns.
  * @beta
  */
 export class SheetIndexOwnsEntries extends ElementOwnsChildElements {
