@@ -27,7 +27,7 @@ export abstract class RenderTargetDebugControlTool extends Tool {
 }
 
 type DebugControlBoolean =
-  "displayDrapeFrustum" | "drawForReadPixels" | "displayRealityTileRanges" | "displayRealityTileRanges" |
+  "displayDrapeFrustum" | "displayMaskFrustum" | "drawForReadPixels" | "displayRealityTileRanges" | "displayRealityTileRanges" |
   "displayRealityTilePreload" | "freezeRealityTiles" | "logRealityTiles" | "vcSupportIntersectingVolumes" | "displayNormalMaps";
 
 /** Toggles some aspect of a RenderTargetDebugControl for the selected viewport.
@@ -72,6 +72,14 @@ export class ToggleReadPixelsTool extends RenderTargetDebugControlToggleTool {
 export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
   public static override toolId = "ToggleDrapeFrustum";
   public get aspect(): DebugControlBoolean { return "displayDrapeFrustum"; }
+}
+
+/** Turn on the display of the planar mask frustum.
+ * @beta
+ */
+export class ToggleMaskFrustumTool extends RenderTargetDebugControlToggleTool {
+  public static override toolId = "ToggleMaskFrustum";
+  public get aspect(): DebugControlBoolean { return "displayMaskFrustum"; }
 }
 
 /** Control whether all geometry renders, or only instanced or batched geometry.

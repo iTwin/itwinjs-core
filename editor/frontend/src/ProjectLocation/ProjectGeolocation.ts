@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { AccuDrawHintBuilder, AccuDrawShortcuts, AngleDescription, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, LengthDescription, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, LengthDescription, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
 import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
@@ -272,7 +272,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     if (undefined === deco)
       return;
 
-    const origin = Cartographic.fromRadians({longitude: this.longitude, latitude: this.latitude, height: this.altitude});
+    const origin = Cartographic.fromRadians({ longitude: this.longitude, latitude: this.latitude, height: this.altitude });
     if (!deco.updateEcefLocation(origin, this._origin, Angle.createRadians(this.north)))
       return;
 
@@ -401,7 +401,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
       return;
 
     const hints = new AccuDrawHintBuilder();
-    hints.setRotation(Matrix3d.createIdentity());
+    hints.setMatrix(Matrix3d.createIdentity());
     hints.setOrigin(this._origin);
     hints.setModePolar();
     hints.setOriginFixed = true;
@@ -452,12 +452,6 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
 
     deco.suspendGeolocationDecorations = true;
     deco.drawNorthArrow(context, this._northDir);
-  }
-
-  public override async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && await AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -557,7 +551,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
       return;
 
     const hints = new AccuDrawHintBuilder();
-    hints.setRotation(Matrix3d.createIdentity());
+    hints.setMatrix(Matrix3d.createIdentity());
     hints.setOrigin(this._origin);
     hints.setModePolar();
     hints.setOriginFixed = true;
@@ -611,12 +605,6 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderAccHid);
 
     deco.suspendGeolocationDecorations = true;
-  }
-
-  public override async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && await AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {

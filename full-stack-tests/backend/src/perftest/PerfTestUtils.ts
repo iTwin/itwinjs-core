@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
 import { Id64String } from "@itwin/core-bentley";
 import {
@@ -42,7 +42,7 @@ export class PerfTestDataMgr {
       if (undefined === this.catId) {
         this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
       }
-      this.db.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      this.db[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       this.db.saveChanges();
     }
   }

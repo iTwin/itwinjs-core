@@ -6,11 +6,11 @@
  * @module Merging
  */
 
-import { MutableSchema } from "../Editing/Mutable/MutableSchema";
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
-import { getSchemaDifferences, SchemaDifference, SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { type AnySchemaDifference, getSchemaDifferences, type SchemaDifference, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { type SchemaEdits } from "./Edits/SchemaEdits";
 import { mergeCustomAttribute } from "./CustomAttributeMerger";
 import { mergeSchemaItems } from "./SchemaItemMerger";
 import { mergeSchemaReferences } from "./SchemaReferenceMerger";
@@ -29,7 +29,7 @@ export interface SchemaMergeContext {
 
 /**
  * Class to merge two schemas together.
- * @see [[merge]] to merge the schemas.
+ * @see [[merge]] or [[mergeSchemas]] to merge two schemas together.
  * @beta
  */
 export class SchemaMerger {
@@ -48,30 +48,29 @@ export class SchemaMerger {
    * Copy the SchemaItems of the source schemas to the target schema.
    * @param targetSchema  The schema the SchemaItems gets merged to.
    * @param sourceSchema  The schema the SchemaItems gets copied from.
+   * @param edits         An optional instance of schema edits that shall be applied before the schemas get merged.
    * @returns             The merged target schema.
+   * @alpha
    */
-  public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<Schema> {
-    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema));
+  public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema> {
+    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema), edits);
   }
 
   /**
    * Merges the schema differences into the target schema context.
-   * @param differenceResult The differences that shall be applied to the target schema.
+   * @param differenceResult  The differences that shall be applied to the target schema.
+   * @param edits             An optional instance of schema edits that shall be applied before the schemas get merged.
    * @alpha
    */
-  public async merge(differenceResult: SchemaDifferenceResult): Promise<Schema> {
-    return this.mergeDifferences(differenceResult);
-  }
-
-  /**
-   * Merges the schema differences in the target schema. The target schema is defined
-   * in the given differences object.
-   * @param differenceResult   The differences between a source schema and the target schema.
-   * @returns                  The modified Schema.
-   */
-  private async mergeDifferences(differenceResult: SchemaDifferenceResult): Promise<Schema> {
+  public async merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<Schema> {
     const targetSchemaKey = SchemaKey.parseString(differenceResult.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differenceResult.sourceSchemaName);
+
+    // If schema changes were provided, they'll get applied and a new SchemaDifferenceResult is returned
+    // to prevent altering the differenceResult the caller passed in.
+    if (edits) {
+      await edits.applyTo(differenceResult = { ...differenceResult });
+    }
 
     if (differenceResult.conflicts && differenceResult.conflicts.length > 0) {
       throw new SchemaConflictsError(
@@ -87,11 +86,6 @@ export class SchemaMerger {
       throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
     }
 
-    const { differences } = differenceResult;
-    if (differences === undefined || differences.length === 0) {
-      return schema;
-    }
-
     const context: SchemaMergeContext = {
       editor: this._editor,
       targetSchema: schema,
@@ -99,27 +93,36 @@ export class SchemaMerger {
       sourceSchemaKey,
     };
 
-    for (const referenceChange of differences.filter(Utils.isSchemaReferenceDifference)) {
-      await mergeSchemaReferences(context, referenceChange);
-    }
-
-    const schemaDifference = differences.find(Utils.isSchemaDifference);
-    if (schemaDifference !== undefined) {
-      await mergeSchemaProperties(schema, schemaDifference);
-    }
-
-    // Filter a list of possible schema item changes. This list gets filtered and order in the
-    // mergeSchemaItems method.
-    for await (const _mergeResult of mergeSchemaItems(context, differences)) {
-    }
-
-    // At last the custom attributes gets merged because it could be that the CustomAttributes
-    // depend on classes that has to get merged in as items before.
-    for (const customAttributeChange of differences.filter(Utils.isCustomAttributeDifference)) {
-      await mergeCustomAttribute(context, customAttributeChange);
-    }
+    await mergeSchemaDifferences(context, differenceResult.differences);
 
     return schema;
+  }
+}
+
+/**
+ * Merges the schema differences in the target schema.
+ * @param context       The current merging context.
+ * @param differences   The differences between a source schema and the target schema.
+ * @internal
+ */
+async function mergeSchemaDifferences(context: SchemaMergeContext, differences: AnySchemaDifference[]): Promise<void> {
+  for (const referenceDifference of differences.filter(Utils.isSchemaReferenceDifference)) {
+    await mergeSchemaReferences(context, referenceDifference);
+  }
+
+  for (const schemaDifference of differences.filter(Utils.isSchemaDifference)) {
+    await mergeSchemaProperties(context, schemaDifference);
+  }
+
+  // Filter a list of possible schema item changes. This list gets filtered and order in the
+  // mergeSchemaItems method.
+  for await (const _mergeResult of mergeSchemaItems(context, differences)) {
+  }
+
+  // At last the custom attributes gets merged because it could be that the CustomAttributes
+  // depend on classes that has to get merged in as items before.
+  for (const customAttributeDifference of differences.filter(Utils.isCustomAttributeDifference)) {
+    await mergeCustomAttribute(context, customAttributeDifference);
   }
 }
 
@@ -127,11 +130,11 @@ export class SchemaMerger {
  * Sets the editable properties of a Schema.
  * @internal
  */
-async function mergeSchemaProperties(schema: MutableSchema, { difference }: SchemaDifference) {
+async function mergeSchemaProperties(context: SchemaMergeContext, { difference }: SchemaDifference) {
   if (difference.label !== undefined) {
-    schema.setDisplayLabel(difference.label);
+    await context.editor.setDisplayLabel(context.targetSchemaKey, difference.label);
   }
   if (difference.description !== undefined) {
-    schema.setDescription(difference.description);
+    await context.editor.setDescription(context.targetSchemaKey, difference.description);
   }
 }

@@ -8,7 +8,7 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
@@ -122,7 +122,7 @@ describe("Checkpoints", () => {
       iModelId: testIModelId,
       changeset: testChangeSet,
     });
-    expect(iModel.nativeDb.cloudContainer?.cache?.rootDir).contains("profile");
+    expect(iModel[_nativeDb].cloudContainer?.cache?.rootDir).contains("profile");
     iModel.close();
   });
 
@@ -182,7 +182,7 @@ describe("Checkpoints", () => {
 
     // make sure the sasToken for the checkpoint container is refreshed before it expires
     // (see explanation in CloudSqlite.test.ts "Auto refresh container tokens" for how this works)
-    const c1 = iModel.nativeDb.cloudContainer as CloudSqlite.CloudContainer & { refreshPromise?: Promise<void> };
+    const c1 = iModel[_nativeDb].cloudContainer as CloudSqlite.CloudContainer & { refreshPromise?: Promise<void> };
     const oldToken = c1.accessToken; // save current token
 
     expect(queryV2Checkpoint.callCount).equal(1);
@@ -353,7 +353,7 @@ describe("Checkpoints", () => {
       numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
-      const checkpointContainer = iModel.nativeDb.cloudContainer;
+      const checkpointContainer = iModel[_nativeDb].cloudContainer;
       iModel.close();
 
       iModel = await SnapshotDb.openCheckpointFromRpc({
@@ -399,8 +399,8 @@ describe("Checkpoints", () => {
       assert.equal(numModels, 4);
 
       // all checkpoints for the same iModel should share a cloud container
-      expect(checkpointContainer).equal(iModel.nativeDb.cloudContainer);
-      expect(checkpointContainer).equal(iModel2.nativeDb.cloudContainer);
+      expect(checkpointContainer).equal(iModel[_nativeDb].cloudContainer);
+      expect(checkpointContainer).equal(iModel2[_nativeDb].cloudContainer);
 
       iModel.close();
       iModel2.close();

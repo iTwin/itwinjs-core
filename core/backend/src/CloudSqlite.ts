@@ -10,7 +10,7 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
 } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
@@ -376,7 +376,7 @@ export namespace CloudSqlite {
      * If the return value is 1, the job will be cancelled and progress will be saved. If one or more blocks have already been deleted, then a new manifest file is uploaded saving the progress of the delete job.
      * Return any other non-0 value to cancel the job without saving progress.
      */
-    onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
+    onProgress?: (nDeleted: number, nTotalToDelete: number) => Promise<number>;
   }
 
   /**
@@ -601,7 +601,7 @@ export namespace CloudSqlite {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
           const progress = cleanJob.getProgress();
           total = progress.total;
-          const result = onProgress(progress.loaded, progress.total);
+          const result = await onProgress(progress.loaded, progress.total);
           if (result === 1)
             cleanJob.stopAndSaveProgress();
           else if (result !== 0)
@@ -609,7 +609,7 @@ export namespace CloudSqlite {
         }, 250);
       }
       await cleanJob.promise;
-      onProgress?.(total, total); // make sure we call progress func one last time when download completes
+      await onProgress?.(total, total); // make sure we call progress func one last time when download completes
       container.checkForChanges(); // re-read the manifest so the number of garbage blocks is updated.
     } catch (err: any) {
       if (err.message === "cancelled")
@@ -771,6 +771,9 @@ export namespace CloudSqlite {
       const rootDir = args.cacheDir ?? join(IModelHost.profileDir, "CloudCaches", cacheName);
       IModelJsFs.recursiveMkDirSync(rootDir);
       const cache = new NativeLibrary.nativeLib.CloudCache({ rootDir, name: cacheName, cacheSize: args.cacheSize ?? "10G" });
+      if (Logger.getLevel("CloudSqlite") === LogLevel.Trace) {
+        cache.setLogMask(CloudSqlite.LoggingMask.All);
+      }
       this.cloudCaches.set(cacheName, cache);
       return cache;
     }

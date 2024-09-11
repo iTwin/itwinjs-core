@@ -1179,6 +1179,13 @@ export namespace JsonUtils {
 export type Listener = (...arg: any[]) => void;
 
 // @public
+export type ListenerType<TEvent extends {
+    addListener(listener: Listener): () => void;
+}> = TEvent extends {
+    addListener(listener: infer TListener): () => void;
+} ? TListener : never;
+
+// @public
 export type LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void;
 
 // @public
@@ -1516,6 +1523,9 @@ export enum RealityDataStatus {
     Success = 0
 }
 
+// @public
+export type RemapTransientLocalId = (sourceLocalId: number) => number;
+
 // @internal
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1628,10 +1638,23 @@ export class Tracing {
 
 // @public
 export class TransientIdSequence {
+    constructor(initialLocalId?: number);
+    get currentLocalId(): number;
+    fork(): TransientIdSequenceProps;
+    static fromJSON(props: TransientIdSequenceProps): TransientIdSequence;
     getNext(): Id64String;
+    readonly initialLocalId: number;
+    merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number;
     // @deprecated
     get next(): Id64String;
     peekNext(): Id64String;
+    toJSON(): TransientIdSequenceProps;
+}
+
+// @public
+export interface TransientIdSequenceProps {
+    currentLocalId: number;
+    initialLocalId: number;
 }
 
 // @public

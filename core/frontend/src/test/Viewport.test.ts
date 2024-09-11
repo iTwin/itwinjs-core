@@ -17,9 +17,9 @@ import { IModelApp } from "../IModelApp";
 import { openBlankViewport, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
-import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 import * as sinon from "sinon";
+import { GraphicType } from "../common/render/GraphicType";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

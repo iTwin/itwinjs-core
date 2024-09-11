@@ -9,7 +9,7 @@
 
 import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
-import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
+import { _callIpcChannel, IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
 import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
@@ -86,7 +86,7 @@ export class ElectronApp {
    * @deprecated in 3.x. use [[dialogIpc]]
    */
   public static async callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
-    return IpcApp.callIpcChannel(electronIpcStrings.dialogChannel, "callDialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
+    return IpcApp[_callIpcChannel](electronIpcStrings.dialogChannel, "callDialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
   }
 
   /** Proxy object for calling methods of `Electron.Dialog` */

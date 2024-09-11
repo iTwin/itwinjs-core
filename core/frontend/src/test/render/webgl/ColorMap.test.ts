@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ColorDef, ColorIndex } from "@itwin/core-common";
-import { ColorMap } from "../../../render/primitives/ColorMap";
+import { ColorMap } from "../../../common/internal/render/ColorMap";
 
 describe("ColorMap", () => {
   it("create a new ColorMap", () => {

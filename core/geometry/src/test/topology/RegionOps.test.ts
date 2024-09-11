@@ -804,7 +804,7 @@ describe("CloneSplitCurves", () => {
     const line010 = LineSegment3d.createCapture(Point3d.create(0, 0, 0), Point3d.create(10, 0, 0));
     const arc010 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(0, 0), Point3d.create(5, -y1), Point3d.create(10, 0),
-    )!;
+    );
     // const line1 = LineSegment3d.createCapture(Point3d.create(1, -1, 0), Point3d.create(1, 1, 0));
     // const lineString234 = LineString3d.create([2, -1], [3, 1], [4, -1]);
     const arc5 = Arc3d.createXY(Point3d.create(5, 0, 0), 1);
@@ -825,7 +825,7 @@ describe("CloneSplitCurves", () => {
       Path.create(
         line010.clone(),
         linestring10,
-        Arc3d.createCircularStartMiddleEnd(linestring10.endPoint(), Point3d.create(5, y1), Point3d.create(0, 2 * y1))!,
+        Arc3d.createCircularStartMiddleEnd(linestring10.endPoint(), Point3d.create(5, y1), Point3d.create(0, 2 * y1)),
       ),
     ];
     for (const source of pathsToCut) {
@@ -1070,7 +1070,7 @@ describe("CloneSplitCurves", () => {
     const segmentA = LineSegment3d.createXYXY(0, 0, 10, 0);
     const arcA = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(10, 0), Point3d.create(12, 5, 0), Point3d.create(10, 10, 0),
-    )!;
+    );
     const stringA = LineString3d.create([10, 10], [0, 10], [0, 0]);
     const loop = Loop.create(segmentA, arcA, stringA);
 

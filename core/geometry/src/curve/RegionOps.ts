@@ -659,7 +659,8 @@ export class RegionOps {
     return SortablePolygon.sortAsAnyRegion(loopAndArea);
   }
   /**
-   * Find all areas bounded by the unstructured, possibly intersecting curves.
+   * Find all xy-areas bounded by the unstructured, possibly intersecting curves.
+   * * For best results, input curves should be parallel to the xy-plane, as z-coordinates are ignored.
    * * A common use case of this method is to assemble the bounding "exterior" loop (or loops) containing the
    * input curves.
    * * This method does not add bridge edges to connect outer loops to inner loops. Each disconnected loop,
@@ -903,9 +904,9 @@ function pushToInOnOutArrays(
  * @public
  */
 export class ConsolidateAdjacentCurvePrimitivesOptions {
-  /** True to consolidated linear geometry   (e.g. separate LineSegment3d and LineString3d) into LineString3d */
+  /** True to consolidate adjacent linear geometry into a single LineString3d */
   public consolidateLinearGeometry: boolean = true;
-  /** True to consolidate contiguous arcs */
+  /** True to consolidate contiguous compatible arcs into a single Arc3d */
   public consolidateCompatibleArcs: boolean = true;
   /** Tolerance for collapsing identical points */
   public duplicatePointTolerance = Geometry.smallMetricDistance;

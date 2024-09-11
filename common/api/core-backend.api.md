@@ -175,6 +175,7 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
+import { QueryRowFormat } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
@@ -190,6 +191,7 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
+import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -444,6 +446,7 @@ export namespace BlobContainer {
         ownerGuid?: GuidString;
     }
     export interface TokenProps {
+        baseUri: string;
         expiration: Date;
         metadata: Metadata;
         provider: Provider;
@@ -888,7 +891,7 @@ export namespace CloudSqlite {
         debugLogging?: boolean;
         findOrphanedBlocks?: boolean;
         nSeconds?: number;
-        onProgress?: (nDeleted: number, nTotalToDelete: number) => number;
+        onProgress?: (nDeleted: number, nTotalToDelete: number) => Promise<number>;
     }
     export interface CloudCache {
         // @internal
@@ -1321,6 +1324,16 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
+
+// @beta
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+    graphemeCharIndexes: number[];
+    paragraphIndex: number;
+    runLayoutResult: RunLayoutResult;
+}
+
+// @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @public
@@ -1445,6 +1458,16 @@ export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, 
 
 // @beta
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
+
+// @beta
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+
+// @beta
+export interface DeleteElementTreeArgs {
+    iModel: IModelDb;
+    maxPasses?: number;
+    topElement: Id64String;
+}
 
 // @public
 export class DetailCallout extends Callout {
@@ -1696,6 +1719,8 @@ export abstract class DriverBundleElement extends InformationContentElement {
 
 // @public
 export class ECDb implements IDisposable {
+    // @internal (undocumented)
+    get [_nativeDb](): IModelJsNative.ECDb;
     constructor();
     abandonChanges(): void;
     // @internal
@@ -1709,7 +1734,7 @@ export class ECDb implements IDisposable {
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
@@ -1813,6 +1838,11 @@ export class ECSqlInsertResult {
 }
 
 // @public
+export interface ECSqlRowArg {
+    rowFormat?: QueryRowFormat;
+}
+
+// @public
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     bindArray(parameter: number | string, val: any[]): void;
@@ -1836,11 +1866,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
+    // @internal (undocumented)
+    formatCurrentRow(currentResp: any, rowFormat?: QueryRowFormat): any[] | object;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
     // @internal
     getNativeSql(): string;
-    getRow(): any;
+    getRow(args?: ECSqlRowArg): any;
     getValue(columnIx: number): ECSqlValue;
     get isPrepared(): boolean;
     next(): IteratorResult<any>;
@@ -3000,6 +3032,8 @@ export type IModelCloneContext = IModelElementCloneContext;
 
 // @public
 export abstract class IModelDb extends IModel {
+    // @internal (undocumented)
+    readonly [_nativeDb]: IModelJsNative.DgnDb;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
@@ -3084,7 +3118,6 @@ export abstract class IModelDb extends IModel {
     isStandaloneDb(): this is StandaloneDb;
     // @internal (undocumented)
     protected loadWorkspaceSettings(): Promise<void>;
-    // @beta
     get locks(): LockControl;
     // @internal (undocumented)
     protected _locks?: LockControl;
@@ -3092,8 +3125,8 @@ export abstract class IModelDb extends IModel {
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
-    // @internal (undocumented)
-    readonly nativeDb: IModelJsNative.DgnDb;
+    // @internal @deprecated (undocumented)
+    get nativeDb(): IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -3110,6 +3143,8 @@ export abstract class IModelDb extends IModel {
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
     // @deprecated
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    // @internal
+    queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
@@ -3134,7 +3169,7 @@ export abstract class IModelDb extends IModel {
     restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
@@ -3964,6 +3999,28 @@ export class LockConflict extends IModelError {
     readonly briefcaseId: BriefcaseId;
 }
 
+// @public
+export interface LockControl {
+    // @internal
+    [_close]: () => void;
+    // @internal
+    [_elementWasCreated]: (id: Id64String) => void;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    [_releaseAllLocks]: () => Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
+    checkExclusiveLock(id: Id64String, type: string, operation: string): void;
+    checkSharedLock(id: Id64String, type: string, operation: string): void;
+    holdsExclusiveLock(id: Id64String): boolean;
+    holdsSharedLock(id: Id64String): boolean;
+    readonly isServerBased: boolean;
+    releaseAllLocks(): Promise<void>;
+}
+
 // @internal (undocumented)
 export type LockMap = Map<Id64String, LockState_2>;
 
@@ -4117,6 +4174,9 @@ export class NativeAppStorage {
 }
 
 export { NativeCloudSqlite }
+
+// @internal (undocumented)
+export const _nativeDb: unique symbol;
 
 // @public
 export class NativeHost {
@@ -4689,6 +4749,10 @@ export namespace SchemaSync {
         openMode?: OpenMode;
         user?: string;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    withReadonlyAccess: (iModel: IModelDb | {
+        readonly fileName: LocalFileName;
+    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
@@ -5087,6 +5151,9 @@ export class SqliteChangesetReader implements IDisposable {
     static openFile(args: {
         readonly fileName: string;
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openGroup(args: {
+        readonly changesetFiles: string[];
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     static openLocalChanges(args: {
         iModel: IModelJsNative.DgnDb;
         includeInMemoryChanges?: true;
@@ -5094,6 +5161,11 @@ export class SqliteChangesetReader implements IDisposable {
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
+    writeToFile(args: {
+        fileName: string;
+        containsSchemaChanges: boolean;
+        overwriteFile?: boolean;
+    }): void;
 }
 
 // @beta
@@ -5105,6 +5177,8 @@ export interface SqliteChangesetReaderArgs {
 
 // @public
 export class SQLiteDb {
+    // @internal (undocumented)
+    readonly [_nativeDb]: IModelJsNative.SQLiteDb;
     abandonChanges(): void;
     closeDb(saveChanges?: boolean): void;
     // @internal (undocumented)
@@ -5123,8 +5197,8 @@ export class SQLiteDb {
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @internal (undocumented)
-    readonly nativeDb: IModelJsNative.SQLiteDb;
+    // @internal @deprecated (undocumented)
+    get nativeDb(): IModelJsNative.SQLiteDb;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
     // @beta (undocumented)
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;

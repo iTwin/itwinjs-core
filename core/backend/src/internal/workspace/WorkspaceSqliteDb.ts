@@ -7,6 +7,7 @@
  */
 
 import { SQLiteDb, VersionedSqliteDb } from "../../SQLiteDb";
+import { _nativeDb } from "../Symbols";
 import { workspaceManifestProperty } from "./WorkspaceImpl";
 
 export class WorkspaceSqliteDb extends VersionedSqliteDb {
@@ -30,7 +31,7 @@ export class WorkspaceSqliteDb extends VersionedSqliteDb {
     createTrigger("strings");
     createTrigger("blobs");
     if (args?.manifest)
-      this.nativeDb.saveFileProperty(workspaceManifestProperty, JSON.stringify(args.manifest));
+      this[_nativeDb].saveFileProperty(workspaceManifestProperty, JSON.stringify(args.manifest));
   }
 }
 

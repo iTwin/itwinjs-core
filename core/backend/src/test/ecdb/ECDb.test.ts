@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String, using } from "@itwin/core-bentley";
+import * as sinon from "sinon";
+import { DbResult, Id64, Id64String, Logger, using } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -236,6 +237,46 @@ describe("ECDb", () => {
       }
     });
 
+    ecdb.closeDb();
+  });
+
+  it("should make importSchema fail if new schema changes are observed without version bump", () => {
+    const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "importSchemaNoVersionBump.ecdb");
+    const xmlpathOriginal = path.join(outDir, "importSchemaNoVersionBump1.ecschema.xml");
+
+    IModelJsFs.writeFileSync(xmlpathOriginal, `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+      </ECEntityClass>
+    </ECSchema>`);
+    ecdb.importSchema(xmlpathOriginal);
+    ecdb.saveChanges();
+
+    const xmlpathUpdated = path.join(outDir, "importSchemaNoVersionBump2.ecschema.xml");
+    IModelJsFs.writeFileSync(xmlpathUpdated, `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+        <ECProperty propertyName="Height" typeName="int"/>
+      </ECEntityClass>
+    </ECSchema>`);
+
+    let calledCategory = "";
+    let calledMessage = "";
+    const stubbedLogError = sinon.stub(Logger, "logError").callsFake((category: string, message: string) => {
+      calledCategory = category;
+      calledMessage = message;
+    });
+
+    // although an error should be logged, no error is actually returned to not disrupt currently existing workflows and to alert the user about some wrong/unexpected behavior
+    expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
+    expect(calledCategory).to.equal("ECDb");
+    expect(calledMessage).to.equal("ECSchema import has failed. Schema Test has new changes, but the schema version is not incremented.");
+
+    stubbedLogError.restore();
     ecdb.closeDb();
   });
 });

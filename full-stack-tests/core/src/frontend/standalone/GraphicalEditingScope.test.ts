@@ -7,12 +7,12 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
-} from "@itwin/core-frontend";
+  BriefcaseConnection, DynamicIModelTile, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, OnScreenTarget, TileLoadPriority } from "@itwin/core-frontend";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
+import { testOnScreenViewport } from "../TestViewport";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -385,5 +385,166 @@ describe("GraphicalEditingScope", () => {
         await expectTreeState(tree, "disposed", 0, modelRange);
       }
     });
+
+    it("updates range and bounding sphere of modified elements", async () => {
+      imodel = await openWritable();
+
+      // Initial geometric model contains one line element.
+      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const dictModelId = await imodel.models.getDictionaryModel();
+      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(4, 4, 4)));
+      await imodel.saveChanges();
+
+      await imodel.models.load([modelId]);
+      const model = imodel.models.getLoaded(modelId) as GeometricModel3dState;
+      expect(model).not.to.be.undefined;
+      const location = Transform.createIdentity();
+
+      const modelRange = await model.queryModelRange();
+      location.inverse()!.multiplyRange(modelRange, modelRange);
+
+      function createTileTree(): IModelTileTree {
+        const params: IModelTileTreeParams = {
+          id: "",
+          modelId,
+          iModel: imodel!,
+          location,
+          priority: TileLoadPriority.Primary,
+          formatVersion: 14,
+          contentRange: modelRange.clone(),
+          tileScreenSize: 512,
+          options: {
+            allowInstancing: true,
+            edges: false,
+            batchType: BatchType.Primary,
+            is3d: true,
+            timeline: undefined,
+          },
+          rootTile: {
+            contentId: "",
+            range: modelRange.toJSON(),
+            contentRange: modelRange.toJSON(),
+            maximumSize: 512,
+            isLeaf: true,
+          },
+        };
+
+        return new IModelTileTree(params, { edges: false, type: BatchType.Primary });
+      }
+
+      const expectTileState = async (testTree: IModelTileTree, expectedRange: Range3d) => {
+        const expectedCenter = expectedRange.center.clone();
+        const expectedRadius = expectedRange.diagonal().magnitude() / 2.0; // expected radius of bounding sphere is half diagonal distance of range box
+
+        // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
+        const waitTime = 150;
+        await BeDuration.wait(waitTime);
+
+        // Just want to check the ranges of the tiles for the element currently being modified.
+        const rangeTolerance = 0.0001;
+        const root = testTree.rootTile;
+        if (root.children) {
+          for (const child of root.children) {
+            if (child instanceof DynamicIModelTile && child.children) {
+              for (const gc of child.children) {
+                expect(gc.range.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
+                expect(gc.boundingSphere.center.isAlmostEqual(expectedCenter, rangeTolerance)).to.be.true;
+                expect(Math.abs(gc.boundingSphere.radius - expectedRadius)).to.be.lessThan(rangeTolerance);
+              }
+            }
+          }
+        }
+      };
+
+      const elementRange = modelRange.clone();
+
+      // Enter an editing scope.
+      const scope = await imodel.enterEditingScope();
+      const tree = createTileTree();
+      await expectTileState(tree, elementRange);
+
+      // Move an element (+1 in Y).
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(0, 1, 0));
+      await imodel.saveChanges();
+
+      elementRange.high.y += 1;
+      elementRange.low.y += 1;
+      await expectTileState(tree, elementRange);
+
+      // Move it again (this time +1 in X).
+      await transformElements(imodel, [elem1], Transform.createTranslationXYZ(1, 0, 0));
+      await imodel.saveChanges();
+
+      elementRange.high.x += 1;
+      elementRange.low.x += 1;
+      await expectTileState(tree, elementRange);
+
+      // Delete the element.
+      await deleteElements(imodel, [elem1]);
+      await imodel.saveChanges();
+
+      // Terminate the scope.
+      await scope.exit();
+
+      tree.dispose();
+    });
+
+    it("edited elements should be updated by scheduling scripts", async () => {
+      imodel = await openWritable();
+
+      const modelId = "0x17";
+      const elementId = "0x27";
+
+      const scope = await imodel.enterEditingScope();
+
+      // Move the element up by 1 unit to place it in the dynamic state.
+      await transformElements(imodel, [elementId], Transform.createTranslationXYZ(0, 0, 1));
+      await imodel.saveChanges();
+
+      // Define a script that changes the color of the element to red at time 1.
+      const props: RenderSchedule.ScriptProps = [{
+        modelId,
+        elementTimelines: [{
+          batchId: 1,
+          elementIds: [elementId],
+          colorTimeline: [
+            {
+              interpolation: 1,
+              time: 1,
+              value: {
+                red: 255,
+                green: 0,
+                blue: 0,
+              },
+            }],
+        }],
+      }];
+
+      const views = await imodel.views.getViewList({ wantPrivate: true });
+
+      await testOnScreenViewport(views[0].id, imodel, 1000, 1000, async (viewport) => {
+        // Set the animation frame to 1 and render the frame.
+        viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
+        viewport.timePoint = 1;
+
+        await viewport.waitForAllTilesToRender();
+
+        const onScreenTarget = viewport.target as OnScreenTarget;
+        const featureAppearance = onScreenTarget.uniforms.branch.stack.top.symbologyOverrides.animationNodeOverrides.get(1);
+
+        // Make sure the feature appearance overrides was applied.
+        expect(featureAppearance).to.not.be.undefined;
+        expect(featureAppearance?.overridesRgb).to.be.true;
+        expect(featureAppearance?.rgb).to.eql({ r: 255, g: 0, b: 0 });
+      });
+
+      // Restore the element to its original position.
+      await transformElements(imodel, [elementId], Transform.createTranslationXYZ(0, 0, -1));
+      await imodel.saveChanges();
+
+      await scope.exit();
+    });
   }
+
 });

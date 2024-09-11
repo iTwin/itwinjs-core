@@ -7,6 +7,21 @@
 import { AccessToken } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 
+// @alpha
+export function attachGeoscienceTileset(args: AttachGeoscienceTilesetArgs): Promise<void>;
+
+// @alpha
+export type AttachGeoscienceTilesetArgs = BaseGeoscienceArgs;
+
+// @alpha
+export interface BaseGeoscienceArgs {
+    accessToken: string;
+    endpointUrl: string;
+    geoscienceObjectId: string;
+    organizationId: string;
+    workspaceId: string;
+}
+
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
@@ -26,6 +41,8 @@ export interface FrontendTilesOptions {
     enableEdges?: boolean;
     maxLevelsToSkip?: number;
     // @internal
+    nopFallback?: boolean;
+    // @internal
     useIndexedDBCache?: boolean;
 }
 
@@ -35,6 +52,15 @@ export const frontendTilesOptions: {
     enableEdges: boolean;
     useIndexedDBCache: boolean;
 };
+
+// @alpha
+export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
+    enableCDN?: boolean;
+    urlPrefix?: string;
+}
+
+// @alpha
+export function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise<string | undefined>;
 
 // @beta
 export type GraphicRepresentation = {
@@ -125,8 +151,10 @@ export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promis
 // @beta
 export interface ObtainIModelTilesetUrlArgs {
     accessToken: AccessToken;
+    changesetId?: string;
     enableCDN?: boolean;
-    iModel: IModelConnection;
+    iModelId?: string;
+    iTwinId?: string;
     requireExactChangeset?: boolean;
     urlPrefix?: string;
 }

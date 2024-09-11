@@ -14,9 +14,11 @@ import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
+import { _nativeDb } from "./internal/Symbols";
 
 /** @internal */
 export namespace SchemaSync {
+  const lockParams: CloudSqlite.ObtainLockParams = { retryDelayMs: 1000, nRetries: 30 };
 
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb {
@@ -30,16 +32,16 @@ export namespace SchemaSync {
   // for tests only
   export const setTestCache = (iModel: IModelDb, cacheName?: string) => {
     if (cacheName)
-      iModel.nativeDb.saveLocalValue(testSyncCachePropKey, cacheName);
+      iModel[_nativeDb].saveLocalValue(testSyncCachePropKey, cacheName);
     else
-      iModel.nativeDb.deleteLocalValue(testSyncCachePropKey);
+      iModel[_nativeDb].deleteLocalValue(testSyncCachePropKey);
   };
 
   const getCloudAccess = async (arg: IModelDb | { readonly fileName: LocalFileName }) => {
     let nativeDb: IModelJsNative.DgnDb | undefined;
     const argIsIModelDb = arg instanceof IModelDb;
     if (argIsIModelDb) {
-      nativeDb = arg.nativeDb;
+      nativeDb = arg[_nativeDb];
     } else {
       nativeDb = new IModelNative.platform.DgnDb();
       nativeDb.openIModel(arg.fileName, OpenMode.Readonly);
@@ -52,6 +54,7 @@ export namespace SchemaSync {
       const props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       const accessToken = await CloudSqlite.requestToken(props);
       const access = new CloudAccess({ ...props, accessToken });
+      Object.assign(access.lockParams, lockParams);
       const testSyncCache = nativeDb.queryLocalValue(testSyncCachePropKey);
       if (testSyncCache)
         access.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: testSyncCache }));
@@ -72,14 +75,24 @@ export namespace SchemaSync {
     }
   };
 
+  export const withReadonlyAccess = async (iModel: IModelDb | { readonly fileName: LocalFileName }, operation: (access: CloudAccess) => Promise<void>): Promise<void> => {
+    const access = await getCloudAccess(iModel);
+    access.synchronizeWithCloud();
+    access.openForRead();
+    try {
+      await operation(access);
+    } finally {
+      access.close();
+    }
+  };
+
   /** Synchronize local briefcase schemas with cloud container */
   export const pull = async (iModel: IModelDb) => {
-    if (iModel.nativeDb.schemaSyncEnabled() && !iModel.isReadonly) {
-      await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+    if (iModel[_nativeDb].schemaSyncEnabled() && !iModel.isReadonly) {
+      await SchemaSync.withReadonlyAccess(iModel, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
-        syncAccess.synchronizeWithCloud();
         iModel.clearCaches();
-        iModel.nativeDb.schemaSyncPull(schemaSyncDbUri);
+        iModel[_nativeDb].schemaSyncPull(schemaSyncDbUri);
         iModel.saveChanges("schema synchronized with cloud container");
       });
     }
@@ -99,7 +112,7 @@ export namespace SchemaSync {
     try {
       iModel.saveFileProperty(syncProperty, JSON.stringify(props));
       await withLockedAccess(arg.iModel, { operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async (syncAccess) => {
-        iModel.nativeDb.schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
+        iModel[_nativeDb].schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
         iModel.saveChanges(`Enable SchemaSync  (container id: ${props.containerId})`);
       });
     } catch (err) {
@@ -123,7 +136,7 @@ export namespace SchemaSync {
     }
 
     public getUri() {
-      return `${this.getCloudDb().nativeDb.getFilePath()}?vfs=${this.container.cache?.name}&writable=${this.container.isWriteable ? 1 : 0}`;
+      return `${this.getCloudDb()[_nativeDb].getFilePath()}?vfs=${this.container.cache?.name}&writable=${this.container.isWriteable ? 1 : 0}`;
     }
     /**
    * Initialize a cloud container for use as a SchemaSync. The container must first be created via its storage supplier api (e.g. Azure, or AWS).

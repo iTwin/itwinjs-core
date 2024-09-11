@@ -20,6 +20,7 @@ import { Category } from "./Category";
 import { Model } from "./Model";
 import { Entity } from "./Entity";
 import { BlobContainer } from "./BlobContainerService";
+import { _nativeDb } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -272,7 +273,7 @@ export namespace ViewStore {
       return existing !== 0 ? existing : this.withPreparedSqliteStatement(`INSERT INTO ${tableName.guids} (guid) VALUES(?)`, (stmt) => {
         stmt.bindGuid(1, guid);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
 
@@ -290,7 +291,7 @@ export namespace ViewStore {
         stmt.bindInteger(8, args.categorySel);
         stmt.bindInteger(9, args.displayStyle);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
 
@@ -303,7 +304,7 @@ export namespace ViewStore {
         stmt.bindInteger(3, args.parentId ?? 1);
         stmt.bindString(4, args.json);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
 
@@ -313,7 +314,7 @@ export namespace ViewStore {
         stmt.bindString(2, args.json);
         stmt.maybeBindString(3, args.owner);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
     /** add a row to the "modelSelectors" table, return the RowId
@@ -363,7 +364,7 @@ export namespace ViewStore {
         stmt.maybeBindString(3, args.owner);
         stmt.bindBlob(4, args.data);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
 

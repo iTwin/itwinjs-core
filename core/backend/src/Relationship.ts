@@ -11,6 +11,7 @@ import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, Sourc
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { _nativeDb } from "./internal/Symbols";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 
@@ -435,7 +436,7 @@ export class Relationships {
 
   /** Check classFullName to ensure it is a link table relationship class. */
   private checkRelationshipClass(classFullName: string) {
-    if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName.replace(".", ":"))) {
+    if (!this._iModel[_nativeDb].isLinkTableRelationship(classFullName.replace(".", ":"))) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
     }
   }
@@ -447,19 +448,19 @@ export class Relationships {
    */
   public insertInstance(props: RelationshipProps): Id64String {
     this.checkRelationshipClass(props.classFullName);
-    return props.id = this._iModel.nativeDb.insertLinkTableRelationship(props);
+    return props.id = this._iModel[_nativeDb].insertLinkTableRelationship(props);
   }
 
   /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
    */
   public updateInstance(props: RelationshipProps): void {
-    this._iModel.nativeDb.updateLinkTableRelationship(props);
+    this._iModel[_nativeDb].updateLinkTableRelationship(props);
   }
 
   /** Delete an Relationship instance from this iModel. */
   public deleteInstance(props: RelationshipProps): void {
-    this._iModel.nativeDb.deleteLinkTableRelationship(props);
+    this._iModel[_nativeDb].deleteLinkTableRelationship(props);
   }
 
   /** Get the props of a Relationship instance

@@ -24,7 +24,7 @@ export interface CalculatedPropertiesSpecification {
    * Defines an expression to calculate the value. The expression can use [ECInstance]($docs/presentation/advanced/ECExpressions.md#ecinstance)
    * and [Ruleset Variables]($docs/presentation/advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
    */
-  value: string;
+  value?: string;
 
   /** The attribute allows moving the calculated property into a different category. */
   categoryId?: string | CategoryIdentifier;

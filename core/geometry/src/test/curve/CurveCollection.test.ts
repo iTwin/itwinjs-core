@@ -286,8 +286,8 @@ describe("ConsolidateAdjacentPrimitives", () => {
     ck.testExactNumber(1, loop0.children.length);
     ck.testExactNumber(1, loop1.children.length);
 
-    const arc1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 2, 0))!;
-    const arc2 = Arc3d.createCircularStartMiddleEnd(arc1.endPoint(), Point3d.create(1, 3, 0), Point3d.create(2, 2, 0))!;
+    const arc1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 2, 0));
+    const arc2 = Arc3d.createCircularStartMiddleEnd(arc1.endPoint(), Point3d.create(1, 3, 0), Point3d.create(2, 2, 0));
     const arcArcPath = Path.create(arc1, arc2);
     RegionOps.consolidateAdjacentPrimitives(arcArcPath);
     ck.testExactNumber(2, arcArcPath.children.length, " arcs with cusp are not consolidated");
