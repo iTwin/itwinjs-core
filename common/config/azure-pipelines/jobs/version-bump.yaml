@@ -57,10 +57,91 @@ jobs:
           fi
         continueOnError: true
 
+  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
+      - job: CreateBranch
+        displayName: Create branch for next release
+        dependsOn: CheckPrevCommit
+        condition: and(in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+        steps:
+          - checkout: self
+          - bash: |
+              git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+              git config --local user.name imodeljs-admin
+            displayName: Setup Git
+
+          - bash: git checkout --track origin/$(Build.SourceBranchName)
+            displayName: Switching to source branch
+
+          - bash: |
+              git fetch --all
+              # get the latest commit message that matches the pattern x.x.x-dev.x.
+              latest_version=$(git log --pretty=format:"%s" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+' | head -n 1)
+              # check if a version was found
+              if [ -z "$latest_version" ]; then
+                  echo "No version with the specified pattern found."
+                  exit 1
+              fi
+              # set version variable
+              echo "##vso[task.setVariable variable=version;isOutput=true]$latest_version"
+
+              echo  The current version is $(version)
+              officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
+
+              branchName="release/"$officialVersion
+
+              echo Release branch name is $branchName
+
+              echo "##vso[task.setvariable variable=releaseBranchName]$branchName"
+            displayName: Get Branch Name
+            name: getBranchName
+
+          - bash: git checkout -b $(releaseBranchName)
+            displayName: Create release branch and checkout
+
+          - bash: |
+              docsYamlPath="common/config/azure-pipelines/templates/gather-docs.yaml"
+              releaseBranch=$(releaseBranchName)
+
+              # delimiter
+              IFS="."
+              read -ra splitArray <<< "$releaseBranch"
+
+              currentMinorVersion=${splitArray[1]}
+              previousMinorVersion=$((currentMinorVersion - 1))
+
+              # check if this release is major or minor version release
+              # if minor version bump, use last recent minor version
+              # if major version bump, `gather-docs.yaml` needs to be edited
+              # manually to be the most recent previous major release
+              # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
+              # should be `release/4.<whatever_last_minor_release_version_was>.x`
+              if [ $((previousMinorVersion)) -lt 0 ]
+              then
+                echo "This is is a major release. Edit \"gather-docs.yaml\" manually."
+              else
+                previousReleaseBranch="${releaseBranch/"$currentMinorVersion.x"/"$previousMinorVersion.x"}"
+                escapedReleaseBranchName="${previousReleaseBranch//\//\\\/}"
+                search="branchName: refs\/heads\/master"
+                replace="branchName: refs\/heads\/"$escapedReleaseBranchName""
+                echo "$search"
+                echo "$replace"
+                # The replacement here is global instead of first match since the logic is that
+                # if something is being pulled from master but needs to be changed to being pulled from release branch instead,
+                # it is likely that any other thing that was being pulled from master probably also needs to be pulled from release branch instead
+                sed -i "s/$search/$replace/g" "$docsYamlPath"
+                git add "$docsYamlPath"
+                git commit -m "Update 'gather-docs.yaml' to previous release branch name"
+              fi
+            displayName: Update 'gather-docs.yaml' and commit to release branch
+
+          - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName) -q
+            displayName: Publish the release branch
+
   - job: Bump
     displayName: Bump Version
-    dependsOn: CheckPrevCommit
-    condition: in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped')
+    dependsOn: CreateBranch
+    condition: in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped')
     steps:
       - checkout: self
 
@@ -74,6 +155,11 @@ jobs:
           git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: Setup Git
+
+      - bash: |
+          git checkout --track $(dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'])
+        displayName: Checkout to Release Branch in case of RC
+        condition: eq(parameters.BumpType, 'releaseCandidate')
 
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
@@ -154,85 +240,21 @@ jobs:
         : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
             displayName: Create git tag
 
-      - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)"
-        displayName: Push version bump
+      - bash: |
+          git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'])
+        displayName: Push version bump for release candidate
+        condition: eq(parameters.BumpType, 'releaseCandidate')
 
-  - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
-      - job: CreateBranch
-        displayName: Create branch for next release
-        dependsOn: Bump
-        condition: and(in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-        variables:
-          version: $[ dependencies.Bump.outputs['getVersion.version'] ]
-
-        steps:
-          - checkout: self
-          - bash: |
-              git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-              git config --local user.name imodeljs-admin
-            displayName: Setup Git
-
-          - bash: git checkout --track origin/$(Build.SourceBranchName)
-            displayName: Switching to source branch
-
-          - bash: |
-              echo  The current version is $(version)
-              officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
-
-              branchName="release/"$officialVersion
-
-              echo Release branch name is $branchName
-
-              echo "##vso[task.setvariable variable=releaseBranchName]$branchName"
-            displayName: Get Branch Name
-
-          - bash: git checkout -b $(releaseBranchName)
-            displayName: Create release branch and checkout
-
-          - bash: |
-              docsYamlPath="common/config/azure-pipelines/templates/gather-docs.yaml"
-              releaseBranch=$(releaseBranchName)
-
-              # delimiter
-              IFS="."
-              read -ra splitArray <<< "$releaseBranch"
-
-              currentMinorVersion=${splitArray[1]}
-              previousMinorVersion=$((currentMinorVersion - 1))
-
-              # check if this release is major or minor version release
-              # if minor version bump, use last recent minor version
-              # if major version bump, `gather-docs.yaml` needs to be edited
-              # manually to be the most recent previous major release
-              # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
-              # should be `release/4.<whatever_last_minor_release_version_was>.x`
-              if [ $((previousMinorVersion)) -lt 0 ]
-              then
-                echo "This is is a major release. Edit \"gather-docs.yaml\" manually."
-              else
-                previousReleaseBranch="${releaseBranch/"$currentMinorVersion.x"/"$previousMinorVersion.x"}"
-                escapedReleaseBranchName="${previousReleaseBranch//\//\\\/}"
-                search="branchName: refs\/heads\/master"
-                replace="branchName: refs\/heads\/"$escapedReleaseBranchName""
-                echo "$search"
-                echo "$replace"
-                # The replacement here is global instead of first match since the logic is that
-                # if something is being pulled from master but needs to be changed to being pulled from release branch instead,
-                # it is likely that any other thing that was being pulled from master probably also needs to be pulled from release branch instead
-                sed -i "s/$search/$replace/g" "$docsYamlPath"
-                git add "$docsYamlPath"
-                git commit -m "Update 'gather-docs.yaml' to previous release branch name"
-              fi
-            displayName: Update 'gather-docs.yaml' and commit to release branch
-
-          - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName) -q
-            displayName: Publish the release branch
+      - bash: |
+          git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)
+        displayName: Push version bump for non-release candidate
+        condition: ne(parameters.BumpType, 'releaseCandidate')
 
   - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
       - job: UpdateMaster
         displayName: Update master to next minor version
-        dependsOn: CreateBranch
-        condition: and(eq(dependencies.CreateBranch.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+        dependsOn: Bump
+        condition: and(eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
         steps:
           - checkout: self
