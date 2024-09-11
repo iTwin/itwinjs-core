@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   ContextRealityModel, ContextRealityModelProps, ContextRealityModels, ContextRealityModelsContainer,
 } from "../ContextRealityModel";
