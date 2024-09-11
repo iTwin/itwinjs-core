@@ -51,7 +51,7 @@ export interface CalculatedPropertiesSpecification {
   priority?: number;
 
   /**
-   * Specifies return type of the calculated property
+   * Specifies return type of the calculated property. If unsupported type is provided, calculated property won't appear in the property pane.
    *
    * Type can have these values: `string`, `boolean`, `bool`, `dateTime`, `double`, `int`, `long`
    */
