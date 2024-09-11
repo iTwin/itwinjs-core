@@ -11,7 +11,7 @@ export interface SheetIndexFolderArg {
   /** iModelDb The iModel */
   iModelDb: IModelDb;
   /** The [[SheetIndexModel]] */
-  sheetIndexModel: Id64String;
+  sheetIndexModelId: Id64String;
   /** The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this SheetIndexEntry */
   parentId: Id64String;
   /** The name of the SheetIndexEntry */
@@ -25,7 +25,7 @@ export interface SheetIndexFolderArg {
  */
 export interface SheetIndexReferenceArg extends SheetIndexFolderArg {
   /** The Sheet Index referenced by the SheetIndexReference */
-  sheetIndexId: Id64String;
+  sheetIndexId?: Id64String;
 }
 
 /** Argument for creating a `SheetReference`
@@ -33,7 +33,7 @@ export interface SheetIndexReferenceArg extends SheetIndexFolderArg {
  */
 export interface SheetReferenceArg extends SheetIndexFolderArg {
   /** The Sheet referenced by the SheetReference */
-  sheetId: Id64String;
+  sheetId?: Id64String;
 }
 
 /**

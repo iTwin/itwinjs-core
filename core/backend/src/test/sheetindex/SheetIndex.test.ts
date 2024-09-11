@@ -118,7 +118,7 @@ describe("SheetIndex", () => {
       const sheetIndex1Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex1Id)).to.be.true;
 
-      const folderId = SheetIndexFolder.insert(iModel, modelId, sheetIndex1Id, "TestFolder", 1);
+      const folderId = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestFolder", priority: 1 });
       expect(Id64.isValidId64(folderId)).to.be.true;
 
       const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
@@ -144,7 +144,7 @@ describe("SheetIndex", () => {
       const sheetIndex2Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex-2");
       expect(Id64.isValidId64(sheetIndex2Id)).to.be.true;
 
-      const folderId = SheetIndexFolder.insert(iModel, modelId, sheetIndex1Id, "TestFolder", 1);
+      const folderId = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestFolder", priority: 1 });
       expect(Id64.isValidId64(folderId)).to.be.true;
 
       const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
@@ -175,7 +175,7 @@ describe("SheetIndex", () => {
       const sheet1Id = await insertSheet(iModel, "sheet-1");
       const sheet2Id = await insertSheet(iModel, "sheet-2");
 
-      const sheetRefId = SheetReference.insert(iModel, modelId, sheetIndexId, "TestSheetReference", 1);
+      const sheetRefId = SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndexId, name: "TestSheetReference", priority: 1 });
       expect(Id64.isValidId64(sheetRefId)).to.be.true;
 
       const sheetRef = iModel.elements.tryGetElement<SheetReference>(sheetRefId);
@@ -215,7 +215,7 @@ describe("SheetIndex", () => {
       const sheetIndex3Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex-3");
       expect(Id64.isValidId64(sheetIndex3Id)).to.be.true;
 
-      const sheetIndexRefId = SheetIndexReference.insert(iModel, modelId, sheetIndex1Id, "TestSheetReference", 1);
+      const sheetIndexRefId = SheetIndexReference.insert({iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestSheetReference", priority: 1});
       expect(Id64.isValidId64(sheetIndexRefId)).to.be.true;
 
       const sheetIndexRef = iModel.elements.tryGetElement<SheetIndexReference>(sheetIndexRefId);
@@ -248,7 +248,7 @@ describe("SheetIndex", () => {
       const sheetIndexId = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndexId)).to.be.true;
 
-      const folderId = SheetIndexFolder.insert(iModel, modelId, sheetIndexId, "TestFolder-1", 1);
+      const folderId = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndexId, name: "TestFolder-1", priority: 1});
       expect(Id64.isValidId64(folderId)).to.be.true;
 
       const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
@@ -269,10 +269,10 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const folder = SheetIndexFolder.insert(iModel, modelId, sheetIndex, "TestFolder", 1);
+      const folder = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestFolder", priority: 1 });
       expect(Id64.isValidId64(folder)).to.be.true;
 
-      const failInsert = () => SheetIndexFolder.insert(iModel, modelId, sheetIndex, "TestFolder", 0);
+      const failInsert = () => SheetIndexFolder.insert({iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestFolder", priority: 0 });
 
       expect(failInsert).throws();
     });
@@ -285,10 +285,10 @@ describe("SheetIndex", () => {
       const sheetIndexId = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndexId)).to.be.true;
 
-      const folder1Id = SheetIndexFolder.insert(iModel, modelId, sheetIndexId, "TestFolder-1", 1);
+      const folder1Id = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndexId, name: "TestFolder-1", priority: 1 });
       expect(Id64.isValidId64(folder1Id)).to.be.true;
 
-      const folder2Id = SheetIndexFolder.insert(iModel, modelId, folder1Id, "TestFolder-2", 1);
+      const folder2Id = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: folder1Id, name: "TestFolder-2", priority: 1 });
       expect(Id64.isValidId64(folder2Id)).to.be.true;
       const folder2 = iModel.elements.tryGetElement<SheetIndexFolder>(folder2Id);
       expect(folder2).to.not.be.undefined;
@@ -310,10 +310,10 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const sheetRef1 = SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef", 1);
+      const sheetRef1 = SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 1 });
       expect(Id64.isValidId64(sheetRef1)).to.be.true;
 
-      const failInsert = () => SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef", 0);
+      const failInsert = () => SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 0 });
 
       expect(failInsert).throws();
     });
@@ -326,7 +326,7 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const sheetRef = SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef", 1);
+      const sheetRef = SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 1 });
       expect(Id64.isValidId64(sheetRef)).to.be.true;
     });
 
@@ -339,7 +339,7 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const sheetRefId = SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef", 1, sheetId);
+      const sheetRefId = SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 1, sheetId });
       expect(Id64.isValidId64(sheetRefId)).to.be.true;
 
       const ref = iModel.elements.tryGetElement<SheetReference>(sheetRefId);
@@ -360,9 +360,9 @@ describe("SheetIndex", () => {
       expect(Id64.isValidId64(modelId)).to.be.true;
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
 
-      SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef-1", 1, sheetId);
+      SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef-1", priority: 1, sheetId });
 
-      const sameIndex = () => SheetReference.insert(iModel, modelId, sheetIndex, "TestSheetRef-2", 2, sheetId);
+      const sameIndex = () => SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef-2", priority: 2, sheetId });
 
       expect(sameIndex).throws();
     });
@@ -377,10 +377,10 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const sheetIndexRef = SheetIndexReference.insert(iModel, modelId, sheetIndex, "TestSheetIndexRef", 1);
+      const sheetIndexRef = SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetIndexRef", priority: 1 });
       expect(Id64.isValidId64(sheetIndexRef)).to.be.true;
 
-      const failInsert = () => SheetIndexReference.insert(iModel, modelId, sheetIndex, "TestSheetIndexRef", 0);
+      const failInsert = () => SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetIndexRef", priority: 0 });
 
       expect(failInsert).throws();
     });
@@ -393,7 +393,7 @@ describe("SheetIndex", () => {
       const sheetIndex1Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex1Id)).to.be.true;
 
-      const sheetRef = SheetIndexReference.insert(iModel, modelId, sheetIndex1Id, "TestSheetIndexRef", 1);
+      const sheetRef = SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestSheetIndexRef", priority: 1 });
       expect(Id64.isValidId64(sheetRef)).to.be.true;
     });
 
@@ -407,7 +407,7 @@ describe("SheetIndex", () => {
       const sheetIndex2Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex-2");
       expect(Id64.isValidId64(sheetIndex1Id)).to.be.true;
 
-      const sheetIndexRefId = SheetIndexReference.insert(iModel, modelId, sheetIndex1Id, "TestSheetRef", 1, sheetIndex2Id);
+      const sheetIndexRefId = SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestSheetRef", priority: 1, sheetIndexId: sheetIndex2Id });
       expect(Id64.isValidId64(sheetIndexRefId)).to.be.true;
 
       const ref = iModel.elements.tryGetElement<SheetIndexReference>(sheetIndexRefId);
