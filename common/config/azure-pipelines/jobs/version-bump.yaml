@@ -141,7 +141,7 @@ jobs:
   - job: Bump
     displayName: Bump Version
     dependsOn: CreateBranch
-    condition: succeededOrSkipped()
+    condition: not(or(failed(), canceled()))
     steps:
       - checkout: self
 
