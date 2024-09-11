@@ -7,7 +7,7 @@ import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewStat
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
 import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
 import { AccessToken } from "@itwin/core-bentley";
-import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs} from "./GraphicsProvider/GraphicsProvider";
+import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs } from "./GraphicsProvider/GraphicsProvider";
 
 /** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
  * The tileset is expected to reside at "baseUrl/tileset.json" and to have been produced by the [mesh export service](https://developer.bentley.com/apis/mesh-export/).
@@ -168,6 +168,12 @@ export interface FrontendTilesOptions {
   * @internal
   */
   useIndexedDBCache?: boolean;
+
+  /** If true, an empty tile tree will be used as fallback if the tileset is not found or invalid.
+   * If false or not defined, the default tiles will be used as a fallback.
+   * @internal
+   */
+  nopFallback?: boolean;
 }
 
 /** Global configuration initialized by [[initializeFrontendTiles]].
@@ -193,8 +199,14 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
     frontendTilesOptions.useIndexedDBCache = true;
 
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
-    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })
+    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({
+      iTwinId: iModel.iTwinId,
+      iModelId: iModel.iModelId,
+      changesetId: iModel.changeset.id,
+      accessToken: await IModelApp.getAccessToken(),
+      enableCDN: options.enableCDN,
+    })
   );
 
-  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl);
+  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl, options.nopFallback ?? false);
 }

@@ -1,18 +1,20 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "4.8.0-dev.10",
+  "version": "4.9.0-dev.22",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
   "typings": "lib/cjs/ecschema-metadata",
+  "module": "lib/esm/ecschema-metadata.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core.git",
     "directory": "core/ecschema-metadata"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
@@ -39,7 +41,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
-    "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -59,11 +60,8 @@
     "typescript": "~5.3.3"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.8.0-dev.10",
-    "@itwin/core-quantity": "workspace:^4.8.0-dev.10"
-  },
-  "dependencies": {
-    "almost-equal": "^1.1.0"
+    "@itwin/core-bentley": "workspace:^4.9.0-dev.22",
+    "@itwin/core-quantity": "workspace:^4.9.0-dev.22"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

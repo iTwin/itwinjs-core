@@ -32,6 +32,7 @@ import { InvertedUnitProps } from '@itwin/ecschema-metadata';
 import { ISchemaPartVisitor } from '@itwin/ecschema-metadata';
 import { KindOfQuantity } from '@itwin/ecschema-metadata';
 import { KindOfQuantityProps } from '@itwin/ecschema-metadata';
+import { LazyLoadedKindOfQuantity } from '@itwin/ecschema-metadata';
 import { LazyLoadedPropertyCategory } from '@itwin/ecschema-metadata';
 import { Localization } from '@itwin/core-common';
 import { Mixin } from '@itwin/ecschema-metadata';
@@ -86,6 +87,9 @@ export type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassId
 
 // @alpha
 export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference;
+
+// @alpha
+export type AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit;
 
 // @alpha
 export type AnySchemaItemDifference = ClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference;
@@ -203,6 +207,8 @@ export enum ConflictCode {
     ConflictingEnumeratorValue = "C-701",
     // (undocumented)
     ConflictingItemName = "C-001",
+    // (undocumented)
+    ConflictingPersistenceUnit = "C-1010",
     // (undocumented)
     ConflictingPropertyName = "C-1300",
     // (undocumented)
@@ -750,23 +756,23 @@ export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.Str
 // @alpha (undocumented)
 export enum ECEditingStatus {
     // (undocumented)
-    AddConstraintClass = 196635,
+    AddConstraintClass = 196637,
     // (undocumented)
-    AddCustomAttributeToClass = 196640,
+    AddCustomAttributeToClass = 196642,
     // (undocumented)
-    AddCustomAttributeToConstraint = 196638,
+    AddCustomAttributeToConstraint = 196640,
     // (undocumented)
-    AddCustomAttributeToProperty = 196639,
+    AddCustomAttributeToProperty = 196641,
     // (undocumented)
-    AddEnumerator = 196659,
+    AddEnumerator = 196662,
     // (undocumented)
-    AddMixin = 196658,
+    AddMixin = 196661,
     // (undocumented)
-    AddPresentationOverride = 196663,
+    AddPresentationOverride = 196666,
     // (undocumented)
-    AddPresentationUnit = 196662,
+    AddPresentationUnit = 196665,
     // (undocumented)
-    AddSchemaReference = 196681,
+    AddSchemaReference = 196684,
     // (undocumented)
     BaseClassIsNotElement = 196616,
     // (undocumented)
@@ -774,55 +780,55 @@ export enum ECEditingStatus {
     // (undocumented)
     BaseClassIsNotElementUniqueAspect = 196617,
     // (undocumented)
-    CreateElement = 196629,
+    CreateElement = 196631,
     // (undocumented)
-    CreateElementMultiAspect = 196631,
+    CreateElementMultiAspect = 196633,
     // (undocumented)
-    CreateElementUniqueAspect = 196630,
+    CreateElementUniqueAspect = 196632,
     // (undocumented)
-    CreateEnumerationArrayProperty = 196672,
+    CreateEnumerationArrayProperty = 196675,
     // (undocumented)
-    CreateEnumerationArrayPropertyFromProps = 196673,
+    CreateEnumerationArrayPropertyFromProps = 196676,
     // (undocumented)
-    CreateEnumerationProperty = 196668,
+    CreateEnumerationProperty = 196671,
     // (undocumented)
-    CreateEnumerationPropertyFromProps = 196669,
+    CreateEnumerationPropertyFromProps = 196672,
     // (undocumented)
-    CreateFormatOverride = 196664,
+    CreateFormatOverride = 196667,
     // (undocumented)
-    CreateNavigationProperty = 196641,
+    CreateNavigationProperty = 196643,
     // (undocumented)
-    CreateNavigationPropertyFromProps = 196642,
+    CreateNavigationPropertyFromProps = 196644,
     // (undocumented)
-    CreatePrimitiveArrayProperty = 196670,
+    CreatePrimitiveArrayProperty = 196673,
     // (undocumented)
-    CreatePrimitiveArrayPropertyFromProps = 196671,
+    CreatePrimitiveArrayPropertyFromProps = 196674,
     // (undocumented)
-    CreatePrimitiveProperty = 196666,
+    CreatePrimitiveProperty = 196669,
     // (undocumented)
-    CreatePrimitivePropertyFromProps = 196667,
+    CreatePrimitivePropertyFromProps = 196670,
     // (undocumented)
-    CreateSchemaItemFailed = 196627,
+    CreateSchemaItemFailed = 196629,
     // (undocumented)
-    CreateSchemaItemFromProps = 196628,
+    CreateSchemaItemFromProps = 196630,
     // (undocumented)
-    CreateStructArrayProperty = 196676,
+    CreateStructArrayProperty = 196679,
     // (undocumented)
-    CreateStructArrayPropertyFromProps = 196677,
+    CreateStructArrayPropertyFromProps = 196680,
     // (undocumented)
-    CreateStructProperty = 196674,
+    CreateStructProperty = 196677,
     // (undocumented)
-    CreateStructPropertyFromProps = 196675,
+    CreateStructPropertyFromProps = 196678,
     // (undocumented)
-    DeleteClass = 196679,
+    DeleteClass = 196682,
     // (undocumented)
-    DeleteProperty = 196678,
+    DeleteProperty = 196681,
     // (undocumented)
     EC_EDITING_ERROR_BASE = 196608,
     // (undocumented)
     EnumeratorDoesNotExist = 196624,
     // (undocumented)
-    IncrementSchemaMinorVersion = 196683,
+    IncrementSchemaMinorVersion = 196686,
     // (undocumented)
     InvalidBaseClass = 196623,
     // (undocumented)
@@ -830,9 +836,11 @@ export enum ECEditingStatus {
     // (undocumented)
     InvalidEnumeratorType = 196622,
     // (undocumented)
-    InvalidFormatUnitsSpecified = 196626,
+    InvalidFormatUnitsSpecified = 196627,
     // (undocumented)
     InvalidPropertyType = 196615,
+    // (undocumented)
+    InvalidSchemaAlias = 196626,
     // (undocumented)
     InvalidSchemaItemType = 196620,
     // (undocumented)
@@ -840,9 +848,11 @@ export enum ECEditingStatus {
     // (undocumented)
     PropertyNotFound = 196614,
     // (undocumented)
-    RemoveConstraintClass = 196636,
+    RemoveConstraintClass = 196638,
     // (undocumented)
     RuleViolation = 196609,
+    // (undocumented)
+    SchemaAliasAlreadyExists = 196628,
     // (undocumented)
     SchemaItemNameAlreadyExists = 196621,
     // (undocumented)
@@ -854,53 +864,57 @@ export enum ECEditingStatus {
     // (undocumented)
     SchemaNotFound = 196610,
     // (undocumented)
-    SetAbstractConstraint = 196637,
+    SetAbstractConstraint = 196639,
     // (undocumented)
-    SetBaseClass = 196632,
+    SetBaseClass = 196634,
     // (undocumented)
-    SetCategory = 196649,
+    SetCategory = 196651,
     // (undocumented)
-    SetClassName = 196680,
+    SetClassName = 196683,
     // (undocumented)
-    SetDescription = 196645,
+    SetDescription = 196647,
     // (undocumented)
-    SetEnumeratorDescription = 196661,
+    SetEnumeratorDescription = 196664,
     // (undocumented)
-    SetEnumeratorLabel = 196660,
+    SetEnumeratorLabel = 196663,
     // (undocumented)
-    SetExtendedTypeName = 196652,
+    SetExtendedTypeName = 196655,
     // (undocumented)
-    SetInvertsUnit = 196643,
+    SetInvertsUnit = 196645,
     // (undocumented)
-    SetIsReadOnly = 196647,
+    SetIsReadOnly = 196649,
     // (undocumented)
-    SetLabel = 196646,
+    SetKindOfQuantity = 196652,
     // (undocumented)
-    SetMaxLength = 196654,
+    SetLabel = 196648,
     // (undocumented)
-    SetMaxOccurs = 196651,
+    SetMaxLength = 196657,
     // (undocumented)
-    SetMaxValue = 196656,
+    SetMaxOccurs = 196654,
     // (undocumented)
-    SetMinLength = 196653,
+    SetMaxValue = 196659,
     // (undocumented)
-    SetMinOccurs = 196650,
+    SetMinLength = 196656,
     // (undocumented)
-    SetMinValue = 196655,
+    SetMinOccurs = 196653,
     // (undocumented)
-    SetPriority = 196648,
+    SetMinValue = 196658,
     // (undocumented)
-    SetPropertyCategoryPriority = 196665,
+    SetPriority = 196650,
     // (undocumented)
-    SetPropertyName = 196657,
+    SetPropertyCategoryPriority = 196668,
     // (undocumented)
-    SetSchemaVersion = 196682,
+    SetPropertyName = 196660,
     // (undocumented)
-    SetSourceConstraint = 196633,
+    SetSchemaAlias = 196687,
     // (undocumented)
-    SetTargetConstraint = 196634,
+    SetSchemaVersion = 196685,
     // (undocumented)
-    SetUnitSystem = 196644,
+    SetSourceConstraint = 196635,
+    // (undocumented)
+    SetTargetConstraint = 196636,
+    // (undocumented)
+    SetUnitSystem = 196646,
     // (undocumented)
     Unknown = 0
 }
@@ -1220,35 +1234,35 @@ export interface ISchemaChanges {
 // @alpha
 export interface ISchemaComparer {
     // (undocumented)
-    compareClasses(classA: AnyClass, classB: AnyClass | undefined): void;
+    compareClasses(classA: AnyClass, classB: AnyClass): void;
     // (undocumented)
-    compareConstants(constantA: Constant, constantB: Constant | undefined): void;
+    compareConstants(constantA: Constant, constantB: Constant): void;
     // (undocumented)
-    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): void;
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass): void;
     // (undocumented)
-    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): void;
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): void;
     // (undocumented)
-    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): void;
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass): void;
     // (undocumented)
-    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): void;
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration): void;
     // (undocumented)
-    compareFormats(formatA: Format, formatB: Format | undefined): void;
+    compareFormats(formatA: Format, formatB: Format): void;
     // (undocumented)
-    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): void;
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): void;
     // (undocumented)
-    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): void;
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity): void;
     // (undocumented)
-    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): void;
+    compareMixins(mixinA: Mixin, mixinB: Mixin): void;
     // (undocumented)
-    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): void;
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): void;
     // (undocumented)
     compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): void;
     // (undocumented)
-    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): void;
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory): void;
     // (undocumented)
-    compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass | undefined): void;
+    compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass): void;
     // (undocumented)
-    compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint | undefined): void;
+    compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint): void;
     // (undocumented)
     compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): void;
     // (undocumented)
@@ -1256,7 +1270,7 @@ export interface ISchemaComparer {
     // (undocumented)
     compareSchemas(schemaA: Schema, schemaB: Schema): void;
     // (undocumented)
-    compareUnits(unitA: Unit, unitB: Unit | undefined): void;
+    compareUnits(unitA: Unit, unitB: Unit): void;
 }
 
 // @alpha
@@ -1290,6 +1304,9 @@ export interface ISchemaTypeIdentifier {
     // (undocumented)
     readonly typeIdentifier: SchemaTypeIdentifiers;
 }
+
+// @alpha
+export function isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference;
 
 // @alpha
 export function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference;
@@ -1338,6 +1355,9 @@ export function isRelationshipConstraintDifference(difference: AnySchemaDifferen
 
 // @alpha
 export function isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference;
+
+// @alpha
+export function isSchemaItemDifference(difference: AnySchemaDifference): difference is AnySchemaItemDifference;
 
 // @alpha
 export function isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference;
@@ -1533,6 +1553,26 @@ export class RelationshipConstraintId implements IRelationshipConstraintIdentifi
     readonly schemaKey: SchemaKey;
     // (undocumented)
     readonly typeIdentifier = SchemaTypeIdentifiers.RelationshipConstraintIdentifier;
+}
+
+// @alpha
+export interface RenamePropertyEdit {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaEditType.RenameProperty;
+    // (undocumented)
+    value: string;
+}
+
+// @alpha
+export interface RenameSchemaItemEdit {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaEditType.RenameSchemaItem;
+    // (undocumented)
+    value: string;
 }
 
 // @alpha
@@ -1949,25 +1989,25 @@ export enum SchemaCompareDirection {
 // @alpha
 export class SchemaComparer {
     constructor(...reporters: ISchemaCompareReporter[]);
-    compareClasses(classA: AnyClass, classB: AnyClass | undefined): Promise<void>;
-    compareConstants(constantA: Constant, constantB: Constant | undefined): Promise<void>;
-    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): Promise<void>;
-    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): Promise<void>;
-    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void>;
-    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): Promise<void>;
-    compareFormats(formatA: Format, formatB: Format | undefined): Promise<void>;
-    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): Promise<void>;
-    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): Promise<void>;
-    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): Promise<void>;
-    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): Promise<void>;
+    compareClasses(classA: AnyClass, classB: AnyClass): Promise<void>;
+    compareConstants(constantA: Constant, constantB: Constant): Promise<void>;
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass): Promise<void>;
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): Promise<void>;
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass): Promise<void>;
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration): Promise<void>;
+    compareFormats(formatA: Format, formatB: Format): Promise<void>;
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): Promise<void>;
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity): Promise<void>;
+    compareMixins(mixinA: Mixin, mixinB: Mixin): Promise<void>;
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): Promise<void>;
     compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): Promise<void>;
-    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): Promise<void>;
-    compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass | undefined): Promise<void>;
-    compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint | undefined): Promise<void>;
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory): Promise<void>;
+    compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass): Promise<void>;
+    compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint): Promise<void>;
     compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): Promise<void>;
     compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
     compareSchemas(schemaA: Schema, schemaB: Schema): Promise<void>;
-    compareUnits(unitA: Unit, unitB: Unit | undefined): Promise<void>;
+    compareUnits(unitA: Unit, unitB: Unit): Promise<void>;
 }
 
 // @alpha
@@ -2016,6 +2056,9 @@ export class SchemaContextEditor {
     // (undocumented)
     readonly relationships: RelationshipClasses;
     get schemaContext(): SchemaContext;
+    setAlias(schemaKey: SchemaKey, alias: string): Promise<void>;
+    setDescription(schemaKey: SchemaKey, description: string): Promise<void>;
+    setDisplayLabel(schemaKey: SchemaKey, label: string): Promise<void>;
     setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaKey>;
     // (undocumented)
     readonly structs: Structs;
@@ -2051,6 +2094,7 @@ export interface SchemaDifference {
 export interface SchemaDifferenceConflict {
     readonly code: ConflictCode;
     readonly description: string;
+    readonly difference?: unknown;
     readonly itemName?: string;
     readonly path?: string;
     readonly schemaType: SchemaType;
@@ -2077,6 +2121,29 @@ export class SchemaEditingError extends Error {
     readonly innerError?: AnyEditingError | undefined;
     get ruleViolations(): AnyDiagnostic[] | undefined;
     toDebugString(): string;
+}
+
+// @alpha
+export class SchemaEdits {
+    constructor(initialize?: ReadonlyArray<AnySchemaEdits>);
+    // @internal (undocumented)
+    applyTo(differenceResult: SchemaDifferenceResult): Promise<void>;
+    // (undocumented)
+    readonly items: ItemEditor;
+    // (undocumented)
+    readonly properties: PropertyEditor;
+    // (undocumented)
+    toJSON(): ReadonlyArray<AnySchemaEdits>;
+}
+
+// @alpha
+export enum SchemaEditType {
+    // (undocumented)
+    RenameProperty = "RenameProperty",
+    // (undocumented)
+    RenameSchemaItem = "RenameSchemaItem",
+    // (undocumented)
+    Skip = "Skip"
 }
 
 // @alpha
@@ -2140,8 +2207,9 @@ export class SchemaItemMissing extends SchemaItemChange {
 export class SchemaMerger {
     constructor(editingContext: SchemaContext);
     // @alpha
-    merge(differenceResult: SchemaDifferenceResult): Promise<Schema>;
-    mergeSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<Schema>;
+    merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<Schema>;
+    // @alpha
+    mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema>;
 }
 
 // @alpha
@@ -2291,6 +2359,14 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 export class SchemaWalker {
     constructor(visitor: ISchemaPartVisitor);
     traverseSchema<T extends Schema>(schema: T): Promise<T>;
+}
+
+// @alpha
+export interface SkipEdit {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    type: SchemaEditType.Skip;
 }
 
 // @alpha

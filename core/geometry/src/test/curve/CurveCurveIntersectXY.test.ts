@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
@@ -260,10 +261,10 @@ describe("CurveCurveIntersectXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const arc0 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 2, 0),
-    )!;
+    );
     const arc1 = Arc3d.createCircularStartMiddleEnd(
       arc0.fractionToPoint(0.25), arc0.fractionToPoint(0.5), arc0.fractionToPoint(1.5),
-    )!;
+    );
     const intersectionsAB = CurveCurve.intersectionXYPairs(arc0, false, arc1, false);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc0, arc1]);
     const numExpected = 1;
@@ -573,6 +574,1016 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineBsplineMapped");
     expect(ck.getNumErrors()).equals(0);
   });
+  function captureAndTestIntersection(
+    allGeometry: GeometryQuery[], ck: Checker, dx: number, dy: number,
+    curveA: any, curveB: any, extendA: boolean, extendB: boolean,
+    expectedIntersections: number,
+  ) {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveA, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveB, dx, dy);
+    const intersectionDetails = CurveCurve.intersectionProjectedXYPairs(undefined, curveA, extendA, curveB, extendB);
+    for (const pair of intersectionDetails)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pair.detailA.point, 0.2, dx, dy);
+    ck.testExactNumber(expectedIntersections, intersectionDetails.length, `${expectedIntersections} intersection(s) expected`);
+  }
+  it("intersectionPrimitiveVsPathLineSegment", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.create(
+      LineSegment3d.create(
+        Point3d.create(95.24913755203208, 20.36095210703357), Point3d.create(95.24913755203208, 12.748564710980762),
+      ),
+      LineSegment3d.create(
+        Point3d.create(95.24913755203208, 12.748564710980762), Point3d.create(89.42790013152023, 12.74856471098076),
+      ),
+      LineSegment3d.create(
+        Point3d.create(89.42790013152023, 12.74856471098076), Point3d.create(89.42790013152023, 7.375114784355288),
+      ),
+      LineSegment3d.create(
+        Point3d.create(89.42790013152023, 7.375114784355288), Point3d.create(97.67998394741026, 7.3751147843552864),
+      ),
+      LineSegment3d.create(
+        Point3d.create(97.67998394741026, 7.3751147843552864), Point3d.create(97.67998394741026, 2.961209487484229),
+      ),
+      LineSegment3d.create(
+        Point3d.create(97.67998394741026, 2.961209487484229), Point3d.create(102.60564638015066, 2.961209487484229),
+      ),
+    );
+
+    let dx = 0, dy = 0;
+    const lineSegment1 = LineSegment3d.create(Point3d.create(83, 10), Point3d.create(86, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment1, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment1, false, true, 1);
+    dx += 20;
+    const lineSegment2 = LineSegment3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment2, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment2, false, true, 0);
+    dx += 20;
+    const lineSegment3 = LineSegment3d.create(Point3d.create(104, 1), Point3d.create(104, 5));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment3, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment3, false, true, 0);
+    dx += 20;
+    const lineSegment4 = LineSegment3d.create(Point3d.create(100, 15), Point3d.create(105, 15));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, false, true, 1);
+    dx += 20;
+    const lineSegment5 = LineSegment3d.create(Point3d.create(93, 10), Point3d.create(101, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment5, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment5, false, true, 1);
+
+    dx = 0;
+    dy += 30;
+    const lineString1 = LineString3d.create(Point3d.create(83, 10), Point3d.create(86, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString1, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString1, false, true, 1);
+    dx += 20;
+    const lineString2 = LineString3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString2, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString2, false, true, 0);
+    dx += 20;
+    const lineString3 = LineString3d.create(Point3d.create(104, 1), Point3d.create(104, 5));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString3, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString3, false, true, 0);
+    dx += 20;
+    const lineString4 = LineString3d.create(Point3d.create(100, 15), Point3d.create(105, 15));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, false, true, 1);
+    dx += 20;
+    const lineString5 = LineString3d.create(Point3d.create(93, 10), Point3d.create(101, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString5, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString5, false, true, 1);
+
+    dx = 0;
+    dy += 30;
+    const arc1 = Arc3d.create(
+      Point3d.create(87, 10), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc1, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc1, false, true, 2);
+    dx += 20;
+    const arc2 = Arc3d.create(
+      Point3d.create(95, 20), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(0, 180),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc2, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc2, false, true, 1);
+    dx += 20;
+    const arc3 = Arc3d.create(
+      Point3d.create(104, 3), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc3, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc3, false, true, 1);
+    dx += 20;
+    const arc4 = Arc3d.create(
+      Point3d.create(97, 15), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc4, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc4, false, true, 2);
+    dx += 20;
+    const arc5 = Arc3d.create(
+      Point3d.create(90, 15), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc5, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc5, false, true, 0);
+    dx += 20;
+    const arc6 = Arc3d.create(
+      Point3d.create(93, 5), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc6, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc6, false, true, 0);
+    dx += 20;
+    const arc7 = Arc3d.create(
+      Point3d.create(95, 11), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc7, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc7, false, true, 0);
+    dx += 20;
+    const arc8 = Arc3d.create(
+      Point3d.create(90, 5), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc8, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc8, false, true, 0);
+
+    dx = 0;
+    dy += 30;
+    const bspline1 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(95, 0), Point3d.create(96, 0.5), Point3d.create(97, 0), Point3d.create(98, 2), Point3d.create(99, 0)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline1, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline1, false, true, 0);
+    dx += 20;
+    const bspline2 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(93, 23), Point3d.create(94, 23.5), Point3d.create(95, 23), Point3d.create(96, 25), Point3d.create(97, 23)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline2, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline2, false, true, 0);
+    dx += 20;
+    const bspline3 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(91, 20), Point3d.create(92, 20.5), Point3d.create(93, 20), Point3d.create(94, 22), Point3d.create(95, 20)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline3, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline3, false, true, 0);
+    dx += 20;
+    const bspline4 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(104, 2), Point3d.create(105, 2.5), Point3d.create(106, 2), Point3d.create(107, 4), Point3d.create(108, 2)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline4, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline4, false, true, 0);
+    dx += 20;
+    const bspline5 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(99, 7), Point3d.create(100, 7.5), Point3d.create(101, 7), Point3d.create(102, 9), Point3d.create(103, 7)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, false, true, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPrimitiveVsPathLineSegment");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionPrimitiveVsPathLineString", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.create(
+      LineString3d.create(
+        Point3d.create(95.24913755203208, 20.36095210703357),
+        Point3d.create(95.24913755203208, 12.748564710980762),
+      ),
+      LineString3d.create(
+        Point3d.create(95.24913755203208, 12.748564710980762),
+        Point3d.create(89.42790013152023, 12.74856471098076),
+      ),
+      LineString3d.create(
+        Point3d.create(89.42790013152023, 12.74856471098076),
+        Point3d.create(89.42790013152023, 7.375114784355288),
+        Point3d.create(97.67998394741026, 7.3751147843552864),
+      ),
+      LineString3d.create(
+        Point3d.create(97.67998394741026, 7.3751147843552864),
+        Point3d.create(97.67998394741026, 2.961209487484229),
+      ),
+      LineString3d.create(
+        Point3d.create(97.67998394741026, 2.961209487484229),
+        Point3d.create(102.60564638015066, 2.961209487484229),
+      ),
+    );
+
+    let dx = 0, dy = 0;
+    const lineSegment1 = LineSegment3d.create(Point3d.create(83, 10), Point3d.create(86, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment1, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment1, false, true, 1);
+    dx += 20;
+    const lineSegment2 = LineSegment3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment2, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment2, false, true, 0);
+    dx += 20;
+    const lineSegment3 = LineSegment3d.create(Point3d.create(104, 1), Point3d.create(104, 5));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment3, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment3, false, true, 0);
+    dx += 20;
+    const lineSegment4 = LineSegment3d.create(Point3d.create(100, 15), Point3d.create(105, 15));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, false, true, 1);
+    dx += 20;
+    const lineSegment5 = LineSegment3d.create(Point3d.create(93, 10), Point3d.create(101, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment5, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment5, false, true, 1);
+
+    dx = 0;
+    dy += 30;
+    const lineString1 = LineString3d.create(Point3d.create(83, 10), Point3d.create(86, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString1, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString1, false, true, 1);
+    dx += 20;
+    const lineString2 = LineString3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString2, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString2, false, true, 0);
+    dx += 20;
+    const lineString3 = LineString3d.create(Point3d.create(104, 1), Point3d.create(104, 5));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString3, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString3, false, true, 0);
+    dx += 20;
+    const lineString4 = LineString3d.create(Point3d.create(100, 15), Point3d.create(105, 15));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, false, true, 1);
+    dx += 20;
+    const lineString5 = LineString3d.create(Point3d.create(93, 10), Point3d.create(101, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString5, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString5, false, true, 1);
+
+    dx = 0;
+    dy += 30;
+    const arc1 = Arc3d.create(
+      Point3d.create(87, 10), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc1, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc1, false, true, 2);
+    dx += 20;
+    const arc2 = Arc3d.create(
+      Point3d.create(95, 20), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(0, 180),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc2, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc2, false, true, 1);
+    dx += 20;
+    const arc3 = Arc3d.create(
+      Point3d.create(104, 3), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc3, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc3, false, true, 1);
+    dx += 20;
+    const arc4 = Arc3d.create(
+      Point3d.create(97, 15), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc4, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc4, false, true, 2);
+    dx += 20;
+    const arc5 = Arc3d.create(
+      Point3d.create(90, 15), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc5, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc5, false, true, 0);
+    dx += 20;
+    const arc6 = Arc3d.create(
+      Point3d.create(93, 5), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc6, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc6, false, true, 0);
+    dx += 20;
+    const arc7 = Arc3d.create(
+      Point3d.create(95, 11), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc7, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc7, false, true, 0);
+    dx += 20;
+    const arc8 = Arc3d.create(
+      Point3d.create(90, 5), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc8, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc8, false, true, 0);
+
+    dx = 0;
+    dy += 30;
+    const bspline1 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(95, 0), Point3d.create(96, 0.5), Point3d.create(97, 0), Point3d.create(98, 2), Point3d.create(99, 0)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline1, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline1, false, true, 0);
+    dx += 20;
+    const bspline2 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(93, 23), Point3d.create(94, 23.5), Point3d.create(95, 23), Point3d.create(96, 25), Point3d.create(97, 23)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline2, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline2, false, true, 0);
+    dx += 20;
+    const bspline3 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(91, 20), Point3d.create(92, 20.5), Point3d.create(93, 20), Point3d.create(94, 22), Point3d.create(95, 20)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline3, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline3, false, true, 0);
+    dx += 20;
+    const bspline4 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(104, 2), Point3d.create(105, 2.5), Point3d.create(106, 2), Point3d.create(107, 4), Point3d.create(108, 2)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline4, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline4, false, true, 0);
+    dx += 20;
+    const bspline5 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(99, 7), Point3d.create(100, 7.5), Point3d.create(101, 7), Point3d.create(102, 9), Point3d.create(103, 7)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, false, true, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPrimitiveVsPathLineString");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionPrimitiveVsPathArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.create(
+      Arc3d.create(
+        Point3d.create(95, 16), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      Arc3d.create(
+        Point3d.create(92, 13), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(360, 180),
+      ),
+      Arc3d.create(
+        Point3d.create(89, 10), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 270),
+      ),
+      Arc3d.create(
+        Point3d.create(93, 7), Vector3d.create(4, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 360),
+      ),
+      Arc3d.create(
+        Point3d.create(97, 5), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      Arc3d.create(
+        Point3d.create(100, 3), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 360),
+      ),
+    );
+
+    let dx = 0, dy = 0;
+    const lineSegment1 = LineSegment3d.create(Point3d.create(83, 10), Point3d.create(86, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment1, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment1, false, true, 1);
+    dx += 20;
+    const lineSegment2 = LineSegment3d.create(Point3d.create(93, 16), Point3d.create(95, 16));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment2, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment2, false, true, 1);
+    dx += 20;
+    const lineSegment3 = LineSegment3d.create(Point3d.create(101, 3), Point3d.create(101, 5));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment3, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment3, false, true, 1);
+    dx += 20;
+    const lineSegment4 = LineSegment3d.create(Point3d.create(100, 15), Point3d.create(105, 15));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment4, false, true, 1);
+    dx += 20;
+    const lineSegment5 = LineSegment3d.create(Point3d.create(93, 10), Point3d.create(101, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment5, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineSegment5, false, true, 1);
+
+    dx = 0;
+    dy += 30;
+    const lineString1 = LineString3d.create(Point3d.create(83, 10), Point3d.create(86, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString1, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString1, false, true, 1);
+    dx += 20;
+    const lineString2 = LineString3d.create(Point3d.create(93, 16), Point3d.create(95, 16));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString2, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString2, false, true, 1);
+    dx += 20;
+    const lineString3 = LineString3d.create(Point3d.create(101, 3), Point3d.create(101, 5));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString3, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString3, false, true, 1);
+    dx += 20;
+    const lineString4 = LineString3d.create(Point3d.create(100, 15), Point3d.create(105, 15));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString4, false, true, 1);
+    dx += 20;
+    const lineString5 = LineString3d.create(Point3d.create(93, 10), Point3d.create(101, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString5, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, lineString5, false, true, 1);
+
+    dx = 0;
+    dy += 30;
+    const arc1 = Arc3d.create(
+      Point3d.create(87, 10), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc1, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc1, false, true, 2);
+    dx += 20;
+    const arc2 = Arc3d.create(
+      Point3d.create(95, 20), Vector3d.create(3, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(0, 180),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc2, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc2, false, true, 1);
+    dx += 20;
+    const arc3 = Arc3d.create(
+      Point3d.create(104, 3), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc3, true, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc3, false, true, 1);
+    dx += 20;
+    const arc4 = Arc3d.create(
+      Point3d.create(96, 15), Vector3d.create(4, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc4, true, true, 4);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc4, false, true, 2);
+    dx += 20;
+    const arc5 = Arc3d.create(
+      Point3d.create(90, 15), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc5, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc5, false, true, 0);
+    dx += 20;
+    const arc6 = Arc3d.create(
+      Point3d.create(91, 5), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc6, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc6, false, true, 0);
+    dx += 20;
+    const arc7 = Arc3d.create(
+      Point3d.create(96, 11), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc7, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc7, false, true, 0);
+    dx += 20;
+    const arc8 = Arc3d.create(
+      Point3d.create(90, 5), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc8, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, arc8, false, true, 0);
+
+    dx = 0;
+    dy += 30;
+    const bspline1 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(95, 0), Point3d.create(96, 0.5), Point3d.create(97, 0), Point3d.create(98, 2), Point3d.create(99, 0)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline1, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline1, false, true, 0);
+    dx += 20;
+    const bspline2 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(93, 23), Point3d.create(94, 23.5), Point3d.create(95, 23), Point3d.create(96, 25), Point3d.create(97, 23)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline2, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline2, false, true, 0);
+    dx += 20;
+    const bspline3 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(91, 17), Point3d.create(92, 17.5), Point3d.create(93, 17), Point3d.create(94, 19), Point3d.create(95, 17)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline3, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline3, false, true, 0);
+    dx += 20;
+    const bspline4 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(102, 3), Point3d.create(103, 3.5), Point3d.create(104, 3), Point3d.create(105, 5), Point3d.create(106, 3)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline4, true, true, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline4, false, true, 0);
+    dx += 20;
+    const bspline5 = BSplineCurve3d.createUniformKnots(
+      [Point3d.create(96, 7), Point3d.create(97, 7.5), Point3d.create(98, 7), Point3d.create(99, 9), Point3d.create(100, 7)], 4,
+    );
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, true, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, false, true, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPrimitiveVsPathArc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionLoopVsPrimitive", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const loop = Loop.create(
+      LineString3d.create(
+        Point3d.create(95.24913755203208, 20.36095210703357), Point3d.create(95.24913755203208, 12.748564710980762),
+      ),
+      LineString3d.create(
+        Point3d.create(95.24913755203208, 12.748564710980762), Point3d.create(89.42790013152023, 12.74856471098076),
+      ),
+      LineString3d.create(
+        Point3d.create(89.42790013152023, 12.74856471098076), Point3d.create(89.42790013152023, 7.375114784355288),
+      ),
+      LineString3d.create(
+        Point3d.create(89.42790013152023, 7.375114784355288), Point3d.create(97.67998394741026, 7.3751147843552864),
+      ),
+      LineString3d.create(
+        Point3d.create(97.67998394741026, 7.3751147843552864), Point3d.create(97.67998394741026, 2.961209487484229),
+      ),
+      LineString3d.create(
+        Point3d.create(97.67998394741026, 2.961209487484229), Point3d.create(102.60564638015066, 2.961209487484229),
+      ),
+      LineString3d.create(
+        Point3d.create(102.60564638015066, 2.961209487484229), Point3d.create(102.60564638015066, 20.36095210703357),
+      ),
+      LineString3d.create(
+        Point3d.create(95.24913755203208, 20.36095210703357), Point3d.create(95.24913755203208, 12.748564710980762),
+      ),
+    );
+
+    let dx = 0;
+    const dy = 0;
+    const lineString1 = LineString3d.create(Point3d.create(83, 10), Point3d.create(86, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString1, true, true, 2);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString1, true, false, 0);
+    dx += 30;
+    const lineString2 = LineString3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString2, true, true, 0);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString2, true, false, 0);
+    dx += 30;
+    const lineString3 = LineString3d.create(Point3d.create(104, 1), Point3d.create(104, 15));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString3, true, true, 0);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString3, true, false, 0);
+    dx += 30;
+    const lineString4 = LineString3d.create(Point3d.create(100, 6), Point3d.create(105, 6));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString4, true, true, 2);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString4, true, false, 1);
+    dx += 30;
+    const lineString5 = LineString3d.create(Point3d.create(93, 10), Point3d.create(101, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString5, true, true, 2);
+    dx += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString5, true, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionLoopVsPrimitive");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionCurveChainVsPrimitive", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.create(
+      LineString3d.create(Point3d.create(95.24913755203208, 20.36095210703357), Point3d.create(95.24913755203208, 12.748564710980762)),
+      LineString3d.create(Point3d.create(95.24913755203208, 12.748564710980762), Point3d.create(89.42790013152023, 12.74856471098076)),
+      LineString3d.create(Point3d.create(89.42790013152023, 12.74856471098076), Point3d.create(89.42790013152023, 7.375114784355288)),
+      LineString3d.create(Point3d.create(89.42790013152023, 7.375114784355288), Point3d.create(97.67998394741026, 7.3751147843552864)),
+      LineString3d.create(Point3d.create(97.67998394741026, 7.3751147843552864), Point3d.create(97.67998394741026, 2.961209487484229)),
+      LineString3d.create(Point3d.create(97.67998394741026, 2.961209487484229), Point3d.create(102.60564638015066, 2.961209487484229)),
+    );
+    const curveChain = CurveChainWithDistanceIndex.createCapture(path);
+
+    let dx = 0;
+    const dy = 0;
+    const lineString1 = LineString3d.create(Point3d.create(83, 10), Point3d.create(86, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain, lineString1, true, true, 1);
+    dx += 20;
+    const lineString2 = LineString3d.create(Point3d.create(93, 22), Point3d.create(97, 22));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain, lineString2, true, true, 1);
+    dx += 20;
+    const lineString3 = LineString3d.create(Point3d.create(104, 1), Point3d.create(104, 5));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain, lineString3, true, true, 1);
+    dx += 20;
+    const lineString4 = LineString3d.create(Point3d.create(100, 6), Point3d.create(105, 6));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain, lineString4, true, true, 1);
+    dx += 20;
+    const lineString5 = LineString3d.create(Point3d.create(93, 10), Point3d.create(101, 10));
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain, lineString5, true, true, 1);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionCurveChainVsPrimitive");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionPathVsPath", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    let dx = 0;
+    const dy = 0;
+    const path1 = Path.create(
+      Arc3d.create(
+        Point3d.create(95, 16), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      Arc3d.create(
+        Point3d.create(92, 13), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(360, 180),
+      ),
+      Arc3d.create(
+        Point3d.create(89, 10), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 270),
+      ),
+      Arc3d.create(
+        Point3d.create(93, 7), Vector3d.create(4, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 360),
+      ),
+      Arc3d.create(
+        Point3d.create(97, 5), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      LineString3d.create(Point3d.create(97, 3), Point3d.create(103, 3)),
+    );
+    const path2 = Path.create(
+      LineSegment3d.create(Point3d.create(95, 16), Point3d.create(91, 16)),
+      LineSegment3d.create(Point3d.create(91, 16), Point3d.create(91, 21)),
+      LineString3d.create(Point3d.create(91, 21), Point3d.create(99, 21), Point3d.create(99, 7)),
+      Arc3d.create(
+        Point3d.create(99, 4), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 0),
+      ),
+    );
+
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, true, true, 4);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, true, false, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, false, true, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPathVsPath");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionPathVsLoop", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.create(
+      Arc3d.create(
+        Point3d.create(95, 16), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      Arc3d.create(
+        Point3d.create(92, 13), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(360, 180),
+      ),
+      Arc3d.create(
+        Point3d.create(89, 10), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 270),
+      ),
+      Arc3d.create(
+        Point3d.create(93, 7), Vector3d.create(4, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 360),
+      ),
+      Arc3d.create(
+        Point3d.create(97, 5), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      LineString3d.create(Point3d.create(97, 3), Point3d.create(103, 3)),
+    );
+    const loop = Loop.create(
+      LineSegment3d.create(Point3d.create(95, 16), Point3d.create(91, 16)),
+      LineSegment3d.create(Point3d.create(91, 16), Point3d.create(91, 21)),
+      LineString3d.create(Point3d.create(91, 21), Point3d.create(99, 21), Point3d.create(99, 7)),
+      Arc3d.create(
+        Point3d.create(99, 4), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 0),
+      ),
+      LineString3d.create(
+        Point3d.create(100, 4),
+        Point3d.create(104, 4),
+        Point3d.create(104, 0),
+        Point3d.create(85, 0),
+        Point3d.create(85, 15),
+        Point3d.create(95, 15),
+        Point3d.create(95, 16),
+      ),
+    );
+
+    let dx = 0;
+    const dy = 0;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, true, true, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, true, false, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, false, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPathVsLoop");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionPathVsCurveChain", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = Path.create(
+      Arc3d.create(
+        Point3d.create(95, 16), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      Arc3d.create(
+        Point3d.create(92, 13), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(360, 180),
+      ),
+      Arc3d.create(
+        Point3d.create(89, 10), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 270),
+      ),
+      Arc3d.create(
+        Point3d.create(93, 7), Vector3d.create(4, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 360),
+      ),
+      Arc3d.create(
+        Point3d.create(97, 5), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      LineString3d.create(Point3d.create(97, 3), Point3d.create(103, 3)),
+    );
+    const loop = Loop.create(
+      LineSegment3d.create(Point3d.create(95, 16), Point3d.create(91, 16)),
+      LineSegment3d.create(Point3d.create(91, 16), Point3d.create(91, 21)),
+      LineString3d.create(Point3d.create(91, 21), Point3d.create(99, 21), Point3d.create(99, 7)),
+      Arc3d.create(
+        Point3d.create(99, 4), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 0),
+      ),
+      LineString3d.create(
+        Point3d.create(100, 4),
+        Point3d.create(104, 4),
+        Point3d.create(104, 0),
+        Point3d.create(85, 0),
+        Point3d.create(85, 15),
+        Point3d.create(95, 15),
+        Point3d.create(95, 16),
+      ),
+    );
+    const curveChain1 = CurveChainWithDistanceIndex.createCapture(loop);
+    ck.testType(curveChain1.path, Path, "CurveChainWithDistanceIndex stores a Path even when created from a Loop");
+
+    let dx = 0, dy = 0;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, true, true, 5);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, true, false, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, false, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain1, false, false, 0);
+
+    const pathWithCurveChain = Path.create(curveChain1.clone());
+    for (let i = 0; i < pathWithCurveChain.children.length; ++i) {
+      ck.testTrue(
+        pathWithCurveChain.children[i].isAlmostEqual(curveChain1.path.children[i]),
+        "Embedding a CurveChainWithDistanceIndex in a Path loses its distance index",
+      );
+    }
+
+    dx = 0;
+    dy += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, pathWithCurveChain, true, true, 5);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, pathWithCurveChain, true, false, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, pathWithCurveChain, false, true, 2);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, pathWithCurveChain, false, false, 0);
+
+    const loopWithCurveChain = Loop.create(curveChain1.clone());
+    for (let i = 0; i < loopWithCurveChain.children.length; ++i) {
+      ck.testTrue(
+        loopWithCurveChain.children[i].isAlmostEqual(curveChain1.path.children[i]),
+        "Embedding a CurveChainWithDistanceIndex in a Loop loses its distance index",
+      );
+    }
+
+    dx = 0;
+    dy += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loopWithCurveChain, true, true, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loopWithCurveChain, true, false, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loopWithCurveChain, false, true, 0);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, loopWithCurveChain, false, false, 0);
+
+    const path2 = Path.create(
+      LineSegment3d.create(Point3d.create(95, 16), Point3d.create(91, 16)),
+      LineSegment3d.create(Point3d.create(91, 16), Point3d.create(91, 21)),
+      LineString3d.create(Point3d.create(91, 21), Point3d.create(99, 21), Point3d.create(99, 7)),
+      Arc3d.create(
+        Point3d.create(99, 4), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 0),
+      ),
+    );
+    const curveChain2 = CurveChainWithDistanceIndex.createCapture(path2);
+
+    dx = 0;
+    dy += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, true, true, 4);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, true, false, 1);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, false, true, 3);
+    dx += 20;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPathVsCurveChain");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionLoopVsLoop", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const loop1 = Loop.create(
+      LineSegment3d.create(Point3d.create(75, 10), Point3d.create(80, 10)),
+      LineSegment3d.create(Point3d.create(80, 10), Point3d.create(80, 5)),
+      LineString3d.create(Point3d.create(80, 5), Point3d.create(77, 0), Point3d.create(75, 5), Point3d.create(75, 10)),
+    );
+    const loop2 = Loop.create(
+      LineSegment3d.create(Point3d.create(95, 16), Point3d.create(91, 16)),
+      LineSegment3d.create(Point3d.create(91, 16), Point3d.create(91, 21)),
+      LineString3d.create(Point3d.create(91, 21), Point3d.create(99, 21), Point3d.create(99, 7)),
+      Arc3d.create(
+        Point3d.create(99, 4), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 0),
+      ),
+      LineString3d.create(
+        Point3d.create(100, 4),
+        Point3d.create(104, 4),
+        Point3d.create(104, 0),
+        Point3d.create(85, 0),
+        Point3d.create(85, 15),
+        Point3d.create(95, 15),
+        Point3d.create(95, 16),
+      ),
+    );
+
+    let dx = 0;
+    const dy = 0;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop1, loop2, true, true, 0);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop1, loop2, true, false, 0);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop1, loop2, false, true, 0);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop1, loop2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionLoopVsLoop");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionLoopVsCurveChain", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const loop = Loop.create(
+      LineSegment3d.create(Point3d.create(95, 16), Point3d.create(91, 16)),
+      LineSegment3d.create(Point3d.create(91, 16), Point3d.create(91, 21)),
+      LineString3d.create(Point3d.create(91, 21), Point3d.create(99, 21), Point3d.create(99, 7)),
+      Arc3d.create(
+        Point3d.create(99, 4), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 0),
+      ),
+      LineString3d.create(
+        Point3d.create(100, 4),
+        Point3d.create(104, 4),
+        Point3d.create(104, 0),
+        Point3d.create(85, 0),
+        Point3d.create(85, 15),
+        Point3d.create(95, 15),
+        Point3d.create(95, 16),
+      ),
+    );
+    const path1 = Path.create(
+      Arc3d.create(
+        Point3d.create(95, 16), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      Arc3d.create(
+        Point3d.create(92, 13), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(360, 180),
+      ),
+      Arc3d.create(
+        Point3d.create(89, 10), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 270),
+      ),
+      Arc3d.create(
+        Point3d.create(93, 7), Vector3d.create(4, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 360),
+      ),
+      Arc3d.create(
+        Point3d.create(97, 5), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      LineString3d.create(Point3d.create(97, 3), Point3d.create(103, 3)),
+    );
+    const curveChain1 = CurveChainWithDistanceIndex.createCapture(path1);
+
+    let dx = 0, dy = 0;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, true, true, 3);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, true, false, 0);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, false, true, 3);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain1, false, false, 0);
+
+    const path2 = Path.create(
+      Arc3d.create(
+        Point3d.create(81, 10), Vector3d.create(5, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 180),
+      ),
+      LineSegment3d.create(Point3d.create(75, 10), Point3d.create(80, 10)),
+      LineSegment3d.create(Point3d.create(80, 10), Point3d.create(80, 5)),
+      LineString3d.create(Point3d.create(80, 5), Point3d.create(83, 5)),
+    );
+    const curveChain2 = CurveChainWithDistanceIndex.createCapture(path2);
+
+    dx = 0;
+    dy += 30;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, true, true, 4);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, true, false, 0);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, false, true, 4);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionLoopVsCurveChain");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("intersectionCurveChainVsCurveChain", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const path1 = Path.create(
+      LineSegment3d.create(Point3d.create(95, 16), Point3d.create(91, 16)),
+      LineSegment3d.create(Point3d.create(91, 16), Point3d.create(91, 21)),
+      LineString3d.create(Point3d.create(91, 21), Point3d.create(99, 21), Point3d.create(99, 7)),
+      Arc3d.create(
+        Point3d.create(99, 4), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 0),
+      ),
+      LineString3d.create(
+        Point3d.create(100, 4),
+        Point3d.create(104, 4),
+        Point3d.create(104, 0),
+      ),
+    );
+    const curveChain1 = CurveChainWithDistanceIndex.createCapture(path1);
+
+    const path2 = Path.create(
+      Arc3d.create(
+        Point3d.create(95, 16), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      Arc3d.create(
+        Point3d.create(92, 13), Vector3d.create(3, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(360, 180),
+      ),
+      Arc3d.create(
+        Point3d.create(89, 10), Vector3d.create(1, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(90, 270),
+      ),
+      Arc3d.create(
+        Point3d.create(93, 7), Vector3d.create(4, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 360),
+      ),
+      Arc3d.create(
+        Point3d.create(97, 5), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      LineString3d.create(Point3d.create(97, 3), Point3d.create(103, 3)),
+    );
+    const curveChain2 = CurveChainWithDistanceIndex.createCapture(path2);
+
+    let dx = 0;
+    const dy = 0;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain1, curveChain2, true, true, 3);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain1, curveChain2, true, false, 1);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain1, curveChain2, false, true, 2);
+    dx += 40;
+    captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain1, curveChain2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionCurveChainVsCurveChain");
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("IntersectXYWithTolerance", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -669,7 +1680,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(-2, 0), Point3d.create(0, 2), Point3d.create(2, 0),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
@@ -692,7 +1703,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const arc = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2),
-    )!;
+    );
     const lineString = LineString3d.create([5, 2], [6, 0], [7, 2]);
     const lineSegment = LineSegment3d.create(Point3d.create(7, 2), Point3d.create(10, 0));
     const geometryB = Path.create();
@@ -720,7 +1731,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const arc = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2),
-    )!;
+    );
     const lineString = LineString3d.create([5, 2], [6, 0], [7, 2]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(7, 2), Point3d.create(10, 0));
     const lineSegment2 = LineSegment3d.create(Point3d.create(10, 0), Point3d.create(1, 2));
@@ -748,11 +1759,11 @@ describe("CurveCurveIntersectXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const geometryA = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(-1, 2), Point3d.create(3, 4), Point3d.create(7, 2),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 5), Point3d.create(3, 4), Point3d.create(1, 3),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
@@ -793,7 +1804,7 @@ describe("CurveCurveIntersectXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const geometryA = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 2), Point3d.create(3, 4), Point3d.create(5, 2),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = LineString3d.create([3, 5], [3, 1], [6, 1]);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
@@ -885,7 +1896,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 0), Point3d.create(2, 1), Point3d.create(3, 0),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // find intersections
     const intersections = CurveCurve.intersectionXYPairs(geometryA, false, geometryB, false);
@@ -944,7 +1955,7 @@ describe("CurveCurveIntersectXY", () => {
     // path1
     const arc1 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5),
-    )!;
+    );
     const lineString1 = LineString3d.create([5, 5], [6, 3], [7, 5], [10, 3]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(10, 3), Point3d.create(1, 5));
     const geometryA = Path.create();
@@ -955,7 +1966,7 @@ describe("CurveCurveIntersectXY", () => {
     // path2
     const arc2 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(0, -2), Point3d.create(2, -3.5), Point3d.create(4, -2),
-    )!;
+    );
     const lineString2 = LineString3d.create([4, -2], [6, -1], [8, -2], [9, 6]);
     const lineSegment2 = LineSegment3d.create(Point3d.create(9, 6), Point3d.create(0, -2));
     const geometryB = Path.create();
@@ -982,7 +1993,7 @@ describe("CurveCurveIntersectXY", () => {
     // loop1
     const arc1 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5),
-    )!;
+    );
     const lineString1 = LineString3d.create([5, 5], [6, 3], [7, 5], [10, 3]);
     const lineSegment1 = LineSegment3d.create(Point3d.create(10, 3), Point3d.create(1, 5));
     const geometryA = Loop.create();
@@ -993,7 +2004,7 @@ describe("CurveCurveIntersectXY", () => {
     // loop2
     const arc2 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(0, -2), Point3d.create(2, -3.5), Point3d.create(4, -2),
-    )!;
+    );
     const lineString2 = LineString3d.create([4, -2], [6, -1], [8, -2], [9, 6]);
     const lineSegment2 = LineSegment3d.create(Point3d.create(9, 6), Point3d.create(0, -2));
     const geometryB = Loop.create();
@@ -1111,7 +2122,7 @@ describe("CurveCurveIntersectXY", () => {
     // bag of curves
     const arc1 = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(1, 5), Point3d.create(3, 6.5), Point3d.create(5, 5),
-    )!;
+    );
     const lineString1 = LineString3d.create([5, 5], [6, 3], [7, 5], [10, 3]);
     const path = Path.create();
     path.tryAddChild(arc1);

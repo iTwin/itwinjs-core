@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -47,9 +47,6 @@ export class SchemaContextEditor {
   public readonly unitSystems = new UnitSystems(this);
   public readonly propertyCategories = new PropertyCategories(this);
   public readonly invertedUnits = new InvertedUnits(this);
-
-  /** @internal */
-  // public readonly schemaItems = new SchemaItems(this);
 
   /**
    * Creates a new SchemaContextEditor instance.
@@ -118,7 +115,7 @@ export class SchemaContextEditor {
       if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
         await this.schemaContext.addSchema(refSchema);
       }
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddSchemaReference, new SchemaId(schemaKey), e);
     }
   }
@@ -142,7 +139,7 @@ export class SchemaContextEditor {
         this.removeCustomAttribute(schema, customAttribute);
         throw new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, schema), undefined, diagnostics);
       }
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToClass, new SchemaId(schemaKey), e);
     }
   }
@@ -161,7 +158,7 @@ export class SchemaContextEditor {
       schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
 
       return schema.schemaKey;
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetSchemaVersion, new SchemaId(schemaKey), e);
     }
   }
@@ -183,7 +180,7 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>{
+  public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
     const schema = Schema.isSchema(schemaOrKey)
       ? schemaOrKey
       : await this.getSchema(schemaOrKey);
@@ -199,8 +196,8 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T>{
-    const schemaItem =  await this.schemaContext.getSchemaItem<T>(schemaItemKey);
+  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
+    const schemaItem = await this.schemaContext.getSchemaItem<T>(schemaItemKey);
     if (!schemaItem) {
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
     }
@@ -230,6 +227,62 @@ export class SchemaContextEditor {
       throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
 
     return schema;
+  }
+
+  /**
+   * Sets the Schemas description.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param description The new description to set.
+   */
+  public async setDescription(schemaKey: SchemaKey, description: string) {
+    const schema = await this.lookupSchema(schemaKey)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaId(schemaKey), e);
+      });
+    schema.setDescription(description);
+  }
+
+  /**
+   * Sets the Schemas display label.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param label The new label to set.
+   */
+  public async setDisplayLabel(schemaKey: SchemaKey, label: string) {
+    const schema = await this.lookupSchema(schemaKey)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaId(schemaKey), e);
+      });
+    schema.setDisplayLabel(label);
+  }
+
+  /**
+   * Sets the Schemas alias.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param alias The new alias to set.
+   */
+  public async setAlias(schemaKey: SchemaKey, alias: string) {
+    const schema = await this.lookupSchema(schemaKey)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey), e);
+      });
+
+    try {
+      for (const currentSchema of this.schemaContext.getKnownSchemas()) {
+        if (currentSchema.schemaKey.matches(schemaKey))
+          continue;
+
+        if (currentSchema.alias.toLowerCase() === alias.toLowerCase())
+          throw new SchemaEditingError(ECEditingStatus.SchemaAliasAlreadyExists, new SchemaId(schemaKey), undefined, undefined, `Schema ${currentSchema.name} already uses the alias '${alias}'.`);
+      }
+      schema.setAlias(alias);
+    } catch(e: any) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
+        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey),
+          new SchemaEditingError(ECEditingStatus.InvalidSchemaAlias, new SchemaId(schemaKey)));
+      }
+
+      throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias,  new SchemaId(schemaKey), e);
+    }
   }
 }
 

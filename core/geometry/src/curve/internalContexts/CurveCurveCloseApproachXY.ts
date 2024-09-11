@@ -16,8 +16,7 @@ import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import {
-  CurveCurveCloseApproachXYRRtoRRD, CurvePointCloseApproachXYRtoRD,
-  Newton1dUnbounded, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD,
+  CurveCurveCloseApproachXYRRtoRRD, CurvePointCloseApproachXYRtoRD, Newton1dUnbounded, Newton2dUnboundedWithDerivative,
 } from "../../numerics/Newton";
 import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
 import { Arc3d } from "../Arc3d";
@@ -47,19 +46,8 @@ import { LineString3d } from "../LineString3d";
  */
 export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private _geometryB: AnyCurve | undefined;
-  private _circularArcB: Arc3d | undefined;
-  private _circularRadiusB: number | undefined;
   private setGeometryB(geometryB: AnyCurve | undefined) {
     this._geometryB = geometryB;
-    this._circularArcB = undefined;
-    this._circularRadiusB = undefined;
-    if (geometryB instanceof Arc3d) {
-      const r = geometryB.circularRadiusXY();
-      if (r !== undefined) {
-        this._circularRadiusB = r;
-        this._circularArcB = geometryB;
-      }
-    }
   }
   /**
    * Maximum XY distance (z is ignored). Approach larger than this is not interesting.
@@ -84,7 +72,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    * Constructor.
    * @param geometryB second curve for intersection. Saved for reference by specific handler methods.
    */
-  public constructor(geometryB: AnyCurve | undefined) {
+  public constructor(geometryB?: AnyCurve) {
     super();
     this.setGeometryB(geometryB);
     this._maxDistanceSquared = Geometry.smallMetricDistanceSquared;
@@ -453,7 +441,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
     const seeds = [0.2, 0.4, 0.6, 0.8]; // HEURISTIC: arcs have up to 4 perpendiculars; lines have only 1
     const newtonEvaluator = new CurvePointCloseApproachXYRtoRD(curveP, pointQ);
-    const newtonSearcher = new Newton1dUnbounded(newtonEvaluator);
+    const newtonSearcher = new Newton1dUnbounded(newtonEvaluator, 100);  // observed convergence to 1.0e-11 in 66 iters
     let minCloseApproachLength = Geometry.largeCoordinateResult;
     let minCurvePFraction: number | undefined;
     let minPointP: Point3d | undefined;
@@ -553,6 +541,33 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     );
   }
   /**
+   * Compute the perpendiculars between a line segment and an arc, without extending either curve.
+   * * One or two perpendiculars will be found.
+   * * Each perpendicular segment starts or ends on the arc where the arc tangent is parallel to the line tangent.
+   * * Perpendiculars from an endpoint are not explicitly computed.
+   * @param cpA line segment or line string; if it is a line string, then the fractions must specify a segment
+   * @param pointA0 start point of the segment
+   * @param fractionA0 fraction of the start of the segment
+   * @param pointA1 end point of the segment
+   * @param fractionA1 fraction of the end of the segment
+   * @param arc the arc
+   * @param reversed swap the details in the recorded pair (default: false)
+   */
+  public allPerpendicularsSegmentArcBounded(cpA: CurvePrimitive, pointA0: Point3d, fractionA0: number, pointA1: Point3d, fractionA1: number, arc: Arc3d, reversed: boolean = false): void {
+    const dotUT = arc.vector0.crossProductStartEndXY(pointA0, pointA1);
+    const dotVT = arc.vector90.crossProductStartEndXY(pointA0, pointA1);
+    const parallelRadians = Math.atan2(dotVT, dotUT);
+    for (const radians1 of [parallelRadians, parallelRadians + Math.PI]) {
+      const arcPoint = arc.radiansToPoint(radians1);
+      const fArc = arc.sweep.radiansToSignedPeriodicFraction(radians1);
+      if (this.acceptFraction(fArc)) { // reject solution outside arc sweep
+        const fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0, pointA1, arcPoint);
+        if (fLine !== undefined && this.acceptFraction(fLine))
+          this.recordPointWithLocalFractions(fLine, cpA, fractionA0, fractionA1, fArc, arc, 0, 1, reversed);
+      }
+    }
+  }
+  /**
    * Low level dispatch of line segment with arc.
    * Find close approaches within maxDistance between a line segments (pointA0, pointA1) and an arc.
    * To consider:
@@ -619,47 +634,32 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // 3) arc tangent parallel to line segment (or string).
     // If line does not intersect the arc, then the closest (and/or the furthest) point on arc to the line is a
     // point where the tangent line on arc at that point is parallel to the line.
-    const dotUT = data.vector0.crossProductStartEndXY(pointA0, pointA1);
-    const dotVT = data.vector90.crossProductStartEndXY(pointA0, pointA1);
-    const parallelRadians = Math.atan2(dotVT, dotUT);
-    for (const radians1 of [parallelRadians, parallelRadians + Math.PI]) {
-      const arcPoint = data.center.plus2Scaled(data.vector0, Math.cos(radians1), data.vector90, Math.sin(radians1));
-      const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians1);
-      const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-      // only add if the point is within the start and end fractions of both line segment and arc
-      if (lineFraction !== undefined && this.acceptFraction(lineFraction) && this.acceptFraction(arcFraction)) {
-        this.recordPointWithLocalFractions(
-          lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed,
-        );
-      }
-    }
+    this.allPerpendicularsSegmentArcBounded(cpA, pointA0, fractionA0, pointA1, fractionA1, arc, reversed);
   }
-  /** Solve Newton for 2 arcs and the given newtonEvaluator. */
-  private solveArcArcNewton(
-    curveP: Arc3d, curveQ: Arc3d, reversed: boolean, newtonEvaluator: NewtonEvaluatorRRtoRRD,
-  ): void {
-    const seedsU = [0.2, 0.4, 0.6, 0.8];  // HEURISTIC: 2 arcs have up to 4 perpendiculars/intersections
-    const seedsV = [0.2, 0.4, 0.6, 0.8];
-    const newtonSearcher = new Newton2dUnboundedWithDerivative(newtonEvaluator);
-    for (const seedU of seedsU) {
-      for (const seedV of seedsV) {
+  /**
+   * Compute segments perpendicular to two elliptical arcs, without extending either curve.
+   * * Perpendiculars from an endpoint are not explicitly computed.
+   * * Intersections are also found by this search: they are reported as zero-length segments.
+   * @param reversed swap the details in the recorded pair (default: false)
+   */
+  public allPerpendicularsArcArcBounded(arc0: Arc3d, arc1: Arc3d, reversed: boolean = false): void {
+    const newtonEvaluator = new CurveCurveCloseApproachXYRRtoRRD(arc0, arc1);
+    // HEURISTIC: 2 ellipses have up to 8 perpendiculars and up to 4 intersections
+    const seedDelta = 1 / 10;  // denominator 9 fails the unit test
+    const seedStart = seedDelta / 2;
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(newtonEvaluator, 100);  // observed convergence to 1.0e-11 in 49 iters
+    for (let seedU = seedStart; seedU < 1; seedU += seedDelta) {
+      for (let seedV = seedStart; seedV < 1; seedV += seedDelta) {
         newtonSearcher.setUV(seedU, seedV);
         if (newtonSearcher.runIterations()) {
-          const curvePFraction = newtonSearcher.getU();
-          const curveQFraction = newtonSearcher.getV();
-          if (this.acceptFraction(curvePFraction) && this.acceptFraction(curveQFraction)) {
-            this.recordPointWithLocalFractions(
-              curvePFraction, curveP, 0, 1, curveQFraction, curveQ, 0, 1, reversed,
-            );
+          const frac0 = newtonSearcher.getU();
+          const frac1 = newtonSearcher.getV();
+          if (this.acceptFraction(frac0) && this.acceptFraction(frac1)) {
+            this.recordPointWithLocalFractions(frac0, arc0, 0, 1, frac1, arc1, 0, 1, reversed);
           }
         }
       }
     }
-  }
-  /** Find and store perpendicular line between 2 arcs. */
-  private findPerpLineXYArcArcNewton(curveP: Arc3d, curveQ: Arc3d, reversed: boolean): void {
-    const newtonEvaluator = new CurveCurveCloseApproachXYRRtoRRD(curveP, curveQ);
-    this.solveArcArcNewton(curveP, curveQ, reversed, newtonEvaluator);
   }
   /** Low level dispatch of arc with Arc3d. */
   private dispatchArcArc(cpA: Arc3d, cpB: Arc3d, reversed: boolean): void {
@@ -671,7 +671,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     // 1) endpoints to endpoints or endpoints projection to the other curve
     this.testAndRecordFractionalPairApproach(cpA, 0, 1, true, cpB, 0, 1, true, reversed);
     // 2) perpendicular line between 2 arcs (includes intersections)
-    this.findPerpLineXYArcArcNewton(cpA, cpB, reversed);
+    this.allPerpendicularsArcArcBounded(cpA, cpB, reversed);
   }
   /** Low level dispatch of arc with (beziers of) a bspline curve */
   private dispatchArcBsplineCurve3d(cpA: Arc3d, cpB: BSplineCurve3d, reversed: boolean): void {

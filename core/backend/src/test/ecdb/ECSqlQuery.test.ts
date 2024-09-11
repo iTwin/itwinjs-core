@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
@@ -29,6 +29,7 @@ describe("ECSql Query", () => {
   let imodel6: SnapshotDb;
 
   before(async () => {
+
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
@@ -93,6 +94,18 @@ describe("ECSql Query", () => {
         },
       },
       {
+        query: "SELECT ECInstanceId A, ECClassId B FROM Bis.Element LIMIT 1", expected: {
+          a: "0x19",
+          b: "0x4c",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B FROM Bis.Element) LIMIT 1", expected: {
+          a: "0x19",
+          b: "0x4c",
+        },
+      },
+      {
         query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1", expected: {
           a: "0x1",
           b: "0xa8",
@@ -104,6 +117,26 @@ describe("ECSql Query", () => {
       },
       {
         query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -130,6 +163,102 @@ describe("ECSql Query", () => {
           },
           "model.id": "0x1",
           "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+          "id": "0x1",
+          "className": "BisCore.PartitionOriginatesFromRepository",
+          "sourceId": "0x1c",
+          "sourceClassName": "BisCore.PhysicalPartition",
+          "targetId": "0x12",
+          "targetClassName": "BisCore.RepositoryLink",
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+          "id": "0x1",
+          "className": "BisCore.PartitionOriginatesFromRepository",
+          "sourceId": "0x1c",
+          "sourceClassName": "BisCore.PhysicalPartition",
+          "targetId": "0x12",
+          "targetClassName": "BisCore.RepositoryLink",
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "0x40",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "0x40",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "0x40",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+          a: "0x1",
+          b: "0xa8",
+          c: "0x1c",
+          d: "0xb4",
+          e: "0x12",
+          f: "0xa9",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "0x40",
         },
       },
     ];
@@ -216,8 +345,8 @@ describe("ECSql Query", () => {
     let successful = 0;
     let rowCount = 0;
     try {
-      ConcurrentQuery.shutdown(imodel1.nativeDb);
-      ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
 
       const scheduleQuery = async (delay: number) => {
         return new Promise<void>(async (resolve, reject) => {
@@ -253,8 +382,8 @@ describe("ECSql Query", () => {
       assert.isAtLeast(successful, 1, "successful should be at least 1");
       assert.isAtLeast(rowCount, 1, "rowCount should be at least 1");
     } finally {
-      ConcurrentQuery.shutdown(imodel1.nativeDb);
-      ConcurrentQuery.resetConfig(imodel1.nativeDb);
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb]);
     }
   });
   it("concurrent query should retry on timeout", async () => {
@@ -268,10 +397,10 @@ describe("ECSql Query", () => {
     }
 
     // Set time to 1 sec to simulate a timeout scenario
-    ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+    ConcurrentQuery.resetConfig(imodel1[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
     const executor = {
       execute: async (req: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, req);
+        return ConcurrentQuery.executeQueryRequest(imodel1[_nativeDb], req);
       },
     };
     const request: DbQueryRequest = {

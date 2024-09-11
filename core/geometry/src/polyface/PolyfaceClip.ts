@@ -47,15 +47,7 @@ class ClipCandidate {
 }
 
 /**
- * A pair of PolyfaceBuilder objects, for use by clippers that emit inside and outside parts.
- * * There are nominally 4 builders:
- *   * builderA collects simple "inside" clip.
- *   * builderB collects simple "outside" clip.
- *   * builderA1 collects "side" clip for inside.
- *   * builderB1 collets "side" clip for outside.
- * * `static ClippedPolyfaceBuilders.create(keepInside, keepOutside)` initializes `builderA` and `builderB` (each optionally to undefined), with undefined `builderA1` and `builderB1`
- * * `builders.enableSideBuilders()` makes `builderA1` and `builderB1` match `builderA` and `builderB`.
- * * construction methods aim their facets at appropriate builders if defined.
+ * A pair of [[PolyfaceBuilder]] objects, for use by clippers that emit inside and outside parts.
  * * @public
  */
 export class ClippedPolyfaceBuilders {
@@ -70,11 +62,22 @@ export class ClippedPolyfaceBuilders {
     this.builderB = builderB;
     this.buildClosureFaces = buildClosureFaces;
   }
-  /** Simple create with default options on builder. */
+  /**
+   * Static constructor with default options for the builders.
+   * @param keepInside whether to collect clipped facets inside the clipper to `this.builderA` (default true)
+   * @param keepOutside whether to collect clipped facets outside the clipper to `this.builderB` (default false)
+   * @param buildSideFaces whether to add side facets to active builders (default false)
+   */
   public static create(keepInside: boolean = true, keepOutside: boolean = false, buildSideFaces: boolean = false) {
     return new ClippedPolyfaceBuilders(keepInside ? PolyfaceBuilder.create() : undefined, keepOutside ? PolyfaceBuilder.create() : undefined, buildSideFaces);
   }
 
+  /**
+   * Return the computed facets from the selected builder.
+   * @param selector the polyface to return: 0 - builderA (typically inside facets), 1 - builderB (typically outside facets)
+   * @param fixup whether to clean up the polyface
+   * @param tolerance compression tolerance (default [[Geometry.smallMetricDistance]]).
+   */
   public claimPolyface(selector: 0 | 1, fixup: boolean, tolerance: number = Geometry.smallMetricDistance): IndexedPolyface | undefined {
     const builder = selector === 0 ? this.builderA : this.builderB;
     if (builder) {
@@ -398,9 +401,9 @@ export class PolyfaceClip {
             this.addClippedContour(contour, clipper, destination, cache);
           } else {
             if (destination.builderA)
-              contour.emitFacets(destination.builderA, true, clipper);
+              contour.emitFacets(destination.builderA, false);
             if (destination.builderB)
-              contour.emitFacets(destination.builderB, false, clipper);
+              contour.emitFacets(destination.builderB, true);
           }
         }
       }
@@ -412,9 +415,9 @@ export class PolyfaceClip {
           this.addClippedContour(contour, clipper, destination, cache);
         } else {
           if (destination.builderA)
-            contour.emitFacets(destination.builderA, true, clipper);
+            contour.emitFacets(destination.builderA, false);
           if (destination.builderB)
-            contour.emitFacets(destination.builderB, false, clipper);
+            contour.emitFacets(destination.builderB, true);
         }
       }
     }

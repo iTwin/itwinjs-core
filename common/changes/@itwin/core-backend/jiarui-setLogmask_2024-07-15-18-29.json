@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "set LogMask to ALl if CloudSqlite LoggerCatetory is Trace",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

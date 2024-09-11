@@ -1,22 +1,27 @@
 sep=;
-Release Tag;API Item
-beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
-beta;DataSource
-beta;FrontendTilesOptions
-internal;frontendTilesOptions:
-beta;GraphicRepresentation =
-beta;GraphicRepresentationFormat = "IMDL" | "3DTILES" | string
-beta;GraphicRepresentationStatus
-beta;initializeFrontendTiles(options: FrontendTilesOptions): void
-beta;MeshExport
-internal;MeshExports
-beta;obtainGraphicRepresentationUrl(args: ObtainGraphicRepresentationUrlArgs): Promise
-beta;ObtainGraphicRepresentationUrlArgs
-beta;obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise
-beta;ObtainIModelTilesetUrlArgs
-beta;obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise
-beta;ObtainMeshExportTilesetUrlArgs = ObtainIModelTilesetUrlArgs
-beta;queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator
-beta;QueryGraphicRepresentationsArgs
-beta;queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator
-beta;QueryMeshExportsArgs
+Release Tag;API Item Type;API Item Name
+alpha;function;attachGeoscienceTileset
+alpha;type;AttachGeoscienceTilesetArgs
+alpha;interface;BaseGeoscienceArgs
+beta;type;ComputeSpatialTilesetBaseUrl
+beta;interface;DataSource
+beta;interface;FrontendTilesOptions
+internal;const;frontendTilesOptions
+alpha;interface;GetGeoscienceTilesetArgs
+alpha;function;getGeoscienceTilesetUrl
+beta;type;GraphicRepresentation
+beta;type;GraphicRepresentationFormat
+beta;enum;GraphicRepresentationStatus
+beta;function;initializeFrontendTiles
+beta;interface;MeshExport
+internal;interface;MeshExports
+beta;function;obtainGraphicRepresentationUrl
+beta;interface;ObtainGraphicRepresentationUrlArgs
+beta;function;obtainIModelTilesetUrl
+beta;interface;ObtainIModelTilesetUrlArgs
+beta;function;obtainMeshExportTilesetUrl
+beta;type;ObtainMeshExportTilesetUrlArgs
+beta;function;queryGraphicRepresentations
+beta;interface;QueryGraphicRepresentationsArgs
+beta;function;queryMeshExports
+beta;interface;QueryMeshExportsArgs

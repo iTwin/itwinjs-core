@@ -50,6 +50,7 @@ export enum ConflictCode {
   ConflictingEnumerationType = "C-700",
   ConflictingEnumeratorValue = "C-701",
 
+  ConflictingPersistenceUnit = "C-1010",
   MixinAppliedMustDeriveFromConstraint = "C-1100",
 
   ConflictingPropertyName = "C-1300",
@@ -91,4 +92,7 @@ export interface SchemaDifferenceConflict {
 
   /** The value in the target schema. */
   readonly target: unknown;
+
+  /** The conflicting difference */
+  readonly difference?: unknown;
 }

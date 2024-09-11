@@ -1,6 +1,76 @@
 # Change Log - @itwin/ecschema-rpcinterface-tests
 
-This log was last generated on Thu, 13 Jun 2024 22:48:58 GMT and should not be manually modified.
+This log was last generated on Fri, 06 Sep 2024 05:08:18 GMT and should not be manually modified.
+
+## 4.8.6
+Fri, 06 Sep 2024 05:06:49 GMT
+
+_Version update only_
+
+## 4.8.5
+Wed, 28 Aug 2024 17:27:23 GMT
+
+_Version update only_
+
+## 4.8.4
+Thu, 22 Aug 2024 17:37:06 GMT
+
+_Version update only_
+
+## 4.8.3
+Fri, 16 Aug 2024 18:18:14 GMT
+
+_Version update only_
+
+## 4.8.2
+Thu, 15 Aug 2024 15:33:49 GMT
+
+_Version update only_
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+_Version update only_
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:38 GMT
+
+_Version update only_
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
+
+## 4.7.7
+Fri, 19 Jul 2024 14:52:42 GMT
+
+_Version update only_
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:55 GMT
+
+_Version update only_
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+_Version update only_
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:24 GMT
+
+_Version update only_
+
+## 4.7.3
+Thu, 27 Jun 2024 21:09:02 GMT
+
+_Version update only_
+
+## 4.7.2
+Sat, 22 Jun 2024 01:09:54 GMT
+
+_Version update only_
 
 ## 4.7.1
 Thu, 13 Jun 2024 22:47:32 GMT

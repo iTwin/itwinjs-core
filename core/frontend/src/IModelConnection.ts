@@ -34,6 +34,7 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
+import { _requestSnap } from "./common/internal/Symbols";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -142,9 +143,9 @@ export abstract class IModelConnection extends IModel {
    */
   public abstract get isClosed(): boolean;
 
-  /** Event called immediately before *any* IModelConnection is closed.
-   * @note This static event is called when *any* IModelConnection is closed, and the specific IModelConnection is passed as its argument. To
-   * monitor closing a specific IModelConnection, use the `onClose` instance event.
+  /** Event raised immediately before *any* IModelConnection is [[close]]d.
+   * @note This static event is raised when *any* IModelConnection is closed, and the specific IModelConnection is passed as its argument. To
+   * monitor closing a specific IModelConnection, listen for the `onClose` instance event instead.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
@@ -152,10 +153,9 @@ export abstract class IModelConnection extends IModel {
   /** Event called immediately after *any* IModelConnection is opened. */
   public static readonly onOpen = new BeEvent<(_imodel: IModelConnection) => void>();
 
-  /** Event called immediately before *this* IModelConnection is closed.
-   * @note This event is called only for this IModelConnection. To monitor *all* IModelConnections,use the static event.
+  /** Event raised immediately before this IModelConnection is [[close]]d.
+   * @note This event is raised only for this specific IModelConnection. To monitor *all* IModelConnections, listen for the static `onClose` event instead.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
-   * @beta
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
@@ -285,6 +285,15 @@ export abstract class IModelConnection extends IModel {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(this.getRpcProps(), compressedCategoryIds);
   }
 
+  /**
+   * queries the BisCore.SubCategory table for entries that are children of used spatial categories and 3D elements.
+   * @returns array of SubCategoryResultRow
+   * @internal
+   */
+  public async queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryAllUsedSpatialSubCategories(this.getRpcProps());
+  }
+
   /** Execute a query and stream its results
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
@@ -359,13 +368,24 @@ export abstract class IModelConnection extends IModel {
     return new Set(this.isOpen ? await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryEntityIds(this.getRpcProps(), params) : undefined);
   }
 
-  private _snapRpc = new OneAtATimeAction<SnapResponseProps>(async (props: SnapRequestProps) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props));
+  private _snapRpc = new OneAtATimeAction<SnapResponseProps>(
+    async (props: SnapRequestProps) =>
+      IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props),
+  );
+
   /** Request a snap from the backend.
    * @note callers must gracefully handle Promise rejected with AbandonedError
    * @internal
    */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async [_requestSnap](props: SnapRequestProps): Promise<SnapResponseProps> {
     return this.isOpen ? this._snapRpc.request(props) : { status: 2 };
+  }
+
+  /** @internal
+   * @deprecated in 4.8. Use AccuSnap.doSnapRequest.
+   */
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
+    return this[_requestSnap](props);
   }
 
   private _toolTipRpc = new OneAtATimeAction<string[]>(async (id: string) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id));

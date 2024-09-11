@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
-
 export * from "./BackendHubAccess";
 export * from "./BackendLoggerCategory";
 export * from "./BisCoreSchema";
@@ -49,6 +47,7 @@ export * from "./IpcHost";
 export * from "./LineStyle";
 export * from "./LocalhostIpcHost";
 export * from "./LocalHub";
+export * from "./LockControl";
 export * from "./Material";
 export * from "./Model";
 export * from "./NativeAppStorage";
@@ -62,7 +61,12 @@ export * from "./SchemaUtils";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./TextAnnotationElement";
-export { computeLayoutTextBlockResult, LayoutTextBlockArgs } from "./TextAnnotationLayout";
+export {
+  computeGraphemeOffsets,
+  computeLayoutTextBlockResult,
+  ComputeGraphemeOffsetsArgs,
+  LayoutTextBlockArgs,
+} from "./TextAnnotationLayout";
 export * from "./TextAnnotationGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
@@ -75,6 +79,8 @@ export * from "./workspace/Workspace";
 export * from "./workspace/WorkspaceEditor";
 export * from "./SqliteChangesetReader";
 export * from "./ChangesetECAdaptor";
+
+export * from "./internal/cross-package";
 
 /** @docs-package-description
  * The core-backend package always runs on the computer with a local Briefcase.

@@ -6,12 +6,12 @@
  * @module ECSQL
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
+import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
-import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *
@@ -25,6 +25,15 @@ import { IModelHost } from "./IModelHost";
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64String) { }
+}
+
+/**
+ * Arguments supplied to [[ECSqlStatement.getRow]].
+ * @public
+ * */
+export interface ECSqlRowArg {
+  /** Determine row format. */
+  rowFormat?: QueryRowFormat;
 }
 
 /** Executes ECSQL statements.
@@ -54,6 +63,7 @@ export class ECSqlInsertResult {
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
+  private _props = new PropertyMetaDataMap([]);
 
   public get sql() { return this._sql!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
@@ -79,14 +89,14 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param ecsql The ECSQL statement string to prepare
    * @param logErrors Determine if errors are logged or not, its set to false by default for tryPrepare()
-   * @returns A [StatusCodeWithMessage]($bentley) object with a `status` member equal to [DbResult.BE_SQLITE_OK]($bentley) on success. Upon error, the `message` member will provide details.
+   * @returns An object with a `status` member equal to [DbResult.BE_SQLITE_OK]($bentley) on success. Upon error, the `message` member will provide details.
    * @internal
    */
-  public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = false): StatusCodeWithMessage<DbResult> {
+  public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = false): { status: DbResult, message: string } {
     if (this.isPrepared)
       throw new Error("ECSqlStatement is already prepared");
     this._sql = ecsql;
-    this._stmt = new IModelHost.platform.ECSqlStatement();
+    this._stmt = new IModelNative.platform.ECSqlStatement();
     return this._stmt.prepare(db, ecsql, logErrors);
   }
 
@@ -94,6 +104,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public reset(): void {
     assert(undefined !== this._stmt);
     this._stmt.reset();
+    this._props = new PropertyMetaDataMap([]);
   }
 
   /** Get the Native SQL statement
@@ -320,36 +331,54 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * - [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
    * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
-  public getRow(): any {
-    const colCount: number = this.getColumnCount();
-    const row: object = {};
-    const duplicatePropNames = new Map<string, number>();
-    for (let i = 0; i < colCount; i++) {
-      const ecsqlValue = this.getValue(i);
-      if (!ecsqlValue.isNull) {
-        const propName: string = ECSqlStatement.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
-        const val: any = ecsqlValue.value;
-        Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
-      }
+  public getRow(args?: ECSqlRowArg): any {
+    args = args ?? {};
+
+    // Set default rowFormat if not provided
+    if (args.rowFormat === undefined) {
+      args.rowFormat = QueryRowFormat.UseJsPropertyNames;
     }
-    return row;
+
+    const toRowOptions = {
+      classIdsToClassNames: true,
+      rowFormat: args.rowFormat,
+    };
+    const resp = this._stmt!.toRow(toRowOptions); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    return this.formatCurrentRow(resp, args.rowFormat);
   }
 
-  private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: ECSqlValue): string {
-    const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
-    let jsName: string = ECJsNames.toJsName(colInfo.getAccessString(), colInfo.isSystemProperty());
-
-    // now check duplicates. If there are, append a numeric suffix to the duplicates
-    let suffix: number | undefined = duplicatePropNames.get(jsName);
-    if (suffix === undefined)
-      duplicatePropNames.set(jsName, 0);
-    else {
-      suffix++;
-      duplicatePropNames.set(jsName, suffix);
-      jsName += `_${suffix}`;
+  /**
+   * @internal
+   */
+  public formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
+    if (this._props.length === 0) {
+      const resp = this._stmt!.getMetadata(); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      this._props = new PropertyMetaDataMap(resp.meta);
     }
+    const formattedRow = {};
+    const uniqueNames = new Map<string, number>();
+    for (const prop of this._props) {
+      const propName = rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
+      const val = currentResp.data[prop.index];
+      if (typeof val !== "undefined" && val !== null) {
+        let uniquePropName = propName;
+        if (uniqueNames.has(propName)) {
+          let currentValue = uniqueNames.get(propName);
+          currentValue = currentValue ? currentValue + 1 : 1;
+          uniqueNames.set(propName, currentValue);
+          uniquePropName = `${propName}_${currentValue}`;
+        } else {
+          uniqueNames.set(propName,0);
+        }
 
-    return jsName;
+        Object.defineProperty(formattedRow, uniquePropName, {
+          value: val,
+          enumerable: true,
+          writable: true,
+        });
+      }
+    }
+    return formattedRow;
   }
 
   /** Calls step when called as an iterator.

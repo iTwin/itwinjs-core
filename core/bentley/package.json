@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "4.8.0-dev.10",
+  "version": "4.9.0-dev.22",
   "description": "Bentley JavaScript core components",
   "module": "lib/esm/core-bentley.js",
   "typings": "lib/esm/core-bentley",
@@ -19,7 +19,8 @@
     "test": "vitest --run --dir=src",
     "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
     "cover": "nyc npm -s test",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
     "Bentley",

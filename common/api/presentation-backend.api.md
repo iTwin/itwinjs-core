@@ -58,14 +58,13 @@ import { WithCancelEvent } from '@itwin/presentation-common';
 
 // @public
 export interface BackendDiagnosticsAttribute {
-    // @beta
     diagnostics?: BackendDiagnosticsOptions;
 }
 
-// @beta
+// @public
 export type BackendDiagnosticsHandler<TContext = any> = (logs: Diagnostics, requestContext?: TContext) => void;
 
-// @beta
+// @public
 export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOptions {
     handler: BackendDiagnosticsHandler<TContext>;
     requestContextSupplier?: () => TContext;
@@ -130,12 +129,8 @@ export interface MultiElementPropertiesResponse<TParsedContent = ElementProperti
     total: number;
 }
 
-// @public
-export interface MultiManagerPresentationProps extends PresentationPropsBase {
-    // @internal
-    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-    unusedClientLifetime?: number;
-}
+// @public @deprecated
+export type MultiManagerPresentationProps = PresentationProps;
 
 // @internal (undocumented)
 export function normalizeVersion(version?: string): string;
@@ -238,7 +233,6 @@ export class PresentationManager {
     dispose(): void;
     getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
     getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
-    // @beta
     getContentSet(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Item[]>;
     getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
     getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
@@ -254,7 +248,6 @@ export class PresentationManager {
     getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
     getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
-    // @beta
     getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
@@ -289,11 +282,9 @@ export interface PresentationManagerProps {
     // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
-    // @beta
     diagnostics?: BackendDiagnosticsOptions;
     // @deprecated
     enableSchemasPreload?: boolean;
-    // @beta
     getLocalizedString?: (key: string) => string;
     // @internal
     id?: string;
@@ -304,24 +295,25 @@ export interface PresentationManagerProps {
     // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
-    // @alpha
     schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
     supplementalRulesetDirectories?: string[];
     // @beta @deprecated
     updatesPollInterval?: number;
-    // @beta
     useMmap?: boolean | number;
     workerThreadsCount?: number;
 }
 
 // @public
-export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
-
-// @public
-export interface PresentationPropsBase extends PresentationManagerProps {
+export interface PresentationProps extends PresentationManagerProps {
+    // @internal
+    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
     enableSchemasPreload?: boolean;
     requestTimeout?: number;
+    unusedClientLifetime?: number;
 }
+
+// @public @deprecated
+export type PresentationPropsBase = PresentationProps;
 
 // @internal (undocumented)
 export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext): void;
@@ -336,6 +328,7 @@ export class RulesetEmbedder {
 // @public
 export interface RulesetEmbedderProps {
     imodel: IModelDb;
+    parentSubjectId?: Id64String;
 }
 
 // @public
@@ -409,11 +402,8 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     unset(variableId: string): void;
 }
 
-// @public
-export interface SingleManagerPresentationProps extends PresentationPropsBase {
-    // @alpha
-    useSingleManager?: boolean;
-}
+// @public @deprecated
+export type SingleManagerPresentationProps = Omit<PresentationProps, "clientManagerFactory" | "unusedClientLifetime">;
 
 // @public @deprecated
 export type UnitSystemFormat = UnitSystemFormat_2;

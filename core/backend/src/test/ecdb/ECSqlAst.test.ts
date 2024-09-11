@@ -290,8 +290,16 @@ describe("ECSql Abstract Syntax Tree", () => {
         expectedECSql: "SELECT IIF(EXISTS(SELECT 1), 'True', 'False')",
       },
       {
+        orignalECSql: "SELECT IIF(EXISTS(WITH temp(x) AS (SELECT 1) SELECT * FROM temp), 'True', 'False')",
+        expectedECSql: "SELECT IIF(EXISTS(WITH [temp]([x]) AS (SELECT 1) SELECT [temp].[x] FROM [temp]), 'True', 'False')",
+      },
+      {
         orignalECSql: "SELECT IIF(NOT EXISTS(SELECT 1), 'True', 'False')",
         expectedECSql: "SELECT IIF((NOT EXISTS(SELECT 1)), 'True', 'False')",
+      },
+      {
+        orignalECSql: "SELECT IIF(NOT EXISTS(WITH temp(x) AS (SELECT 1) SELECT * FROM temp), 'True', 'False')",
+        expectedECSql: "SELECT IIF((NOT EXISTS(WITH [temp]([x]) AS (SELECT 1) SELECT [temp].[x] FROM [temp])), 'True', 'False')",
       },
     ];
     for (const test of tests) {
@@ -600,11 +608,31 @@ describe("ECSql Abstract Syntax Tree", () => {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
+  it("parse cte without columns", async () => {
+    const tests = [
+      {
+        orignalECSql: "WITH cte AS (SELECT * FROM meta.ECClassDef) SELECT * FROM cte",
+        expectedECSql: "WITH [cte] AS (SELECT [ECInstanceId], [ECClassId], [Schema], [Name], [DisplayLabel], [Description], [Type], [Modifier], [CustomAttributeContainerType], [RelationshipStrength], [RelationshipStrengthDirection] FROM [ECDbMeta].[ECClassDef]) SELECT [ECInstanceId], [ECClassId], [Schema], [Name], [DisplayLabel], [Description], [Type], [Modifier], [CustomAttributeContainerType], [RelationshipStrength], [RelationshipStrengthDirection] FROM [cte]",
+      },
+      {
+        orignalECSql: "WITH cte AS (SELECT * FROM meta.ECClassDef) SELECT cte.ECInstanceId FROM cte",
+        expectedECSql: "WITH [cte] AS (SELECT [ECInstanceId], [ECClassId], [Schema], [Name], [DisplayLabel], [Description], [Type], [Modifier], [CustomAttributeContainerType], [RelationshipStrength], [RelationshipStrengthDirection] FROM [ECDbMeta].[ECClassDef]) SELECT [cte].[ECInstanceId] FROM [cte]",
+      },
+    ];
+    for (const test of tests) {
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
+      assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
+    }
+  });
   it("parse SELECT (<subquery>) FROM", async () => {
     const tests = [
       {
         orignalECSql: "SELECT (SELECT b.ECInstanceId FROM meta.ECPropertyDef b) AS S  FROM [ECDbMeta].[ECClassDef] a",
         expectedECSql: "SELECT (SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]) [S] FROM [ECDbMeta].[ECClassDef] [a]",
+      },
+      {
+        orignalECSql: "SELECT (WITH C(iD) AS (SELECT b.ECInstanceId FROM meta.ECPropertyDef b) SELECT * FROM C) AS S  FROM [ECDbMeta].[ECClassDef] a",
+        expectedECSql: "SELECT (WITH [C]([iD]) AS (SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]) SELECT [C].[iD] FROM [C]) [S] FROM [ECDbMeta].[ECClassDef] [a]",
       },
       {
         orignalECSql: "SELECT (SELECT 1 UNION SELECT 2) FROM meta.ECClassDef a",
@@ -614,7 +642,10 @@ describe("ECSql Abstract Syntax Tree", () => {
         orignalECSql: "SELECT  1 FROM [ECDbMeta].[ECClassDef] [a] WHERE (SELECT [b].[ECInstanceId] FROM meta.ECPropertyDef b) = 1",
         expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] [a] WHERE ((SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]) = 1)",
       },
-
+      {
+        orignalECSql: "SELECT  1 FROM [ECDbMeta].[ECClassDef] [a] WHERE (WITH temp(Id) AS (SELECT [b].[ECInstanceId] FROM meta.ECPropertyDef b) SELECT * FROM temp) = 1",
+        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] [a] WHERE ((WITH [temp]([Id]) AS (SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]) SELECT [temp].[Id] FROM [temp]) = 1)",
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
@@ -682,6 +713,10 @@ describe("ECSql Abstract Syntax Tree", () => {
     const tests = [
       {
         orignalECSql: "INSERT INTO Bis.Subject(ECInstanceId) VALUES(1)",
+        expectedECSql: "INSERT INTO [BisCore].[Subject] ([ECInstanceId]) VALUES(1)",
+      },
+      {
+        orignalECSql: "INSERT INTO ONLY Bis.Subject(ECInstanceId) VALUES(1)",
         expectedECSql: "INSERT INTO [BisCore].[Subject] ([ECInstanceId]) VALUES(1)",
       },
     ];

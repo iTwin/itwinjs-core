@@ -5,7 +5,7 @@
 
 import { assert, describe, expect, it } from "vitest";
 import {
-  CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, MutableCompressedId64Set, OrderedId64Iterable, TransientIdSequence,
+  CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64String, MutableCompressedId64Set, OrderedId64Iterable, TransientIdSequence,
 } from "../core-bentley";
 
 class Uint64Id {
@@ -647,5 +647,126 @@ describe("TransientIdSequence", () => {
     expect(ids.getNext()).to.equal("0xffffff0000000001");
     expect(ids.peekNext()).to.equal("0xffffff0000000002");
     expect(ids.getNext()).to.equal("0xffffff0000000002");
+  });
+
+  describe("merge", () => {
+    it("throws on negative or non-integer local Ids", () => {
+      const dst = new TransientIdSequence();
+      expect(() => dst.merge({ initialLocalId: -1, currentLocalId: 1 })).to.throw("non-negative integer");
+      expect(() => dst.merge({ initialLocalId: 0.5, currentLocalId: 1 })).to.throw("non-negative integer");
+      expect(() => dst.merge({ initialLocalId: -1, currentLocalId: 0.5 })).to.throw("non-negative integer");
+      expect(() => dst.merge({ initialLocalId: -1, currentLocalId: -11 })).to.throw("non-negative integer");
+    });
+
+    it("throws if sequences do not intersect", () => {
+      let dst = new TransientIdSequence();
+      expect(() => dst.merge({ initialLocalId: 1, currentLocalId: 1 })).to.throw("do not intersect");
+
+      dst = new TransientIdSequence(3);
+      for (let initialLocalId = 4; initialLocalId < 7; initialLocalId++) {
+        expect(() => dst.merge({ initialLocalId, currentLocalId: 1 })).to.throw("do not intersect");
+      }
+    });
+
+    it("throws if sequence is malformed", () => {
+      const seq = new TransientIdSequence(3);
+      expect(() => seq.merge({ initialLocalId: 2, currentLocalId: 1 })).to.throw("cannot be less");
+    });
+
+    it("reserves space for the source sequence", () => {
+      const seq = new TransientIdSequence();
+      expect(seq.currentLocalId).to.equal(0);
+
+      seq.merge({ initialLocalId: 0, currentLocalId: 1 });
+      expect(seq.currentLocalId).to.equal(1);
+
+      seq.getNext();
+      seq.getNext();
+      expect(seq.currentLocalId).to.equal(3);
+
+      seq.merge({ initialLocalId: 0, currentLocalId: 10 });
+      expect(seq.currentLocalId).to.equal(13);
+
+      seq.merge({ initialLocalId: 3, currentLocalId: 5 });
+      expect(seq.currentLocalId).to.equal(15);
+    });
+
+    function expectLocalId(id: Id64String, expected: number): void {
+      expect(Id64.getLocalId(id)).to.equal(expected);
+    }
+
+    it("remaps source local Ids to the end of the current sequence", () => {
+      const dst = new TransientIdSequence(0);
+      let src = TransientIdSequence.fromJSON(dst.fork());
+      expectLocalId(src.getNext(), 1);
+      expectLocalId(src.getNext(), 2);
+
+      let remap = dst.merge(src);
+      expect(remap(1)).to.equal(1);
+      expect(remap(2)).to.equal(2);
+      expect(remap(3)).to.equal(3);
+
+      src = TransientIdSequence.fromJSON(dst.fork());
+      expectLocalId(src.getNext(), 3);
+      expectLocalId(src.getNext(), 4);
+      expectLocalId(dst.getNext(), 3);
+      expectLocalId(dst.getNext(), 4);
+      expectLocalId(dst.getNext(), 5);
+
+      remap = dst.merge(src);
+      // Prior to fork
+      expect(remap(1)).to.equal(1);
+      expect(remap(2)).to.equal(2);
+      // Where we forked and inserted 2 Ids
+      expect(remap(3)).to.equal(6);
+      expect(remap(4)).to.equal(7);
+      // After we merged.
+      expect(remap(5)).to.equal(5);
+      expect(remap(6)).to.equal(6);
+      expect(remap(7)).to.equal(7);
+      // Not yet allocated
+      expect(remap(8)).to.equal(8);
+    });
+
+    it("merges with multiple forks", () => {
+      const seq = new TransientIdSequence();
+      expectLocalId(seq.getNext(), 1);
+
+      const a = TransientIdSequence.fromJSON(seq.fork());
+      expectLocalId(a.getNext(), 2);
+      expectLocalId(a.getNext(), 3);
+
+      expectLocalId(seq.getNext(), 2);
+      const b = TransientIdSequence.fromJSON(seq.fork());
+      expectLocalId(b.getNext(), 3);
+      expectLocalId(b.getNext(), 4);
+
+      expectLocalId(a.getNext(), 4);
+      expectLocalId(seq.getNext(), 3);
+      expectLocalId(b.getNext(), 5);
+      expectLocalId(b.getNext(), 6);
+
+      expect(seq.currentLocalId).to.equal(3);
+      const mapA = seq.merge(a);
+      expect(seq.currentLocalId).to.equal(6);
+      const mapB = seq.merge(b);
+      expect(seq.currentLocalId).to.equal(10);
+
+      // a: 2..4 + 4 => 4..6
+      expect(mapA(1)).to.equal(1);
+      expect(mapA(2)).to.equal(4);
+      expect(mapA(3)).to.equal(5);
+      expect(mapA(4)).to.equal(6);
+      expect(mapA(5)).to.equal(5);
+
+      // b: 3..6 + 7 => 7..10
+      expect(mapB(1)).to.equal(1);
+      expect(mapB(2)).to.equal(2);
+      expect(mapB(3)).to.equal(7);
+      expect(mapB(4)).to.equal(8);
+      expect(mapB(5)).to.equal(9);
+      expect(mapB(6)).to.equal(10);
+      expect(mapB(7)).to.equal(7);
+    });
   });
 });

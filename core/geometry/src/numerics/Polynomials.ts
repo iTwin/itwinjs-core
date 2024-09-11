@@ -1537,7 +1537,7 @@ export class SmallSystem {
    * Return the line fraction at which the line is closest to a space point as viewed in xy only.
    * @param pointA0 start point
    * @param pointA1 end point
-   * @param spacePoint homogeneous point in space
+   * @param spacePoint point in space
    */
   public static lineSegment3dXYClosestPointUnbounded(pointA0: XAndY, pointA1: XAndY, spacePoint: XAndY): number | undefined {
     // Considering only x,y parts....
@@ -1554,7 +1554,7 @@ export class SmallSystem {
    * Return the line fraction at which the line is closest to a space point
    * @param pointA0 start point
    * @param pointA1 end point
-   * @param spacePoint homogeneous point in space
+   * @param spacePoint point in space
    */
   public static lineSegment3dClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined {
     const ux = pointA1.x - pointA0.x;
@@ -1650,10 +1650,10 @@ export class SmallSystem {
     return false;
   }
   /**
-   * Solve a linear system
-   * * x equation: `ux *u * vx * v + wx * w = cx`
-   * * y equation: `uy *u * vy * v + wy * w = cy`
-   * * z equation: `uz *u * vz * v + wz * w = cz`
+   * Solve a linear system:
+   * * x equation: `axx * u + axy * v + axz * w = cx`
+   * * y equation: `ayx * u + ayy * v + ayz * w = cy`
+   * * z equation: `azx * u + azy * v + azz * w = cz`
    * @param axx row 0, column 0 coefficient
    * @param axy row 0, column 1 coefficient
    * @param axz row 0, column 1 coefficient
@@ -1667,13 +1667,15 @@ export class SmallSystem {
    * @param cy right hand side row 1 coefficient
    * @param cz right hand side row 2 coefficient
    * @param result optional result.
+   * @returns solution vector (u,v,w) or `undefined` if system is singular.
    */
   public static linearSystem3d(
     axx: number, axy: number, axz: number, // first row of matrix
     ayx: number, ayy: number, ayz: number, // second row of matrix
     azx: number, azy: number, azz: number, // second row of matrix
-    cx: number, cy: number, cz: number, // right side
-    result?: Vector3d): Vector3d | undefined {
+    cx: number, cy: number, cz: number,    // right side
+    result?: Vector3d,
+  ): Vector3d | undefined {
     // determinants of various combinations of columns ...
     const detXYZ = Geometry.tripleProduct(axx, ayx, azx, axy, ayy, azy, axz, ayz, azz);
     const detCYZ = Geometry.tripleProduct(cx, cy, cz, axy, ayy, azy, axz, ayz, azz);

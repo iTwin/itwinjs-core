@@ -2,6 +2,186 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "4.8.6",
+      "tag": "@itwin/core-backend_v4.8.6",
+      "date": "Fri, 06 Sep 2024 05:06:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.5",
+      "tag": "@itwin/core-backend_v4.8.5",
+      "date": "Wed, 28 Aug 2024 17:27:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.4",
+      "tag": "@itwin/core-backend_v4.8.4",
+      "date": "Thu, 22 Aug 2024 17:37:06 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.3",
+      "tag": "@itwin/core-backend_v4.8.3",
+      "date": "Fri, 16 Aug 2024 18:18:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.2",
+      "tag": "@itwin/core-backend_v4.8.2",
+      "date": "Thu, 15 Aug 2024 15:33:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.1",
+      "tag": "@itwin/core-backend_v4.8.1",
+      "date": "Mon, 12 Aug 2024 14:05:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.0",
+      "tag": "@itwin/core-backend_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Append a test for null handling using updateElement"
+          },
+          {
+            "comment": "Able to recover from when ExclusiveRootClassId is NULL for overflow table"
+          },
+          {
+            "comment": "SchemaSync.pull() should not obtain write-lock on container"
+          },
+          {
+            "comment": "Update changed elements process options for bounding box calculations"
+          },
+          {
+            "comment": "set a fake codeService that always throws for verifyCode if code is not null if codeServiceDb is not available"
+          },
+          {
+            "comment": "delete briefcase .bim file on a failed download"
+          },
+          {
+            "comment": "Don't throw an error if sourceMap is null/undefined"
+          },
+          {
+            "comment": "keep sourceMap undefined/null in targetProps"
+          },
+          {
+            "comment": "Added a function `computeLayoutTextBlockResult` to get the results of calculating a TextBlock's layout."
+          },
+          {
+            "comment": "revise @beta apis for Settings and Workspaces to allow loading dictionaries from iModel and WorkspaceDbs"
+          },
+          {
+            "comment": "Add RPC method queryAllUsedSpatialSubCategories() to fetch all subcategories of used spatial categories and 3D elements."
+          },
+          {
+            "comment": "Make cleanDeletedBlocks interruptible, and remove function from CloudContainer object. Add it to CloudSqlite namespace"
+          },
+          {
+            "comment": "Add static metadata to OpenTelemetry spans"
+          },
+          {
+            "comment": "produceTextAnnotationGeometry aligns the anchor point with the origin."
+          },
+          {
+            "comment": "Update IModel.changeset when changes are made by another process."
+          },
+          {
+            "comment": "Begin deprecating @internal APIs."
+          },
+          {
+            "comment": "Improve TextAnnotation layout to use Unicode line-breaking algorithm for wrapping long lines."
+          },
+          {
+            "comment": "Deprecate the internal `nativeDb` fields of IModelDb, ECDb, and SQLiteDb, to be removed in 5.0"
+          },
+          {
+            "comment": "Add LockControl.releaseAllLocks, which throws if the briefcase contains local changes."
+          },
+          {
+            "comment": "Fix bugs with TextAnnotation wrapping and justification."
+          },
+          {
+            "comment": "deleteElementTree handles case where GeometryStream refers to LineStyle"
+          },
+          {
+            "comment": "BriefcaseDb.closeAndReopen now refreshes the changeset property in case another process pulled changes"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.8",
+      "tag": "@itwin/core-backend_v4.7.8",
+      "date": "Wed, 31 Jul 2024 13:38:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.7",
+      "tag": "@itwin/core-backend_v4.7.7",
+      "date": "Fri, 19 Jul 2024 14:52:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.6",
+      "tag": "@itwin/core-backend_v4.7.6",
+      "date": "Fri, 12 Jul 2024 14:42:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add static metadata to OpenTelemetry spans"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.5",
+      "tag": "@itwin/core-backend_v4.7.5",
+      "date": "Thu, 11 Jul 2024 15:24:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Able to recover from when ExclusiveRootClassId is NULL for overflow table"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.4",
+      "tag": "@itwin/core-backend_v4.7.4",
+      "date": "Mon, 01 Jul 2024 14:06:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update IModel.changeset when changes are made by another process."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.3",
+      "tag": "@itwin/core-backend_v4.7.3",
+      "date": "Thu, 27 Jun 2024 21:09:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.2",
+      "tag": "@itwin/core-backend_v4.7.2",
+      "date": "Sat, 22 Jun 2024 01:09:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update changed elements process options for bounding box calculations"
+          },
+          {
+            "comment": "BriefcaseDb.closeAndReopen now refreshes the changeset property in case another process pulled changes"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.7.1",
       "tag": "@itwin/core-backend_v4.7.1",
       "date": "Thu, 13 Jun 2024 22:47:31 GMT",
