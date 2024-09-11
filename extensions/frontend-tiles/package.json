@@ -60,7 +60,7 @@
     "glob": "^10.3.12",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.1",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.3.3",
     "webpack": "^5.76.0"

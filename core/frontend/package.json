@@ -80,7 +80,7 @@
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.1",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.3.3",
     "typemoq": "^2.1.0",
