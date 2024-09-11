@@ -251,7 +251,7 @@ jobs:
       - bash: |
           echo "not an rc release..."
         displayName: Push version bump for non-release candidate
-        condition: ne(parameters.BumpType, 'releaseCandidate')
+        condition: ne('${{ parameters.BumpType }}', 'releaseCandidate')
 
   - job: UpdateMaster
     displayName: Update master to next minor version
