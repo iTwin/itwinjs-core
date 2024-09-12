@@ -8,7 +8,7 @@ import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from ".
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Difference Conflict Resolving", () => {
+describe("Schema Edit tests", () => {
   it("shall re-apply stored conflict resolutions", async () => {
     const targetSchema = await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
