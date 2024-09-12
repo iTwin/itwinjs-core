@@ -39,6 +39,7 @@ export interface TileContentMetadata {
   readonly contentRange: Range3d;
   readonly isLeaf: boolean;
   readonly sizeMultiplier?: number;
+  readonly disallowMagnification?: boolean;
   readonly emptySubRangeMask: number;
 }
 
@@ -773,7 +774,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
     return { children, numEmpty };
 
   // One child, same volume as parent, but higher-resolution.
-  if (undefined !== parent.sizeMultiplier) {
+  if (!parent.disallowMagnification && undefined !== parent.sizeMultiplier) {
     const sizeMultiplier = parent.sizeMultiplier * 2;
     const contentId = idProvider.idFromParentAndMultiplier(parent.contentId, sizeMultiplier);
     children.push({
@@ -926,6 +927,7 @@ export function decodeTileContentDescription(args: DecodeTileContentDescriptionA
     isLeaf,
     sizeMultiplier,
     emptySubRangeMask: header.emptySubRanges,
+    disallowMagnification: 0 !== (header.flags & ImdlFlags.DisallowMagnification),
   };
 }
 
@@ -978,6 +980,7 @@ export class TileMetadataReader {
       emptySubRangeMask: content.emptySubRangeMask,
       range: Range3d.fromJSON(props.range),
       contentId: props.contentId,
+      disallowMagnification: content.disallowMagnification,
     };
   }
 }

@@ -53,12 +53,14 @@ export interface IModelTileContent extends TileContent {
   sizeMultiplier?: number;
   /** A bitfield describing empty sub-volumes of this tile's volume. */
   emptySubRangeMask?: number;
+  disallowMagnification?: boolean;
 }
 
 /** A tile belonging to an [[IModelTileTree].
  * @internal
  */
 export class IModelTile extends Tile {
+  private _disallowMagnification?: boolean;
   private _sizeMultiplier?: number;
   private _emptySubRangeMask?: number;
   /** If an initial attempt to obtain this tile's content (e.g., from cloud storage cache) failed,
@@ -82,6 +84,8 @@ export class IModelTile extends Tile {
   public get iModelChildren(): IModelTile[] | undefined { return this.children as IModelTile[] | undefined; }
   public get emptySubRangeMask(): number { return this._emptySubRangeMask ?? 0; }
 
+  public set disallowMagnification(disallow: boolean) { this._disallowMagnification = disallow; }
+  public get disallowMagnification(): boolean | undefined { return this._disallowMagnification; }
   public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
   public get hasSizeMultiplier() { return undefined !== this.sizeMultiplier; }
   public override get maximumSize(): number {
@@ -121,6 +125,13 @@ export class IModelTile extends Tile {
         isCanceled,
         sizeMultiplier,
       });
+
+      if(content.disallowMagnification && content.sizeMultiplier !== undefined && content.sizeMultiplier > 1.0) {
+        this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
+        this.disallowMagnification = true;
+        this.loadChildren();
+      }
+
     } catch {
       //
     }
