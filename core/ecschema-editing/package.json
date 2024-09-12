@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-editing",
-  "version": "4.9.0-dev.21",
+  "version": "4.9.0-dev.23",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
   "main": "lib/cjs/ecschema-editing.js",
@@ -42,7 +42,6 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -58,13 +57,13 @@
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.1",
+    "sinon": "^17.0.2",
     "typescript": "~5.3.3"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.9.0-dev.21",
-    "@itwin/core-quantity": "workspace:^4.9.0-dev.21",
-    "@itwin/ecschema-metadata": "workspace:^4.9.0-dev.21"
+    "@itwin/core-bentley": "workspace:^4.9.0-dev.23",
+    "@itwin/core-quantity": "workspace:^4.9.0-dev.23",
+    "@itwin/ecschema-metadata": "workspace:^4.9.0-dev.23"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

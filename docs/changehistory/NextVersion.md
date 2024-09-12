@@ -11,6 +11,8 @@ Table of contents:
 - [Geometry](#geometry)
 - [Display](#display)
   - [Dynamic clip masks](#dynamic-clip-masks)
+- [Presentation](#presentation)
+  - [Custom content parser for creating element properties](#custom-content-parser-for-creating-element-properties)
 
 ## Quantity
 
@@ -64,3 +66,14 @@ Pictured below are triangulations of a DTM dataset with skirt points. At top is 
 ```ts
 [[include:TileTreeReference_DynamicClipMask]]
 ```
+
+## Presentation
+
+### Custom content parser for creating element properties
+
+The `getElementProperties` function on the backend [PresentationManager]($presentation-backend) has two overloads:
+
+- For single element case, taking `elementId` and returning an data structure in the form of `ElementProperties`.
+- For multiple elements case, taking an optional list of `elementClasses` and returning properties of those elements. While the default form of the returned data structure is `ElementProperties`, just like in single element case, the overload allows for a custom parser function to be provided. In that case the parser function determines the form of the returned data structure.
+
+In this release the overload for single element case was enhanced to also take an optional custom content parser to make the two overloads consistent in this regard. In addition, the `getElementProperties` method on the frontend [PresentationManager]($presentation-frontend) has also been enhanced with this new feature to be consistent with the similar method on the backend.
