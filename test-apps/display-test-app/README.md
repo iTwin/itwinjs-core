@@ -290,6 +290,11 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `volume=0|1` - 1 to produce a volume classifier, 0 for a planar classifier.
   * `inside=0|1|2|3|4` - SpatialClassifierInsideDisplay.
   * `outside=0|1|2` - SpatialClassifierOutsideDisplay.
+* `dta clip mask` - Start a tool demonstrating how to use dynamically-created geometry to apply a planar clip mask to the background map or terrain. Left-click to place spheres, then right-click to apply their geometry as a mask. Options:
+  * `radius=number` - radius of each sphere.
+  * `invert=0|1` - if true, invert the mask so only regions of the map intersecting the mask are displayed.
+  * `transparency=number` - transparency of the masked geometry in [0..1].
+  * `priority=number` - the PlanarClipMaskPriority of the sphere geometry.
 * `dta classifyclip selected` *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
 * `dta grid settings` - Change the grid settings for the selected viewport.
   * `spacing=number` Specify x and y grid reference line spacing in meters.
