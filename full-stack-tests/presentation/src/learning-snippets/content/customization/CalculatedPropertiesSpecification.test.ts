@@ -160,7 +160,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `type` attribute", async () => {
-       // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Type.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Type.Ruleset
         // There's a content rule for returning content of given `bis.GeometricElement3d` instance. The produced content is customized to
         // additionally have a calculated "My Calculated Property" property with a custom return "type"
         const ruleset: Ruleset = {

@@ -6,15 +6,15 @@ This content modifier allows including additional calculated properties into the
 
 ## Attributes
 
-| Name                                  | Required? | Type                                                              | Default     |
-| ------------------------------------- | --------- | ----------------------------------------------------------------- | ----------- |
-| [`label`](#attribute-label)           | Yes       | `string`                                                          |             |
-| [`value`](#attribute-value)           | No        | [ECExpression](../advanced/ECExpressions.md)                      |             |
-| [`type`](#attribute-type)             | No        | `string`                                                          | `string`    |
-| [`categoryId`](#attribute-categoryid) | No        | `string \| CategoryIdentifier`                                    | No override |
-| [`renderer`](#attribute-renderer)     | No        | [`RendererSpecification`](./RendererSpecification.md)             | No override |
-| [`editor`](#attribute-editor)         | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | No override |
-| [`priority`](#attribute-priority)     | No        | `number`                                                          | `1000`      |
+| Name                                  | Required? | Type                                                                           | Default     |
+| ------------------------------------- | --------- | -----------------------------------------------------------------              | ----------- |
+| [`label`](#attribute-label)           | Yes       | `string`                                                                       |             |
+| [`value`](#attribute-value)           | No        | [ECExpression](../advanced/ECExpressions.md)                                   |             |
+| [`type`](#attribute-type)             | No        | `"string" \| "int" \| "long" \| "dateTime" \| "boolean" \| "bool" \| "double"` | `"string"`  |
+| [`categoryId`](#attribute-categoryid) | No        | `string \| CategoryIdentifier`                                                 | No override |
+| [`renderer`](#attribute-renderer)     | No        | [`RendererSpecification`](./RendererSpecification.md)                          | No override |
+| [`editor`](#attribute-editor)         | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md)              | No override |
+| [`priority`](#attribute-priority)     | No        | `number`                                                                       | `1000`      |
 
 ### Attribute: `label`
 
@@ -50,13 +50,16 @@ and [Ruleset Variables](../advanced/ECExpressions.md#ruleset-variables-user-sett
 
 ### Attribute: `type`
 
-Specifies return type of the calculated property. If a type that is not one of `"string" | "int" | "long" | "dateTime" | "boolean" | "bool" | "double"` is provided, calculated property won't appear in the property pane. If evaluated expression can't be converted to the specified type an error will be thrown in the frontend code.
+Specifies return type of the calculated property. Presentation library tries to map the type of the evaluated expression to the requested type.
+If evaluated expression cannot be converted to the specified type, an error will be thrown when requesting content with the error
+message: `Encountered unexpected db result code: 1`. For example, if the specified type is `dateTime` for the expression `2 * 2`,
+an error would be thrown, since evaluated expression would have a type of `int`.
 
-|                   |                                              |
-| ----------------- | -------------------------------------------- |
+|                   |                                                                                |
+| ----------------- | ------------------------------------------------------------------------------ |
 | **Type**          | `"string" \| "int" \| "long" \| "dateTime" \| "boolean" \| "bool" \| "double"` |
-| **Is Required**   | No                                           |
-| **Default Value** | `string`                                  |
+| **Is Required**   | No                                                                             |
+| **Default Value** | `"string"`                                                                     |
 
 ```ts
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Type.Ruleset]]
