@@ -58,7 +58,7 @@ const computeAmbientOcclusion = `
     return vec4(1.0);
 
   vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
-  vec3 worldPos = computePositionFromDepthWorldSpace(tc, nonLinearDepth).xyz;
+  vec3 worldPos = computePositionFromDepthWorldSpace(tc, linearDepth).xyz;
 
   vec2 pixelSize = 1.0 / u_viewport;
   vec3 viewNormal = computeNormalFromDepth(viewPos, tc, pixelSize);
@@ -106,7 +106,7 @@ const computeAmbientOcclusion = `
       vec3 diffVec = curViewPos.xyz - viewPos.xyz;
       // float zLength = abs(curLinearDepth - linearDepth);
 
-      vec3 curWorldPos = computePositionFromDepthWorldSpace(newCoords, curNonLinearDepth).xyz;
+      vec3 curWorldPos = computePositionFromDepthWorldSpace(newCoords, curLinearDepth).xyz;
       vec3 diffVecWorld = curWorldPos - worldPos;
       float zLength = length(diffVecWorld);
 
@@ -119,6 +119,13 @@ const computeAmbientOcclusion = `
       }
 
       curOcclusion = max(curOcclusion, dotVal * weight);
+
+      // if (zLength > zLengthCap) {
+      //   curOcclusion = 0.0;  // No occlusion beyond this distance
+      // } else {
+      //     curOcclusion = dotVal;  // Full occlusion if within the zLengthCap
+      // }
+
       curStepSize += texelStepSize;
     }
     tOcclusion += curOcclusion;
