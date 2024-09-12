@@ -26,13 +26,8 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-mobile": "workspace:*",
     "@itwin/express-server": "workspace:*",
-<<<<<<< HEAD
     "electron": "^31.0.0",
-    "express": "^4.18.2",
-=======
-    "electron": "^32.0.0",
     "express": "^4.20.0",
->>>>>>> 9f4c8a4bab (mitigate GHSA-qwcr-r2fm-qrc7 (#7146))
     "semver": "^7.5.2",
     "spdy": "^4.0.1"
   },
