@@ -58,6 +58,7 @@ const computeAmbientOcclusion = `
     return vec4(1.0);
 
   vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
+  vec3 worldPos = computePositionFromDepthWorldSpace(tc, nonLinearDepth).xyz;
 
   vec2 pixelSize = 1.0 / u_viewport;
   vec3 viewNormal = computeNormalFromDepth(viewPos, tc, pixelSize);
@@ -104,7 +105,10 @@ const computeAmbientOcclusion = `
       vec3 curViewPos = computePositionFromDepth(newCoords, curNonLinearDepth).xyz;
       vec3 diffVec = curViewPos.xyz - viewPos.xyz;
       // float zLength = abs(curLinearDepth - linearDepth);
-      float zLength = length(diffVec);
+
+      vec3 curWorldPos = computePositionFromDepthWorldSpace(newCoords, curNonLinearDepth).xyz;
+      vec3 diffVecWorld = curWorldPos - worldPos;
+      float zLength = length(diffVecWorld);
 
 
       float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
@@ -146,11 +150,30 @@ vec4 computePositionFromDepth(vec2 tc, float nonLinearDepth) {
     posEC = vec4(mix(left, right, tc.x), mix(bottom, top, tc.y), nonLinearDepth, 1.0);
   }
 
+  return posEC;
+}
+`;
+
+const computePositionFromDepthWorldSpace = `
+vec4 computePositionFromDepthWorldSpace(vec2 tc, float nonLinearDepth) {
+  vec4 posEC;
+
+  if (kFrustumType_Perspective == u_frustum.z) {
+    vec2 xy = vec2((tc.x * 2.0 - 1.0), ((1.0 - tc.y) * 2.0 - 1.0));
+    posEC = u_invProj * vec4(xy, nonLinearDepth, 1.0);
+    posEC = posEC / posEC.w;
+  } else {
+    float top = u_frustumPlanes.x;
+    float bottom = u_frustumPlanes.y;
+    float left = u_frustumPlanes.z;
+    float right = u_frustumPlanes.w;
+    posEC = vec4(mix(left, right, tc.x), mix(bottom, top, tc.y), nonLinearDepth, 1.0);
+  }
+
   // Convert the position from view space to world space
   vec4 worldPos = u_invView * posEC;
-  return worldPos;
+  return worldPos;  // Return position in world space
 }
-
 `;
 
 const computeNormalFromDepth = `
@@ -233,6 +256,7 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
   }
 
   frag.addFunction(computePositionFromDepth);
+  frag.addFunction(computePositionFromDepthWorldSpace);
   frag.addFunction(computeNormalFromDepth);
   addRenderOrderConstants(frag);
 
