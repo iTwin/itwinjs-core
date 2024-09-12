@@ -219,7 +219,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
       // the current target schema, it could also be added to the schema.
       const sourceMixin = await this._sourceSchema.lookupItem(addedMixin) as Mixin;
       const sourceSchemaItem = await this._sourceSchema.getItem(entry.itemName) as EntityClass;
-      if (sourceMixin.appliesTo && !await this.derivedFrom(sourceSchemaItem, sourceMixin.appliesTo)) {
+      if (sourceMixin.appliesTo && !await sourceSchemaItem.is(await sourceMixin.appliesTo)) {
         this.addConflict({
           code: ConflictCode.MixinAppliedMustDeriveFromConstraint,
           schemaType: targetEntityClass.schemaItemType,
@@ -453,9 +453,9 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
       // ... then check if the class is in the same schema as the expected base class...
       if(ecClass.schema.name === baseClassKey.schemaName)
         return true;
-      // ... if not, whether it's in the other schema, which could be the case if the base class
-      // gets added to the target schema...
-      if(ecClass.schema.name === this._sourceSchema.name || ecClass.schema.name === this._targetSchema.name)
+      // ... if not, whether it's in the source schema, but then we expect the baseclass
+      // to be in the target schema.
+      if(ecClass.schema.name === this._sourceSchema.name && baseClassKey.schemaName === this._targetSchema.name)
         return true;
     }
     return this.derivedFrom(await ecClass.baseClass, baseClassKey);
