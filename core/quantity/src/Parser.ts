@@ -801,15 +801,20 @@ export class Parser {
   }
 
   private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
-    if (!inString || !inString.includes(":"))
+    if (!inString)
         return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
     const parts = inString.split(":");
-    if (parts.length !== 2)
-        throw new QuantityError(QuantityStatus.UnableToConvertParseTokensToQuantity, `Invalid ratio: ${inString}, needs to be in form x:y`);
+    if (parts.length > 2)
+        return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
     const numerator = parseFloat(parts[0]);
-    const denominator = parseFloat(parts[1]);
+    let denominator;
+    if (parts.length === 1) {
+      denominator = 1.0;
+    } else {
+      denominator = parseFloat(parts[1]);
+    }
 
     if (isNaN(numerator) || isNaN(denominator))
         return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
