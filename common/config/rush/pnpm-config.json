@@ -21,7 +21,11 @@
     "pnpm": {
       "auditConfig": {
         "ignoreCves": [
+<<<<<<< HEAD
           "CVE-2024-39338" // https://github.com/advisories/GHSA-8hc4-vh64-cxmj @itwin/object-storage-core@2.2.4 > axios@1.7.3
+=======
+          "CVE-2024-45296" // https://github.com/advisories/GHSA-9wv6-86v2-598j sinon>nise>path-to-regexp
+>>>>>>> 9f4c8a4bab (mitigate GHSA-qwcr-r2fm-qrc7 (#7146))
         ]
       }
     }
