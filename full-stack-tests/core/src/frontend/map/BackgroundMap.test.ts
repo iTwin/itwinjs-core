@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { BackgroundMapProps, BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority } from "@itwin/core-common";
+import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
 import { IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";

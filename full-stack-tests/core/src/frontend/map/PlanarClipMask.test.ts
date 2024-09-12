@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
-import { GraphicType, IModelApp, IModelConnection, Pixel, SnapshotConnection, TileTreeReference, Viewport, readElementGraphics } from "@itwin/core-frontend";
+import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, SnapshotConnection, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { Point2d } from "@itwin/core-geometry";
@@ -127,7 +127,7 @@ describe.only("Planar clip mask (#integration)", () => {
 
   it("is masked by DesignModel priority", async () => {
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
-    
+
     // Models only contribute to the mask in priority mode if they are visible.
     await expectPixels(mask, "model");
     await expectPixels(mask, "map", (vp) => vp.changeViewedModels([]));
@@ -156,7 +156,7 @@ describe.only("Planar clip mask (#integration)", () => {
     const maxX = 289160;
     const maxY = 3803959;
     builder.addShape2d([
-      new Point2d(minX, minY), new Point2d(maxX, minY), new Point2d(maxX, maxY), new Point2d(minX, maxY), new Point2d(minX, minY)
+      new Point2d(minX, minY), new Point2d(maxX, minY), new Point2d(maxX, maxY), new Point2d(minX, maxY), new Point2d(minX, minY),
     ], 10); // put it under the map
 
     const treeRef = TileTreeReference.createFromRenderGraphic({
@@ -164,7 +164,7 @@ describe.only("Planar clip mask (#integration)", () => {
       graphic: builder.finish(),
       modelId,
     });
-    
+
     vp.addTiledGraphicsProvider({
       forEachTileTreeRef: (_, func) => {
         func(treeRef);
@@ -191,7 +191,7 @@ describe.only("Planar clip mask (#integration)", () => {
       graphic,
       modelId: "0x1c",
     });
-  
+
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
@@ -204,7 +204,7 @@ describe.only("Planar clip mask (#integration)", () => {
       });
     });
   });
-  
+
   it("is masked by priority by dynamic geometry", async () => {
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
