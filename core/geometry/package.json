@@ -19,7 +19,7 @@
     "extract-api": "betools extract-api --entry=core-geometry",
     "extract-api-test": "betools extract-api --entry=core-geometry",
     "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
-    "cover": "nyc npm -s test",
+    "cover": "vitest --run --coverage",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
@@ -41,8 +41,8 @@
     "@itwin/eslint-plugin": "^4.0.2",
     "@types/flatbuffers": "~1.10.0",
     "@types/node": "~18.16.20",
+    "@vitest/coverage-istanbul": "^2.1.0",
     "eslint": "^8.56.0",
-    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3",
     "vitest": "^2.1.0"
