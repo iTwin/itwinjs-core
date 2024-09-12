@@ -12,7 +12,7 @@ import { Point2d } from "@itwin/core-geometry";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
-describe.only("Planar clip mask (#integration)", () => {
+describe("Planar clip mask (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
