@@ -67,3 +67,15 @@ Some detail and requirements are as following.
 - The revert operation necessitates a schema lock (an exclusive lock on the iModel) because it does not lock each individual element affected by the revert.
 - If no description is provided after a revert, a default description for the changeset will be created and pushed, which releases the schema lock.
 - Schema changes are not reverted during SchemaSync, or they can be optionally skipped when SchemaSync is not utilized.
+
+## Presentation
+
+### Custom content parser for creating element properties
+
+The `getElementProperties` function on the backend [PresentationManager]($presentation-backend) has two overloads:
+
+- For single element case, taking `elementId` and returning an data structure in the form of `ElementProperties`.
+- For multiple elements case, taking an optional list of `elementClasses` and returning properties of those elements. While the default form of the returned data structure is `ElementProperties`, just like in single element case, the overload allows for a custom parser function to be provided. In that case the parser function determines the form of the returned data structure.
+
+In this release the overload for single element case was enhanced to also take an optional custom content parser to make the two overloads consistent in this regard. In addition, the `getElementProperties` method on the frontend [PresentationManager]($presentation-frontend) has also been enhanced with this new feature to be consistent with the similar method on the backend.
+
