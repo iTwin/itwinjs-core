@@ -202,6 +202,8 @@ export enum ConflictCode {
     // (undocumented)
     ConflictingBaseClass = "C-100",
     // (undocumented)
+    ConflictingClassModifier = "C-103",
+    // (undocumented)
     ConflictingEnumerationType = "C-700",
     // (undocumented)
     ConflictingEnumeratorValue = "C-701",
@@ -209,6 +211,8 @@ export enum ConflictCode {
     ConflictingItemName = "C-001",
     // (undocumented)
     ConflictingPersistenceUnit = "C-1010",
+    // (undocumented)
+    ConflictingPropertyKindOfQuantity = "C-1301",
     // (undocumented)
     ConflictingPropertyName = "C-1300",
     // (undocumented)
@@ -2094,7 +2098,6 @@ export interface SchemaDifference {
 export interface SchemaDifferenceConflict {
     readonly code: ConflictCode;
     readonly description: string;
-    readonly difference?: unknown;
     readonly itemName?: string;
     readonly path?: string;
     readonly schemaType: SchemaType;

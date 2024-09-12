@@ -21,32 +21,22 @@ type Editable<T extends object> = {
 export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: RenamePropertyEdit) {
   const [itemName, path] = edit.key.split(".") as [string, string];
 
-  let entryIndex = result.differences.findIndex((entry) => {
+  const difference = result.differences.find((entry) => {
     return Utils.isClassPropertyDifference(entry) && entry.changeType === "add" && entry.itemName === itemName && entry.path === path;
   });
 
-  if (entryIndex === -1 && result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => {
-      return entry.itemName === itemName && entry.path === path;
-    });
-
-    if (conflictIndex > -1) {
-      const conflictEntry = result.conflicts[conflictIndex];
-      entryIndex = result.differences.push({
-        changeType: "add",
-        schemaType: SchemaOtherTypes.Property,
-        itemName,
-        path,
-        difference: conflictEntry.difference,
-      } as ClassPropertyDifference) - 1;
-
-      result.conflicts.splice(conflictIndex, 1);
-    }
+  const propertyDifference = difference as Editable<ClassPropertyDifference>;
+  if (propertyDifference === undefined) {
+    return;
   }
 
-  const propertyEntry = result.differences[entryIndex] as Editable<ClassPropertyDifference>;
-  if (propertyEntry) {
-    propertyEntry.path = edit.value;
+  propertyDifference.path = edit.value;
+
+  if (result.conflicts) {
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === itemName && entry.path === path);
+    if (conflictIndex > -1) {
+      result.conflicts.splice(conflictIndex, 1);
+    }
   }
 }
 
@@ -54,36 +44,10 @@ export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: Re
  * @internal
  */
 export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: RenameSchemaItemEdit, postProcessing: (cb: () => void) => void) {
-  let difference = result.differences.find((entry) => {
-    return Utils.isSchemaItemDifference(entry) && entry.changeType === "add" && entry.itemName === edit.key;
+
+  const difference = result.differences.find((entry) => {
+    return Utils.isSchemaItemDifference(entry) && entry.itemName === edit.key;
   });
-
-  if (difference === undefined && result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === edit.key && entry.path === undefined);
-    if (conflictIndex > -1) {
-      const conflictEntry = result.conflicts[conflictIndex];
-      result.differences.push(difference = {
-        changeType: "add",
-        schemaType: conflictEntry.schemaType,
-        itemName: edit.value,
-        difference: conflictEntry.difference,
-      } as AnySchemaItemDifference) - 1;
-
-      result.conflicts.splice(conflictIndex, 1);
-
-      // If item gets added, remove the modify references to this item
-      const relatedModifications: number[] = [];
-      result.differences.forEach((entry, index) => {
-        if (Utils.isSchemaItemDifference(entry) && entry.itemName === edit.key) {
-          relatedModifications.push(index);
-        }
-      });
-
-      for (const index of relatedModifications.reverse()) {
-        result.differences.splice(index, 1);
-      }
-    }
-  }
 
   const itemDifference = difference as AnySchemaItemDifference;
   if (itemDifference === undefined) {
@@ -91,6 +55,13 @@ export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: 
   }
 
   renameName(itemDifference, edit.key, edit.value);
+
+  if (result.conflicts) {
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === edit.key && entry.path === undefined);
+    if (conflictIndex > -1) {
+      result.conflicts.splice(conflictIndex, 1);
+    }
+  }
 
   postProcessing(() => {
     renameSchemaItem(result, edit, itemDifference.schemaType);
