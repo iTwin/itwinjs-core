@@ -16,6 +16,7 @@ import {
   MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
   type Schema, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
+import { validateDifferences } from "./SchemaDifferenceValidator";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
 type PartialEditable<T> = {
@@ -411,10 +412,12 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
     ...visitor.customAttributeDifferences,
   ];
 
+  const conflicts = await validateDifferences(differences, targetSchema, sourceSchema);
+
   return {
     sourceSchemaName: sourceSchema.schemaKey.toString(),
     targetSchemaName: targetSchema.schemaKey.toString(),
-    conflicts: visitor.conflicts.length > 0 ? visitor.conflicts : undefined,
+    conflicts: conflicts.length > 0 ? conflicts : undefined,
     differences,
   };
 }
