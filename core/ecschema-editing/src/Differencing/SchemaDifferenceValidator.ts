@@ -32,7 +32,6 @@ export async function validateDifferences(differences: AnySchemaDifference[], ta
 /**
  * The SchemaDifferenceValidationVisitor class is an implementation of ISchemaDifferenceVisitor and
  * validates the given SchemaDifferences if the violate against some EC Rules.
- * @internal
  */
 class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
 
@@ -40,6 +39,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
   private readonly _sourceSchema: Schema;
   private readonly _targetSchema: Schema;
 
+  /** Initializes a new instance of SchemaDifferenceValidationVisitor class. */
   constructor(targetSchema: Schema, sourceSchema: Schema) {
     this.conflicts = [];
     this._targetSchema = targetSchema;

@@ -10,6 +10,8 @@ import { SchemaItemType } from "@itwin/ecschema-metadata";
 import { type AnySchemaDifference, SchemaOtherTypes } from "./SchemaDifference";
 
 /**
+ * Defines the interface for a visitor that can be used to traverse schema differences.
+ * It dynamically creates a method for each schema difference type.
  * @internal
  */
 export type ISchemaDifferenceVisitor = {
@@ -17,16 +19,23 @@ export type ISchemaDifferenceVisitor = {
 };
 
 /**
+ * Implementation of a walker that traverses schema differences and calls the appropriate
+ * method on the visitor.
  * @internal
  */
 export class SchemaDifferenceWalker {
 
   private readonly _visitor: ISchemaDifferenceVisitor;
 
+  /** Initializes a new instance of SchemaDifferenceWalker class. */
   constructor(visitor: ISchemaDifferenceVisitor) {
     this._visitor = visitor;
   }
 
+  /**
+   * Traverses the schema differences and calls the appropriate method on the visitor.
+   * @param differences The differences to traverse.
+   */
   public async traverse(differences: Iterable<AnySchemaDifference>): Promise<void> {
     for (const entry of differences) {
       await this.visit(entry);
