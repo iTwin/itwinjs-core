@@ -114,25 +114,25 @@ const computeAmbientOcclusion = `
       float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
       float weight = smoothstep(0.0, 1.0, zLengthCap / zLength);
 
-      if (dotVal < bias) {
-          dotVal = 0.0;
-      }
-
-      curOcclusion = max(curOcclusion, dotVal * weight);
-
-      // if (zLength > zLengthCap) {
-      //   curOcclusion = 0.0;  // No occlusion beyond this distance
-      // } else {
-      //     curOcclusion = dotVal;  // Full occlusion if within the zLengthCap
+      // if (dotVal < bias) {
+      //     dotVal = 0.0;
       // }
+
+      // curOcclusion = max(curOcclusion, dotVal * weight);
+
+      if (zLength > zLengthCap) {
+        curOcclusion = 0.0;  // No occlusion beyond this distance
+      } else {
+          curOcclusion = dotVal;  // Full occlusion if within the zLengthCap
+      }
 
       curStepSize += texelStepSize;
     }
     tOcclusion += curOcclusion;
   }
 
-  float distanceFadeFactor = kFrustumType_Perspective == u_frustum.z ? 1.0 - pow(clamp(nonLinearDepth / u_maxDistance, 0.0, 1.0), 4.0) : 1.0;
-  tOcclusion *= distanceFadeFactor;
+  // float distanceFadeFactor = kFrustumType_Perspective == u_frustum.z ? 1.0 - pow(clamp(nonLinearDepth / u_maxDistance, 0.0, 1.0), 4.0) : 1.0;
+  // tOcclusion *= distanceFadeFactor;
 
   tOcclusion /= 4.0;
   tOcclusion = 1.0 - clamp(tOcclusion, 0.0, 1.0);
