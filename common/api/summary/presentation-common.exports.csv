@@ -13,6 +13,7 @@ public;interface;BaseTypeDescription
 public;interface;BooleanRulesetVariable
 public;interface;BooleanRulesetVariableJSON
 deprecated;interface;BooleanRulesetVariableJSON
+internal;const;buildElementProperties
 public;interface;CalculatedPropertiesSpecification
 public;interface;CategoryDescription
 public;namespace;CategoryDescription
