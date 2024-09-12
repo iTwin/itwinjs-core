@@ -27,7 +27,7 @@ export async function mergePropertyDifference(context: SchemaMergeContext, chang
   const classKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
   return mergeClassProperty(context, change, classKey, {
     ...change.difference,
-    name: change.path,
+    name: change.propertyName,
   } as AnyPropertyProps);
 }
 
@@ -138,7 +138,7 @@ async function getClassEditor(context: SchemaMergeContext, ecClass: ECClass | Sc
     ? ecClass.schemaItemType
     : (await context.editor.schemaContext.getSchemaItem<ECClass>(ecClass))?.schemaItemType;
 
-  switch(schemaItemType) {
+  switch (schemaItemType) {
     case SchemaItemType.EntityClass:
       return context.editor.entities;
     case SchemaItemType.Mixin:

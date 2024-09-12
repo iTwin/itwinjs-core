@@ -127,7 +127,7 @@ describe("Property merger tests", () => {
             changeType: "add",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "StringProp",
+            propertyName: "StringProp",
             difference: {
               name: "StringProp",
               type: "PrimitiveProperty",
@@ -234,7 +234,7 @@ describe("Property merger tests", () => {
             changeType: "add",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestCA",
-            path: "EnumProp",
+            propertyName: "EnumProp",
             difference: {
               name: "EnumProp",
               type: "PrimitiveProperty",
@@ -285,7 +285,7 @@ describe("Property merger tests", () => {
             changeType: "add",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestCA",
-            path: "EnumArrayProp",
+            propertyName: "EnumArrayProp",
             difference: {
               name: "EnumArrayProp",
               type: "PrimitiveArrayProperty",
@@ -353,7 +353,7 @@ describe("Property merger tests", () => {
             changeType: "add",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestStruct",
-            path: "StructProp",
+            propertyName: "StructProp",
             difference: {
               name: "StructProp",
               type: "StructProperty",
@@ -464,7 +464,7 @@ describe("Property merger tests", () => {
             changeType: "add",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "NavigationProp",
+            propertyName: "NavigationProp",
             difference: {
               name: "NavigationProp",
               type: "NavigationProperty",
@@ -517,7 +517,7 @@ describe("Property merger tests", () => {
             changeType: "add",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestMixin",
-            path: "NavigationProp",
+            propertyName: "NavigationProp",
             difference: {
               name: "NavigationProp",
               type: "NavigationProperty",
@@ -578,7 +578,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "StringProp",
+            propertyName: "StringProp",
             difference: {
               label: "String Property",
               description: "Description for string property",
@@ -633,7 +633,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "IntArrayProp",
+            propertyName: "IntArrayProp",
             difference: {
               label: "Integer Array Property",
               description: "Description for int array property",
@@ -698,7 +698,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestStruct",
-            path: "EnumProp",
+            propertyName: "EnumProp",
             difference: {
               label: "Enumeration Property",
               description: "Description for enumeration property",
@@ -756,7 +756,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "EnumArrayProp",
+            propertyName: "EnumArrayProp",
             difference: {
               label: "Enumeration Array Property",
               description: "Description for enumeration array property",
@@ -808,7 +808,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "StructProp",
+            propertyName: "StructProp",
             difference: {
               label: "Struct Property",
               description: "Description for struct property",
@@ -868,7 +868,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestCA",
-            path: "StructArrayProp",
+            propertyName: "StructArrayProp",
             difference: {
               description: "Description for struct array property",
               isReadOnly: false,
@@ -928,7 +928,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "NavProp",
+            propertyName: "NavProp",
             difference: {
               label: "Some navigation label",
               description: "Description for Navigation Property",
@@ -974,7 +974,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestStruct",
-            path: "Prop",
+            propertyName: "Prop",
             difference: {
               typeName: "bool",
             },
@@ -1009,7 +1009,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestCA",
-            path: "ArrProp",
+            propertyName: "ArrProp",
             difference: {
               typeName: "string",
             },
@@ -1043,7 +1043,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "Prop",
+            propertyName: "Prop",
             difference: {
               type: "PrimitiveProperty",
             },
@@ -1085,7 +1085,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "Prop",
+            propertyName: "Prop",
             difference: {
               kindOfQuantity: "TestSchema.TestKoq",
             },
@@ -1130,7 +1130,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "StructProp",
+            propertyName: "StructProp",
             difference: {
               structClass: "TestSchema.TestStruct",
             } as any,
@@ -1173,7 +1173,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestStruct",
-            path: "StructArrayProp",
+            propertyName: "StructArrayProp",
             difference: {
               structClass: "SourceSchema.SourceStruct",
             } as any,
@@ -1226,7 +1226,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "EnumProp",
+            propertyName: "EnumProp",
             difference: {
               enumeration: "TestSchema.TestEnumeration",
             } as any,
@@ -1288,7 +1288,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "EnumArrayProp",
+            propertyName: "EnumArrayProp",
             difference: {
               enumeration: "SourceSchema.SourceEnumeration",
             } as any,
@@ -1330,7 +1330,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "NavProp",
+            propertyName: "NavProp",
             difference: {
               direction: "Backward",
             },
@@ -1398,7 +1398,7 @@ describe("Property merger tests", () => {
             changeType: "modify",
             schemaType: SchemaOtherTypes.Property,
             itemName: "TestEntity",
-            path: "NavProp",
+            propertyName: "NavProp",
             difference: {
               relationshipClass: "SourceSchema.SourceRelationship",
             } as any, // Any-Cast to send invalid structure to the merger.

@@ -22,7 +22,7 @@ export { SchemaValidater } from "./Validation/SchemaValidater";
 export * from "./Differencing/SchemaDifference";
 export * from "./Differencing/SchemaConflicts";
 export * from "./Differencing/Errors";
-export * from "./Differencing/Utils";
+export * as DifferencingUtils from "./Differencing/Utils";
 export { SchemaMerger } from "./Merging/SchemaMerger";
 export * from "./Merging/Edits/SchemaEdits";
 

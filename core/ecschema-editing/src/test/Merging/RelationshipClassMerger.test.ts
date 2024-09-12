@@ -13,7 +13,7 @@ import { AnyDiagnostic } from "../../ecschema-editing";
 
 function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
   let violations = "";
-  for (const diagnostic of ruleViolations){
+  for (const diagnostic of ruleViolations) {
     violations += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
   }
   return violations;
@@ -409,7 +409,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "modify",
           schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "TestRelationship",
-          path: "$source",
+          constraint: "source",
           difference: {
             roleLabel: "is base model for",
           },
@@ -418,7 +418,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "modify",
           schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "TestRelationship",
-          path: "$target",
+          constraint: "target",
           difference: {
             roleLabel: "has base",
             polymorphic: true,
@@ -508,7 +508,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$source",
+          constraint: "source",
           difference: [
             "SourceSchema.SourceEntity",
           ],
@@ -517,7 +517,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$target",
+          constraint: "target",
           difference: [
             "SourceSchema.TargetEntity",
           ],
@@ -573,7 +573,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$source",
+          constraint: "source",
           difference: [
             "TestSchema.SourceChildEntity",
           ],
@@ -582,7 +582,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$target",
+          constraint: "target",
           difference: [
             "TestSchema.TargetEntity",
           ],
@@ -628,7 +628,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$source",
+          constraint: "source",
           difference: [
             "TestSchema.SourceBaseEntity",
           ],
@@ -637,7 +637,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "modify",
           schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "BaseRelationship",
-          path: "$source",
+          constraint: "source",
           difference: {
           },
         },
@@ -689,7 +689,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "BaseRelationship",
-          path: "$source",
+          constraint: "source",
           difference: [
             "TestSchema.TestEntity",
           ],
@@ -731,7 +731,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "ChildRelationship",
-          path: "$source",
+          constraint: "source",
           difference: [
             "TestSchema.SourceEntity",
           ],
@@ -740,7 +740,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.RelationshipConstraintClass,
           itemName: "ChildRelationship",
-          path: "$target",
+          constraint: "target",
           difference: [
             "TestSchema.TargetBaseEntity",
           ],
@@ -913,7 +913,7 @@ describe("Relationship Class merger tests", () => {
           changeType: "modify",
           schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "BaseRelationship",
-          path: "$source",
+          constraint: "source",
           difference: {
             multiplicity: "(1..1)",
           },

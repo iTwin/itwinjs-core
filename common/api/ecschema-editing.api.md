@@ -190,7 +190,7 @@ export interface ClassPropertyDifference {
     // (undocumented)
     readonly itemName: string;
     // (undocumented)
-    readonly path: string;
+    readonly propertyName: string;
     // (undocumented)
     readonly schemaType: SchemaOtherTypes.Property;
 }
@@ -198,31 +198,31 @@ export interface ClassPropertyDifference {
 // @alpha
 export enum ConflictCode {
     // (undocumented)
-    AbstractConstraintMustNarrowBaseConstraints = "C-1500",
+    AbstractConstraintMustNarrowBaseConstraints = "SchemaConflict-1500",
     // (undocumented)
-    ConflictingBaseClass = "C-100",
+    ConflictingBaseClass = "SchemaConflict-100",
     // (undocumented)
-    ConflictingEnumerationType = "C-700",
+    ConflictingEnumerationType = "SchemaConflict-700",
     // (undocumented)
-    ConflictingEnumeratorValue = "C-701",
+    ConflictingEnumeratorValue = "SchemaConflict-701",
     // (undocumented)
-    ConflictingItemName = "C-001",
+    ConflictingItemName = "SchemaConflict-001",
     // (undocumented)
-    ConflictingPersistenceUnit = "C-1010",
+    ConflictingPersistenceUnit = "SchemaConflict-1010",
     // (undocumented)
-    ConflictingPropertyName = "C-1300",
+    ConflictingPropertyName = "SchemaConflict-1300",
     // (undocumented)
-    ConflictingReferenceAlias = "C-002",
+    ConflictingReferenceAlias = "SchemaConflict-002",
     // (undocumented)
-    ConstraintClassesDeriveFromAbstractConstraint = "C-1502",
+    ConstraintClassesDeriveFromAbstractConstraint = "SchemaConflict-1502",
     // (undocumented)
-    DerivedConstraintsMustNarrowBaseConstraints = "C-1501",
+    DerivedConstraintsMustNarrowBaseConstraints = "SchemaConflict-1501",
     // (undocumented)
-    MixinAppliedMustDeriveFromConstraint = "C-1100",
+    MixinAppliedMustDeriveFromConstraint = "SchemaConflict-1100",
     // (undocumented)
-    RemovingBaseClass = "C-101",
+    RemovingBaseClass = "SchemaConflict-101",
     // (undocumented)
-    SealedBaseClass = "C-102"
+    SealedBaseClass = "SchemaConflict-102"
 }
 
 // @alpha
@@ -368,7 +368,7 @@ export interface CustomAttributePropertyDifference {
     // (undocumented)
     readonly itemName: string;
     // (undocumented)
-    readonly path: string;
+    readonly propertyName: string;
     // (undocumented)
     readonly schemaType: SchemaOtherTypes.CustomAttributeInstance;
 }
@@ -380,11 +380,11 @@ export interface CustomAttributeRelationshipConstraintDifference {
     // (undocumented)
     readonly changeType: "add";
     // (undocumented)
+    readonly constraint: "source" | "target";
+    // (undocumented)
     readonly difference: PartialEditable<CustomAttribute>;
     // (undocumented)
     readonly itemName: string;
-    // (undocumented)
-    readonly path: "$source" | "$target";
     // (undocumented)
     readonly schemaType: SchemaOtherTypes.CustomAttributeInstance;
 }
@@ -750,6 +750,32 @@ export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeCo
 // @alpha
 export type DifferenceType = "add" | "modify";
 
+declare namespace DifferencingUtils {
+    export {
+        isConstantDifference,
+        isClassPropertyDifference,
+        isCustomAttributeClassDifference,
+        isCustomAttributeDifference,
+        isEntityClassDifference,
+        isEntityClassMixinDifference,
+        isEnumerationDifference,
+        isEnumeratorDifference,
+        isKindOfQuantityDifference,
+        isMixinClassDifference,
+        isPhenomenonDifference,
+        isPropertyCategoryDifference,
+        isSchemaDifference,
+        isSchemaReferenceDifference,
+        isStructClassDifference,
+        isUnitSystemDifference,
+        isRelationshipClassDifference,
+        isRelationshipConstraintDifference,
+        isRelationshipConstraintClassDifference,
+        isSchemaItemDifference,
+        isClassDifference
+    }
+}
+
 // @alpha
 export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
 
@@ -988,15 +1014,30 @@ export class EnumeratorDelta extends BaseSchemaChange {
 }
 
 // @alpha
-export interface EnumeratorDifference {
+export type EnumeratorDifference = EnumeratorDifferenceAdd | EnumeratorDifferenceModify;
+
+// @alpha
+export interface EnumeratorDifferenceAdd {
     // (undocumented)
-    readonly changeType: "add" | "modify";
+    readonly changeType: "add";
     // (undocumented)
     readonly difference: PartialEditable<AnyEnumerator>;
     // (undocumented)
     readonly itemName: string;
     // (undocumented)
-    readonly path: string;
+    readonly schemaType: SchemaOtherTypes.Enumerator;
+}
+
+// @alpha
+export interface EnumeratorDifferenceModify {
+    // (undocumented)
+    readonly changeType: "modify";
+    // (undocumented)
+    readonly difference: PartialEditable<AnyEnumerator>;
+    // (undocumented)
+    readonly enumerator: string;
+    // (undocumented)
+    readonly itemName: string;
     // (undocumented)
     readonly schemaType: SchemaOtherTypes.Enumerator;
 }
@@ -1306,67 +1347,67 @@ export interface ISchemaTypeIdentifier {
 }
 
 // @alpha
-export function isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference;
+function isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference;
 
 // @alpha
-export function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference;
+function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference;
 
 // @alpha
-export function isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference;
+function isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference;
 
 // @alpha
-export function isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference;
+function isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference;
 
 // @alpha
-export function isCustomAttributeDifference(difference: AnySchemaDifference): difference is CustomAttributeDifference;
+function isCustomAttributeDifference(difference: AnySchemaDifference): difference is CustomAttributeDifference;
 
 // @alpha
-export function isEntityClassDifference(difference: AnySchemaDifference): difference is EntityClassDifference;
+function isEntityClassDifference(difference: AnySchemaDifference): difference is EntityClassDifference;
 
 // @alpha
-export function isEntityClassMixinDifference(difference: AnySchemaDifference): difference is EntityClassMixinDifference;
+function isEntityClassMixinDifference(difference: AnySchemaDifference): difference is EntityClassMixinDifference;
 
 // @alpha
-export function isEnumerationDifference(difference: AnySchemaDifference): difference is EnumerationDifference;
+function isEnumerationDifference(difference: AnySchemaDifference): difference is EnumerationDifference;
 
 // @alpha
-export function isEnumeratorDifference(difference: AnySchemaDifference): difference is EnumeratorDifference;
+function isEnumeratorDifference(difference: AnySchemaDifference): difference is EnumeratorDifference;
 
 // @alpha
-export function isKindOfQuantityDifference(difference: AnySchemaDifference): difference is KindOfQuantityDifference;
+function isKindOfQuantityDifference(difference: AnySchemaDifference): difference is KindOfQuantityDifference;
 
 // @alpha
-export function isMixinClassDifference(difference: AnySchemaDifference): difference is MixinClassDifference;
+function isMixinClassDifference(difference: AnySchemaDifference): difference is MixinClassDifference;
 
 // @alpha
-export function isPhenomenonDifference(difference: AnySchemaDifference): difference is PhenomenonDifference;
+function isPhenomenonDifference(difference: AnySchemaDifference): difference is PhenomenonDifference;
 
 // @alpha
-export function isPropertyCategoryDifference(difference: AnySchemaDifference): difference is PropertyCategoryDifference;
+function isPropertyCategoryDifference(difference: AnySchemaDifference): difference is PropertyCategoryDifference;
 
 // @alpha
-export function isRelationshipClassDifference(difference: AnySchemaDifference): difference is RelationshipClassDifference;
+function isRelationshipClassDifference(difference: AnySchemaDifference): difference is RelationshipClassDifference;
 
 // @alpha
-export function isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference;
+function isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference;
 
 // @alpha
-export function isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference;
+function isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference;
 
 // @alpha
-export function isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference;
+function isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference;
 
 // @alpha
-export function isSchemaItemDifference(difference: AnySchemaDifference): difference is AnySchemaItemDifference;
+function isSchemaItemDifference(difference: AnySchemaDifference): difference is AnySchemaItemDifference;
 
 // @alpha
-export function isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference;
+function isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference;
 
 // @alpha
-export function isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference;
+function isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference;
 
 // @alpha
-export function isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference;
+function isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference;
 
 // @beta
 export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
@@ -1512,11 +1553,11 @@ export interface RelationshipConstraintClassDifference {
     // (undocumented)
     readonly changeType: "add";
     // (undocumented)
+    readonly constraint: "source" | "target";
+    // (undocumented)
     readonly difference: string[];
     // (undocumented)
     readonly itemName: string;
-    // (undocumented)
-    readonly path: "$source" | "$target";
     // (undocumented)
     readonly schemaType: SchemaOtherTypes.RelationshipConstraintClass;
 }
@@ -1533,11 +1574,11 @@ export interface RelationshipConstraintDifference {
     // (undocumented)
     readonly changeType: "modify";
     // (undocumented)
+    readonly constraint: "source" | "target";
+    // (undocumented)
     readonly difference: PartialEditable<Omit<RelationshipConstraintProps, "constraintClasses">>;
     // (undocumented)
     readonly itemName: string;
-    // (undocumented)
-    readonly path: "$source" | "$target";
     // (undocumented)
     readonly schemaType: SchemaOtherTypes.RelationshipConstraint;
 }

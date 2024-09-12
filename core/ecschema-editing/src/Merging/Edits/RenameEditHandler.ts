@@ -19,15 +19,15 @@ type Editable<T extends object> = {
  * @internal
  */
 export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: RenamePropertyEdit) {
-  const [itemName, path] = edit.key.split(".") as [string, string];
+  const [itemName, propertyName] = edit.key.split(".") as [string, string];
 
   let entryIndex = result.differences.findIndex((entry) => {
-    return Utils.isClassPropertyDifference(entry) && entry.changeType === "add" && entry.itemName === itemName && entry.path === path;
+    return Utils.isClassPropertyDifference(entry) && entry.changeType === "add" && entry.itemName === itemName && entry.propertyName === propertyName;
   });
 
   if (entryIndex === -1 && result.conflicts) {
     const conflictIndex = result.conflicts.findIndex((entry) => {
-      return entry.itemName === itemName && entry.path === path;
+      return entry.itemName === itemName && entry.path === propertyName;
     });
 
     if (conflictIndex > -1) {
@@ -36,7 +36,7 @@ export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: Re
         changeType: "add",
         schemaType: SchemaOtherTypes.Property,
         itemName,
-        path,
+        propertyName,
         difference: conflictEntry.difference,
       } as ClassPropertyDifference) - 1;
 
@@ -46,7 +46,7 @@ export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: Re
 
   const propertyEntry = result.differences[entryIndex] as Editable<ClassPropertyDifference>;
   if (propertyEntry) {
-    propertyEntry.path = edit.value;
+    propertyEntry.propertyName = edit.value;
   }
 }
 

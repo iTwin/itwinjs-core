@@ -12,7 +12,7 @@ import type { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
  * @internal
  */
 export const enumerationMerger: SchemaItemMergerHandler<EnumerationDifference> = {
-  async add(context, change: EnumerationDifference) {
+  async add(context, change) {
     if (change.difference.type === undefined) {
       throw new Error("Enumerations must define a type property");
     }
@@ -33,16 +33,16 @@ export const enumerationMerger: SchemaItemMergerHandler<EnumerationDifference> =
     });
   },
   async modify(_context, change, itemKey, item: MutableEnumeration) {
-    if(change.difference.type !== undefined) {
+    if (change.difference.type !== undefined) {
       throw new Error(`The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(item.type!)}", not "${change.difference.type}".`);
     }
-    if(change.difference.label !== undefined) {
+    if (change.difference.label !== undefined) {
       item.setDisplayLabel(change.difference.label);
     }
-    if(change.difference.description !== undefined) {
+    if (change.difference.description !== undefined) {
       item.setDescription(change.difference.description);
     }
-    if(change.difference.isStrict !== undefined) {
+    if (change.difference.isStrict !== undefined) {
       item.setIsStrict(change.difference.isStrict);
     }
   },
@@ -71,15 +71,19 @@ export const enumeratorMerger: SchemaItemMergerHandler<EnumeratorDifference> = {
     return itemKey;
   },
   async modify(context, change, itemKey) {
-    if(change.difference.value !== undefined) {
-      throw new Error(`Failed to merge enumerator attribute, Enumerator "${change.path}" has different values.`);
+    if (change.changeType !== "modify") {
+      return;
     }
 
-    if(change.difference.description !== undefined) {
-      await context.editor.enumerations.setEnumeratorDescription(itemKey, change.path, change.difference.description);
+    if (change.difference.value !== undefined) {
+      throw new Error(`Failed to merge enumerator attribute, Enumerator "${change.enumerator}" has different values.`);
     }
-    if(change.difference.label !== undefined) {
-      await context.editor.enumerations.setEnumeratorLabel(itemKey, change.path, change.difference.label);
+
+    if (change.difference.description !== undefined) {
+      await context.editor.enumerations.setEnumeratorDescription(itemKey, change.enumerator, change.difference.description);
+    }
+    if (change.difference.label !== undefined) {
+      await context.editor.enumerations.setEnumeratorLabel(itemKey, change.enumerator, change.difference.label);
     }
   },
 };

@@ -43,7 +43,7 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
     }
     if (change.appliedTo === "Property") {
       const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-      const [propertyName] = change.path.split(".");
+      const [propertyName] = change.propertyName.split(".");
       await context.editor.entities.properties.addCustomAttribute(itemKey, propertyName, caInstance);
     }
     if (change.appliedTo === "RelationshipConstraint") {
@@ -52,7 +52,7 @@ export async function mergeCustomAttribute(context: SchemaMergeContext, change: 
       if (relationshipClass === undefined) {
         throw new Error(`Unable to locate the relationship class ${itemKey.name} in the merged schema.`);
       }
-      const constraint = change.path === "$source"
+      const constraint = change.constraint === "source"
         ? relationshipClass.source
         : relationshipClass.target;
 

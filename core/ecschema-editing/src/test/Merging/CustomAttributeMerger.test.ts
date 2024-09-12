@@ -187,7 +187,7 @@ describe("Custom Attribute merge", () => {
           schemaType: SchemaOtherTypes.CustomAttributeInstance,
           appliedTo: "Property",
           itemName: "TestEntity",
-          path: "DoubleProp",
+          propertyName: "DoubleProp",
           difference: {
             LongProp: 1.999,
             className: "SourceSchema.TestCA",
@@ -198,7 +198,7 @@ describe("Custom Attribute merge", () => {
           schemaType: SchemaOtherTypes.CustomAttributeInstance,
           appliedTo: "Property",
           itemName: "TestEntity",
-          path: "DateTimeProp",
+          propertyName: "DateTimeProp",
           difference: {
             IntProp: 25,
             StringPrimitiveArrayProp: [
@@ -364,7 +364,7 @@ describe("Custom Attribute merge", () => {
           schemaType: SchemaOtherTypes.CustomAttributeInstance,
           appliedTo: "RelationshipConstraint",
           itemName: "TestRelationship",
-          path: "$source",
+          constraint: "source",
           difference: {
             className: "TestSchema.TestCA",
             IntProp: 10,
@@ -375,7 +375,7 @@ describe("Custom Attribute merge", () => {
           schemaType: SchemaOtherTypes.CustomAttributeInstance,
           itemName: "TestRelationship",
           appliedTo: "RelationshipConstraint",
-          path: "$source",
+          constraint: "source",
           difference: {
             className: "SourceSchema.TestCA",
           },
@@ -385,7 +385,7 @@ describe("Custom Attribute merge", () => {
           schemaType: SchemaOtherTypes.CustomAttributeInstance,
           itemName: "TestRelationship",
           appliedTo: "RelationshipConstraint",
-          path: "$target",
+          constraint: "target",
           difference: {
             className: "TestSchema.TestCA",
             StringPrimitiveArrayProp: [
@@ -398,7 +398,7 @@ describe("Custom Attribute merge", () => {
           schemaType: SchemaOtherTypes.CustomAttributeInstance,
           itemName: "TestRelationship",
           appliedTo: "RelationshipConstraint",
-          path: "$target",
+          constraint: "target",
           difference: {
             className: "SourceSchema.TestCA",
             BoolProp: true,
@@ -471,7 +471,7 @@ describe("Custom Attribute merge", () => {
           changeType: "add",
           schemaType: SchemaOtherTypes.Property,
           itemName: "TestCAClass",
-          path: "BooleanProperty",
+          propertyName: "BooleanProperty",
           difference: {
             name: "BooleanProperty",
             type: "PrimitiveProperty",
@@ -528,7 +528,7 @@ describe("Custom Attribute merge", () => {
           schemaType: SchemaOtherTypes.CustomAttributeInstance,
           appliedTo: "Property",
           itemName: "AnotherTestClass",
-          path: "StringProperty",
+          propertyName: "StringProperty",
           difference: {
             className: "SourceSchema.TestCAClass",
             BooleanProperty: true,
