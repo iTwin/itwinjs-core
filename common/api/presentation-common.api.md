@@ -131,7 +131,7 @@ export interface CalculatedPropertiesSpecification {
     label: string;
     priority?: number;
     renderer?: CustomRendererSpecification;
-    value: string;
+    value?: string;
 }
 
 // @public

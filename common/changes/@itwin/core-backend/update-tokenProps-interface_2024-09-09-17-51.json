@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Optional base uri added to TokenProps interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

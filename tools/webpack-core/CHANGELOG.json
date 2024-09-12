@@ -2,6 +2,18 @@
   "name": "@itwin/core-webpack-tools",
   "entries": [
     {
+      "version": "4.8.6",
+      "tag": "@itwin/core-webpack-tools_v4.8.6",
+      "date": "Fri, 06 Sep 2024 05:06:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.5",
+      "tag": "@itwin/core-webpack-tools_v4.8.5",
+      "date": "Wed, 28 Aug 2024 17:27:23 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.8.4",
       "tag": "@itwin/core-webpack-tools_v4.8.4",
       "date": "Thu, 22 Aug 2024 17:37:06 GMT",

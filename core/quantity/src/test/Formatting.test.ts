@@ -920,8 +920,8 @@ describe("Formatting tests:", () => {
           units: [
             { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
           ],
-        }
-      }
+        },
+      },
     ];
 
     for (const formatProps of formatPropsArray) {
