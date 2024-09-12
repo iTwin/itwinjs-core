@@ -50,7 +50,7 @@ and [Ruleset Variables](../advanced/ECExpressions.md#ruleset-variables-user-sett
 
 ### Attribute: `type`
 
-Specifies return type of the calculated property. If unsupported type is provided, calculated property won't appear in the property pane.
+Specifies return type of the calculated property. If a type that is not one of `"string" \| "int" \| "long" \| "dateTime" \| "boolean" \| "bool" \| "double"` is provided, calculated property won't appear in the property pane. If evaluated expression can't be converted to the specified type an error will be thrown in the frontend code.
 
 |                   |                                              |
 | ----------------- | -------------------------------------------- |
