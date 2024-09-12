@@ -439,6 +439,7 @@ export class AccuDraw {
     protected readonly _frameColor: ColorDef;
     // @internal (undocumented)
     protected readonly _frameColorNoFocus: ColorDef;
+    getAngleParser(): ParserSpec | undefined;
     // @internal (undocumented)
     static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined;
     // @internal (undocumented)
@@ -446,6 +447,7 @@ export class AccuDraw {
     getFieldLock(index: ItemField): boolean;
     // @internal (undocumented)
     getKeyinStatus(index: ItemField): KeyinStatus;
+    getLengthParser(): ParserSpec | undefined;
     // @internal (undocumented)
     getRotation(rMatrix?: Matrix3d): Matrix3d;
     // @internal (undocumented)
@@ -465,6 +467,7 @@ export class AccuDraw {
     protected _indexToleranceInches: number;
     // (undocumented)
     get isActive(): boolean;
+    get isBearingMode(): boolean;
     // (undocumented)
     get isDeactivated(): boolean;
     // (undocumented)
@@ -6413,7 +6416,7 @@ export abstract class MapLayerImageryProvider {
     protected readonly _settings: ImageMapLayerSettings;
     // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
-    // @alpha (undocumented)
+    // @public
     get supportsMapFeatureInfo(): boolean;
     // @internal (undocumented)
     get tileSize(): number;

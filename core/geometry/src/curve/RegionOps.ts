@@ -904,9 +904,9 @@ function pushToInOnOutArrays(
  * @public
  */
 export class ConsolidateAdjacentCurvePrimitivesOptions {
-  /** True to consolidated linear geometry   (e.g. separate LineSegment3d and LineString3d) into LineString3d */
+  /** True to consolidate adjacent linear geometry into a single LineString3d */
   public consolidateLinearGeometry: boolean = true;
-  /** True to consolidate contiguous arcs */
+  /** True to consolidate contiguous compatible arcs into a single Arc3d */
   public consolidateCompatibleArcs: boolean = true;
   /** Tolerance for collapsing identical points */
   public duplicatePointTolerance = Geometry.smallMetricDistance;
