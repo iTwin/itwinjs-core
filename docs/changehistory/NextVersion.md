@@ -9,6 +9,10 @@ Table of contents:
 - [Quantity](#quantity)
 - [Electron 32 support](#electron-32-support)
 - [Geometry](#geometry)
+- [Display](#display)
+  - [Dynamic clip masks](#dynamic-clip-masks)
+- [Presentation](#presentation)
+  - [Custom content parser for creating element properties](#custom-content-parser-for-creating-element-properties)
 
 ## Quantity
 
@@ -53,6 +57,15 @@ Approximation using `options.sampleMethod = EllipticalArcSampleMethod.AdaptiveSu
 Pictured below are triangulations of a DTM dataset with skirt points. At top is the result using default tolerance. Due to the skirt points having xy-distance greater than the default tolerance from actual terrain sites, they are included in the triangulation, resulting in undesirable near-vertical facets. At bottom is the result using `options.chordTol = 0.002`, which is sufficiently large to remove these artifacts:
 
 ![Toleranced Triangulations](./assets/triangulate-points-tolerance.jpg "Toleranced Triangulations")
+
+## Display
+
+### Dynamic clip masks
+
+[PlanarClipMaskSettings]($common) permit you to mask out (render partially or fully transparent) portions of the background map based on its intersection with other geometry in the scene. Previously, only [GeometricModel]($backend)s and reality models could contribute to the mask. Now, geometry added to the scene dynamically via [TiledGraphicsProvider]($frontend)s can also contribute to the mask. As with reality models, TiledGraphicsProviders' geometry only contributes to the mask in [PlanarClipMaskMode.Priority]($common). You can optionally configure a custom mask priority using [TileTreeReference.planarClipMaskPriority]($frontend) or the newly-added [RenderGraphicTileTreeArgs.planarClipMaskPriority]($frontend). Here's an example of the latter:
+```ts
+[[include:TileTreeReference_DynamicClipMask]]
+```
 
 ## Presentation
 
