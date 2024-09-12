@@ -19,7 +19,9 @@
   "unsupportedPackageJsonSettings": {
     "pnpm": {
       "auditConfig": {
-        "ignoreCves": []
+        "ignoreCves": [
+          "CVE-2024-45296" // https://github.com/advisories/GHSA-9wv6-86v2-598j sinon>nise>path-to-regexp
+        ]
       }
     }
   }
