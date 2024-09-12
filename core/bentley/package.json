@@ -17,9 +17,9 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=core-bentley",
-    "test": "vitest --run --dir=src",
+    "test": "vitest --run",
     "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
-    "cover": "nyc npm -s test",
+    "cover": "vitest --run --coverage",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
@@ -38,8 +38,8 @@
     "@itwin/eslint-plugin": "^4.0.2",
     "@opentelemetry/api": "1.0.4",
     "@types/node": "~18.16.20",
+    "@vitest/coverage-istanbul": "^2.1.0",
     "eslint": "^8.56.0",
-    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3",
     "vitest": "^2.1.0"

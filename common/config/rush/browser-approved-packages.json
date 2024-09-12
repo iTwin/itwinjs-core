@@ -387,6 +387,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@vitest/coverage-istanbul",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@xmldom/xmldom",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
