@@ -53,7 +53,7 @@ jobs:
           fi
 
       - name: Publish extracted api
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: extracted-api
           path: common/api
