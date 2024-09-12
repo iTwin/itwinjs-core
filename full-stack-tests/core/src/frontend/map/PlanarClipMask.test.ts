@@ -61,6 +61,7 @@ describe.only("Planar clip mask (#integration)", () => {
         groundBias: 10,
       });
 
+      vp.displayStyle.backgroundMapBase = ColorDef.red;
       if (setup) {
         setup(vp);
       }
@@ -73,12 +74,18 @@ describe.only("Planar clip mask (#integration)", () => {
       const cy = Math.floor(vp.viewRect.height / 2);
 
       // Test what's rendered to the screen.
-      const expectColor = (x: number, y: number, expectedColor: PixelType) => {
+      const expectColor = (x: number, y: number, expectedPixel: PixelType) => {
         const color = vp.readColor(x, y);
-        const pixel: PixelType = color.equalsColorDef(ColorDef.white) ? "model" :
-          color.equalsColorDef(ColorDef.blue) ? "dynamic" :
-            color.equalsColorDef(ColorDef.black) ? "bg" : "map";
-        expect(pixel).to.equal(expectedColor);
+        const lookup: Array<[PixelType, ColorDef]> = [
+          ["map", ColorDef.red],
+          ["model", ColorDef.white],
+          ["dynamic", ColorDef.blue],
+          ["bg", ColorDef.black],
+        ];
+
+        const match = lookup.find((entry) => color.equalsColorDef(entry[1]))!;
+        expect(match).not.to.be.undefined;
+        expect(match[0]).to.equal(expectedPixel);
       };
 
       expectColor(cx, cy, expectedCenter);
@@ -171,7 +178,7 @@ describe.only("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map", addDynamicGeometry);
   });
 
-  it.only("is masked by dynamic element geometry", async () => {
+  it("is masked by dynamic element geometry", async () => {
     const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
       elementId: "0x29",
       id: Guid.createValue(),
@@ -198,7 +205,7 @@ describe.only("Planar clip mask (#integration)", () => {
     });
   });
   
-  it.only("is masked by priority by dynamic geometry", async () => {
+  it("is masked by priority by dynamic geometry", async () => {
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
