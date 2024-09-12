@@ -488,7 +488,7 @@ describe("ECSql Abstract Syntax Tree", () => {
       {
         orignalECSql: "SELECT p.ECInstanceId=k.s FROM meta.ECClassDef p, (SELECT 1 s) k",
         expectedECSql: "SELECT ([p].[ECInstanceId] = [k].[s]) FROM [ECDbMeta].[ECClassDef] [p], (SELECT 1 [s]) [k]",
-      }
+      },
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
