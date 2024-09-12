@@ -62,8 +62,9 @@ export class CivilContours implements WebGLDisposable {
   private _lutWidth = 0;
   private _cleanup?: CivilContoursCleanup;
 
-  /** For tests. */
+  /** TODO: For tests. */
   public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
+  // TODO: need to call this somewhere for collectStatistics?
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
 
   private _initialize(map: RenderFeatureTable, contours: CivilContourDisplay | undefined): Texture2DHandle | undefined {

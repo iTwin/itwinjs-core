@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module WebGL
  */
+import { TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderComponent, ProgramBuilder, VariableType,
 } from "../ShaderBuilder";
@@ -118,6 +119,7 @@ float computeWorldHeight(vec4 rawPosition) {
 
   builder.vert.addUniform("u_contourLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_contourLUT", (uniform, params) => {
+      uniform.setUniform1i(TextureUnit.CivilContour - TextureUnit.Zero);  // TODO: why is this needed?
       params.target.uniforms.batch.bindContourLUT(uniform);
     });
   });

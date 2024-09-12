@@ -74,6 +74,10 @@ export class BatchUniforms {
       this._featureMode = FeatureMode.Pick;
     else
       this._featureMode = FeatureMode.None;
+
+    const civilContours = undefined !== batch ? batch.getCivilContours(this._target) : undefined;
+    // this._civilContours = (undefined !== civilContours && civilContours.anyOverridden) ? civilContours : undefined;  // TODO:
+    this._civilContours = civilContours;
   }
 
   public resetBatchState(): void {

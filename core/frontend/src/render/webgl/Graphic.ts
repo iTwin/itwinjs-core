@@ -27,6 +27,7 @@ import { TextureDrape } from "./TextureDrape";
 import { ThematicSensors } from "./ThematicSensors";
 import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../common/render/BatchOptions";
+import { CivilContours } from "./CivilContours";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -88,6 +89,7 @@ export interface BatchContext {
 export class PerTargetBatchData {
   public readonly target: Target;
   protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
+  protected readonly _civilContours = new Map<number | undefined, CivilContours>();  // TODO:
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
@@ -124,6 +126,19 @@ export class PerTargetBatchData {
 
     ovrs.update(batch.featureTable);
     return ovrs;
+  }
+
+  public getCivilContours(batch: Batch): CivilContours {
+    const source = undefined; // TODO: ? this.target.currentCivilContours?.source;
+    let contours = this._civilContours.get(source);
+    if (!contours) {
+      const cleanup = undefined; // TODO: source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
+      this._civilContours.set(source, contours = CivilContours.createFromTarget(this.target, batch.options, cleanup));
+      contours.initFromMap(batch.featureTable);
+    }
+
+    contours.update(batch.featureTable);
+    return contours;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -192,6 +207,10 @@ export class PerTargetData {
 
   public getFeatureOverrides(target: Target): FeatureOverrides {
     return this.getBatchData(target).getFeatureOverrides(this._batch);
+  }
+
+  public getCivilContours(target: Target): CivilContours {
+    return this.getBatchData(target).getCivilContours(this._batch);
   }
 
   private getBatchData(target: Target): PerTargetBatchData {
@@ -290,6 +309,10 @@ export class Batch extends Graphic {
 
   public getOverrides(target: Target): FeatureOverrides {
     return this.perTargetData.getFeatureOverrides(target);
+  }
+
+  public getCivilContours(target: Target): CivilContours {
+    return this.perTargetData.getCivilContours(target);
   }
 
   public onTargetDisposed(target: Target) {

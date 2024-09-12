@@ -5,8 +5,9 @@
 
 import { assert, dispose, IDisposable } from "@itwin/core-bentley";
 import {
-  ColorInputProps, ComboBox, ComboBoxProps, convertHexToRgb, createButton, createColorInput, createComboBox, createNumericInput,
-  createSlider, createTextBox, NumericInputProps, Slider,
+  ColorInput,
+  ColorInputProps, ComboBox, ComboBoxEntry, ComboBoxProps, convertHexToRgb, createButton, createColorInput, createComboBox, createLabeledNumericInput, createNumericInput,
+  createSlider, createTextBox, LabeledNumericInput, Slider,
   SliderProps,
   TextBox,
   TextBoxProps,
@@ -27,6 +28,15 @@ export class CivilContoursSettings implements IDisposable {
   private readonly _element: HTMLElement;
   private readonly _subCatTextBox: TextBox;
   private _currentTerrainProps: CivilTerrainProps = {};
+  private _currentContourIndex = 0;
+  private _minorInterval: LabeledNumericInput;
+  private _majorIntervalCount: LabeledNumericInput;
+  private _minorLineStyle: ComboBox;
+  private _majorLineStyle: ComboBox;
+  private _minorColor: ColorInput;
+  private _majorColor: ColorInput;
+  private _minorWidth: Slider;
+  private _majorWidth: Slider;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._currentTerrainProps.contourDef = {};
@@ -42,6 +52,53 @@ export class CivilContoursSettings implements IDisposable {
     this._element.style.overflowY = "none";
     const width = winSize.width * 0.98;
     this._element.style.width = `${width}px`;
+
+    const _comboDiv = document.createElement("div");
+    const entries: ComboBoxEntry[] = [
+      { name: "0", value: 0 },
+      { name: "1", value: 1 },
+      { name: "2", value: 2 },
+      { name: "3", value: 3 },
+      { name: "4", value: 4 },
+      { name: "5", value: 5 },
+    ];
+
+    const cb = createComboBox({
+      parent: this._element,
+      name: "Contour Definition: ",
+      entries,
+      id: "viewAttr_renderingStyle",
+      value: 0,
+      handler: (cbx) => {
+        this.loadContourDef(parseInt(cbx.value, 10));
+      },
+    });
+    cb.label!.style.fontWeight = "bold";
+
+    const buttonDiv = document.createElement("div");
+    buttonDiv.style.textAlign = "center";
+    createButton({
+      value: "Apply",
+      handler: () => { this.applyContourDef(); },
+      parent: buttonDiv,
+      inline: true,
+      tooltip: "Apply contour settings for this definition",
+    });
+    createButton({
+      value: "Clear",
+      handler: () => { this.clearContourDef(); },
+      parent: buttonDiv,
+      inline: true,
+      tooltip: "Clear contour settings for this definition",
+    });
+    this._element.appendChild(buttonDiv);
+
+    const hrt1 = document.createElement("hr");
+    this._element.appendChild(hrt1);
+    hrt1.style.borderColor = "grey";
+    const hrt2 = document.createElement("hr");
+    this._element.appendChild(hrt2);
+    hrt2.style.borderColor = "grey";
 
     const props: TextBoxProps = {
       label: "Subcategory Ids: ",
@@ -64,11 +121,11 @@ export class CivilContoursSettings implements IDisposable {
     label1.style.fontWeight = "bold";
     this._element.appendChild(label1);
 
-    this.addInterval(this._element, true);
-    this.addColor(this._element, true);
-    this.addWeight(this._element, true);
-    const cb = this.addStyle(this._element, LinePixels.Solid, true);
-    cb.div.style.marginBottom = bottomSpace2;
+    this._majorIntervalCount = this.addInterval(this._element, true);
+    this._majorColor = this.addColor(this._element, true);
+    this._majorWidth = this.addWidth(this._element, true);
+    this._majorLineStyle = this.addStyle(this._element, LinePixels.Solid, true);
+    this._majorLineStyle.div.style.marginBottom = bottomSpace2;
 
     const hr2 = document.createElement("hr");
     hr2.style.borderColor = "grey";
@@ -79,34 +136,11 @@ export class CivilContoursSettings implements IDisposable {
     label2.style.display = "inline";
     this._element.appendChild(label2);
 
-    this.addInterval(this._element, false);
-    this.addColor(this._element, false);
-    this.addWeight(this._element, false);
-    const cb2 = this.addStyle(this._element, LinePixels.Solid, false);
-    cb2.div.style.marginBottom = bottomSpace2;
-
-    const buttonDiv = document.createElement("div");
-    buttonDiv.style.textAlign = "center";
-    createButton({
-      value: "Add",
-      handler: () => { this.applyNewTerrain(); },
-      parent: buttonDiv,
-      inline: true,
-      tooltip: "Apply contour settings to specified subcategories",
-    });
-    createButton({
-      value: "Clear",
-      handler: () => { this.clearAllTerrains(); },
-      parent: buttonDiv,
-      inline: true,
-      tooltip: "Remove all contour settings",
-    });
-
-    const hr3 = document.createElement("hr");
-    this._element.appendChild(hr3);
-    hr3.style.borderColor = "grey";
-
-    this._element.appendChild(buttonDiv);
+    this._minorInterval = this.addInterval(this._element, false);
+    this._minorColor = this.addColor(this._element, false);
+    this._minorWidth = this.addWidth(this._element, false);
+    this._minorLineStyle = this.addStyle(this._element, LinePixels.Solid, false);
+    this._minorLineStyle.div.style.marginBottom = bottomSpace2;
 
     parent.appendChild(this._element);
   }
@@ -121,27 +155,36 @@ export class CivilContoursSettings implements IDisposable {
     return contours.toJSON();
   }
 
-  private applyNewTerrain() {
+  private loadContourDef(index: number) {
+    this._currentContourIndex = index;
+    const curContourDef =  this._vp.view.displayStyle.settings.contours.terrains[index].contourDef;
+    this._majorColor.input = curContourDef.majorColor;
+    this._minorColor.input = curContourDef.minorColor;
+    this._majorWidth.slider.value = curContourDef.majorPixelWidth.toString();
+    this._minorWidth.slider.value = curContourDef.minorPixelWidth.toString();
+    this._majorLineStyle.select.value = curContourDef.majorPattern.toString();
+    this._minorLineStyle.select.value = curContourDef.minorPattern.toString();
+    this._majorIntervalCount.input.value = curContourDef.majorIntervalCount.toString();
+    this._minorInterval.input.value = curContourDef.minorInterval.toString();
+  }
+
+  private applyContourDef() {
     const view = this._vp.view;
     assert(view.is3d());
 
     const contoursJson = this.getContourDisplayProps(view);
-
     if (undefined === contoursJson.terrains)
       contoursJson.terrains = [];
-
     this.updateSubCategories(this._subCatTextBox.textbox.value);
-
-    contoursJson.terrains.push(this._currentTerrainProps);
-
-    view.displayStyle.settings.contours = CivilContourDisplay.fromJSON(contoursJson);
-
+    contoursJson.terrains[this._currentContourIndex] = this._currentTerrainProps;
+    if (undefined === view.displayStyle.settings.contours.terrains)
+      view.displayStyle.settings.contours.terrains = [];
+    view.displayStyle.settings.contours.terrains[this._currentContourIndex] = CivilContourDisplay.fromJSON(contoursJson).terrains[this._currentContourIndex];
     this.sync();
-
     console.log(JSON.stringify(contoursJson));
   }
 
-  private clearAllTerrains() {
+  private clearContourDef() {
     const view = this._vp.view;
     assert(view.is3d());
     view.displayStyle.settings.contours = CivilContourDisplay.fromJSON({});
@@ -187,35 +230,28 @@ export class CivilContoursSettings implements IDisposable {
     console.log(JSON.stringify(this._currentTerrainProps));
   }
 
-  private addInterval(parent: HTMLElement, major: boolean): void {
+  private addInterval(parent: HTMLElement, major: boolean): LabeledNumericInput {
     const div = document.createElement("div");
-
-    const label = document.createElement("label");
-    label.htmlFor = major ? "major_interval" : "minor_interval";
-    label.innerText = major ? "Major Count " : "Minor Interval ";
-    div.appendChild(label);
-
-    const props: NumericInputProps = {
+    const numericIn = createLabeledNumericInput({
+      id: major ? "major_interval" : "minor_interval",
       parent: div,
-      value: major ? 100 : 50,
-      disabled: false,
-      min: 1,
-      // max: 31,
-      step: 1,
+      value: major ? 5 : 1,
       handler: (value) => this.updateInterval(value, major),
-    };
-    const num = createNumericInput(props);
-    div.appendChild(num);
+      min: major ? 1 : 0,
+      // max: 65536,
+      step: 1,
+      name: major ? "Major Count " : "Minor Interval ",
+    });
+    numericIn.div.style.marginLeft = indent1;
+    // this._thematicStepCount.div.style.marginRight = "1.5em";
     parent.appendChild(div);
-    div.style.marginLeft = indent1;
-
-    this.updateInterval(props.value, major);
+    return numericIn;
   }
 
-  private addColor(parent: HTMLElement, major: boolean): void {
+  private addColor(parent: HTMLElement, major: boolean): ColorInput{
     const div = document.createElement("div");
 
-    const update = () => this.updateColor(convertHexToRgb(input.value), major);
+    const update = () => this.updateColor(convertHexToRgb(colorIn.input.value), major);
     const props: ColorInputProps = {
       parent: div,
       id: major ? "major_color" : "minor_color",
@@ -225,17 +261,16 @@ export class CivilContoursSettings implements IDisposable {
       disabled: false,
       handler: update,
     };
-    const input: HTMLInputElement = createColorInput(props).input;
+    const colorIn = createColorInput(props);
 
     parent.appendChild(div);
     div.style.marginLeft = indent1;
     div.style.marginTop = indent1;
     div.style.marginBottom = indent1;
-
-    this.updateColor(convertHexToRgb(props.value), major);
+    return colorIn;
   }
 
-  private addWeight(parent1: HTMLElement, major: boolean): Slider {
+  private addWidth(parent1: HTMLElement, major: boolean): Slider {
     const props: SliderProps = {
       name: " Weight ", id: major ? "major_weight" : "minor_weight", parent: parent1,
       min: "1.25", max: "10", step: "0.25",
