@@ -727,6 +727,10 @@
       "allowedCategories": [ "integration-testing" ]
     },
     {
+      "name": "os-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "path-browserify",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -841,6 +845,10 @@
     {
       "name": "ts-node",
       "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "tty-browserify",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "typedoc",
