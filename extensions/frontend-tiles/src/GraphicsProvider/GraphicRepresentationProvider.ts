@@ -17,6 +17,7 @@ export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
  * The status of a Graphic Representation indicates the progress of that generation process.
  * @beta
  */
+// ###TODO this needs to be expanded to include more statuses, and/or "failed" needs to be replaced with "invalid".
 export enum GraphicRepresentationStatus {
   InProgress = "In progress",
   Complete = "Complete",
@@ -136,7 +137,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     };
 
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    _links: {
+    _links?: {
       mesh: {
         href: string;
       };
@@ -184,7 +185,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
         representationId: foundSource.id,
         status: foundSource.status,
         format: args.format,
-        url: foundSource._links.mesh.href,
+        url: foundSource._links?.mesh.href,
         dataSource: {
           iTwinId: args.dataSource.iTwinId,
           id: foundSource.request.iModelId,
