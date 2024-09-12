@@ -830,65 +830,13 @@ export class Parser {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, "Missing presentation unit or persistence unit for ratio format.");
     }
 
-    let magnitude = 0.0;
-    switch (spec.format.ratioType) {
-      case RatioType.OneToN:
-        const oneToNResult = Parser.validateNumeratorAndDenominator(numerator, denominator, 1, undefined);
-        if (!oneToNResult.ok)
-          return oneToNResult;
-        magnitude = 1.0 / denominator;
-        break;
-
-      case RatioType.NToOne:
-        const nToOneResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, 1);
-        if (!nToOneResult.ok)
-          return nToOneResult;
-        magnitude = numerator;
-        break;
-
-      case RatioType.ValueBased:
-          if (numerator > denominator) {
-              const valueBasedGreaterResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, 1);
-              if (!valueBasedGreaterResult.ok) return valueBasedGreaterResult;
-              magnitude = numerator;
-          } else {
-              const valueBasedLesserResult = Parser.validateNumeratorAndDenominator(numerator, denominator, 1, undefined);
-              if (!valueBasedLesserResult.ok) return valueBasedLesserResult;
-              magnitude = 1.0 / denominator;
-          }
-          break;
-
-      case RatioType.UseGreatestCommonDivisor:
-        const gcdResult = Parser.validateNumeratorAndDenominator(numerator, denominator, undefined, undefined);
-        if (!gcdResult.ok)
-          return gcdResult;
-        magnitude = numerator / denominator;
-        break;
-
-      default:
-        throw new QuantityError(QuantityStatus.InvalidJson, `Unsupported ratio type: ${spec.format.ratioType}`);
-    }
+    if (denominator === 0)
+      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed}
 
     // TODO: convert the magnitude to OutUnit, the invert unit conversion is not handled yet in unit conversion
+    const magnitude = numerator / denominator
 
     return { ok: true, value: magnitude };
-  }
-
-  // helper method for parse ratio string
-  private static validateNumeratorAndDenominator(numerator: number, denominator: number, requiredNumerator?: number, requiredDenominator?: number): QuantityParseResult {
-
-    // numerator is different from what ratioType speciied
-    if (requiredNumerator){
-      if (numerator !== requiredNumerator)
-        return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
-      if (denominator === 0)
-        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
-    }
-
-    if (requiredDenominator !== undefined && denominator !== requiredDenominator) {
-      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
-    }
-    return { ok: true, value: 0.0 }; // place holder
   }
 
   // TODO: The following two methods are redundant with Formatter. We should consider consolidating them.
