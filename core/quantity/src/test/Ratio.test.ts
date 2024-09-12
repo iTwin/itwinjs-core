@@ -9,7 +9,6 @@ import { FormatProps, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvide
 
 describe("Ratio format tests", () => {
   async function testRatioType(ratioType: string, testData: { input: number; ratio: string; precision?:number}[]) {
-
     const defaultPrecision = 3;
 
     const ratioJson: FormatProps = {
@@ -280,6 +279,47 @@ describe("Ratio format tests", () => {
       ];
       await testRatioType("useGreatestCommonDivisor", testData);
     });
+  });
+
+});
+
+describe("Specific parse ratio string tests", () => {
+  async function testRatioParser(testData: { input: number; ratio: string; precision?:number}[]) {
+    const ratioJson: FormatProps = {
+      type: "Ratio",
+      ratioType: "NToOne",
+      composite: {
+        includeZero: true,
+        units: [
+          { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
+        ],
+      }
+    };
+
+    const unitsProvider = new TestUnitsProvider();
+    const ratioFormat = new Format("Ratio");
+    await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
+    const v_h: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
+
+    const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, v_h); // persistence unit
+
+    for (const entry of testData) {
+      const parserRatioResult = Parser.parseQuantityString(entry.ratio, ratioParser);
+      if (!Parser.isParsedQuantity(parserRatioResult)) {
+        assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
+      }
+      expect(parserRatioResult.value, entry.input.toString());
+    }
+  }
+
+
+
+  it("single number", async () => {
+    const testData: { input: number; ratio: string; }[] = [
+      { input: 1.0, ratio: "1" },
+      { input: 30, ratio: "30" },
+    ];
+    await testRatioParser(testData);
   });
 
 });
