@@ -159,6 +159,49 @@ describe("Learning Snippets", () => {
         ]);
       });
 
+      it("uses `type` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Type.Ruleset
+        // There's a content rule for returning content of given `bis.GeometricElement3d` instance. The produced content is customized to
+        // additionally have a calculated "My Calculated Property" property with a custom return "type"
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  calculatedProperties: [
+                    {
+                      label: "My Calculated Property",
+                      value: "2+2",
+                      type: "int"
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that the custom property was created and has a value
+        const content = (await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "generic.PhysicalObject", id: "0x74" }]),
+          descriptor: {},
+        }))!;
+        const field = getFieldByLabel(content.descriptor.fields, "My Calculated Property");
+        expect(content.total).to.eq(1);
+        expect((await content.items.next()).value).to.containSubset({
+          values: {
+            [field.name]: 4,
+          },
+        });
+      });
+
       it("uses `renderer` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Renderer.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
