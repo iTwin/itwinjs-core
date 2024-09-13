@@ -7,8 +7,11 @@ export default defineConfig({
       reporter: [
         'text'
       ],
-      thresholds: {
-        
+      thresholds: { // This should not be in the default config file.
+        branches: 70,
+        statements: 85,
+        functions: 85,
+        lines: 85
       }
     },
     deps: {
