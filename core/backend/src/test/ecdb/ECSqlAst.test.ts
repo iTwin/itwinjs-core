@@ -475,7 +475,7 @@ describe("ECSql Abstract Syntax Tree", () => {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.expectedECSql));
     }
   });
-  it.only("parse Boolean Exp in Select statements", async () => {
+  it("parse Boolean Exp in Select statements", async () => {
     const tests = [
       {
         orignalECSql: "select 1 < true",
