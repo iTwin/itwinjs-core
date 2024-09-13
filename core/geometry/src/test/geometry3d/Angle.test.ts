@@ -501,8 +501,8 @@ describe("MiscAngles", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("FractionalSweep", () => {
-    const ck = new Checker(true, true);
+  it("FractionalSweep", () => {
+    const ck = new Checker();
     const emptySweepResult = 8675309;
     const sweepTest = (sweep: AngleSweep) => {
       const r0 = sweep.startRadians;
