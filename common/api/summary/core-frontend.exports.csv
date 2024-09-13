@@ -9,6 +9,7 @@ internal;class;AccuDrawRotateAxesTool
 internal;class;AccuDrawRotateCycleTool
 internal;class;AccuDrawRotateElementTool
 internal;class;AccuDrawRotateFrontTool
+internal;class;AccuDrawRotatePerpendicularTool
 internal;class;AccuDrawRotateSideTool
 internal;class;AccuDrawRotateTopTool
 internal;class;AccuDrawRotateViewTool

@@ -326,6 +326,11 @@
           "FirstPoint": "Identify element to define rotation"
         }
       },
+      "RotatePerpendicular": {
+        "keyin": "accudraw rotate perpendicular",
+        "description": "Set AccuDraw rotation perpendicular to element",
+        "flyover": "Rotate Perpendicular To Element"
+      },
       "DefineACSByElement": {
         "keyin": "define acs byelement",
         "description": "Set view ACS from element",
