@@ -20,7 +20,7 @@ import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureRe
 import { EsriPMS } from "../../ArcGisFeature/EsriSymbology";
 import * as moq from "typemoq";
 import { ArcGisFeatureProvider, DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider";
-import * as fetchMock from "fetch-mock";
+import fetchMock from "fetch-mock";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);

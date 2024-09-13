@@ -92,14 +92,15 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     },
     format: "IMDL",
     urlPrefix: args.urlPrefix,
+    includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,
   };
 
-  for await (const data of queryGraphicRepresentations(graphicsArgs)){
+  for await (const data of queryGraphicRepresentations(graphicsArgs)) {
     const meshExport = {
       id: data.representationId,
       displayName: data.displayName,
-      status: "Complete",
+      status: data.status,
       request: {
         iModelId: data.dataSource.id,
         changesetId: data.dataSource.changeId ?? "",

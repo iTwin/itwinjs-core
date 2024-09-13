@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, describe, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import { BentleyError, LoggingMetaData } from "../BentleyError";
 import { using } from "../Disposable";
 import { Logger, LogLevel, PerfLogger } from "../Logger";
@@ -467,6 +467,14 @@ describe("Logger", () => {
       Logger.logException("testcat", err);
     }
     checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
+
+    clearOutlets();
+    expect(() => Logger.logException("testcat", undefined)).to.not.throw("undefined exception");
+    checkOutlets(["testcat", "Error: err is undefined.", { ExceptionType: "Error" }], [], [], []);
+
+    clearOutlets();
+    expect(() => Logger.logException("testcat", null)).to.not.throw("null exception");
+    checkOutlets(["testcat", "Error: err is null.", { ExceptionType: "Error" }], [], [], []);
 
   });
 
