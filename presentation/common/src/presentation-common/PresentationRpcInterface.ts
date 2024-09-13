@@ -139,7 +139,9 @@ export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequ
  * Data structure for single element properties RPC request options.
  * @public
  */
-export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<SingleElementPropertiesRequestOptions<never>>;
+export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<
+  Omit<SingleElementPropertiesRequestOptions<never, never>, "contentParser">
+>;
 
 /**
  * Data structure for distinct values' request options.
