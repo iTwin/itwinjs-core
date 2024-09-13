@@ -56,7 +56,7 @@
     "@itwin/imodels-client-management": "^5.8.1",
     "@itwin/reality-data-client": "^1.2.1",
     "@itwin/oidc-signin-tool": "^4.3.5",
-    "body-parser": "^1.20.2"
+    "body-parser": "^1.20.3"
   },
   "devDependencies": {
     "@itwin/perf-tools": "workspace:*",
@@ -75,7 +75,7 @@
     "dotenv-expand": "^5.1.0",
     "electron": "^31.0.0",
     "eslint": "^8.56.0",
-    "express": "^4.18.2",
+    "express": "^4.20.0",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",
     "null-loader": "^4.0.1",
