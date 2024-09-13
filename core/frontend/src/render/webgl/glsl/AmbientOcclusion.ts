@@ -111,8 +111,8 @@ const computeAmbientOcclusion = `
       float zLength = length(diffVecWorld);
 
 
-      float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
-      float weight = smoothstep(0.0, 1.0, zLengthCap / zLength);
+      // float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
+      // float weight = smoothstep(0.0, 1.0, zLengthCap / zLength);
 
       // if (dotVal < bias) {
       //     dotVal = 0.0;
@@ -120,10 +120,11 @@ const computeAmbientOcclusion = `
 
       // curOcclusion = max(curOcclusion, dotVal * weight);
 
+
       if (zLength > zLengthCap) {
-        curOcclusion = 0.0;  // No occlusion beyond this distance
+        curOcclusion = 1.0;  // No occlusion beyond this distance
       } else {
-          curOcclusion = dotVal;  // Full occlusion if within the zLengthCap
+          curOcclusion = 0.0;  // Full occlusion if within the zLengthCap
       }
 
       curStepSize += texelStepSize;
