@@ -500,6 +500,47 @@ describe("MiscAngles", () => {
     ck.testTrue(sweepZ.isFullCircle);
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it.only("FractionalSweep", () => {
+    const ck = new Checker(true, true);
+    const emptySweepResult = 8675309;
+    const sweepTest = (sweep: AngleSweep) => {
+      const r0 = sweep.startRadians;
+      const r1 = sweep.endRadians;
+      const period = Geometry.safeDivideFraction(Angle.pi2Radians, Math.abs(sweep.sweepRadians), emptySweepResult);
+      if (period === emptySweepResult) {
+        const a = Angle.createRadians(0);
+        const fPos = sweep.angleToSignedFraction(a, false, emptySweepResult);
+        const fNeg = sweep.angleToSignedFraction(a, true, emptySweepResult);
+        ck.testTrue(sweep.isEmpty, "empty sweep and zero denom are ALMOST equivalent");
+        ck.testExactNumber(emptySweepResult, fPos, "expect empty sweep result for fPos");
+        ck.testExactNumber(emptySweepResult, fNeg, "expect empty sweep result for fNeg");
+      } else {
+        for (let f0 of [-7, -3.1, -0.75, 0, 1, 0.3, 1.4, 5]) {
+          const r = Geometry.interpolate(r0, f0, r1);
+          if (f0 < -period || period < f0)
+            f0 %= period;
+          const a = Angle.createRadians(r);
+          const fPos = sweep.angleToSignedFraction(a, false, emptySweepResult);
+          ck.testFraction(fPos, sweep.angleToPositivePeriodicFraction(a, emptySweepResult), "!exteriorAngleToNegativeFraction reproduces angleToPositivePeriodicFraction");
+          const fNeg = sweep.angleToSignedFraction(a, true, emptySweepResult);
+          if (sweep.isAngleInSweep(a))
+            ck.testFraction(fPos, fNeg, "interior angle unchanged by exteriorAngleToNegativeFraction value");
+          else { // exterior angle
+            ck.testFraction(fPos - fNeg, period, Geometry.smallFraction, "sum of pos + neg exterior fractions equals period");
+            if (f0 < 0)
+              ck.testFraction(f0, fNeg, "negative fraction roundtrip");
+            else
+              ck.testFraction(f0, fPos, "positive fraction roundtrip");
+          }
+        }
+      }
+    };
+    sweepTest(AngleSweep.createStartEndRadians(0, 2));
+    sweepTest(AngleSweep.createStartEndRadians(2, 0));
+    sweepTest(AngleSweep.createStartEndRadians(1, 1 + 0.5 * Geometry.smallAngleRadians));
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 describe("Angle.fromJson", () => {

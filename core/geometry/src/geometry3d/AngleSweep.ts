@@ -243,12 +243,16 @@ export class AngleSweep implements BeJSONFunctions {
   /**
    * Return the fractionalized position of the given angle (as radians), computed with consideration of 2PI period.
    * *  consider radians0 as `start` angle of the sweep and radians1 as `end` angle of the sweep
-   * *  fraction is always positive
    * *  the start angle is at fraction 0
    * *  the end angle is at fraction 1
    * *  interior angles are between 0 and 1
    * *  all exterior angles are at fractions greater than 1
    * *  allows period shift
+   * @param radians input angle (in radians)
+   * @param radians0 start angle of sweep (in radians)
+   * @param radians1 end angle of sweep (in radians)
+   * @param zeroSweepDefault return value when the sweep is empty (default 0)
+   * @returns nonnegative fraction, or `zeroSweepDefault` if the sweep is empty.
    */
   public static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault: number = 0.0): number {
     if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians0, radians1)) {
@@ -276,27 +280,31 @@ export class AngleSweep implements BeJSONFunctions {
   }
   /**
    * Return the fractionalized position of the given angle (as radians), computed with consideration of 2PI period.
-   * *  fraction is always positive
    * *  the start angle is at fraction 0
    * *  the end angle is at fraction 1
    * *  interior angles are between 0 and 1
    * *  all exterior angles are at fractions greater than 1
    * *  allows period shift
+   * @param radians input angle (in radians)
+   * @param zeroSweepDefault return value when this sweep is empty (default 0)
+   * @returns nonnegative fraction, or `zeroSweepDefault` if the sweep is empty.
    */
   public radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault: number = 0.0): number {
     return AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, this._radians0, this._radians1, zeroSweepDefault);
   }
   /**
    * Return the fractionalized position of the given angle (as Angle), computed with consideration of 2PI period.
-   * *  fraction is always positive
    * *  the start angle is at fraction 0
    * *  the end angle is at fraction 1
    * *  interior angles are between 0 and 1
    * *  all exterior angles are at fractions greater than 1
    * *  allows period shift
+   * @param theta input angle
+   * @param zeroSweepDefault return value when this sweep is empty (default 0)
+   * @returns nonnegative fraction, or `zeroSweepDefault` if the sweep is empty.
    */
-  public angleToPositivePeriodicFraction(theta: Angle): number {
-    return this.radiansToPositivePeriodicFraction(theta.radians);
+  public angleToPositivePeriodicFraction(theta: Angle, zeroSweepDefault: number = 0.0): number {
+    return this.radiansToPositivePeriodicFraction(theta.radians, zeroSweepDefault);
   }
   /**
    * Return the fractionalized position of the given array of angles (as radian), computed with consideration of 2PI period.
@@ -322,8 +330,13 @@ export class AngleSweep implements BeJSONFunctions {
    * *  negative fraction for angles "before" the start angle
    * *  fraction larger than one for angles "after" the end angle
    * *  allows period shift
+   * @param radians input angle (in radians)
+   * @param radians0 start angle of sweep (in radians)
+   * @param radians1 end angle of sweep (in radians)
+   * @param zeroSweepDefault return value when the sweep is empty (default 0)
+   * @returns fraction, or `zeroSweepDefault` if the sweep is empty.
    */
-  public static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number {
+  public static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault: number = 0.0): number {
     if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians0, radians1)) {
       // for 2nPi sweep, allow matching without period shift, else we never return 1.0
       if (Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians0))
@@ -340,11 +353,11 @@ export class AngleSweep implements BeJSONFunctions {
     const delta = radians - radians0 - 0.5 * sweep; // measure from middle of interval
     if (sweep > 0) {
       const delta1 = Angle.adjustRadiansMinusPiPlusPi(delta);
-      const fraction1 = 0.5 + Geometry.safeDivideFraction(delta1, sweep, 0.0);
+      const fraction1 = 0.5 + Geometry.safeDivideFraction(delta1, sweep, zeroSweepDefault);
       return fraction1;
     }
     const delta2 = Angle.adjustRadiansMinusPiPlusPi(-delta);
-    const fraction = 0.5 + Geometry.safeDivideFraction(delta2, -sweep, 0.0);
+    const fraction = 0.5 + Geometry.safeDivideFraction(delta2, -sweep, zeroSweepDefault);
     return fraction;
   }
   /**
@@ -356,9 +369,12 @@ export class AngleSweep implements BeJSONFunctions {
    * *  negative fraction for angles "before" the start angle
    * *  fraction larger than one for angles "after" the end angle
    * *  allows period shift
+   * @param radians input angle (in radians)
+   * @param zeroSweepDefault return value when this sweep is empty (default 0)
+   * @returns fraction, or `zeroSweepDefault` if this sweep is empty.
    */
-  public radiansToSignedPeriodicFraction(radians: number): number {
-    return AngleSweep.radiansToSignedPeriodicFractionStartEnd(radians, this._radians0, this._radians1);
+  public radiansToSignedPeriodicFraction(radians: number, zeroSweepDefault: number = 0.0): number {
+    return AngleSweep.radiansToSignedPeriodicFractionStartEnd(radians, this._radians0, this._radians1, zeroSweepDefault);
   }
   /**
    * Return the fractionalized position of the given angle (as Angle) computed with consideration of
@@ -369,10 +385,74 @@ export class AngleSweep implements BeJSONFunctions {
    * *  negative fraction for angles "before" the start angle
    * *  fraction larger than one for angles "after" the end angle
    * *  allows period shift
+   * @param theta input angle
+   * @param zeroSweepDefault return value when this sweep is empty (default 0)
+   * @returns fraction, or `zeroSweepDefault` if this sweep is empty.
    */
-  public angleToSignedPeriodicFraction(theta: Angle): number {
-    return this.radiansToSignedPeriodicFraction(theta.radians);
+  public angleToSignedPeriodicFraction(theta: Angle, zeroSweepDefault: number = 0.0): number {
+    return this.radiansToSignedPeriodicFraction(theta.radians, zeroSweepDefault);
   }
+
+  /**
+   * Return the fractionalized position of the given radian angle with respect to the sweep.
+   * * The start angle returns fraction 0
+   * * The end angle returns fraction 1
+   * * Interior angles (and their multiples of 2PI) return fractions in [0,1].
+   * * Exterior angles return fractions outside [0,1] according to `exteriorAngleToNegativeFraction`.
+   * @param radians input angle (in radians)
+   * @param radians0 start angle of sweep (in radians)
+   * @param radians1 end angle of sweep (in radians)
+   * @param exteriorAngleToNegativeFraction convert an exterior angle to a negative number (true), or to
+   * a number greater than one (false, default). If false, this is just [[radiansToPositivePeriodicFractionStartEnd]].
+   * @param zeroSweepDefault return value when the sweep is empty (default 0).
+   * @returns fraction, or `zeroSweepDefault` if the sweep is empty
+   */
+  public static radiansToSignedFractionStartEnd(radians: number, radians0: number, radians1: number, exteriorAngleToNegativeFraction: boolean = false, zeroSweepDefault: number = 0.0): number {
+    const zeroSweepMarker = -100;
+    const positiveFraction = this.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1, zeroSweepMarker);
+    if (positiveFraction === zeroSweepMarker)
+      return zeroSweepDefault;
+    if (!exteriorAngleToNegativeFraction || positiveFraction <= 1.0)
+      return positiveFraction;
+    // convert a fraction beyond 1 to the corresponding negative fraction by subtracting the sweep's period
+    const period = Geometry.safeDivideFraction(Angle.pi2Radians, Math.abs(radians1 - radians0), zeroSweepMarker);
+    if (period === zeroSweepMarker)
+      return zeroSweepDefault;
+    return positiveFraction - period;
+  }
+
+  /**
+   * Return the fractionalized position of the given radian angle with respect to this sweep.
+   * * The start angle returns fraction 0
+   * * The end angle returns fraction 1
+   * * Interior angles (and their multiples of 2PI) return fractions in [0,1].
+   * * Exterior angles return fractions outside [0,1] according to `exteriorAngleToNegativeFraction`.
+   * @param radians input angle (in radians)
+   * @param exteriorAngleToNegativeFraction convert an exterior angle to a negative number (true), or to
+   * a number greater than one (false, default). If false, this is just [[radiansToPositivePeriodicFraction]].
+   * @param zeroSweepDefault return value when this sweep is empty (default 0).
+   * @returns fraction, or `zeroSweepDefault` if this sweep is empty
+   */
+  public radiansToSignedFraction(radians: number, exteriorAngleToNegativeFraction: boolean = false, zeroSweepDefault: number = 0.0): number {
+    return AngleSweep.radiansToSignedFractionStartEnd(radians, this._radians0, this._radians1, exteriorAngleToNegativeFraction, zeroSweepDefault);
+  }
+
+  /**
+   * Return the fractionalized position of the given angle with respect to this sweep.
+   * * The start angle returns fraction 0
+   * * The end angle returns fraction 1
+   * * Interior angles (and their multiples of 2PI) return fractions in [0,1].
+   * * Exterior angles return fractions outside [0,1] according to `exteriorAngleToNegativeFraction`.
+   * @param theta input angle
+   * @param exteriorAngleToNegativeFraction convert an exterior angle to a negative number (true), or to
+   * a number greater than one (false, default). If false, this is just [[angleToPositivePeriodicFraction]].
+   * @param zeroSweepDefault return value when this sweep is empty (default 0).
+   * @returns fraction, or `zeroSweepDefault` if this sweep is empty
+   */
+  public angleToSignedFraction(theta: Angle, exteriorAngleToNegativeFraction: boolean = false, zeroSweepDefault: number = 0.0): number {
+    return this.radiansToSignedFraction(theta.radians, exteriorAngleToNegativeFraction, zeroSweepDefault);
+  }
+
   /** Test if the given angle (as radians) is within sweep (between radians0 and radians1)   */
   public static isRadiansInStartEnd(radians: number, radians0: number, radians1: number, allowPeriodShift: boolean = true): boolean {
     const delta0 = radians - radians0;
