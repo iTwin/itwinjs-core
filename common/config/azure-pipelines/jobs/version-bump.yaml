@@ -243,10 +243,10 @@ jobs:
       #   : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
       #       displayName: Create git tag
 
-      # - bash: |
-      #     git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'])
-      #   displayName: Push version bump for release candidate
-      #   condition: eq(parameters.BumpType, 'releaseCandidate')
+      - bash: |
+          echo "THIS IS INDEED AN RC..."
+        displayName: Push version bump for release candidate
+        condition: eq(parameters.BumpType, 'releaseCandidate')
 
       - bash: |
           echo "not an rc release..."
