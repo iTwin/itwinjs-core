@@ -52,7 +52,7 @@ and [Ruleset Variables](../advanced/ECExpressions.md#ruleset-variables-user-sett
 
 Specifies return type of the calculated property. Presentation library tries to map the type of the evaluated expression to the requested type.
 If evaluated expression cannot be converted to the specified type, an error will be thrown when requesting content with the error
-message: `Encountered unexpected db result: Calculated property evaluated to a type that couldn't be converted to requested type (BE_SQLITE_ERROR), code: 1`. For example, if the specified type is `dateTime` for the expression `2 * 2`,
+message: `Calculated property evaluated to a type that couldn't be converted to requested type`. For example, if the specified type is `dateTime` for the expression `2 * 2`,
 an error would be thrown, since evaluated expression would have a type of `int`.
 
 |                   |                                                                                |
