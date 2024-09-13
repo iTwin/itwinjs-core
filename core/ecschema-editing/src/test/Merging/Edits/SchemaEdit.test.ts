@@ -92,8 +92,8 @@ describe("Schema Edit tests", () => {
 
     // For all runs the class ClassToBeSkipped shall be skipped.
     const initialSchemaChanges = new SchemaEdits();
-    initialSchemaChanges.items.skip("ClassToBeSkipped");
-    initialSchemaChanges.properties.skip("SameNameOtherItemType", "PropertyToSkip");
+    initialSchemaChanges.items.skip("ConflictSchema", "ClassToBeSkipped");
+    initialSchemaChanges.properties.skip("ConflictSchema", "SameNameOtherItemType", "PropertyToSkip");
 
     let storedSchemaEdits = initialSchemaChanges.toJSON();
 
@@ -105,10 +105,10 @@ describe("Schema Edit tests", () => {
       if (differences.conflicts) {
         for (const conflict of differences.conflicts) {
           if (conflict.code === ConflictCode.ConflictingItemName && conflict.itemName === "SameNameOtherItemType") {
-            schemaEdits.items.rename(conflict.itemName, `${conflict.itemName}_1`);
+            schemaEdits.items.rename(sourceSchema.name, conflict.itemName, `${conflict.itemName}_1`);
           }
           if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.path === "MyProperty") {
-            schemaEdits.properties.rename(conflict.itemName!, conflict.path, `${conflict.path}_1`);
+            schemaEdits.properties.rename(sourceSchema.name, conflict.itemName!, conflict.path, `${conflict.path}_1`);
           }
         }
       }
@@ -120,8 +120,7 @@ describe("Schema Edit tests", () => {
     }
 
     await expect(targetSchema.getItem("ClassToBeSkipped")).to.be.eventually.undefined;
-    await expect(targetSchema.getItem("SameNameOtherItemType")).to.be.eventually.fulfilled.then(async (ecClass: EntityClass) => {
-      expect(ecClass).instanceOf(EntityClass);
+    await expect(targetSchema.getItem("SameNameOtherItemType")).to.be.eventually.instanceOf(EntityClass).then(async (ecClass: EntityClass) => {
       await expect(ecClass.getProperty("PropertyToSkip")).to.be.eventually.undefined;
       await expect(ecClass.getProperty("MyProperty")).to.be.eventually.fulfilled.then((property) => {
         expect(property, "Could not find MyProperty").to.be.not.undefined;
