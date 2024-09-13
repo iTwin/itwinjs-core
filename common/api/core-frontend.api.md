@@ -6945,7 +6945,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
-    get planarclipMaskPriority(): number;
+    get planarClipMaskPriority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
@@ -8517,9 +8517,9 @@ export class PlanarClipMaskState {
     // (undocumented)
     static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState;
     // (undocumented)
-    getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
+    getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
     // (undocumented)
-    getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
+    getTileTrees(context: SceneContext, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
     // (undocumented)
@@ -9508,6 +9508,7 @@ export interface RenderGraphicTileTreeArgs {
     graphic: RenderGraphic;
     iModel: IModelConnection;
     modelId: Id64String;
+    planarClipMaskPriority?: number;
     viewFlags?: ViewFlagOverrides;
 }
 
@@ -12523,8 +12524,8 @@ export abstract class TileTreeReference {
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;
     protected get _isLoadingComplete(): boolean;
-    // @alpha
-    get planarclipMaskPriority(): number;
+    // @beta
+    get planarClipMaskPriority(): number;
     // @internal
     resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;
