@@ -246,7 +246,7 @@ jobs:
       - bash: |
           echo "THIS IS INDEED AN RC..."
         displayName: Push version bump for release candidate
-        condition: eq(parameters.BumpType, 'releaseCandidate')
+        condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
 
       - bash: |
           echo "not an rc release..."
