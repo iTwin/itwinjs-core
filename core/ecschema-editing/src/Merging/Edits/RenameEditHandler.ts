@@ -47,9 +47,13 @@ export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: Re
  * @internal
  */
 export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: RenameSchemaItemEdit, postProcessing: (cb: () => void) => void) {
-  const [_schemaName, itemName] = SchemaItem.parseFullName(edit.key);
+  const [schemaName, itemName] = SchemaItem.parseFullName(edit.key);
+  if (!result.sourceSchemaName.startsWith(schemaName)) {
+    return;
+  }
+
   const difference = result.differences.find((entry) => {
-    return Utils.isSchemaItemDifference(entry) && entry.itemName === edit.key;
+    return Utils.isSchemaItemDifference(entry) && entry.changeType === "add" && entry.itemName === itemName;
   });
 
   const itemDifference = difference as AnySchemaItemDifference;
@@ -60,7 +64,7 @@ export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: 
   renameName(itemDifference, itemName, edit.value);
 
   if (result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === edit.key && entry.path === undefined);
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === itemName && entry.path === undefined);
     if (conflictIndex > -1) {
       result.conflicts.splice(conflictIndex, 1);
     }

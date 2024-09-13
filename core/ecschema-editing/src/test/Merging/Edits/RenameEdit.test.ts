@@ -840,7 +840,7 @@ describe("Rename change tests", () => {
       expect(await mergedRelationship?.source.constraintClasses?.[0]).to.eq(mergedEntity);
     });
 
-    it.skip("should rename relationship name", async () => {
+    it("should rename relationship name", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {

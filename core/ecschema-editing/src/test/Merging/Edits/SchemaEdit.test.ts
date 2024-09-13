@@ -120,8 +120,7 @@ describe("Schema Edit tests", () => {
     }
 
     await expect(targetSchema.getItem("ClassToBeSkipped")).to.be.eventually.undefined;
-    await expect(targetSchema.getItem("SameNameOtherItemType")).to.be.eventually.fulfilled.then(async (ecClass: EntityClass) => {
-      expect(ecClass).instanceOf(EntityClass);
+    await expect(targetSchema.getItem("SameNameOtherItemType")).to.be.eventually.instanceOf(EntityClass).then(async (ecClass: EntityClass) => {
       await expect(ecClass.getProperty("PropertyToSkip")).to.be.eventually.undefined;
       await expect(ecClass.getProperty("MyProperty")).to.be.eventually.fulfilled.then((property) => {
         expect(property, "Could not find MyProperty").to.be.not.undefined;
