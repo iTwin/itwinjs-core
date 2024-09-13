@@ -8,8 +8,9 @@ import { Point3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
 import { DecorateContext } from "../../../ViewContext";
 import { Viewport } from "../../../Viewport";
-import { readUniquePixelData, testBlankViewport } from "../../openBlankViewport";
+import { Color, readUniqueColors, readUniquePixelData, testBlankViewport } from "../../openBlankViewport";
 import { GraphicType } from "../../../common/render/GraphicType";
+import { ColorDef } from "@itwin/core-common";
 
 describe.only("Pickable decorations", () => {
   type DecorationType = "square" | "point";
@@ -20,6 +21,7 @@ describe.only("Pickable decorations", () => {
     private _x = 1;
     private _y = 1;
     private _decType: DecorationType = "point";
+    private readonly _color = ColorDef.red;
 
     public test(vp: Viewport, type: GraphicType, decType: DecorationType, expectPickable = true): void {
       this._type = type;
@@ -30,6 +32,14 @@ describe.only("Pickable decorations", () => {
 
       vp.invalidateDecorations();
       vp.renderFrame();
+
+      // Sanity check that we rendered to the screen.
+      const colors = readUniqueColors(vp);
+      expect(colors.length).to.equal(2);
+      expect(colors.contains(Color.fromColorDef(this._color))).to.be.true;
+      expect(colors.contains(Color.fromColorDef(vp.displayStyle.backgroundColor))).to.be.true;
+
+      // Verify our decoration writes to the pick buffers.
       const pixels = readUniquePixelData(vp);
       expect(pixels.containsElement(this._curId)).to.equal(expectPickable);
     }
@@ -41,6 +51,7 @@ describe.only("Pickable decorations", () => {
         context.viewport.viewToWorld(pt, pt);
 
       const builder = context.createGraphicBuilder(this._type, undefined, this._curId);
+      builder.setSymbology(this._color, this._color, 1);
       if (this._decType === "point") {
         builder.addPointString([pt]);
       } else {
