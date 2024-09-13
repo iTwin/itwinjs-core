@@ -203,7 +203,7 @@ export interface CivilContourDisplayProps {
 
 export class CivilContourDisplay {
   /** A list of the terrains. */
-  public readonly terrains: CivilTerrain[];
+  public readonly terrains: CivilTerrain[] = [];
 
   public static readonly defaults = new CivilContourDisplay({});
 
@@ -237,11 +237,10 @@ export class CivilContourDisplay {
   public toJSON(): CivilContourDisplayProps {
     const props: CivilContourDisplayProps = {};
 
-    if (0 !== this.terrains.length) {
-      props.terrains = [];
-      for (const terrain of this.terrains) {
-        props.terrains.push(terrain.toJSON());
-      }
+    props.terrains = [];
+    for (let n = 0; n < this.terrains.length; n++) {
+      if (this.terrains[n] !== undefined)
+        props.terrains[n] = this.terrains[n].toJSON();
     }
 
     return props;

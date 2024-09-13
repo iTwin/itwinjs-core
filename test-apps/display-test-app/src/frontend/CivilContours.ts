@@ -11,8 +11,9 @@ import {
   SliderProps,
   TextBox,
   TextBoxProps,
+  updateSliderValue,
 } from "@itwin/frontend-devtools";
-import { CivilContourDisplay, CivilContourDisplayProps, CivilTerrainProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { CivilContour, CivilContourDisplay, CivilContourDisplayProps, CivilTerrainProps, LinePixels, RgbColor } from "@itwin/core-common";
 import { Viewport, ViewState } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -143,6 +144,8 @@ export class CivilContoursSettings implements IDisposable {
     this._minorLineStyle.div.style.marginBottom = bottomSpace2;
 
     parent.appendChild(this._element);
+
+    this.loadContourDef(this._currentContourIndex);
   }
 
   public dispose(): void {
@@ -157,11 +160,11 @@ export class CivilContoursSettings implements IDisposable {
 
   private loadContourDef(index: number) {
     this._currentContourIndex = index;
-    const curContourDef =  this._vp.view.displayStyle.settings.contours.terrains[index].contourDef;
+    const curContourDef =  this._vp.view.displayStyle.settings.contours.terrains[index]?.contourDef ?? CivilContour.fromJSON({});
     this._majorColor.input = curContourDef.majorColor;
     this._minorColor.input = curContourDef.minorColor;
-    this._majorWidth.slider.value = curContourDef.majorPixelWidth.toString();
-    this._minorWidth.slider.value = curContourDef.minorPixelWidth.toString();
+    updateSliderValue(this._majorWidth, curContourDef.majorPixelWidth.toString());
+    updateSliderValue(this._minorWidth, curContourDef.minorPixelWidth.toString());
     this._majorLineStyle.select.value = curContourDef.majorPattern.toString();
     this._minorLineStyle.select.value = curContourDef.minorPattern.toString();
     this._majorIntervalCount.input.value = curContourDef.majorIntervalCount.toString();
@@ -173,12 +176,8 @@ export class CivilContoursSettings implements IDisposable {
     assert(view.is3d());
 
     const contoursJson = this.getContourDisplayProps(view);
-    if (undefined === contoursJson.terrains)
-      contoursJson.terrains = [];
     this.updateSubCategories(this._subCatTextBox.textbox.value);
-    contoursJson.terrains[this._currentContourIndex] = this._currentTerrainProps;
-    if (undefined === view.displayStyle.settings.contours.terrains)
-      view.displayStyle.settings.contours.terrains = [];
+    contoursJson.terrains![this._currentContourIndex] = this._currentTerrainProps;
     view.displayStyle.settings.contours.terrains[this._currentContourIndex] = CivilContourDisplay.fromJSON(contoursJson).terrains[this._currentContourIndex];
     this.sync();
     console.log(JSON.stringify(contoursJson));
@@ -188,6 +187,12 @@ export class CivilContoursSettings implements IDisposable {
     const view = this._vp.view;
     assert(view.is3d());
     view.displayStyle.settings.contours = CivilContourDisplay.fromJSON({});
+
+    const contoursJson = this.getContourDisplayProps(view);
+    if (undefined !== contoursJson.terrains)
+      delete contoursJson.terrains[this._currentContourIndex];
+    if (undefined !== view.displayStyle.settings.contours.terrains)
+      delete view.displayStyle.settings.contours.terrains[this._currentContourIndex];
 
     this.sync();
   }
@@ -251,7 +256,6 @@ export class CivilContoursSettings implements IDisposable {
   private addColor(parent: HTMLElement, major: boolean): ColorInput{
     const div = document.createElement("div");
 
-    const update = () => this.updateColor(convertHexToRgb(colorIn.input.value), major);
     const props: ColorInputProps = {
       parent: div,
       id: major ? "major_color" : "minor_color",
@@ -259,7 +263,7 @@ export class CivilContoursSettings implements IDisposable {
       value: "#000000",
       display: "inline",
       disabled: false,
-      handler: update,
+      handler: (value: string) => this.updateColor(convertHexToRgb(value), major),
     };
     const colorIn = createColorInput(props);
 
@@ -272,7 +276,7 @@ export class CivilContoursSettings implements IDisposable {
 
   private addWidth(parent1: HTMLElement, major: boolean): Slider {
     const props: SliderProps = {
-      name: " Weight ", id: major ? "major_weight" : "minor_weight", parent: parent1,
+      name: " Width ", id: major ? "major_width" : "minor_width", parent: parent1,
       min: "1.25", max: "10", step: "0.25",
       value: "1.5",
       readout: "right", verticalAlign: false, textAlign: false,
@@ -282,21 +286,21 @@ export class CivilContoursSettings implements IDisposable {
           this.updateWeight(wt, major);
       },
     };
-    const weightSlider = createSlider(props);
-    parent1.appendChild(weightSlider.div);
-    weightSlider.div.style.marginLeft = indent1;
+    const widthSlider = createSlider(props);
+    parent1.appendChild(widthSlider.div);
+    widthSlider.div.style.marginLeft = indent1;
     // center the slider with the labels
-    weightSlider.label.style.position = "relative";
-    weightSlider.label.style.bottom = "3px";
-    weightSlider.readout.style.position = "relative";
-    weightSlider.readout.style.bottom = "3px";
-    weightSlider.readout.style.marginLeft = "3px";
+    widthSlider.label.style.position = "relative";
+    widthSlider.label.style.bottom = "3px";
+    widthSlider.readout.style.position = "relative";
+    widthSlider.readout.style.bottom = "3px";
+    widthSlider.readout.style.marginLeft = "3px";
 
     const wt2 = Number.parseFloat(props.value);
     if (!Number.isNaN(wt2))
       this.updateWeight(wt2, major);
 
-    return weightSlider;
+    return widthSlider;
   }
 
   public addStyle(parent: HTMLElement, value: LinePixels, major: boolean): ComboBox {

@@ -72,7 +72,7 @@ export class CivilContours implements WebGLDisposable {
     const dims = computeWidthAndHeight(nFeatures, 1/8);
     const width = dims.width;
     const height = dims.height;
-    assert(width * height * 1/8 >= nFeatures);
+    assert(width * height * 8 >= nFeatures);
 
     this._lutWidth = width;
 

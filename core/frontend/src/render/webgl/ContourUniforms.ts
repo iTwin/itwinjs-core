@@ -7,6 +7,7 @@
  */
 
 import {
+  CivilContour,
   CivilContourDisplay,
   ColorDef,
 } from "@itwin/core-common";
@@ -79,7 +80,7 @@ export class ContourUniforms {
       return;
 
     for (let index = 0, len = this.contourDisplay.terrains.length; index < len && index < this._contourDefsSize; ++index) {
-      const contourDef = this.contourDisplay.terrains[index].contourDef;
+      const contourDef = this.contourDisplay.terrains[index]?.contourDef ?? CivilContour.fromJSON({});;
       const even = (index & 1) === 0;
       const colorDefsNdx = even ? index * 1.5 : (index - 1) * 1.5 + 2;
       this.packColor (colorDefsNdx, contourDef.majorColor, contourDef.minorColor);
