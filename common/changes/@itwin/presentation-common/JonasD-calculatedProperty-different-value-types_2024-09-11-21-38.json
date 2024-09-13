@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Different value type support for calculated properties",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
