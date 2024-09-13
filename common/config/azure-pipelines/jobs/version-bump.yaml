@@ -62,41 +62,38 @@ jobs:
     dependsOn: CheckPrevCommit
     condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'), eq(variables['Build.SourceBranch'], 'refs/heads/mikeN/rc-dist-tag'))
     steps:
+      - checkout: self
       - bash: |
           echo "Creating branch..."
+          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: Setup Git
 
-        steps:
-          - checkout: self
-          - bash: |
-              git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-              git config --local user.name imodeljs-admin
-            displayName: Setup Git
+      - bash: git checkout --track origin/$(Build.SourceBranchName)
+        displayName: Switching to source branch
 
-          - bash: git checkout --track origin/$(Build.SourceBranchName)
-            displayName: Switching to source branch
+      - bash: |
+          git fetch --all
+          # get the latest commit message that matches the pattern x.x.x-dev.x.
+          latest_version=$(git log --pretty=format:"%s" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+' | head -n 1)
+          # check if a version was found
+          if [ -z "$latest_version" ]; then
+              echo "No version with the specified pattern found."
+              exit 1
+          fi
+          # set version variable
+          echo "##vso[task.setVariable variable=version;isOutput=true]$latest_version"
 
-          - bash: |
-              git fetch --all
-              # get the latest commit message that matches the pattern x.x.x-dev.x.
-              latest_version=$(git log --pretty=format:"%s" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+' | head -n 1)
-              # check if a version was found
-              if [ -z "$latest_version" ]; then
-                  echo "No version with the specified pattern found."
-                  exit 1
-              fi
-              # set version variable
-              echo "##vso[task.setVariable variable=version;isOutput=true]$latest_version"
+          echo  The current version is $(version)
+          officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
 
-              echo  The current version is $(version)
-              officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
+          branchName="release/"$officialVersion
 
-              branchName="release/"$officialVersion
+          echo Release branch name is $branchName
 
-              echo Release branch name is $branchName
-
-              echo "##vso[task.setvariable variable=releaseBranchName]$branchName"
-            displayName: Get Branch Name
-            name: getBranchName
+          echo "##vso[task.setvariable variable=releaseBranchName]$branchName"
+        displayName: Get Branch Name
+        name: getBranchName
 
           # - bash: git checkout -b $(releaseBranchName)
           #   displayName: Create release branch and checkout
