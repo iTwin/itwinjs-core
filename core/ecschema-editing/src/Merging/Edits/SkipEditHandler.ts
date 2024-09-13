@@ -18,7 +18,11 @@ import type { SkipEdit } from "./SchemaEdits";
  * @internal
  */
 export function applySkipEdit(result: SchemaDifferenceResult, edit: SkipEdit) {
-  const [itemName, pathName] = edit.key.split(".") as [string, string | undefined];
+  const [schemaName, itemName, pathName] = edit.key.split(".") as [string, string, string | undefined];
+  if (!result.sourceSchemaName.startsWith(schemaName)) {
+    return;
+  }
+
   const foundIndices = pathName !== undefined
     ? findRelatedItemEntries(result, itemName, pathName)
     : findItemEntries(result, itemName);
