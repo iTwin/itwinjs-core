@@ -9,6 +9,10 @@ Table of contents:
 - [Quantity](#quantity)
 - [Electron 32 support](#electron-32-support)
 - [Geometry](#geometry)
+- [Display](#display)
+  - [Dynamic clip masks](#dynamic-clip-masks)
+- [Presentation](#presentation)
+  - [Custom content parser for creating element properties](#custom-content-parser-for-creating-element-properties)
 
 ## Quantity
 
@@ -53,3 +57,23 @@ Approximation using `options.sampleMethod = EllipticalArcSampleMethod.AdaptiveSu
 Pictured below are triangulations of a DTM dataset with skirt points. At top is the result using default tolerance. Due to the skirt points having xy-distance greater than the default tolerance from actual terrain sites, they are included in the triangulation, resulting in undesirable near-vertical facets. At bottom is the result using `options.chordTol = 0.002`, which is sufficiently large to remove these artifacts:
 
 ![Toleranced Triangulations](./assets/triangulate-points-tolerance.jpg "Toleranced Triangulations")
+
+## Display
+
+### Dynamic clip masks
+
+[PlanarClipMaskSettings]($common) permit you to mask out (render partially or fully transparent) portions of the background map based on its intersection with other geometry in the scene. Previously, only [GeometricModel]($backend)s and reality models could contribute to the mask. Now, geometry added to the scene dynamically via [TiledGraphicsProvider]($frontend)s can also contribute to the mask. As with reality models, TiledGraphicsProviders' geometry only contributes to the mask in [PlanarClipMaskMode.Priority]($common). You can optionally configure a custom mask priority using [TileTreeReference.planarClipMaskPriority]($frontend) or the newly-added [RenderGraphicTileTreeArgs.planarClipMaskPriority]($frontend). Here's an example of the latter:
+```ts
+[[include:TileTreeReference_DynamicClipMask]]
+```
+
+## Presentation
+
+### Custom content parser for creating element properties
+
+The `getElementProperties` function on the backend [PresentationManager]($presentation-backend) has two overloads:
+
+- For single element case, taking `elementId` and returning an data structure in the form of `ElementProperties`.
+- For multiple elements case, taking an optional list of `elementClasses` and returning properties of those elements. While the default form of the returned data structure is `ElementProperties`, just like in single element case, the overload allows for a custom parser function to be provided. In that case the parser function determines the form of the returned data structure.
+
+In this release the overload for single element case was enhanced to also take an optional custom content parser to make the two overloads consistent in this regard. In addition, the `getElementProperties` method on the frontend [PresentationManager]($presentation-frontend) has also been enhanced with this new feature to be consistent with the similar method on the backend.
