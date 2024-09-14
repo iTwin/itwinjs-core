@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added tests cases as we now support boolean exps in select statements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
