@@ -79,6 +79,28 @@ export class ContourUniforms {
     if (!this.contourDisplay)
       return;
 
+    /* uniform packing for contourDefs:
+        The line pattern code is put into 4 bits, and the width is packed into 4 bits, so together with the pattern use 8 bits.
+        This and the color bytes are then packed 2 bytes per float component, major in upper, as a float (e.g.: majorByte * 256 + minorByte)
+        The minorInterval and majorCount each take a full float component, so they are combined with a second entry to use a full vec4
+          Because of this, the overal indexing for a given contourDef is a bit different
+        E.g.: the first 2 contour definitions (if both used) are packed into the first 3 vec4 uniform indexes like so:
+          0.r = majCol[0].r << 8 | minCol[0].r  (0 to 65535 as float)
+          0.g = majCol[0].g << 8 | minCol[0].g  (0 to 65535 as float)
+          0.r = majCol[0].b << 8 | minCol[0].b  (0 to 65535 as float)
+          0.r = (majPat[0] << 12 | majW[0] << 8) | (minPat[0] << 4 | minW[0])  (0 to 65535 as float)
+          1.r = minorInterval[0]  (as float)
+          1.g = majorCount[0]  (int, as float)
+          1.b = minorInterval[1]  (as float)
+          1.a = majorCount[1]  (int, as float)
+          2.r = majCol[1].r << 8 | minCol[1].r  (0 to 65535 as float)
+          2.g = majCol[1].g << 8 | minCol[1].g  (0 to 65535 as float)
+          2.r = majCol[1].b << 8 | minCol[1].b  (0 to 65535 as float)
+          2.r = (majPat[1] << 12 | majW[1] << 8) | (minPat[1] << 4 | minW[1])  (0 to 65535 as float)
+        Then this usage pattern repeats the same way with every 2 contour definitions used taking 3 vec4 uniforms.
+           (If just 1 contour def remains then it takes 2 vec4 uniforms, of which 1.5 is actually used.)
+    */
+
     for (let index = 0, len = this.contourDisplay.terrains.length; index < len && index < this._contourDefsSize; ++index) {
       const contourDef = this.contourDisplay.terrains[index]?.contourDef ?? CivilContour.fromJSON({});;
       const even = (index & 1) === 0;

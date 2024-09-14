@@ -100,12 +100,14 @@ export class CivilContours implements WebGLDisposable {
     const subCatMap = new Id64.Uint32Map<number>();
     // NB: index should be a max of 14 - has to fit in 4 bits and 15 is reserved for no terrain def
     for (let index = 0, len = contours.terrains.length; index < len; ++index) {
-      const subCats = contours.terrains[index].subCategories;
+      const subCats = contours.terrains[index]?.subCategories;
       if (subCats !== undefined) {
         for (const subCat of subCats)
           subCatMap.setById(subCat, index);
       }
     }
+    if (subCatMap.size === 0)
+      return false;
 
     // NB: We currently use 1/2 of one component of RGBA value per feature as follows:
     //   [0] R/G/B/A = index pair - lower 4 bits = ndx n, upper 4 bits = ndx n+1

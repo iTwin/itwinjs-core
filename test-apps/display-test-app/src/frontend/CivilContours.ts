@@ -61,7 +61,6 @@ export class CivilContoursSettings implements IDisposable {
       { name: "2", value: 2 },
       { name: "3", value: 3 },
       { name: "4", value: 4 },
-      { name: "5", value: 5 },
     ];
 
     const cb = createComboBox({
@@ -160,9 +159,10 @@ export class CivilContoursSettings implements IDisposable {
 
   private loadContourDef(index: number) {
     this._currentContourIndex = index;
+    this._subCatTextBox.textbox.value = this._vp.view.displayStyle.settings.contours.terrains[index]?.subCategories?.join(",") ?? "";
     const curContourDef =  this._vp.view.displayStyle.settings.contours.terrains[index]?.contourDef ?? CivilContour.fromJSON({});
-    this._majorColor.input = curContourDef.majorColor;
-    this._minorColor.input = curContourDef.minorColor;
+    this._majorColor.input.value = curContourDef.majorColor.toHexString();
+    this._minorColor.input.value = curContourDef.minorColor.toHexString();
     updateSliderValue(this._majorWidth, curContourDef.majorPixelWidth.toString());
     updateSliderValue(this._minorWidth, curContourDef.minorPixelWidth.toString());
     this._majorLineStyle.select.value = curContourDef.majorPattern.toString();
@@ -193,6 +193,7 @@ export class CivilContoursSettings implements IDisposable {
       delete contoursJson.terrains[this._currentContourIndex];
     if (undefined !== view.displayStyle.settings.contours.terrains)
       delete view.displayStyle.settings.contours.terrains[this._currentContourIndex];
+    this.loadContourDef(this._currentContourIndex);
 
     this.sync();
   }
@@ -218,11 +219,11 @@ export class CivilContoursSettings implements IDisposable {
     console.log(JSON.stringify(this._currentTerrainProps));
   }
 
-  private updateWeight(weight: number | undefined, major: boolean): void {
+  private updateWidth(width: number | undefined, major: boolean): void {
     if (major)
-      this._currentTerrainProps.contourDef!.majorPixelWidth = weight;
+      this._currentTerrainProps.contourDef!.majorPixelWidth = width;
     else // minor
-      this._currentTerrainProps.contourDef!.minorPixelWidth = weight;
+      this._currentTerrainProps.contourDef!.minorPixelWidth = width;
     console.log(JSON.stringify(this._currentTerrainProps));
   }
 
@@ -283,7 +284,7 @@ export class CivilContoursSettings implements IDisposable {
       handler: (slider) => {
         const wt = Number.parseFloat(slider.value);
         if (!Number.isNaN(wt))
-          this.updateWeight(wt, major);
+          this.updateWidth(wt, major);
       },
     };
     const widthSlider = createSlider(props);
@@ -295,10 +296,6 @@ export class CivilContoursSettings implements IDisposable {
     widthSlider.readout.style.position = "relative";
     widthSlider.readout.style.bottom = "3px";
     widthSlider.readout.style.marginLeft = "3px";
-
-    const wt2 = Number.parseFloat(props.value);
-    if (!Number.isNaN(wt2))
-      this.updateWeight(wt2, major);
 
     return widthSlider;
   }

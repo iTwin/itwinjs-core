@@ -155,7 +155,11 @@ export class CivilTerrain {
 
   public static readonly defaults = new CivilTerrain({});
 
-  public equals(other: CivilTerrain): boolean {
+  public equals(other: CivilTerrain | undefined): boolean {
+    if (this === undefined && other === undefined)
+      return true;
+    if (this === undefined || other === undefined)
+      return false;
     if (!this.contourDef.equals(other.contourDef)) {
       return false;
     }
@@ -211,7 +215,7 @@ export class CivilContourDisplay {
     if (this.terrains.length !== other.terrains.length)
       return false;
     for (const terrain of this.terrains) {
-      const match = other.terrains.find((element) => element.equals(terrain));
+      const match = other.terrains.find((element) => element?.equals(terrain));
       if (!match)
         return false;
     }
