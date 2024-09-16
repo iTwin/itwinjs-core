@@ -58,7 +58,7 @@ export interface CalculatedPropertiesSpecification {
   type?: `string` | `boolean` | `bool` | `dateTime` | `double` | `int` | `long`;
 
   /**
-   * A map of [ECExpressions]($docs/presentation/customization/ECExpressions.md#rule-condition) whose
+   * A map of [ECExpressions]($docs/presentation/customization/ECExpressions.md) whose
    * evaluation results are used as extended data values.
    */
   extendedData?: { [key: string]: string };
