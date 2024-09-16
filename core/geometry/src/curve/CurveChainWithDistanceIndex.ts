@@ -820,8 +820,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   }
   /**
    * Compute the global chain detail corresponding to a local child detail.
-   * @param childDetail the local (fragment) detail, captured.
-   * @returns newly allocated global (chain) detail with `childDetail` field pointing to the input, and `a` field copied from the input
+   * @param childDetail the local (fragment) detail, captured as-is.
+   * @returns newly allocated global (chain) detail with its `childDetail` field pointing to the input, and its `a`
+   * field copied from the input.
    */
   public computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined {
     if (!childDetail.curve)
