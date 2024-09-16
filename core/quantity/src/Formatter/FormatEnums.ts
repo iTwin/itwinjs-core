@@ -132,7 +132,7 @@ export enum RatioType {
   NToOne,
   /**  the lesser value scales to 1. e.g. input 0.5 turns into 2:1 | input 2 turns into 1:2 */
   ValueBased,
-  /**  scales to the greatest common divisor, integer ratio. e.g. 3:10 */
+  /**  scales the input ratio to its simplest integer form using the greatest common divisor (GCD) of the values. e.g. 0.3 turns into 3:10 */
   UseGreatestCommonDivisor ,
 }
 

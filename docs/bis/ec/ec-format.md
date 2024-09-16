@@ -87,13 +87,21 @@ Supported scientific type:
 - `normalized`
 - `zeroNormalized`
 
-**RatioType** determines the type of ratio format to use. Only valid when the type is ratio.
+**RatioType** determines the type of ratio format to use. Only valid and its required when the type is ratio.
 
 Supported ratio type:
 - `oneToN`
+  - formats the left side of the ratio to always equal one, adjusting the right side value proportionally.
+  - Example: An input of 2 will be formatted to 1:0.5. (assuming presentation unit and persistence unit stays the same)
 - `NToOne`
+  - formats the right side of the ratio to always equal one, adjusting the left side value proportionally.
+  - Example: An input of 2 will be formatted to 2:1. (assuming presentation unit and persistence unit stays the same)
 - `valueBased`
+  - the lesser value of the two side scales to 1.
+  - Example: input 0.5 will be formatted to 2:1, input 2 will be formatted to 1:2 (assuming presentation unit and persistence unit stays the same)
 - `useGreatestCommonDivisor`
+  - scales the input ratio to its simplest integer form
+  - Example: input 0.6 will be formatted to 3:5 (assuming presentation unit and persistence unit stays the same)
 
 **stationOffsetSize** represents the magnitude of the StationOffset.
 

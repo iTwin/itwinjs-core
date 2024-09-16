@@ -10,7 +10,7 @@ describe("Ratio format tests", () => {
   const vH_str = "Units.VERTICAL_PER_HORIZONTAL";
   const hV_str = "Units.HORIZONTAL_PER_VERTICAL";
 
-  async function testRatioType(ratioType: string, testData: { input: number; ratio: string; precision?:number}[], presentationUnitStr: string = vH_str,persistenceUnitStr: string = vH_str) {
+  async function testRatioType(ratioType: string, testData: { input: number; ratio: string; precision?:number}[], presentationUnitStr: string = vH_str, persistenceUnitStr: string = vH_str) {
     const defaultPrecision = 3;
 
     const ratioJson: FormatProps = {
