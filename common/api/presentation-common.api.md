@@ -182,7 +182,7 @@ export interface CategoryDescriptionJSON {
 }
 
 // @public
-export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
+export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier | SchemaCategoryIdentifier;
 
 // @public @deprecated
 export interface CheckBoxRule extends RuleBase {
@@ -2920,6 +2920,12 @@ export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
 export enum SameLabelInstanceGroupApplicationStage {
     PostProcess = "PostProcess",
     Query = "Query"
+}
+
+// @public
+export interface SchemaCategoryIdentifier {
+    categoryName: string;
+    type: "SchemaCategory";
 }
 
 // @public
