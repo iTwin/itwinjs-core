@@ -5,7 +5,7 @@
 import { Constant, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 describe("Constant merger tests", () => {
   const targetJson = {
@@ -159,7 +159,7 @@ describe("Constant merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith("The Constant testConstant has an invalid 'definition' attribute.");
+    await expect(merge).rejects.toThrow("The Constant testConstant has an invalid 'definition' attribute.");
 
   });
 
@@ -202,7 +202,7 @@ describe("Constant merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith(Error, "Failed to merged, constant numerator conflict: 5.5 -> 4.5");
+    await expect(merge).rejects.toThrow("Failed to merged, constant numerator conflict: 5.5 -> 4.5");
   });
 
   it("it should throw error if denominator conflict exist", async () => {
@@ -244,6 +244,6 @@ describe("Constant merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith(Error, "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
+    await expect(merge).rejects.toThrow("Failed to merged, constant denominator conflict: 5.1 -> 4.2");
   });
 });

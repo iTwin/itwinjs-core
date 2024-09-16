@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { PropertyCategory, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

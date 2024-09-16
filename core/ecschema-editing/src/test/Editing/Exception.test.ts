@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { RelationshipClass, RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { ClassId, ECEditingStatus, PropertyId, RelationshipConstraintId, SchemaEditingError, SchemaId, SchemaItemId } from "../../Editing/Exception";

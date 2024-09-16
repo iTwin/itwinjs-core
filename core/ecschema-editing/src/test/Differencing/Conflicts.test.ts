@@ -5,7 +5,7 @@
 import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
 import { Schema, SchemaContext, SchemaProps } from "@itwin/ecschema-metadata";
 import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Schema Difference Conflicts", () => {

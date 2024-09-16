@@ -11,15 +11,16 @@
     "directory": "core/ecschema-editing"
   },
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s createLocalization && npm run -s copy:test-assets",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s createLocalization && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-editing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha",
+    "test": "vitest --run",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-editing/file.json --tsIndexFile=./ecschema-editing.ts --onlyJson",
-    "cover": "nyc npm -s test",
+    "cover": "vitest --run --coverage",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs",
     "createLocalization": "node ./scripts/createLocalization.js && cpx \"./public/locales/**/*\" ./lib/public"
   },
@@ -46,6 +47,7 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
+    "@vitest/coverage-istanbul": "^2.1.0",
     "@types/node": "~18.16.20",
     "@types/sinon": "^17.0.2",
     "@xmldom/xmldom": "~0.8.5",
@@ -58,7 +60,8 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "vitest": "^2.1.0"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^4.9.0-dev.24",

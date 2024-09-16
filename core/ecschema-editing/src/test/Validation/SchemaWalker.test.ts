@@ -5,7 +5,7 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import * as sinon from "sinon";
 import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaContext, SchemaWalker } from "@itwin/ecschema-metadata";
 

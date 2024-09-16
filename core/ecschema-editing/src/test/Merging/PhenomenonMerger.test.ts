@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Phenomenon, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 describe("Phenomenon merger tests", () => {
   const targetJson = {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext, SchemaItemType, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 describe("Unit system merger tests", () => {
   it("should merge missing unit system", async () => {

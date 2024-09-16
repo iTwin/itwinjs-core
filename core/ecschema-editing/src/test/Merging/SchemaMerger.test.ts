@@ -6,8 +6,7 @@ import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata"
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
-import { expect } from "chai";
-import "chai-as-promised";
+import { describe, expect, it } from "vitest";
 import { SchemaConflictsError } from "../../Differencing/Errors";
 
 /* eslint-disable @typescript-eslint/naming-convention */

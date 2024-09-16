@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { Constant, ConstantProps, ECVersion, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { ECEditingStatus } from "../../Editing/Exception";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { EntityClass, PrimitiveProperty, RelationshipClass, RelationshipConstraint, RelationshipEnd,
   Schema, SchemaContext,
 } from "@itwin/ecschema-metadata";

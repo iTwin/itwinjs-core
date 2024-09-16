@@ -9,8 +9,7 @@
 import { Localization } from "@itwin/core-common";
 import { AnyDiagnostic } from "./Diagnostic";
 
-import assert = require("assert");
-
+import assert from "node:assert/strict";
 const translationNamespace = "ECSchemaMetaData";
 const subTranslationNamespace = "Diagnostics";
 const baseTranslationKey = `${translationNamespace}:${subTranslationNamespace}`;

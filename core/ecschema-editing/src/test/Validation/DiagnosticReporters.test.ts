@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
@@ -11,8 +11,6 @@ import { FormatDiagnosticReporter } from "../../ecschema-editing";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
-
-import sinon = require("sinon");
 
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
   constructor(suppressions?: Map<string, string[]>) {
@@ -47,7 +45,7 @@ describe("DiagnosticReporters tests", () => {
   });
 
   afterEach(() => {
-    sinon.restore();
+    vi.restoreAllMocks();
   });
 
   describe("FormatDiagnosticReporter tests", () => {
@@ -62,12 +60,12 @@ describe("DiagnosticReporters tests", () => {
 
     it("no suppressions, should call reportDiagnostic correctly", async () => {
       const reporter = new TestDiagnosticReporter();
-      const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
+      const reportDiagnostic = vi.spyOn(reporter, "reportDiagnostic");
       const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
       reporter.report(diag);
 
-      expect(reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")).to.be.true;
+      expect(reportDiagnostic).toHaveBeenCalledWith(diag,"Test Message Param1 Param2");
     });
 
     it("rules code not in suppressions, should call reportDiagnostic correctly", async () => {
@@ -75,11 +73,11 @@ describe("DiagnosticReporters tests", () => {
       const suppressions = new Map<string, string[]>();
       suppressions.set(testSchema.fullName, ["randomCode"]);
       const reporter = new TestDiagnosticReporter(suppressions);
-      const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
+      const reportDiagnostic = vi.spyOn(reporter, "reportDiagnostic");
 
       reporter.report(diag);
 
-      expect(reportDiagnostic.calledOnceWith(diag, "Test Message Param1 Param2")).to.be.true;
+      expect(reportDiagnostic).toHaveBeenCalledWith(diag,"Test Message Param1 Param2");
     });
 
     it("diagnostic suppressed, should not call reportDiagnostic", async () => {
@@ -87,25 +85,25 @@ describe("DiagnosticReporters tests", () => {
       const suppressions = new Map<string, string[]>();
       suppressions.set(testSchema.fullName, [diag.code]);
       const reporter = new TestDiagnosticReporter(suppressions);
-      const reportDiagnostic = sinon.stub(reporter, "reportDiagnostic");
+      const reportDiagnostic = vi.spyOn(reporter, "reportDiagnostic");
 
       reporter.report(diag);
 
-      expect(reportDiagnostic.notCalled).to.be.true;
+      expect(reportDiagnostic).not.toHaveBeenCalled();
     });
 
   });
 
   describe("LoggingDiagnosticReporter tests", () => {
     it("should log expected error", async () => {
-      const logMessage = sinon.stub(Logger, "logError");
+      const logMessage = vi.spyOn(Logger, "logWarning");
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
       reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
-      const metaDataFunc = logMessage.firstCall.args[2];
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2");
+      const metaDataFunc = logMessage.mock.calls[0][2];
       assert.isDefined(metaDataFunc);
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
       assert.isDefined(metaData);
@@ -118,41 +116,37 @@ describe("DiagnosticReporters tests", () => {
 
     it("should log expected error with translated message", async () => {
       const i18n = new EmptyLocalization();
-      const i18nMock = sinon.mock(i18n);
-      const translate = i18nMock.expects("getLocalizedString");
-      translate.returns("Translated text {0} {1}");
-      const logMessage = sinon.stub(Logger, "logError");
+      vi.spyOn(i18n, "getLocalizedString").mockReturnValue("Translated text {0} {1}");
+      const logMessage = vi.spyOn(Logger, "logError");
       const reporter = new LoggingDiagnosticReporter(undefined, i18n);
       const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
       reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text Param1 Param2")).to.be.true;
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Translated text Param1 Param2");
     });
 
     it("no message args, should log expected error with translated message", async () => {
       const i18n = new EmptyLocalization();
-      const i18nMock = sinon.mock(i18n);
-      const translate = i18nMock.expects("getLocalizedString");
-      translate.returns("Translated text");
-      const logMessage = sinon.stub(Logger, "logError");
+      vi.spyOn(i18n, "getLocalizedString").mockReturnValue("Translated text");
+      const logMessage = vi.spyOn(Logger, "logError");
       const reporter = new LoggingDiagnosticReporter(undefined, i18n);
       const diag = await createTestDiagnostic(DiagnosticCategory.Error, []);
 
       reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text")).to.be.true;
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Translated text");
     });
 
     it("should log expected warning", async () => {
-      const logMessage = sinon.stub(Logger, "logWarning");
+      const logMessage = vi.spyOn(Logger, "logWarning");
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Warning);
 
       reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
-      const metaDataFunc = logMessage.firstCall.args[2];
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2");
+      const metaDataFunc = logMessage.mock.calls[0][2];
       assert.isDefined(metaDataFunc);
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
       assert.isDefined(metaData);
@@ -164,14 +158,14 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("should log expected message", async () => {
-      const logMessage = sinon.stub(Logger, "logInfo");
+      const logMessage = vi.spyOn(Logger, "logInfo");
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Message);
 
       reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
-      const metaDataFunc = logMessage.firstCall.args[2];
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2");
+      const metaDataFunc = logMessage.mock.calls[0][2];
       assert.isDefined(metaDataFunc);
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
       assert.isDefined(metaData);
@@ -183,14 +177,14 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("should log expected suggestion", async () => {
-      const logMessage = sinon.stub(Logger, "logInfo");
+      const logMessage = vi.spyOn(Logger, "logInfo");
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Suggestion);
 
       reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
-      const metaDataFunc = logMessage.firstCall.args[2];
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2");
+      const metaDataFunc = logMessage.mock.calls[0][2];
       assert.isDefined(metaDataFunc);
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
       assert.isDefined(metaData);

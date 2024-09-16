@@ -1,5 +1,5 @@
 import { SchemaContext, SchemaItemKey, SchemaKey, UnitSystem } from "@itwin/ecschema-metadata";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
 

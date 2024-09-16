@@ -5,7 +5,7 @@
 import { EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../ecschema-editing";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 describe("Class items merging order tests", () => {
   let context: SchemaContext;

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { DelayedPromiseWithProps, ECClassModifier, EntityClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "../../Editing/Mutable/MutableSchema";
 import { SchemaValidater } from "../../Validation/SchemaValidater";

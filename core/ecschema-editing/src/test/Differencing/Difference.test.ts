@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import sourceJson from "./sourceSchema.json";
 import targetJson from "./targetSchema.json";
