@@ -4,7 +4,7 @@ import { Formatter } from "../Formatter/Formatter";
 
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, ParseError, Parser, ParserSpec, QuantityError, UnitProps, ParseQuantityError } from "../core-quantity";
+import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps, ParseQuantityError } from "../core-quantity";
 
 describe("Ratio format tests", () => {
   const vH_str = "Units.VERTICAL_PER_HORIZONTAL";
@@ -118,7 +118,7 @@ describe("Ratio format tests", () => {
 
   describe("RatioType Tests with different precision", () => {
     it("ratioType precision test | One To N", async () => {
-      const testData: { input: number; ratio: string; precision: number}[] = [
+      const testData: { input: number, ratio: string, precision: number}[] = [
         // { input: 3, ratio: "1:0", precision: 0 }, commented out since its expected to fail on parsing for now
         { input: 3, ratio: "1:0.3", precision: 1 },
         { input: 3, ratio: "1:0.33", precision: 2 },
@@ -334,3 +334,108 @@ describe("Ratio format tests", () => {
 
 });
 
+
+describe("Roundtrip tests", () => {
+  it("2:1 slope ratio", async () => {
+    const vphRatioFormatJson: FormatProps = {
+      type: "Ratio",
+      ratioType: "OneToN",
+      precision: 0,
+      composite: {
+        includeZero: true,
+        units: [
+          { name: "Units.VERTICAL_PER_HORIZONTAL" },
+        ],
+      },
+    };
+
+    const hpvRatioFormatJson: FormatProps = {
+      type: "Ratio",
+      ratioType: "NToOne",
+      precision: 0,
+      composite: {
+        includeZero: true,
+        units: [
+          { name: "Units.HORIZONTAL_PER_VERTICAL" },
+        ],
+      },
+    };
+
+    const unitsProvider = new TestUnitsProvider();
+    const vphRatioFormat = new Format("VpH");
+    await vphRatioFormat.fromJSON(unitsProvider, vphRatioFormatJson);
+    assert.isTrue(vphRatioFormat.hasUnits);
+
+    const hvpRatioFormat = new Format("HpV");
+    await hvpRatioFormat.fromJSON(unitsProvider, hpvRatioFormatJson);
+    assert.isTrue(hvpRatioFormat.hasUnits);
+
+    const vH: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
+    assert.isTrue(vH.isValid);
+    const hV: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
+    assert.isTrue(hV.isValid);
+
+    const vphToVphFormatter = await FormatterSpec.create("vph_to_vph_formatter", vphRatioFormat, unitsProvider,vH);
+    const hpvToVphFormatter = await FormatterSpec.create("hvp_to_vph_formatter", vphRatioFormat, unitsProvider,hV);
+    const vphToHpvFormatter = await FormatterSpec.create("vph_to_hpv_formatter", hvpRatioFormat, unitsProvider,vH);
+    const hpvToHpvFormatter = await FormatterSpec.create("hpv_to_hpv_formatter", hvpRatioFormat, unitsProvider,hV);
+
+    const vphToVphParser = await ParserSpec.create(vphRatioFormat, unitsProvider, vH);
+    const hpvToVphParser = await ParserSpec.create(vphRatioFormat, unitsProvider, hV);
+    const vphToHvpParser = await ParserSpec.create(hvpRatioFormat, unitsProvider, vH);
+    const hpvToHvpParser = await ParserSpec.create(hvpRatioFormat, unitsProvider, hV);
+
+    const vphValue = new Quantity(vH, 0.5);
+    const hpvValue = new Quantity(hV, 2.0);
+
+    // test conversion between these quantities
+    const vHTohV = await unitsProvider.getConversion(vH, hV);
+    const hVToVH = await unitsProvider.getConversion(hV, vH);
+
+    const hVConverted = vphValue.convertTo(hV, vHTohV);
+    expect(hVConverted?.magnitude).to.equal(2.0);
+    expect(hVConverted?.unit.name).to.equal("Units.HORIZONTAL_PER_VERTICAL");
+
+    const vHConverted = hpvValue.convertTo(vH, hVToVH);
+    expect(vHConverted?.magnitude).to.equal(0.5);
+    expect(vHConverted?.unit.name).to.equal("Units.VERTICAL_PER_HORIZONTAL");
+
+    // Test all formatting scenarios
+    const vphValueString = Formatter.formatQuantity(vphValue.magnitude, vphToVphFormatter);
+    expect(vphValueString).to.equal("1:2");
+
+    const hpvValueString = Formatter.formatQuantity(hpvValue.magnitude, hpvToHpvFormatter);
+    expect(hpvValueString).to.equal("2:1");
+
+    const vphValueStringConverted = Formatter.formatQuantity(hpvValue.magnitude, hpvToVphFormatter);
+    expect(vphValueStringConverted).to.equal("1:2");
+
+    const hpvValueStringConverted = Formatter.formatQuantity(vphValue.magnitude, vphToHpvFormatter);
+    expect(hpvValueStringConverted).to.equal("2:1");
+
+    // Test all parsing scenarios
+    const vphValueParsed = Parser.parseQuantityString("1:2", vphToVphParser);
+    if (!Parser.isParsedQuantity(vphValueParsed)) {
+      assert.fail();
+    }
+    expect(vphValueParsed.value).to.equal(0.5);
+
+    const hpvValueParsed = Parser.parseQuantityString("2:1", hpvToHvpParser);
+    if (!Parser.isParsedQuantity(hpvValueParsed)) {
+      assert.fail();
+    }
+    expect(hpvValueParsed.value).to.equal(2.0);
+
+    const vphValueParsedConverted = Parser.parseQuantityString("2:1", hpvToVphParser);
+    if (!Parser.isParsedQuantity(vphValueParsedConverted)) {
+      assert.fail();
+    }
+    expect(vphValueParsedConverted.value).to.equal(0.5);
+
+    const hpvValueParsedConverted = Parser.parseQuantityString("1:2", vphToHvpParser);
+    if (!Parser.isParsedQuantity(hpvValueParsedConverted)) {
+      assert.fail();
+    }
+    expect(hpvValueParsedConverted.value).to.equal(2.0);
+  });
+});
