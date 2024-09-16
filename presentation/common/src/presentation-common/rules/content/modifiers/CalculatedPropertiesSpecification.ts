@@ -56,4 +56,10 @@ export interface CalculatedPropertiesSpecification {
    * Type can have these values: `string`, `boolean`, `bool`, `dateTime`, `double`, `int`, `long`
    */
   type?: `string` | `boolean` | `bool` | `dateTime` | `double` | `int` | `long`;
+
+  /**
+   * A map of [ECExpressions]($docs/presentation/customization/ECExpressions.md#rule-condition) whose
+   * evaluation results are used as extended data values.
+   */
+  extendedData?: { [key: string]: string };
 }

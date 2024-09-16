@@ -6,15 +6,16 @@ This content modifier allows including additional calculated properties into the
 
 ## Attributes
 
-| Name                                  | Required? | Type                                                                           | Default     |
-| ------------------------------------- | --------- | -----------------------------------------------------------------              | ----------- |
-| [`label`](#attribute-label)           | Yes       | `string`                                                                       |             |
-| [`value`](#attribute-value)           | No        | [ECExpression](../advanced/ECExpressions.md)                                   |             |
-| [`type`](#attribute-type)             | No        | `"string" \| "int" \| "long" \| "dateTime" \| "boolean" \| "bool" \| "double"` | `"string"`  |
-| [`categoryId`](#attribute-categoryid) | No        | `string \| CategoryIdentifier`                                                 | No override |
-| [`renderer`](#attribute-renderer)     | No        | [`RendererSpecification`](./RendererSpecification.md)                          | No override |
-| [`editor`](#attribute-editor)         | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md)              | No override |
-| [`priority`](#attribute-priority)     | No        | `number`                                                                       | `1000`      |
+| Name                                      | Required? | Type                                                                           | Default     |
+| ----------------------------------------- | --------- | -----------------------------------------------------------------              | ----------- |
+| [`label`](#attribute-label)               | Yes       | `string`                                                                       |             |
+| [`value`](#attribute-value)               | No        | [ECExpression](../advanced/ECExpressions.md)                                   |             |
+| [`type`](#attribute-type)                 | No        | `"string" \| "int" \| "long" \| "dateTime" \| "boolean" \| "bool" \| "double"` | `"string"`  |
+| [`categoryId`](#attribute-categoryid)     | No        | `string \| CategoryIdentifier`                                                 | No override |
+| [`renderer`](#attribute-renderer)         | No        | [`RendererSpecification`](./RendererSpecification.md)                          | No override |
+| [`editor`](#attribute-editor)             | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md)              | No override |
+| [`priority`](#attribute-priority)         | No        | `number`                                                                       | `1000`      |
+| [`extendedData`](#attribute-extendeddata) | No        | `{ [key: string]: ECExpression }`                                              |             |
 
 ### Attribute: `label`
 
@@ -134,6 +135,23 @@ to be used in UI.
 
 ```ts
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Editor.Result]]
+```
+
+### Attribute: `extendedData`
+
+A map of [ECExpressions](./ECExpressions.md#rule-condition) whose evaluation results are used as extended data values.
+
+|                 |                                   |
+| --------------- | --------------------------------- |
+| **Type**        | `{ [key: string]: ECExpression }` |
+| **Is Required** | No                                |
+
+```ts
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Ruleset]]
+```
+
+```ts
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Result]]
 ```
 
 ### Attribute: `priority`
