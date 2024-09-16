@@ -16,6 +16,7 @@ Table of contents:
 - [Presentation](#presentation)
   - [Custom content parser for creating element properties](#custom-content-parser-for-creating-element-properties)
   - [ECExpression to get related instance label](#ecexpression-to-get-related-instance-label)
+  - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
 
 ## Quantity
 
@@ -84,7 +85,7 @@ In this release the overload for single element case was enhanced to also take a
 
 ### ECExpression to get related instance label
 
-A new `GetRelatedDisplayLabel` function symbol has been added to [ECInstance ECExpressions context]($docs/presentation/advanced/ECExpressions.md#ecinstance), allowing retrieval of related instance label. The function takes 3 arguments: full name of a relationship, its direction and related class name. Example usage in [calculated property specification]($docs/presentation/content/CalculatedPropertiesSpecification.md):
+A new `GetRelatedDisplayLabel` function symbol has been added to [ECInstance ECExpressions context]($docs/presentation/advanced/ECExpressions.md#ecinstance), allowing retrieval of related instance label. The function takes 3 arguments: full name of a relationship, its direction and related class name. Example usage in [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md):
 
 ```json
 {
@@ -94,3 +95,11 @@ A new `GetRelatedDisplayLabel` function symbol has been added to [ECInstance ECE
 ```
 
 The above specification, when applied to `BisCore:Element` content, will include a "My Calculated Property" property whose value equals to the label of the model that contains the element.
+
+### Calculated properties specification enhancements
+
+A number of enhancements have been made to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md):
+
+- The [`value`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-value) is now optional. If not provided, the value of resulting property will be `undefined`.
+
+- A new optional [`type`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-type) attribute has been added. The attribute allows specifying value type of the calculated property, allowing the property to have other types than `string`. The default value is `string`.
