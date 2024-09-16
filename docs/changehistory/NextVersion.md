@@ -9,10 +9,13 @@ Table of contents:
 - [Quantity](#quantity)
 - [Electron 32 support](#electron-32-support)
 - [Geometry](#geometry)
+  - [Approximating an elliptical arc with a circular arc chain](#approximating-an-elliptical-arc-with-a-circular-arc-chain)
+  - [Triangulating points](#triangulating-points)
 - [Display](#display)
   - [Dynamic clip masks](#dynamic-clip-masks)
 - [Presentation](#presentation)
   - [Custom content parser for creating element properties](#custom-content-parser-for-creating-element-properties)
+  - [ECExpression to get related instance label](#ecexpression-to-get-related-instance-label)
 
 ## Quantity
 
@@ -63,6 +66,7 @@ Pictured below are triangulations of a DTM dataset with skirt points. At top is 
 ### Dynamic clip masks
 
 [PlanarClipMaskSettings]($common) permit you to mask out (render partially or fully transparent) portions of the background map based on its intersection with other geometry in the scene. Previously, only [GeometricModel]($backend)s and reality models could contribute to the mask. Now, geometry added to the scene dynamically via [TiledGraphicsProvider]($frontend)s can also contribute to the mask. As with reality models, TiledGraphicsProviders' geometry only contributes to the mask in [PlanarClipMaskMode.Priority]($common). You can optionally configure a custom mask priority using [TileTreeReference.planarClipMaskPriority]($frontend) or the newly-added [RenderGraphicTileTreeArgs.planarClipMaskPriority]($frontend). Here's an example of the latter:
+
 ```ts
 [[include:TileTreeReference_DynamicClipMask]]
 ```
@@ -77,3 +81,16 @@ The `getElementProperties` function on the backend [PresentationManager]($presen
 - For multiple elements case, taking an optional list of `elementClasses` and returning properties of those elements. While the default form of the returned data structure is `ElementProperties`, just like in single element case, the overload allows for a custom parser function to be provided. In that case the parser function determines the form of the returned data structure.
 
 In this release the overload for single element case was enhanced to also take an optional custom content parser to make the two overloads consistent in this regard. In addition, the `getElementProperties` method on the frontend [PresentationManager]($presentation-frontend) has also been enhanced with this new feature to be consistent with the similar method on the backend.
+
+### ECExpression to get related instance label
+
+A new `GetRelatedDisplayLabel` function symbol has been added to [ECInstance ECExpressions context]($docs/presentation/advanced/ECExpressions.md#ecinstance), allowing retrieval of related instance label. The function takes 3 arguments: full name of a relationship, its direction and related class name. Example usage in [calculated property specification]($docs/presentation/content/CalculatedPropertiesSpecification.md):
+
+```json
+{
+  "label": "My Calculated Property",
+  "value": "this.GetRelatedDisplayLabel(\"BisCore:ModelContainsElements\", \"Backward\", \"BisCore:Model\")"
+}
+```
+
+The above specification, when applied to `BisCore:Element` content, will include a "My Calculated Property" property whose value equals to the label of the model that contains the element.
