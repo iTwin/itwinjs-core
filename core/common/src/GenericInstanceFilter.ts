@@ -57,8 +57,10 @@ interface GenericInstanceFilterRuleNumericValue {
   displayValue: string;
   rawValue: number;
   /**
-   * Rounding error that should be taken into consideration when comparing values. This is useful
-   * when value should match values that can be rounded to the same value.
+   * Rounding error that should be taken into consideration when comparing numeric values. This is useful
+   * when numeric display value is rounded and displayed with less precision than actual value.
+   *
+   * Example: entered value is 0.12 but it should match values like 0.12345. In that case `roundingError` can be set to `0.005` and comparison should be done in `0.115` to `0.125` range.
    */
   roundingError?: number;
 }
