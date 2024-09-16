@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { BlankConnection, IModelApp } from "@itwin/core-frontend";
-import { MeshExport, MeshExports } from "../../FrontendTiles";
+import { MeshExport, MeshExports, queryMeshExports } from "../../FrontendTiles";
 import { obtainIModelTilesetUrl } from "../../GraphicsProvider/GraphicsProvider";
 
 use(chaiAsPromised);
@@ -98,39 +98,39 @@ async function makeExportsResponse(props: ExportsProps): Promise<Response> {
 
 const accessToken = "this-is-a-fake-access-token";
 
+async function fetchExports(resource: RequestInfo | URL, exportProps: ExportProps[]): Promise<Response> {
+  expect(typeof resource).to.equal("string");
+  const url = resource as string;
+
+  const result = url.match(/changesetId=([^\&]+)/);
+  if (result) {
+    const changesetId = result[1];
+    exportProps = exportProps.filter((x) => x.changesetId === changesetId);
+  }
+
+  return makeExportsResponse({ exports: exportProps });
+}
+
+interface ObtainUrlArgs {
+  id?: string;
+  changesetId?: string;
+  exact?: boolean;
+}
+
 describe("obtainIModelTilesetUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
-  async function fetchExports(resource: RequestInfo | URL): Promise<Response> {
-    expect(typeof resource).to.equal("string");
-    const url = resource as string;
-
-    let exports: ExportProps[] = [
-      { id: "a", href: "http://tiles.com/a", changesetId: "aaa" },
-      { id: "b", href: "http://tiles.com/b", changesetId: "bbb" },
-      { id: "c", href: "http://tiles.com/c", changesetId: "ccc" },
-    ];
-
-    const result = url.match(/changesetId=([^\&]+)/);
-    if (result) {
-      const changesetId = result[1];
-      exports = exports.filter((x) => x.changesetId === changesetId);
-    }
-
-    return makeExportsResponse({ exports });
-  }
-
-  interface ObtainUrlArgs {
-    id?: string;
-    changesetId?: string;
-    exact?: boolean;
-  }
+  const exportProps: ExportProps[] = [
+    { id: "a", href: "http://tiles.com/a", changesetId: "aaa" },
+    { id: "b", href: "http://tiles.com/b", changesetId: "bbb" },
+    { id: "c", href: "http://tiles.com/c", changesetId: "ccc" },
+  ];
 
   async function expectUrl(expected: string | undefined, args: ObtainUrlArgs): Promise<void> {
     const iModel = new TestConnection(args);
     await mockFetch(
-      async (resource) => fetchExports(resource),
+      async (resource) => fetchExports(resource, exportProps),
       async () => {
         const url = await obtainIModelTilesetUrl({
           iTwinId: iModel.iTwinId,
@@ -163,5 +163,66 @@ describe("obtainIModelTilesetUrl", () => {
 
   it("returns undefined if no export matches the changeset Id and caller requires an exact changeset match", async () => {
     await expectUrl(undefined, { id: "imdl", changesetId: "bbbbbb", exact: true });
+  });
+});
+
+describe("queryMeshExports", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+  const args: ObtainUrlArgs = { id: "imdl", changesetId: "aaa" };
+
+  const exportProps: ExportProps[] = [
+    { id: "1", href: "http://tiles.com/a1", changesetId: "aaa", status: "Complete" },
+    { id: "2", href: "http://tiles.com/a2", changesetId: "aaa", status: "Invalid" },
+    { id: "3", href: "http://tiles.com/a3", changesetId: "aaa", status: "InProgress" },
+  ];
+
+  it("queryMeshExports doesn't return incomplete exports if includeIncomplete flag is false", async () => {
+    const iModel = new TestConnection(args);
+    await mockFetch(
+      async (resource) => fetchExports(resource, exportProps),
+      async () => {
+        const queryArgs = {
+          iTwinId: "test",
+          iModelId: iModel.iModelId,
+          changesetId: iModel.changeset?.id,
+          accessToken,
+        };
+
+        const exports: MeshExport[] = [];
+        for await (const data of queryMeshExports(queryArgs)) {
+          exports.push(data);
+        }
+
+        expect(exports.length).to.equal(1);
+        expect(exports[0].status).to.equal("Complete");
+      },
+    );
+  });
+
+  it("queryMeshExports returns incomplete exports if includeIncomplete flag is true", async () => {
+    const iModel = new TestConnection(args);
+    await mockFetch(
+      async (resource) => fetchExports(resource, exportProps),
+      async () => {
+        const queryArgs = {
+          iTwinId: "test",
+          iModelId: iModel.iModelId,
+          changesetId: iModel.changeset?.id,
+          accessToken,
+          includeIncomplete: true,
+        };
+
+        const exports: MeshExport[] = [];
+        for await (const data of queryMeshExports(queryArgs)) {
+          exports.push(data);
+        }
+
+        expect(exports.length).to.equal(3);
+        expect(exports[0].status).to.equal("Complete");
+        expect(exports[1].status).to.equal("Invalid");
+        expect(exports[2].status).to.equal("InProgress");
+      },
+    );
   });
 });
