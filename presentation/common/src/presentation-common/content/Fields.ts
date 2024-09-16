@@ -145,7 +145,7 @@ export class Field {
   public renderer?: RendererDescription;
   /** Property editor used to edit values of this field */
   public editor?: EditorDescription;
-  /** Extended data injected into this content item */
+  /** Extended data associated with this field */
   public extendedData?:  { [key: string]: unknown };
   /** Parent field */
   private _parent?: NestedContentField;
