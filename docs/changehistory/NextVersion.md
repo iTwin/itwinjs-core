@@ -16,6 +16,7 @@ Table of contents:
 - [Presentation](#presentation)
   - [Custom content parser for creating element properties](#custom-content-parser-for-creating-element-properties)
   - [ECExpression to get related instance label](#ecexpression-to-get-related-instance-label)
+  - [Referencing schema-based categories in property overrides and calculated properties](#referencing-schema-based-categories-in-property-overrides-and-calculated-properties)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
 
 ## Quantity
@@ -95,6 +96,20 @@ A new `GetRelatedDisplayLabel` function symbol has been added to [ECInstance ECE
 ```
 
 The above specification, when applied to `BisCore:Element` content, will include a "My Calculated Property" property whose value equals to the label of the model that contains the element.
+
+### Referencing schema-based categories in property overrides and calculated properties
+
+In some cases there may be a need to place specific property in the same group as other specific properties. One way to do that is by creating a [property category specification]($docs/presentation/content/PropertyCategorySpecification.md) and assigning it to all such properties. However, what if want to place a property next to other properties, which are categorized through a schema-based category? This is now possible through the new `SchemaCategory` category identifier. For example, to place a calculated property next to an ECProperty that uses `MySchema:MyCategory` category:
+
+```json
+{
+  "label": "My calculated property",
+  "categoryId": {
+    "type": "SchemaCategory",
+    "categoryName": "MySchema:MyCategory"
+  }
+}
+```
 
 ### Calculated properties specification enhancements
 
