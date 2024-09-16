@@ -9,6 +9,14 @@ Table of contents:
 - [Quantity](#quantity)
 - [Electron 32 support](#electron-32-support)
 - [Geometry](#geometry)
+  - [Approximating an elliptical arc with a circular arc chain](#approximating-an-elliptical-arc-with-a-circular-arc-chain)
+  - [Triangulating points](#triangulating-points)
+- [Display](#display)
+  - [Dynamic clip masks](#dynamic-clip-masks)
+- [Presentation](#presentation)
+  - [Custom content parser for creating element properties](#custom-content-parser-for-creating-element-properties)
+  - [ECExpression to get related instance label](#ecexpression-to-get-related-instance-label)
+  - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
 
 ## Quantity
 
@@ -53,3 +61,45 @@ Approximation using `options.sampleMethod = EllipticalArcSampleMethod.AdaptiveSu
 Pictured below are triangulations of a DTM dataset with skirt points. At top is the result using default tolerance. Due to the skirt points having xy-distance greater than the default tolerance from actual terrain sites, they are included in the triangulation, resulting in undesirable near-vertical facets. At bottom is the result using `options.chordTol = 0.002`, which is sufficiently large to remove these artifacts:
 
 ![Toleranced Triangulations](./assets/triangulate-points-tolerance.jpg "Toleranced Triangulations")
+
+## Display
+
+### Dynamic clip masks
+
+[PlanarClipMaskSettings]($common) permit you to mask out (render partially or fully transparent) portions of the background map based on its intersection with other geometry in the scene. Previously, only [GeometricModel]($backend)s and reality models could contribute to the mask. Now, geometry added to the scene dynamically via [TiledGraphicsProvider]($frontend)s can also contribute to the mask. As with reality models, TiledGraphicsProviders' geometry only contributes to the mask in [PlanarClipMaskMode.Priority]($common). You can optionally configure a custom mask priority using [TileTreeReference.planarClipMaskPriority]($frontend) or the newly-added [RenderGraphicTileTreeArgs.planarClipMaskPriority]($frontend). Here's an example of the latter:
+
+```ts
+[[include:TileTreeReference_DynamicClipMask]]
+```
+
+## Presentation
+
+### Custom content parser for creating element properties
+
+The `getElementProperties` function on the backend [PresentationManager]($presentation-backend) has two overloads:
+
+- For single element case, taking `elementId` and returning an data structure in the form of `ElementProperties`.
+- For multiple elements case, taking an optional list of `elementClasses` and returning properties of those elements. While the default form of the returned data structure is `ElementProperties`, just like in single element case, the overload allows for a custom parser function to be provided. In that case the parser function determines the form of the returned data structure.
+
+In this release the overload for single element case was enhanced to also take an optional custom content parser to make the two overloads consistent in this regard. In addition, the `getElementProperties` method on the frontend [PresentationManager]($presentation-frontend) has also been enhanced with this new feature to be consistent with the similar method on the backend.
+
+### ECExpression to get related instance label
+
+A new `GetRelatedDisplayLabel` function symbol has been added to [ECInstance ECExpressions context]($docs/presentation/advanced/ECExpressions.md#ecinstance), allowing retrieval of related instance label. The function takes 3 arguments: full name of a relationship, its direction and related class name. Example usage in [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md):
+
+```json
+{
+  "label": "My Calculated Property",
+  "value": "this.GetRelatedDisplayLabel(\"BisCore:ModelContainsElements\", \"Backward\", \"BisCore:Model\")"
+}
+```
+
+The above specification, when applied to `BisCore:Element` content, will include a "My Calculated Property" property whose value equals to the label of the model that contains the element.
+
+### Calculated properties specification enhancements
+
+A number of enhancements have been made to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md):
+
+- The [`value`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-value) is now optional. If not provided, the value of resulting property will be `undefined`.
+
+- A new optional [`type`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-type) attribute has been added. The attribute allows specifying value type of the calculated property, allowing the property to have other types than `string`. The default value is `string`.

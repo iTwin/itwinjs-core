@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -290,6 +290,36 @@ export class SchemaContextEditor {
         throw new SchemaEditingError(SchemaEditType.SetLabel, new SchemaId(schemaKey), e);
       });
     schema.setDisplayLabel(label);
+  }
+
+  /**
+   * Sets the Schemas alias.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param alias The new alias to set.
+   */
+  public async setAlias(schemaKey: SchemaKey, alias: string) {
+    const schema = await this.lookupSchema(schemaKey)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey), e);
+      });
+
+    try {
+      for (const currentSchema of this.schemaContext.getKnownSchemas()) {
+        if (currentSchema.schemaKey.matches(schemaKey))
+          continue;
+
+        if (currentSchema.alias.toLowerCase() === alias.toLowerCase())
+          throw new SchemaEditingError(ECEditingStatus.SchemaAliasAlreadyExists, new SchemaId(schemaKey), undefined, undefined, `Schema ${currentSchema.name} already uses the alias '${alias}'.`);
+      }
+      schema.setAlias(alias);
+    } catch(e: any) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
+        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey),
+          new SchemaEditingError(ECEditingStatus.InvalidSchemaAlias, new SchemaId(schemaKey)));
+      }
+
+      throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias,  new SchemaId(schemaKey), e);
+    }
   }
 }
 

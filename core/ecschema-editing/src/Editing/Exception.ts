@@ -266,6 +266,9 @@ export class SchemaEditingError extends Error {
       case ECEditingStatus.InvalidECName:
         this.message = `Could not rename class ${this._schemaItemId.name} because the specified name is not a valid ECName.`;
         return;
+      case ECEditingStatus.InvalidSchemaAlias:
+        this.message = `Could not set the alias for schema ${this._schemaKey.name} because the specified alias is not a valid ECName.`;
+        return;
       default:
         this.message = "";
     }

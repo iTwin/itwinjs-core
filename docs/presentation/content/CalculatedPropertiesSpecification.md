@@ -6,14 +6,15 @@ This content modifier allows including additional calculated properties into the
 
 ## Attributes
 
-| Name                                  | Required? | Type                                                              | Default     |
-| ------------------------------------- | --------- | ----------------------------------------------------------------- | ----------- |
-| [`label`](#attribute-label)           | Yes       | `string`                                                          |             |
-| [`value`](#attribute-value)           | Yes       | [ECExpression](../advanced/ECExpressions.md)                      |             |
-| [`categoryId`](#attribute-categoryid) | No        | `string \| CategoryIdentifier`                                    | No override |
-| [`renderer`](#attribute-renderer)     | No        | [`RendererSpecification`](./RendererSpecification.md)             | No override |
-| [`editor`](#attribute-editor)         | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | No override |
-| [`priority`](#attribute-priority)     | No        | `number`                                                          | `1000`      |
+| Name                                  | Required? | Type                                                                           | Default     |
+| ------------------------------------- | --------- | -----------------------------------------------------------------              | ----------- |
+| [`label`](#attribute-label)           | Yes       | `string`                                                                       |             |
+| [`value`](#attribute-value)           | No        | [ECExpression](../advanced/ECExpressions.md)                                   |             |
+| [`type`](#attribute-type)             | No        | `"string" \| "int" \| "long" \| "dateTime" \| "boolean" \| "bool" \| "double"` | `"string"`  |
+| [`categoryId`](#attribute-categoryid) | No        | `string \| CategoryIdentifier`                                                 | No override |
+| [`renderer`](#attribute-renderer)     | No        | [`RendererSpecification`](./RendererSpecification.md)                          | No override |
+| [`editor`](#attribute-editor)         | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md)              | No override |
+| [`priority`](#attribute-priority)     | No        | `number`                                                                       | `1000`      |
 
 ### Attribute: `label`
 
@@ -35,16 +36,36 @@ Specifies label of the calculated property. Supports [localization](../advanced/
 Defines an expression to calculate the value. The expression can use [ECInstance](../advanced/ECExpressions.md#ecinstance)
 and [Ruleset Variables](../advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
 
-|                 |                                              |
-| --------------- | -------------------------------------------- |
-| **Type**        | [ECExpression](../advanced/ECExpressions.md) |
-| **Is Required** | Yes                                          |
+|                   |                                              |
+| ----------------- | -------------------------------------------- |
+| **Type**          | [ECExpression](../advanced/ECExpressions.md) |
+| **Is Required**   | No                                           |
+| **Default Value** | `undefined`                                  |
 
 ```ts
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Value.Ruleset]]
 ```
 
 ![Example of using "value" attribute](./media/calculatedpropertiesspecification-with-value-attribute.png)
+
+### Attribute: `type`
+
+Specifies return type of the calculated property. Presentation library tries to map the type of the evaluated expression to the requested type.
+If evaluated expression cannot be converted to the specified type, an error will be thrown when requesting content with the error
+message: `Calculated property evaluated to a type that couldn't be converted to requested type`. For example, if the specified type is `dateTime` for the expression `2 * 2`,
+an error would be thrown, since evaluated expression would have a type of `int`.
+
+|                   |                                                                                |
+| ----------------- | ------------------------------------------------------------------------------ |
+| **Type**          | `"string" \| "int" \| "long" \| "dateTime" \| "boolean" \| "bool" \| "double"` |
+| **Is Required**   | No                                                                             |
+| **Default Value** | `"string"`                                                                     |
+
+```ts
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Type.Ruleset]]
+```
+
+![Example of using "type" attribute](./media/calculatedpropertiesspecification-with-type-attribute.png)
 
 ### Attribute: `categoryId`
 
