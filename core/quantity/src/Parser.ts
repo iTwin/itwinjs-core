@@ -818,25 +818,44 @@ export class Parser {
 
     if (isNaN(numerator) || isNaN(denominator))
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
-    // TODO - Naron: there is also a QuantityStatus.NoValueOrUnitFoundInString
 
-    // special corner cases
-    if (spec.format.units && spec.outUnit){
-      if (spec.format.units[0][0].name === spec.outUnit.name && numerator === 0 && denominator === 1)
+
+    const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
+    let unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
+
+    if (!unitConversion) {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing input unit or unit conversion for interpreting ${spec.format.name}.`);
+    }
+
+    if (denominator === 0){
+      if (unitConversion.inversion && numerator === 1)
         return { ok: true, value: 0.0 };
-      // if (spec.format.units[0][0].name is invert of spec.outUnit && numerator === 1 && denominator === 0)
-      //   return { ok: true, value: 0.0 };
+      else
+        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+    }
+
+
+    let quantity: Quantity;
+    if (spec.format.units && spec.outUnit) {
+      quantity = new Quantity(spec.format.units[0][0], numerator / denominator);
     } else {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, "Missing presentation unit or persistence unit for ratio format.");
     }
 
-    if (denominator === 0)
-      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed}
+    let converted: Quantity | undefined;
+    try {
+      converted = quantity.convertTo(spec.outUnit, unitConversion);
+    } catch (err){
+      if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero){
+        return { ok: true, value: 0.0 };
+      }
+    }
 
-    // TODO: convert the magnitude to OutUnit, the invert unit conversion is not handled yet in unit conversion
-    const magnitude = numerator / denominator
+    if (converted === undefined || !converted.isValid) {
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert from ${spec.format.units[0][0].name} to ${spec.outUnit.name} On format ${spec.format.name}.`);
+    }
 
-    return { ok: true, value: magnitude };
+    return { ok: true, value: converted.magnitude };
   }
 
   // TODO: The following two methods are redundant with Formatter. We should consider consolidating them.

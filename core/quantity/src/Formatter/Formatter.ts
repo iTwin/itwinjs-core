@@ -214,7 +214,26 @@ export class Formatter {
       if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
-      let unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+      // let unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+      // put this in try catch, if catched QuantityError(QuantityStatus.InvertingZero), if the spec.format.type is Ratio, we will return 1:0
+
+      let unitValue = 0.0;
+      try {
+        unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+      } catch (e) {
+        // error code 35049 is thrown when inverting zero
+        // This is special case for ratio, just return 1:0
+        if (spec.format.type === FormatType.Ratio && e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
+            return "1:0";
+        }
+      }
+
+      if (spec.format.type === FormatType.Ratio){
+        if (1 !== spec.format.units!.length)
+          throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid unit specification, we require single presentation unit`);
+        compositeStrings.push(this.formatRatio(unitValue, spec));
+        continue;
+      }
 
       if (0 === i) {
         const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
@@ -232,15 +251,6 @@ export class Formatter {
         const componentText = Formatter.formatCompositePart(unitValue, true, currentLabel, spec);
         compositeStrings.push(componentText);
       }
-
-      if (spec.format.type === FormatType.Ratio){
-        if (1 !== spec.format.units!.length)
-          throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid unit specification, we require single presentation unit`);
-        compositeStrings.length = 0; // clear the array
-        compositeStrings.push(this.formatRatio(unitValue, spec));
-        break; // only one unit for ratio
-      }
-
     }
 
     return compositeStrings.join(spec.format.spacerOrDefault);
