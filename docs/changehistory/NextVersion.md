@@ -103,3 +103,5 @@ A number of enhancements have been made to [calculated properties specification]
 - The [`value`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-value) is now optional. If not provided, the value of resulting property will be `undefined`.
 
 - A new optional [`type`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-type) attribute has been added. The attribute allows specifying value type of the calculated property, allowing the property to have other types than `string`. The default value is `string`.
+
+- A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added. The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
