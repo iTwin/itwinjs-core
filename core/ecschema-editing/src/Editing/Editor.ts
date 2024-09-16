@@ -300,7 +300,7 @@ export class SchemaContextEditor {
   public async setAlias(schemaKey: SchemaKey, alias: string) {
     const schema = await this.lookupSchema(schemaKey)
       .catch((e: any) => {
-        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey), e);
+        throw new SchemaEditingError(SchemaEditType.SetSchemaAlias, new SchemaId(schemaKey), e);
       });
 
     try {
@@ -314,11 +314,11 @@ export class SchemaContextEditor {
       schema.setAlias(alias);
     } catch(e: any) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
-        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey),
+        throw new SchemaEditingError(SchemaEditType.SetSchemaAlias, new SchemaId(schemaKey),
           new SchemaEditingError(ECEditingStatus.InvalidSchemaAlias, new SchemaId(schemaKey)));
       }
 
-      throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias,  new SchemaId(schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.SetSchemaAlias,  new SchemaId(schemaKey), e);
     }
   }
 }

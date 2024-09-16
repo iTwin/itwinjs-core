@@ -1,5 +1,5 @@
 import {
-  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, PrimitiveArrayProperty,
+  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, KindOfQuantity, PrimitiveArrayProperty,
   PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItemKey, SchemaKey,
   StructClass, UnitSystem
 } from "@itwin/ecschema-metadata";
@@ -784,7 +784,7 @@ describe("Properties editing tests", () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
 
       await expect(testEditor.entities.properties.setKindOfQuantity(entityKey, "testProperty", notAKindOfQuantity)).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.SetKindOfQuantity);
+        expect(error).to.have.property("errorNumber", SchemaEditType.SetKindOfQuantity);
         expect(error).to.have.nested.property("innerError.message", `Expected ${notAKindOfQuantity.fullName} to be of type KindOfQuantity.`);
         expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
       });
@@ -795,7 +795,7 @@ describe("Properties editing tests", () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
 
       await expect(testEditor.entities.properties.setKindOfQuantity(entityKey, "testProperty", unknownKOQ)).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.SetKindOfQuantity);
+        expect(error).to.have.property("errorNumber", SchemaEditType.SetKindOfQuantity);
 
         expect(error).to.have.nested.property("innerError.message", `KindOfQuantity ${unknownKOQ.fullName} could not be found in the schema ${testKey.name}.`);
         expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);

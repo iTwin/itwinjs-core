@@ -23,6 +23,7 @@ export enum SchemaEditType {
   SetIsReadOnly = "SetIsReadOnly",
   SetPriority = "SetPriority",
   SetCategory = "SetCategory",
+  SetKindOfQuantity = "SetKindOfQuantity",
   SetMinOccurs = "SetMinOccurs",
   SetMaxOccurs = "SetMaxOccurs",
   SetExtendedTypeName = "SetExtendedTypeName",
@@ -58,4 +59,5 @@ export enum SchemaEditType {
   RemoveSchemaReference = "RemoveSchemaReference",
   SetSchemaVersion = "SetSchemaVersion",
   IncrementSchemaMinorVersion = "IncrementSchemaMinorVersion",
+  SetSchemaAlias = "SetSchemaAlias"
 }

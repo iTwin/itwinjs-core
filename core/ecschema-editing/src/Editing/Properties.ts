@@ -195,12 +195,12 @@ export class Properties {
   public async setKindOfQuantity(classKey: SchemaItemKey, propertyName: string, kindOfQuantityKey: SchemaItemKey) {
     const property = await this.getProperty<MutableProperty>(classKey, propertyName)
       .catch((e: any) => {
-        throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
+        throw new SchemaEditingError(SchemaEditType.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
     const koq = await this._schemaEditor.lookupSchemaItem<KindOfQuantity>(property.class.schema, kindOfQuantityKey, SchemaItemType.KindOfQuantity)
       .catch((e: any) => {
-        throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
+        throw new SchemaEditingError(SchemaEditType.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
     property.setKindOfQuantity(new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(kindOfQuantityKey, async () => koq));

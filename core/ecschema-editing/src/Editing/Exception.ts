@@ -32,7 +32,9 @@ export enum ECEditingStatus {
   InvalidBaseClass = "InvalidBaseClass",
   EnumeratorDoesNotExist = "EnumeratorDoesNotExist",
   InvalidECName = "InvalidECName",
+  InvalidSchemaAlias = "InvalidSchemaAlias",
   InvalidFormatUnitsSpecified = "InvalidFormatUnitsSpecified",
+  SchemaAliasAlreadyExists = "SchemaAliasAlreadyExists",
 }
 
 /**
