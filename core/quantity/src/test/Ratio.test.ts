@@ -4,10 +4,13 @@ import { Formatter } from "../Formatter/Formatter";
 
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, Parser, ParserSpec, QuantityError, UnitProps } from "../core-quantity";
+import { FormatProps, ParseError, Parser, ParserSpec, QuantityError, UnitProps, ParseQuantityError } from "../core-quantity";
 
 describe("Ratio format tests", () => {
-  async function testRatioType(ratioType: string, testData: { input: number; ratio: string; precision?:number}[]) {
+  const vH_str = "Units.VERTICAL_PER_HORIZONTAL";
+  const hV_str = "Units.HORIZONTAL_PER_VERTICAL";
+
+  async function testRatioType(ratioType: string, testData: { input: number; ratio: string; precision?:number}[], presentationUnitStr: string = vH_str,persistenceUnitStr: string = vH_str) {
     const defaultPrecision = 3;
 
     const ratioJson: FormatProps = {
@@ -17,7 +20,7 @@ describe("Ratio format tests", () => {
       composite: {
         includeZero: true,
         units: [
-          { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
+          { name: presentationUnitStr}, // presentation unit
         ],
       },
     };
@@ -27,11 +30,11 @@ describe("Ratio format tests", () => {
     await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
     assert.isTrue(ratioFormat.hasUnits);
 
-    const vH: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
-    assert.isTrue(vH.isValid);
+    const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(persistenceUnitStr);
+    assert.isTrue(persistenceUnit.isValid);
 
-    const ratioFormatterSpec = await FormatterSpec.create(`${ratioType}`, ratioFormat, unitsProvider, vH); // persisted unit
-    const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, vH); // persistence unit
+    const ratioFormatterSpec = await FormatterSpec.create(`${ratioType}`, ratioFormat, unitsProvider, persistenceUnit); // persisted unit
+    const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit); // persistence unit
 
     for (const entry of testData) {
       if (null != entry.precision)
@@ -193,60 +196,16 @@ describe("Ratio format tests", () => {
       }
     });
 
-    it("should throw an error if presentation unit is invalid", async () => {
-      const ratioJson: FormatProps = {
-        type: "Ratio",
-        ratioType: "OneToN",
-        composite: {
-          includeZero: true,
-          units: [
-            { name: "Units.M" }, // presentation unit
-          ],
-        },
-      };
-
-      const unitsProvider = new TestUnitsProvider();
-      const ratioFormat = new Format("Ratio");
-      try {
-        await ratioFormat.fromJSON(unitsProvider, ratioJson);
-        const vH: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
-        const ratioFormatterSpec = await FormatterSpec.create(`InvalidPresentationUnit`, ratioFormat, unitsProvider, vH);
-        Formatter.formatQuantity(2.0, ratioFormatterSpec);
-        expect.fail("Expected error was not thrown");
-      } catch (e: any){
-        assert.strictEqual(e.message, "The Format Ratio has an invalid presentation unit.");
-        assert.instanceOf(e, QuantityError);
-      }
-    });
-
-    it("should throw an error if persistence unit is invalid", async () => {
-      const ratioJson: FormatProps = {
-        type: "Ratio",
-        ratioType: "OneToN",
-        composite: {
-          includeZero: true,
-          units: [
-            { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
-          ],
-        },
-      };
-
-      const unitsProvider = new TestUnitsProvider();
-      const ratioFormat = new Format("Ratio");
-      try {
-        await ratioFormat.fromJSON(unitsProvider, ratioJson);
-        const vH: UnitProps = await unitsProvider.findUnitByName("Units.M");
-        const ratioFormatterSpec = await FormatterSpec.create(`InvalidPersistentUnit`, ratioFormat, unitsProvider, vH);
-        Formatter.formatQuantity(2.0, ratioFormatterSpec);
-        expect.fail("Expected error was not thrown");
-      } catch (e: any){
-        assert.strictEqual(e.message, "The Format Ratio has an invalid persistence unit.");
-        assert.instanceOf(e, QuantityError);
-      }
-    });
   });
 
   describe("RatioType Tests with special values", () => {
+    it("zero value", async () => {
+      const testData: { input: number, ratio: string }[] = [
+        { input: 0.0, ratio: "0:1" },
+      ];
+      await testRatioType("NToOne", testData);
+    });
+
     it("large/small value", async () => {
       const testData: { input: number, ratio: string }[] = [
         { input: 0.00000001, ratio: "0:1" },
@@ -254,6 +213,7 @@ describe("Ratio format tests", () => {
       ];
       await testRatioType("NToOne", testData);
     });
+
     it("negative value", async () => {
       const testData: { input: number, ratio: string }[] = [
         { input: -1.0, ratio: "-1:1" },
@@ -262,6 +222,7 @@ describe("Ratio format tests", () => {
       ];
       await testRatioType("NToOne", testData);
     });
+
     it("irrational number | NToOne", async () => {
       const testData: { input: number, ratio: string }[] = [
         { input: 1.0 / 7, ratio: "0.143:1" },
@@ -279,45 +240,97 @@ describe("Ratio format tests", () => {
     });
   });
 
-});
+  describe("specific parse ratio string tests", () => {
+    async function testRatioParser(
+      testData: { output: number; inputRatio: string; precision?: number; parseError?: ParseError }[],
+    ) {
 
-describe("Specific parse ratio string tests", () => {
-  async function testRatioParser(testData: { input: number; ratio: string; precision?:number}[]) {
-    const ratioJson: FormatProps = {
-      type: "Ratio",
-      ratioType: "NToOne",
-      composite: {
-        includeZero: true,
-        units: [
-          { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
-        ],
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        composite: {
+          includeZero: true,
+          units: [{ name: vH_str }],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("Ratio");
+      await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
+      assert.isTrue(ratioFormat.hasUnits);
+
+      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(vH_str);
+      assert.isTrue(persistenceUnit.isValid);
+
+      const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+      for (const entry of testData) {
+        const parserRatioResult = Parser.parseQuantityString(entry.inputRatio, ratioParser);
+
+        if (entry.parseError) { // if it is expecting an error
+          assert.isTrue(Parser.isParseError(parserRatioResult));
+           // Check if parserRatioResult has the err property, which signifies a ParseQuantityError
+          if ("error" in parserRatioResult)
+            expect(parserRatioResult.error).to.equal(entry.parseError);
+          else
+            assert.fail(`Expected parse error for input ratio string ${entry.inputRatio}`);
+
+        } else {
+          if (!Parser.isParsedQuantity(parserRatioResult))
+            assert.fail(`Expected a parsed from ratio string ${entry.inputRatio}`);
+
+          expect(parserRatioResult.value).to.equal(entry.output);
+        }
       }
-    };
-
-    const unitsProvider = new TestUnitsProvider();
-    const ratioFormat = new Format("Ratio");
-    await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
-    const v_h: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
-
-    const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, v_h); // persistence unit
-
-    for (const entry of testData) {
-      const parserRatioResult = Parser.parseQuantityString(entry.ratio, ratioParser);
-      if (!Parser.isParsedQuantity(parserRatioResult)) {
-        assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
-      }
-      expect(parserRatioResult.value, entry.input.toString());
     }
-  }
 
+    it("single number", async () => {
+      const testData: { output: number; inputRatio: string; }[] = [
+        { output: 1.0, inputRatio: "1" },
+        { output: 30, inputRatio: "30" },
+      ];
+      await testRatioParser(testData);
+    });
 
+    it("various parse Error expected", async () => {
+      const testData: { output: number; inputRatio: string; parseError?: ParseError }[] = [
+        { output: 1.0, inputRatio: "1:0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
+        { output: 1.0, inputRatio: "10:0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
 
-  it("single number", async () => {
-    const testData: { input: number; ratio: string; }[] = [
-      { input: 1.0, ratio: "1" },
-      { input: 30, ratio: "30" },
-    ];
-    await testRatioParser(testData);
+        { output: 1.0, inputRatio: "", parseError: ParseError.NoValueOrUnitFoundInString },
+        { output: 1.0, inputRatio: "1:", parseError: ParseError.NoValueOrUnitFoundInString},
+        { output: 1.0, inputRatio: "1:A", parseError: ParseError.NoValueOrUnitFoundInString},
+
+        { output: 1.0, inputRatio: "1:2:3", parseError: ParseError.UnableToConvertParseTokensToQuantity},
+      ];
+      await testRatioParser(testData);
+    });
+
   });
 
+  describe("inverted unit tests", () => {
+    it("zero value", async () => {
+      const testData: { input: number, ratio: string }[] = [
+        { input: 0.0, ratio: "1:0" },
+      ];
+      await testRatioType("NToOne", testData, vH_str, hV_str);
+      await testRatioType("NToOne", testData, hV_str, vH_str);
+    });
+
+    it("inverted unit | NToOne", async () => {
+      const testData: { input: number, ratio: string }[] = [
+        { input: 1.0, ratio: "1:1" },
+        { input: 2.0, ratio: "0.5:1" },
+        { input: 0.5, ratio: "2:1" },
+        { input: 0.333, ratio: "3.003:1" },
+        { input: 0.2857, ratio: "3.5:1" },
+        { input: 0.25, ratio: "4:1" },
+        { input: 0.6667, ratio: "1.5:1" },
+      ];
+      await testRatioType("NToOne", testData, vH_str, hV_str);
+    })
+  }
+)
+
+
 });
+
