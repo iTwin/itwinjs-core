@@ -93,7 +93,7 @@ export class CivilContours implements WebGLDisposable {
   }
 
   private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: CivilContourDisplay): boolean {
-    if (contours.terrains === undefined)
+    if (contours.terrains === undefined || contours.terrains.length === 0)
       return false;
 
     // setup an efficient way to compare feature subcategories with lists in terrains

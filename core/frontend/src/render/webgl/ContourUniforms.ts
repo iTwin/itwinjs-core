@@ -101,13 +101,13 @@ export class ContourUniforms {
            (If just 1 contour def remains then it takes 2 vec4 uniforms, of which 1.5 is actually used.)
     */
 
-    for (let index = 0, len = this.contourDisplay.terrains.length; index < len && index < this._contourDefsSize; ++index) {
+    for (let index = 0, len = this.contourDisplay.terrains.length; index < len && index < _maxContourDefs; ++index) {
       const contourDef = this.contourDisplay.terrains[index]?.contourDef ?? CivilContour.fromJSON({});;
       const even = (index & 1) === 0;
-      const colorDefsNdx = even ? index * 1.5 : (index - 1) * 1.5 + 2;
+      const colorDefsNdx = (even ? index * 1.5 : (index - 1) * 1.5 + 2) * 4;
       this.packColor (colorDefsNdx, contourDef.majorColor, contourDef.minorColor);
       this.packPatWidth (colorDefsNdx, contourDef.majorPattern, contourDef.minorPattern, contourDef.majorPixelWidth, contourDef.minorPixelWidth);
-      const intervalsPairNdx = Math.floor(index * 0.5) * 3 + 1;
+      const intervalsPairNdx = (Math.floor(index * 0.5) * 3 + 1) * 4;
       this.packIntervals (intervalsPairNdx, even, contourDef.minorInterval, contourDef.majorIntervalCount);
     }
   }
