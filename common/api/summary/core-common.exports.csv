@@ -294,7 +294,7 @@ beta;interface;GenericInstanceFilterRule
 beta;interface;GenericInstanceFilterRuleGroup
 beta;type;GenericInstanceFilterRuleGroupOperator
 beta;type;GenericInstanceFilterRuleOperator
-beta;interface;GenericInstanceFilterRuleValue
+beta;type;GenericInstanceFilterRuleValue
 beta;namespace;GenericInstanceFilterRuleValue
 public;class;GeocentricTransform
 public;interface;GeocentricTransformProps

@@ -251,11 +251,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
   public get isGlobal(): boolean { return false; }
 
-  /**  Return the clip mask priority for this model - models will be clipped by any other viewed model with a higher proirity.
-   * BIM models have highest prioirty and are never clipped.
-   * @alpha
+  /** The [PlanarClipMaskPriority]($common) of this tile tree used to determine which tile trees contribute to a clip mask when
+   * using [PlanarClipMaskMode.Priority]($common).
+   * @beta
    */
-  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
+  public get planarClipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
@@ -302,10 +302,18 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Create a [[TileTreeReference]] that displays a pre-defined [[RenderGraphic]].
-   * The reference can be used by a [[TiledGraphicsProvider]] or as a [[DynamicSpatialClassifier]]. For example:
+   * The reference can be used to add dynamic content to a [[Viewport]]'s scene as a [[TiledGraphicsProvider]], as in the following example:
    * ```ts
    * [[include:TileTreeReference_createFromRenderGraphic]]
    *```
+   * Or, it can be used as a [[DynamicSpatialClassifier]] to contextualize a reality model, like so:
+   * ```ts
+   * [[include:TileTreeReference_DynamicClassifier]]
+   * ```
+   * It can also be used to mask out portions of the background map or terrain via [PlanarClipMaskSettings]($common), as shown below:
+   * ```ts
+   * [[include:TileTreeReference_DynamicClipMask]]
+   * ```
    * @beta
    */
   public static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference {
