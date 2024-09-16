@@ -16,8 +16,8 @@
     "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "vitest --run --dir=src",
-    "cover": "nyc npm -s test"
+    "test": "vitest --run",
+    "cover": "vitest --run --coverage"
   },
   "repository": {
     "type": "git",

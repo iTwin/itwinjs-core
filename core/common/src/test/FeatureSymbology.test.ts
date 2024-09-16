@@ -84,42 +84,39 @@ describe("FeatureAppearance", () => {
     test({ transp: 1.0 }, { transparency: 1.0 });
   });
 
-  it("view-dependent transparency", () => {
-    it("to and from JSON", () => {
-      function test(appProps: FeatureAppearanceProps, expectViewDependent: boolean): void {
-        const expected = expectViewDependent ? true : undefined;
-        const app = FeatureAppearance.fromJSON(appProps);
-        expect(app.viewDependentTransparency).to.equal(expected);
-        expect(app.toJSON().viewDependentTransparency).to.equal(expected);
-      }
+  it("view-dependent transparency serialization", () => {
+    function test(appProps: FeatureAppearanceProps, expectViewDependent: boolean): void {
+      const expected = expectViewDependent ? true : undefined;
+      const app = FeatureAppearance.fromJSON(appProps);
+      expect(app.viewDependentTransparency).to.equal(expected);
+      expect(app.toJSON().viewDependentTransparency).to.equal(expected);
+    }
 
-      test({ }, false);
-      test({ transparency: undefined }, false);
-      test({ transparency: 1 }, false);
-      test({ transparency: 0 }, false );
+    test({ }, false);
+    test({ transparency: undefined }, false);
+    test({ transparency: 1 }, false);
+    test({ transparency: 0 }, false );
 
-      test({ transparency: 1, viewDependentTransparency: true }, true);
-      test({ transparency: 0, viewDependentTransparency: true }, true);
+    test({ transparency: 1, viewDependentTransparency: true }, true);
+    test({ transparency: 0, viewDependentTransparency: true }, true);
 
-      test({ viewDependentTransparency: true }, false);
-      test({ transparency: undefined, viewDependentTransparency: true }, false);
-    });
+    test({ viewDependentTransparency: true }, false);
+    test({ transparency: undefined, viewDependentTransparency: true }, false);
+  });
+  it("view-dependent transparency from subcategory override", () => {
+    function test(ovrProps: SubCategoryAppearance.Props, expectViewDependent: boolean): void {
+      const expected = expectViewDependent ? true : undefined;
+      const ovr = SubCategoryOverride.fromJSON(ovrProps);
+      const app = FeatureAppearance.fromSubCategoryOverride(ovr);
+      expect(app.viewDependentTransparency).to.equal(expected);
+      expect(app.toJSON().viewDependentTransparency).to.equal(expected);
+    }
 
-    it("from subcategory override", () => {
-      function test(ovrProps: SubCategoryAppearance.Props, expectViewDependent: boolean): void {
-        const expected = expectViewDependent ? true : undefined;
-        const ovr = SubCategoryOverride.fromJSON(ovrProps);
-        const app = FeatureAppearance.fromSubCategoryOverride(ovr);
-        expect(app.viewDependentTransparency).to.equal(expected);
-        expect(app.toJSON().viewDependentTransparency).to.equal(expected);
-      }
-
-      test({ transp: 0.5 }, true);
-      test({ transp: 0 }, true);
-      test({ transp: undefined }, false);
-      test({ }, false);
-      test({ color: ColorDef.blue.toJSON() }, false);
-    });
+    test({ transp: 0.5 }, true);
+    test({ transp: 0 }, true);
+    test({ transp: undefined }, false);
+    test({ }, false);
+    test({ color: ColorDef.blue.toJSON() }, false);
   });
 });
 

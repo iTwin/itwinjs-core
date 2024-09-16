@@ -182,6 +182,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@types/sinon': ^17.0.2
+      '@vitest/coverage-istanbul': ^2.1.0
       '@xmldom/xmldom': ~0.8.5
       benchmark: ^2.1.4
       chai: ^4.3.10
@@ -193,6 +194,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^17.0.2
       typescript: ~5.3.3
+      vitest: ^2.1.0
     devDependencies:
       '@bentley/units-schema': 1.0.8
       '@itwin/build-tools': link:../../tools/build
@@ -207,6 +209,7 @@ importers:
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
       '@types/sinon': 17.0.2
+      '@vitest/coverage-istanbul': 2.1.0_vitest@2.1.0
       '@xmldom/xmldom': 0.8.5
       benchmark: 2.1.4
       chai: 4.3.10
@@ -218,6 +221,7 @@ importers:
       rimraf: 3.0.2
       sinon: 17.0.2
       typescript: 5.3.3
+      vitest: 2.1.0_@types+node@18.16.20
 
   ../../core/ecschema-locaters:
     specifiers:
