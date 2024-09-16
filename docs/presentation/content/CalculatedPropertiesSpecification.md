@@ -139,7 +139,7 @@ to be used in UI.
 
 ### Attribute: `extendedData`
 
-A map of [ECExpressions](./ECExpressions.md#rule-condition) whose evaluation results are used as extended data values.
+A map of [ECExpressions](./ECExpressions.md) whose evaluation results are used as extended data values.
 
 |                 |                                   |
 | --------------- | --------------------------------- |
