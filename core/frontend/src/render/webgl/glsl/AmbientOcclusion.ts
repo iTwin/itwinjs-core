@@ -20,7 +20,7 @@ import { addRenderOrderConstants, readDepthAndOrder } from "./FeatureSymbology";
 import { addWindowToTexCoords, assignFragColor } from "./Fragment";
 import { addViewport } from "./Viewport";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { Matrix4 } from "../Matrix";
+import { Matrix3, Matrix4 } from "../Matrix";
 import { Matrix4d } from "@itwin/core-geometry";
 
 // 'PB' indicates a shader variation when only the pickbuffer is available
@@ -58,7 +58,7 @@ const computeAmbientOcclusion = `
     return vec4(1.0);
 
   vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
-  vec3 worldPos = computePositionFromDepthWorldSpace(tc, linearDepth).xyz;
+  vec3 worldPos = computePositionFromDepthWorldSpace(tc, nonLinearDepth).xyz;
 
   vec2 pixelSize = 1.0 / u_viewport;
   vec3 viewNormal = computeNormalFromDepth(viewPos, tc, pixelSize);
@@ -106,10 +106,9 @@ const computeAmbientOcclusion = `
       vec3 diffVec = curViewPos.xyz - viewPos.xyz;
       // float zLength = abs(curLinearDepth - linearDepth);
 
-      vec3 curWorldPos = computePositionFromDepthWorldSpace(newCoords, curLinearDepth).xyz;
+      vec3 curWorldPos = computePositionFromDepthWorldSpace(newCoords, curNonLinearDepth).xyz;
       vec3 diffVecWorld = curWorldPos - worldPos;
       float zLength = length(diffVecWorld);
-
 
       // float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
       // float weight = smoothstep(0.0, 1.0, zLengthCap / zLength);
@@ -170,6 +169,7 @@ vec4 computePositionFromDepthWorldSpace(vec2 tc, float nonLinearDepth) {
     vec2 xy = vec2((tc.x * 2.0 - 1.0), ((1.0 - tc.y) * 2.0 - 1.0));
     posEC = u_invProj * vec4(xy, nonLinearDepth, 1.0);
     posEC = posEC / posEC.w;
+    posEC = u_invView * posEC;
   } else {
     float top = u_frustumPlanes.x;
     float bottom = u_frustumPlanes.y;
@@ -178,9 +178,7 @@ vec4 computePositionFromDepthWorldSpace(vec2 tc, float nonLinearDepth) {
     posEC = vec4(mix(left, right, tc.x), mix(bottom, top, tc.y), nonLinearDepth, 1.0);
   }
 
-  // Convert the position from view space to world space
-  vec4 worldPos = u_invView * posEC;
-  return worldPos;  // Return position in world space
+  return posEC;  // Return position in world space
 }
 `;
 
@@ -332,8 +330,39 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
 
   frag.addUniform("u_invView", VariableType.Mat4, (prog) => {
     prog.addProgramUniform("u_invView", (uniform, params) => {
-      const invViewMatrix = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!);
-      uniform.setMatrix4(Matrix4.fromMatrix4d(invViewMatrix));
+
+      const viewMatrix3d = params.target.uniforms.frustum.viewMatrix.matrix;
+      const eyePoint = params.target.uniforms.frustum.planFrustum.getEyePoint();
+
+      console.log(viewMatrix3d);
+
+      if (!eyePoint) {
+        return;
+      }
+      const viewMatrix4 = Matrix4.fromIdentity();
+      viewMatrix4.m00 = viewMatrix3d.at(0, 0);
+      viewMatrix4.m01 = viewMatrix3d.at(0, 1);
+      viewMatrix4.m02 = viewMatrix3d.at(0, 2);
+      viewMatrix4.m10 = viewMatrix3d.at(1, 0);
+      viewMatrix4.m11 = viewMatrix3d.at(1, 1);
+      viewMatrix4.m12 = viewMatrix3d.at(1, 2);
+      viewMatrix4.m20 = viewMatrix3d.at(2, 0);
+      viewMatrix4.m21 = viewMatrix3d.at(2, 1);
+      viewMatrix4.m22 = viewMatrix3d.at(2, 2);
+
+      viewMatrix4.m30 = eyePoint.x;
+      viewMatrix4.m31 = eyePoint.y;
+      viewMatrix4.m32 = eyePoint.z;
+
+      console.log(viewMatrix4);
+
+      const invViewMatrix = Matrix4.fromInverse(viewMatrix4);
+      if (invViewMatrix) {
+        uniform.setMatrix4(invViewMatrix);
+      }
+
+      // console.log(invViewMatrix);
+
     });
   }, VariablePrecision.High);
 
