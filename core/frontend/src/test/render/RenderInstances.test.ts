@@ -221,7 +221,15 @@ describe("RenderInstances", () => {
     const template = gltfTemplate!.template!;
     expect(template).not.to.be.undefined;
 
-    let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template });
+    const instancesBuilder = RenderInstancesParamsBuilder.create({ modelId });
+    instancesBuilder.add({
+      feature: vp.iModel.transientIds.getNext(),
+      transform: Transform.createIdentity(),
+    });
+    const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
+    expect(instances[_featureTable]!.numFeatures).to.equal(1);
+
+    let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
     const branch = new GraphicBranch();
     branch.add(graphic);
     graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.createTranslation(vp.iModel.projectExtents.center));
