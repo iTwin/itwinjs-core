@@ -215,7 +215,7 @@ export class Formatter {
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
       // let unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
-      // put this in try catch, if catched QuantityError(QuantityStatus.InvertingZero), if the spec.format.type is Ratio, we will return 1:0
+      // put this in try catch, if caught QuantityError(QuantityStatus.InvertingZero), if the spec.format.type is Ratio, we will return 1:0
 
       let unitValue = 0.0;
       try {
@@ -224,7 +224,7 @@ export class Formatter {
         // error code 35049 is thrown when inverting zero
         // This is special case for ratio, just return 1:0
         if (spec.format.type === FormatType.Ratio && e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
-            return "1:0";
+          return "1:0";
         }
       }
 

@@ -9,7 +9,7 @@
 import { QuantityConstants } from "./Constants";
 import { QuantityError, QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
-import { FormatTraits, FormatType, RatioType } from "./Formatter/FormatEnums";
+import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { ParserSpec } from "./ParserSpec";
 import { applyConversion, Quantity } from "./Quantity";
@@ -55,7 +55,7 @@ enum Operator {
 
 function isOperator(char: number | string): boolean {
   if(typeof char === "number"){
-    // Convert the charcode to string.
+    // Convert the CharCode to string.
     char = String.fromCharCode(char);
   }
   return Object.values(Operator).includes(char as Operator);
@@ -342,7 +342,7 @@ export class Parser {
           }
 
           if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
-            // Dont add space when the wip token is empty.
+            // Don't add space when the wip token is empty.
             continue;
           }
 
@@ -802,11 +802,11 @@ export class Parser {
 
   private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     if (!inString)
-        return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
     const parts = inString.split(":");
     if (parts.length > 2)
-        return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
     const numerator = parseFloat(parts[0]);
     let denominator;
@@ -819,9 +819,8 @@ export class Parser {
     if (isNaN(numerator) || isNaN(denominator))
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
-
     const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
-    let unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
+    const unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
 
     if (!unitConversion) {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing input unit or unit conversion for interpreting ${spec.format.name}.`);
@@ -833,7 +832,6 @@ export class Parser {
       else
         return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
     }
-
 
     let quantity: Quantity;
     if (spec.format.units && spec.outUnit) {

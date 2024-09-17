@@ -90,6 +90,7 @@ Supported scientific type:
 **RatioType** determines the type of ratio format to use. Only valid and its required when the type is ratio.
 
 Supported ratio type:
+
 - `oneToN`
   - formats the left side of the ratio to always equal one, adjusting the right side value proportionally.
   - Example: An input of 2 will be formatted to 1:0.5. (assuming presentation unit and persistence unit stays the same)
@@ -133,7 +134,7 @@ Supported ratio type:
 
 - A single units entry formats a value like `42.42 ft`.
 - If multiple units are specified they should be in decreasing magnitude and value split among the units like `42 ft 5.02 in`.
-- Unit labels are optional. If not specified, the label will be set as the unit's diplay label.
+- Unit labels are optional. If not specified, the label will be set as the unit's display label.
 - If a unit label is explicitly set to an empty string, no label will be shown for that unit and the label will remain an empty string.
 - Unit labels specified in the composite format definition can be overriden as part of the format override in a KindOfQuantity. See [format override](./kindofquantity.md/#format-overrides).
 
