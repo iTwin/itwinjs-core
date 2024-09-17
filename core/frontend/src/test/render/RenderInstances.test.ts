@@ -13,7 +13,7 @@ import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/Instanc
 import { IModelApp } from "../../IModelApp";
 import { ColorDef, EmptyLocalization, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
 import { GraphicType, ViewRect } from "../../common";
-import { Color, openBlankViewport, readUniqueColors, readUniquePixelData } from "../openBlankViewport";
+import { Color, openBlankViewport, readUniqueColors, readUniqueFeatures, readUniquePixelData } from "../openBlankViewport";
 import { GraphicBranch, StandardViewId, readGltfTemplate } from "../../core-frontend";
 import { _featureTable } from "../../common/internal/Symbols";
 
@@ -245,8 +245,8 @@ describe("RenderInstances", () => {
     let colors = readUniqueColors(vp);
     expect(colors.length).to.equal(2);
 
-    let pixels = readUniquePixelData(vp);
-    expect(pixels.length).to.equal(2);
+    let features = readUniqueFeatures(vp);
+    expect(features.length).to.equal(2);
 
     vp.dispose();
   });

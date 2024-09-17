@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Id64String, SortedArray } from "@itwin/core-bentley";
+import { Id64String, SortedArray, comparePossiblyUndefined } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
@@ -203,13 +203,9 @@ export class ColorSet extends SortedArray<Color> {
   public get array(): Color[] { return this._array; }
 }
 
-/** Read depth, geometry type, and feature for each pixel. Return only the unique ones.
- * Omit `readRect` to read the contents of the entire viewport.
- * @internal
- */
-export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
+export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean): void {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
-  const set = new PixelDataSet();
+
   vp.readPixels(rect, Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
     if (undefined === pixels)
       return;
@@ -222,10 +218,24 @@ export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNo
 
     for (let x = sRect.left; x < sRect.right; x++)
       for (let y = sRect.top; y < sRect.bottom; y++)
-        set.insert(pixels.getPixel(x, y));
+        processor(pixels.getPixel(x, y));
   }, excludeNonLocatable);
+}
 
+/** Read depth, geometry type, and feature for each pixel. Return only the unique ones.
+ * Omit `readRect` to read the contents of the entire viewport.
+ * @internal
+ */
+export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
+  const set = new PixelDataSet();
+  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable);
   return set;
+}
+
+export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): SortedArray<Feature | undefined> {
+  const features = new SortedArray<Feature | undefined>((lhs, rhs) => comparePossiblyUndefined((l, r) => l.compare(r), lhs, rhs));
+  processPixels(vp, (pixel) => features.insert(pixel.feature), readRect, excludeNonLocatable);
+  return features;
 }
 
 /** Read a specific pixel. @internal */
