@@ -18,6 +18,9 @@
               "$ref": "#/definitions/IdCategoryIdentifier"
             },
             {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
+            },
+            {
               "type": "string"
             }
           ],
@@ -1585,6 +1588,9 @@
               "$ref": "#/definitions/IdCategoryIdentifier"
             },
             {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
+            },
+            {
               "type": "string"
             }
           ],
@@ -1907,6 +1913,9 @@
             },
             {
               "$ref": "#/definitions/IdCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
             },
             {
               "type": "string"
@@ -2504,6 +2513,28 @@
       },
       "required": [
         "specType"
+      ],
+      "type": "object"
+    },
+    "SchemaCategoryIdentifier": {
+      "additionalProperties": false,
+      "description": "Identifier of a schema-based  category, referenced by its full name.",
+      "properties": {
+        "categoryName": {
+          "description": "Full name of the property category, e.g. `MySchema:MyPropertyCategory`.",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of the identifier",
+          "enum": [
+            "SchemaCategory"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "categoryName",
+        "type"
       ],
       "type": "object"
     },

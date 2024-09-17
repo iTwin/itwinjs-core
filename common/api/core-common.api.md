@@ -1810,8 +1810,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2228224,
-    Major = 34,
+    Combined = 2293760,
+    Major = 35,
     Minor = 0
 }
 
@@ -3538,12 +3538,7 @@ export type GenericInstanceFilterRuleGroupOperator = "and" | "or";
 export type GenericInstanceFilterRuleOperator = "is-equal" | "is-not-equal" | "is-null" | "is-not-null" | "is-true" | "is-false" | "less" | "less-or-equal" | "greater" | "greater-or-equal" | "like";
 
 // @beta
-export interface GenericInstanceFilterRuleValue {
-    // (undocumented)
-    displayValue: string;
-    // (undocumented)
-    rawValue: GenericInstanceFilterRuleValue.Values;
-}
+export type GenericInstanceFilterRuleValue = GenericInstanceFilterRuleNumericValue | GenericInstanceFilterRuleNonNumericValue;
 
 // @beta (undocumented)
 export namespace GenericInstanceFilterRuleValue {
