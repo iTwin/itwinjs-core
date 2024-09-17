@@ -7,8 +7,8 @@
  */
 
 import type { RenamePropertyEdit, RenameSchemaItemEdit } from "./SchemaEdits";
-import { AnySchemaItemDifference, ClassItemDifference, ClassPropertyDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, SchemaDifferenceResult, SchemaOtherTypes, SchemaType } from "../../Differencing/SchemaDifference";
-import { NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, RelationshipConstraintProps, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps, StructPropertyProps } from "@itwin/ecschema-metadata";
+import { AnyClassItemDifference, AnySchemaItemDifference, ClassPropertyDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, SchemaDifferenceResult, SchemaOtherTypes, SchemaType } from "../../Differencing/SchemaDifference";
+import { NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, RelationshipConstraintProps, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps, StructPropertyProps } from "@itwin/ecschema-metadata";
 import * as Utils from "../../Differencing/Utils";
 
 type Editable<T extends object> = {
@@ -19,7 +19,10 @@ type Editable<T extends object> = {
  * @internal
  */
 export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: RenamePropertyEdit) {
-  const [itemName, path] = edit.key.split(".") as [string, string];
+  const [schemaName, itemName, path] = edit.key.split(".") as [string, string, string];
+  if (!result.sourceSchemaName.startsWith(schemaName)) {
+    return;
+  }
 
   const difference = result.differences.find((entry) => {
     return Utils.isClassPropertyDifference(entry) && entry.changeType === "add" && entry.itemName === itemName && entry.path === path;
@@ -44,9 +47,13 @@ export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: Re
  * @internal
  */
 export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: RenameSchemaItemEdit, postProcessing: (cb: () => void) => void) {
+  const [schemaName, itemName] = SchemaItem.parseFullName(edit.key);
+  if (!result.sourceSchemaName.startsWith(schemaName)) {
+    return;
+  }
 
   const difference = result.differences.find((entry) => {
-    return Utils.isSchemaItemDifference(entry) && entry.itemName === edit.key;
+    return Utils.isSchemaItemDifference(entry) && entry.changeType === "add" && entry.itemName === itemName;
   });
 
   const itemDifference = difference as AnySchemaItemDifference;
@@ -54,10 +61,10 @@ export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: 
     return;
   }
 
-  renameName(itemDifference, edit.key, edit.value);
+  renameName(itemDifference, itemName, edit.value);
 
   if (result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === edit.key && entry.path === undefined);
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === itemName && entry.path === undefined);
     if (conflictIndex > -1) {
       result.conflicts.splice(conflictIndex, 1);
     }
@@ -70,7 +77,8 @@ export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: 
 
 function renameSchemaItem(result: SchemaDifferenceResult, edit: RenameSchemaItemEdit, schemaType: SchemaType) {
   const schemaKey = SchemaKey.parseString(result.sourceSchemaName);
-  const oldKey = new SchemaItemKey(edit.key, schemaKey);
+  const [_schemaName, itemName] = SchemaItem.parseFullName(edit.key);
+  const oldKey = new SchemaItemKey(itemName, schemaKey);
   const newKey = new SchemaItemKey(edit.value, schemaKey);
 
   switch (schemaType) {
@@ -112,7 +120,7 @@ function renameSchemaItem(result: SchemaDifferenceResult, edit: RenameSchemaItem
   }
 }
 
-function renameBaseClass(difference: ClassItemDifference["difference"], oldKey: SchemaItemKey, newKey: SchemaItemKey) {
+function renameBaseClass(difference: AnyClassItemDifference["difference"], oldKey: SchemaItemKey, newKey: SchemaItemKey) {
   if (difference.baseClass && oldKey.matchesFullName(difference.baseClass)) {
     difference.baseClass = newKey.fullName;
   }
