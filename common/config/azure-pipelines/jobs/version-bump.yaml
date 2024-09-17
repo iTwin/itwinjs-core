@@ -156,7 +156,7 @@ jobs:
         displayName: Setup Git
 
       - bash: |
-          echo "IM CHECKING OUT TO....$[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]"
+          echo "IM CHECKING OUT TO....$(dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'])"
           # git checkout --track $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
         displayName: Checkout to Release Branch in case of RC
         condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
