@@ -140,6 +140,8 @@ jobs:
     displayName: Bump Version
     dependsOn: CreateBranch
     condition: in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped')
+    variables:
+      releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
     steps:
       - checkout: self
 
@@ -156,11 +158,9 @@ jobs:
         displayName: Setup Git
 
       - bash: |
-          echo "IM CHECKING OUT TO....${RELEASE_BRANCH_NAME}"
-          # git checkout --track ${RELEASE_BRANCH_NAME}
+          echo IM CHECKING OUT TO....$(releaseBranchName)
+          # git checkout --track $(releaseBranchName)
         displayName: Checkout to Release Branch in case of RC
-        env:
-          RELEASE_BRANCH_NAME: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
         condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
 
       # - script: node common/scripts/install-run-rush.js install
