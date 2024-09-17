@@ -206,7 +206,7 @@ describe("RenderInstances", () => {
     vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, visibleEdges: false, lighting: false });
     vp.view.setStandardRotation(StandardViewId.Iso);
     const viewVolume = Range3d.create(vp.iModel.projectExtents.center);
-    viewVolume.expandInPlace(1);
+    viewVolume.expandInPlace(5);
     vp.view.lookAtVolume(viewVolume, vp.viewRect.aspect);
     vp.synchWithView({ animateFrustumChange: false });
     vp.displayStyle.backgroundColor = ColorDef.black;
