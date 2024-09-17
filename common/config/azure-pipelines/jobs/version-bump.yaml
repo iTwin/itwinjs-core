@@ -69,8 +69,8 @@ jobs:
           git config --local user.name imodeljs-admin
         displayName: Setup Git
 
-      - bash: git checkout --track origin/$(Build.SourceBranchName)
-        displayName: Switching to source branch
+      # - bash: git checkout --track origin/$(Build.SourceBranchName)
+      #   displayName: Switching to source branch
 
       - bash: |
           git fetch --all
