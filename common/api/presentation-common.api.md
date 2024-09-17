@@ -124,6 +124,9 @@ export interface BooleanRulesetVariableJSON extends RulesetVariableBaseJSON {
     value: boolean;
 }
 
+// @internal (undocumented)
+export const buildElementProperties: (descriptor: Descriptor, item: Item) => ElementProperties;
+
 // @public
 export interface CalculatedPropertiesSpecification {
     categoryId?: string | CategoryIdentifier;
@@ -131,6 +134,7 @@ export interface CalculatedPropertiesSpecification {
     label: string;
     priority?: number;
     renderer?: CustomRendererSpecification;
+    type?: `string` | `boolean` | `bool` | `dateTime` | `double` | `int` | `long`;
     value?: string;
 }
 
@@ -171,7 +175,7 @@ export interface CategoryDescriptionJSON {
 }
 
 // @public
-export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
+export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier | SchemaCategoryIdentifier;
 
 // @public @deprecated
 export interface CheckBoxRule extends RuleBase {
@@ -2766,8 +2770,6 @@ export class RpcRequestsHandler {
     // (undocumented)
     getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition>;
     // (undocumented)
-    getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
-    // (undocumented)
     getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]>;
     // (undocumented)
     getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]>;
@@ -2909,6 +2911,12 @@ export enum SameLabelInstanceGroupApplicationStage {
 }
 
 // @public
+export interface SchemaCategoryIdentifier {
+    categoryName: string;
+    type: "SchemaCategory";
+}
+
+// @public
 export interface SchemasSpecification {
     isExclude?: boolean;
     schemaNames: string[];
@@ -2996,12 +3004,13 @@ export interface SetRulesetVariableParams<TVariable> extends CommonIpcParams {
 }
 
 // @public
-export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export interface SingleElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
+    contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
     elementId: Id64String;
 }
 
 // @public
-export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<SingleElementPropertiesRequestOptions<never>>;
+export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<Omit_2<SingleElementPropertiesRequestOptions<never, never>, "contentParser">>;
 
 // @public
 export interface SingleSchemaClassSpecification {

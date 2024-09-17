@@ -14,7 +14,6 @@ import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { ClientDiagnostics, ClientDiagnosticsAttribute, ClientDiagnosticsHandler } from "./Diagnostics";
 import { InstanceKey } from "./EC";
-import { ElementProperties } from "./ElementProperties";
 import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKey } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
@@ -38,7 +37,6 @@ import {
   RequestOptions,
   RequestOptionsWithRuleset,
   SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import { ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { Ruleset } from "./rules/Ruleset";
@@ -215,12 +213,6 @@ export class RpcRequestsHandler {
   ): Promise<PagedResponse<DisplayValueGroupJSON>> {
     // eslint-disable-next-line deprecation/deprecation
     return this.request<PagedResponse<DisplayValueGroupJSON>, typeof options>(this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
-  }
-
-  public async getElementProperties(
-    options: SingleElementPropertiesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined> {
-    return this.request<ElementProperties | undefined, typeof options>(this.rpcClient.getElementProperties.bind(this.rpcClient), options);
   }
 
   public async getContentInstanceKeys(

@@ -881,6 +881,7 @@ export namespace Primitives {
 export interface PrimitiveValue extends BasePropertyValue {
     // (undocumented)
     displayValue?: string;
+    roundingError?: number;
     // (undocumented)
     value?: Primitives.Value;
     // (undocumented)
