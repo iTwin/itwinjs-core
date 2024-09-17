@@ -137,23 +137,6 @@ to be used in UI.
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Editor.Result]]
 ```
 
-### Attribute: `extendedData`
-
-A map of [ECExpressions](./ECExpressions.md) whose evaluation results are used as extended data values.
-
-|                 |                                   |
-| --------------- | --------------------------------- |
-| **Type**        | `{ [key: string]: ECExpression }` |
-| **Is Required** | No                                |
-
-```ts
-[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Ruleset]]
-```
-
-```ts
-[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Result]]
-```
-
 ### Attribute: `priority`
 
 Assign a custom [Field.priority]($presentation-common) to the property. It's up to the UI component to make sure that priority
@@ -172,3 +155,20 @@ is respected - properties with higher priority should appear before or above pro
 | `priority: 9999`                                                                                                                 | `priority: -9999`                                                                                                                |
 | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | ![Example of using "priority" attribute set to 9999](./media/calculatedpropertiesspecification-with-priority-attribute-high.png) | ![Example of using "priority" attribute set to -9999](./media/calculatedpropertiesspecification-with-priority-attribute-low.png) |
+
+### Attribute: `extendedData`
+
+A map of [ECExpressions](./ECExpressions.md) whose evaluation results are used as extended data values.
+
+|                 |                                   |
+| --------------- | --------------------------------- |
+| **Type**        | `{ [key: string]: ECExpression }` |
+| **Is Required** | No                                |
+
+```ts
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Ruleset]]
+```
+
+```ts
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Result]]
+```
