@@ -50,4 +50,27 @@ describe("Properties editing tests", () => {
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
+
+  it("should successfully revert SchemaItem displayLabel edit", async () => {
+    const key = await testEditor.unitSystems.create(testKey, "TestUnitSystem");
+    const item = await testEditor.schemaContext.getSchemaItem<UnitSystem>(key) as UnitSystem;
+    expect(item.label).to.eql(undefined);
+    await testEditor.unitSystems.setDisplayLabel(key, "TestLabel");
+    expect(item.label).to.eql("TestLabel");
+
+    await testEditor.revert();
+    expect(item.label).to.eql(undefined);
+  });
+
+  it("should successfully set SchemaItem description", async () => {
+    const key = await testEditor.unitSystems.create(testKey, "TestUnitSystem");
+    const item = await testEditor.schemaContext.getSchemaItem<UnitSystem>(key) as UnitSystem;
+    expect(item.description).to.eql(undefined);
+    await testEditor.unitSystems.setDescription(key, "test description");
+    expect(item.description).to.eql("test description");
+
+    await testEditor.revert();
+    expect(item.description).to.eql(undefined);
+  });
+
 });

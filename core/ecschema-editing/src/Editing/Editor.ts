@@ -26,13 +26,16 @@ import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
 import { CustomAttributeId, ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
+import { SchemaEdit, SchemaEditsTracker } from "./Edits/SchemaEdits";
+import { SchemaEditType } from "./SchemaEditType";
 
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.
  * @alpha
  */
-export class SchemaContextEditor {
-  private _schemaContext: SchemaContext;
+export class SchemaContextEditor extends SchemaEditsTracker {
+  private readonly _schemaContext: SchemaContext;
+
   public readonly entities = new Entities(this);
   public readonly mixins = new Mixins(this);
   public readonly structs = new Structs(this);
@@ -53,15 +56,30 @@ export class SchemaContextEditor {
    * @param schemaContext The SchemaContext the Editor will use to edit in.
    */
   constructor(schemaContext: SchemaContext) {
+    super();
+
     // TODO: Make copy
     this._schemaContext = schemaContext;
   }
 
   /** Allows you to get schema classes and items through regular SchemaContext methods. */
-  public get schemaContext(): SchemaContext { return this._schemaContext; }
-
-  public async finish(): Promise<SchemaContext> {
+  public get schemaContext(): SchemaContext {
     return this._schemaContext;
+  }
+
+  /** Completes the schema editing and returns all applied schema edits */
+  public async finish(): Promise<ReadonlyArray<SchemaEdit>> {
+    const appliedEdits = Array.from(this.schemaEdits);
+    this.clearEdits();
+
+    return appliedEdits;
+  }
+
+  /** Reverts all changes made in this context. */
+  public async revert() {
+    for(const edit of this.schemaEdits) {
+      await this.revertEdit(edit);
+    }
   }
 
   /**
@@ -239,7 +257,14 @@ export class SchemaContextEditor {
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaId(schemaKey), e);
       });
-    schema.setDescription(description);
+
+    await this.addEdit({
+      type: SchemaEditType.SetDescription,
+      schema,
+      oldValue: schema.description,
+      newValue: description,
+    },
+    async (value) => schema.setDescription(value));
   }
 
   /**
@@ -252,7 +277,14 @@ export class SchemaContextEditor {
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaId(schemaKey), e);
       });
-    schema.setDisplayLabel(label);
+
+    await this.addEdit({
+      type: SchemaEditType.SetLabel,
+      schema,
+      oldValue: schema.label,
+      newValue: label,
+    },
+    async (value) => schema.setDisplayLabel(value));
   }
 
   /**
@@ -274,7 +306,14 @@ export class SchemaContextEditor {
         if (currentSchema.alias.toLowerCase() === alias.toLowerCase())
           throw new SchemaEditingError(ECEditingStatus.SchemaAliasAlreadyExists, new SchemaId(schemaKey), undefined, undefined, `Schema ${currentSchema.name} already uses the alias '${alias}'.`);
       }
-      schema.setAlias(alias);
+
+      await this.addEdit({
+        type: SchemaEditType.SetSchemaAlias,
+        schema,
+        oldValue: schema.alias,
+        newValue: alias,
+      },
+      async (value) => schema.setAlias(value));
     } catch(e: any) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
         throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey),

@@ -11,6 +11,7 @@ import { SchemaContextEditor } from "./Editor";
 import { ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { MutableSchemaItem } from "./Mutable/MutableSchemaItem";
+import { SchemaEditType } from "./SchemaEditType";
 
 export type CreateSchemaItem<T extends SchemaItem> = (schema: MutableSchema) => (name: string, ...args: any[]) => Promise<T>;
 export type CreateSchemaItemFromProps<T extends SchemaItem> = (props: SchemaItemProps, ...args: any[]) => Promise<T>;
@@ -20,8 +21,8 @@ export type CreateSchemaItemFromProps<T extends SchemaItem> = (props: SchemaItem
  * A class allowing you to edit the schema item base class.
  */
 export abstract class SchemaItems {
-  protected schemaItemType: SchemaItemType;
-  protected schemaEditor: SchemaContextEditor;
+  protected readonly schemaItemType: SchemaItemType;
+  protected readonly schemaEditor: SchemaContextEditor;
 
   public constructor(schemaItemType: SchemaItemType, schemaEditor: SchemaContextEditor) {
     this.schemaItemType = schemaItemType;
@@ -70,7 +71,15 @@ export abstract class SchemaItems {
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
-    item.setDescription(description);
+
+    await this.schemaEditor.addEdit({
+      type: SchemaEditType.SetDescription,
+      schema: item.schema,
+      item,
+      oldValue: item.description,
+      newValue: description,
+    },
+    async (value) => item.setDescription(value));
   }
 
   /**
@@ -83,7 +92,15 @@ export abstract class SchemaItems {
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
-    item.setDisplayLabel(label);
+
+    await this.schemaEditor.addEdit({
+      type: SchemaEditType.SetLabel,
+      schema: item.schema,
+      item,
+      oldValue: item.label,
+      newValue: label,
+    },
+    async (value) => item.setDisplayLabel(value));
   }
 
   protected async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
