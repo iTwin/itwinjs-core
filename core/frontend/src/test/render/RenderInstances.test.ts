@@ -238,6 +238,7 @@ describe("RenderInstances", () => {
     instancesBuilder.add({
       feature: "0x6",
       transform: Transform.createTranslationXYZ(0, -1, 0),
+      symbology: { color: {r: 0, g: 0, b: 255 } },
     });
     const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
     expect(instances[_featureTable]!.numFeatures).to.equal(4);
@@ -256,9 +257,10 @@ describe("RenderInstances", () => {
 
     vp.renderFrame();
     let colors = readUniqueColors(vp);
-    expect(colors.length).to.equal(2);
-    expect(colors.contains(Color.fromColorDef(vp.displayStyle.backgroundColor))).to.be.true;
-    expect(colors.contains(Color.fromColorDef(ColorDef.white))).to.be.true;
+    expect(colors.length).to.equal(3);
+    expect(colors.containsColorDef(vp.displayStyle.backgroundColor)).to.be.true;
+    expect(colors.containsColorDef(ColorDef.white)).to.be.true;
+    expect(colors.containsColorDef(ColorDef.blue)).to.be.true;
 
     let features = readUniqueFeatures(vp);
     expect(features.length).to.equal(4);

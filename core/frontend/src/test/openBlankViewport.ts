@@ -201,6 +201,7 @@ export class Color {
 export class ColorSet extends SortedArray<Color> {
   public constructor() { super((lhs: Color, rhs: Color) => lhs.compare(rhs)); }
   public get array(): Color[] { return this._array; }
+  public containsColorDef(color: ColorDef): boolean { return this.contains(Color.fromColorDef(color)); }
 }
 
 export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean): void {
