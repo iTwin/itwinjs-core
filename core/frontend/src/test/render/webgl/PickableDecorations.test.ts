@@ -11,7 +11,7 @@ import { Viewport } from "../../../Viewport";
 import { readUniquePixelData, testBlankViewport } from "../../openBlankViewport";
 import { GraphicType } from "../../../common/render/GraphicType";
 
-describe.only("Pickable decorations", () => {
+describe("Pickable decorations", () => {
   type DecorationType = "square" | "point";
 
   class Decorator {
