@@ -9,7 +9,6 @@
 import { assert, dispose, Id64 } from "@itwin/core-bentley";
 import { CivilContourDisplay, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
-import { LineCode } from "./LineCode";
 import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
@@ -61,6 +60,8 @@ export class CivilContours implements WebGLDisposable {
   private _lut?: Texture2DHandle;
   private _lutWidth = 0;
   private _cleanup?: CivilContoursCleanup;
+
+  public get wantContourLines(): boolean { return this._lutWidth > 0; }
 
   /** TODO: For tests. */
   public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }

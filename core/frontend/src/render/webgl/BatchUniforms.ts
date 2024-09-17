@@ -96,6 +96,10 @@ export class BatchUniforms {
       this._sensors.bindTexture(uniform);
   }
 
+  public get wantContourLines(): boolean {
+    return this._civilContours?.wantContourLines ?? false;
+  }
+
   public bindContourLUT(uniform: UniformHandle): void {
     // Note we can't use sync() here because a different texture may have been assigned to the desired texture unit
     if (undefined !== this._civilContours)

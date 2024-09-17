@@ -51,11 +51,12 @@ const applyContours = `
   int contourNdx = int(v_contourNdx + 0.5);
   if (contourNdx > 14) // 15 => no contours
     return baseColor;
+    // return vec4(0.0, 0.5, 1.0, 1.0); // debug for contourNdx map
 
   const int maxDefs = 5; // max number of contour definitions allowed, have to change index arrays if this changes
   int contourNdxC = clamp(contourNdx, 0, maxDefs - 1);
 
-#if 1
+#if 0
   uint contourDefsNdx[maxDefs] = uint[](0u, 2u, 3u, 5u, 6u);
   uint intervalsPairNdx[maxDefs] = uint[](1u, 1u, 4u, 4u, 7u);
   vec4 rgbf = u_contourDefs[contourDefsNdx[contourNdxC]];
@@ -105,7 +106,7 @@ export function addApplyContours(builder: ProgramBuilder) {
 
   const computeWorldHeight = `
 float computeWorldHeight(vec4 rawPosition) {
-  float height = (u_modelToWorld * ${modelPos}).z;
+  float height = (u_modelToWorldC * ${modelPos}).z;
   // TODO: apply ECEF correction to height
   return height;
 }
@@ -130,8 +131,8 @@ float computeWorldHeight(vec4 rawPosition) {
     });
   });
 
-  builder.vert.addUniform("u_modelToWorld", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_modelToWorld", (uniform, params) => {
+  builder.vert.addUniform("u_modelToWorldC", VariableType.Mat4, (prog) => {
+    prog.addGraphicUniform("u_modelToWorldC", (uniform, params) => {
       params.target.uniforms.branch.bindModelToWorldTransform(uniform, params.geometry, false);
     });
   });

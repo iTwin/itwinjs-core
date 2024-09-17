@@ -160,9 +160,8 @@ export class CivilTerrain {
       return true;
     if (this === undefined || other === undefined)
       return false;
-    if (!this.contourDef.equals(other.contourDef)) {
+    if (!this.contourDef.equals(other.contourDef))
       return false;
-    }
     if (this.subCategories.length !== other.subCategories.length)
       return false;
     for (const subCategory of this.subCategories) {

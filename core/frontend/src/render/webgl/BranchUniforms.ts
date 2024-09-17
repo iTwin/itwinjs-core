@@ -236,7 +236,7 @@ export class BranchUniforms {
     if (this._target.wantThematicDisplay) {
       this._m32.initFromTransform(modelMatrix);
       this._v32.initFromMatrix3d(this._target.uniforms.frustum.viewMatrix.matrix);
-    } else if (undefined !== geometry.asSurface?.mesh.constantLodVParams) {
+    } else if (undefined !== geometry.asSurface?.mesh.constantLodVParams || this._target.uniforms.batch.wantContourLines) {
       this._m32.initFromTransform(modelMatrix);
     }
 

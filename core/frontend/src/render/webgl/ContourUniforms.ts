@@ -49,13 +49,13 @@ export class ContourUniforms {
 
   private packPatWidth(startNdx: number, majorPattern: number, minorPattern: number, majorWidth: number, minorWidth: number) {
     // pack 2 bytes into this float, which is 4th float of vec4
-    //   pack pattern into upper byte (upper nibble -> major, lower -> minor)
     //   width is a 4-bit value that is biased by 1.5 based and has 3-bits value with one fraction bit, so range is 1.5 to 9
-    //   pack width into lower byte (upper nibble -> major, lower -> minor)
-    const pat = majorPattern * 4096 + minorPattern * 256;
+    //   pattern is a line code index 0 to 10 (0 is solid)
+    //   pack major into upper byte (upper nibble -> pattern, lower nibble -> 4-bit encoded width)
+    //   pack minor into lower byte (upper nibble -> pattern, lower nibble -> 4-bit encoded width)
     const majWt = Math.floor((Math.min(9, Math.max(1.5, majorWidth)) - 1.5) * 2 + 0.5);
     const minWt = Math.floor((Math.min(9, Math.max(1.5, minorWidth)) - 1.5) * 2 + 0.5);
-    this._contourDefs[startNdx+3] = pat * 256 + majWt * 16 + minWt;
+    this._contourDefs[startNdx+3] = majorPattern * 4096 + majWt * 256 + minorPattern * 16 + minWt;
   }
 
   private packIntervals(startNdx: number, even: boolean, minorInterval: number, majorIntervalCount: number) {
@@ -69,9 +69,10 @@ export class ContourUniforms {
   public update(target: Target): void {
     const plan = target.plan;
 
-    if (this.contourDisplay && plan.contours && this.contourDisplay.equals(plan.contours)) {
-      return;
-    }
+    // TODO: equals compares equal here all the time (after first), need to figure out why
+    // if (this.contourDisplay && plan.contours && this.contourDisplay.equals(plan.contours)) {
+    //   return;
+    // }
 
     desync(this);
 

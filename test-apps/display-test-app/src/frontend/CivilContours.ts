@@ -180,7 +180,6 @@ export class CivilContoursSettings implements IDisposable {
     contoursJson.terrains![this._currentContourIndex] = this._currentTerrainProps;
     view.displayStyle.settings.contours.terrains[this._currentContourIndex] = CivilContourDisplay.fromJSON(contoursJson).terrains[this._currentContourIndex];
     this.sync();
-    console.log(JSON.stringify(contoursJson));
   }
 
   private clearContourDef() {
@@ -208,7 +207,6 @@ export class CivilContoursSettings implements IDisposable {
       this._currentTerrainProps.contourDef!.majorIntervalCount = interval;
     else // minor
       this._currentTerrainProps.contourDef!.minorInterval = interval;
-    console.log(JSON.stringify(this._currentTerrainProps));
   }
 
   private updateColor(rgb: RgbColor | undefined, major: boolean): void {
@@ -216,7 +214,6 @@ export class CivilContoursSettings implements IDisposable {
       this._currentTerrainProps.contourDef!.majorColor = rgb?.toColorDef().toJSON();
     else // minor
       this._currentTerrainProps.contourDef!.minorColor = rgb?.toColorDef().toJSON();
-    console.log(JSON.stringify(this._currentTerrainProps));
   }
 
   private updateWidth(width: number | undefined, major: boolean): void {
@@ -224,7 +221,6 @@ export class CivilContoursSettings implements IDisposable {
       this._currentTerrainProps.contourDef!.majorPixelWidth = width;
     else // minor
       this._currentTerrainProps.contourDef!.minorPixelWidth = width;
-    console.log(JSON.stringify(this._currentTerrainProps));
   }
 
   private updateStyle(style: number, major: boolean): void {
@@ -233,7 +229,6 @@ export class CivilContoursSettings implements IDisposable {
       this._currentTerrainProps.contourDef!.majorPattern = linePixels;
     else // minor
       this._currentTerrainProps.contourDef!.minorPattern = linePixels;
-    console.log(JSON.stringify(this._currentTerrainProps));
   }
 
   private addInterval(parent: HTMLElement, major: boolean): LabeledNumericInput {
@@ -278,7 +273,7 @@ export class CivilContoursSettings implements IDisposable {
   private addWidth(parent1: HTMLElement, major: boolean): Slider {
     const props: SliderProps = {
       name: " Width ", id: major ? "major_width" : "minor_width", parent: parent1,
-      min: "1.25", max: "10", step: "0.25",
+      min: "1.5", max: "10", step: "0.5",
       value: "1.5",
       readout: "right", verticalAlign: false, textAlign: false,
       handler: (slider) => {
