@@ -73,6 +73,7 @@ jobs:
       #   displayName: Switching to source branch
 
       - bash: |
+          echo "getting commit with version..."
           git fetch --all
           # get the latest commit message that matches the pattern x.x.x-dev.x.
           latest_version=$(git log --pretty=format:"%s" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+' | head -n 1)
