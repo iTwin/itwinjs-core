@@ -221,8 +221,8 @@ export class Formatter {
       try {
         unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
       } catch (e) {
-        // error code 35049 is thrown when inverting zero
-        // This is special case for ratio, just return 1:0
+        // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
+        // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
         if (spec.format.type === FormatType.Ratio && e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
           return "1:0";
         }
