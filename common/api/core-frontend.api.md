@@ -697,23 +697,21 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
     // (undocumented)
     aboutCurrentZ: boolean;
     // (undocumented)
+    protected get allowShortcut(): boolean;
+    // (undocumented)
     doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    protected _immediateMode: boolean;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
-    onInstall(): Promise<boolean>;
-    // (undocumented)
-    onManipulationComplete(): AccuDrawFlags;
-    // (undocumented)
-    onPostInstall(): Promise<void>;
+    onManipulationStart(): void;
     // (undocumented)
     parseAndRun(...args: any[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
+    // (undocumented)
+    protected get wantActivateOnStart(): boolean;
+    // (undocumented)
+    protected get wantManipulationImmediate(): boolean;
 }
 
 // @internal (undocumented)
@@ -729,17 +727,17 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
     // (undocumented)
     doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
     // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    moveOrigin: boolean;
-    // (undocumented)
-    onInstall(): Promise<boolean>;
-    // (undocumented)
     onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    onManipulationStart(): void;
     // (undocumented)
     static toolId: string;
     // (undocumented)
-    updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
+    updateOrientation(snap: SnapDetail, viewport: ScreenViewport, _isMotion: boolean): boolean;
+    // (undocumented)
+    protected get wantActivateOnStart(): boolean;
+    // (undocumented)
+    protected get wantManipulationImmediate(): boolean;
 }
 
 // @internal (undocumented)
@@ -748,6 +746,23 @@ export class AccuDrawRotateFrontTool extends Tool {
     run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotatePerpendicularTool extends AccuDrawRotateElementTool {
+    // (undocumented)
+    protected _location?: {
+        point: Point3d;
+        viewport: ScreenViewport;
+    };
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateOrientation(snap: SnapDetail, viewport: ScreenViewport, isMotion: boolean): boolean;
+    // (undocumented)
+    protected get wantExitOnDataButtonUp(): boolean;
 }
 
 // @internal (undocumented)
@@ -899,6 +914,8 @@ export class AccuDrawShortcuts {
     static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean;
     // (undocumented)
     static rotateCycle(): void;
+    // (undocumented)
+    static rotatePerpendicular(): Promise<boolean>;
     // (undocumented)
     static rotateToACS(): void;
     // (undocumented)
@@ -2620,15 +2637,11 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 // @internal (undocumented)
 export class DefineACSByElementTool extends AccuDrawShortcutsTool {
     // (undocumented)
-    activateAccuDrawOnStart(): boolean;
-    // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
     doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
     // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    onManipulationComplete(): AccuDrawFlags;
+    onManipulationStart(): void;
     // (undocumented)
     static toolId: string;
     // (undocumented)
@@ -2638,15 +2651,11 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
 // @internal (undocumented)
 export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     // (undocumented)
-    activateAccuDrawOnStart(): boolean;
-    // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
     doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
     // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    onManipulationComplete(): AccuDrawFlags;
+    onManipulationStart(): void;
     // (undocumented)
     static toolId: string;
 }
@@ -6945,7 +6954,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
-    get planarclipMaskPriority(): number;
+    get planarClipMaskPriority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
@@ -8517,9 +8526,9 @@ export class PlanarClipMaskState {
     // (undocumented)
     static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState;
     // (undocumented)
-    getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
+    getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
     // (undocumented)
-    getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
+    getTileTrees(context: SceneContext, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
     // (undocumented)
@@ -9508,6 +9517,7 @@ export interface RenderGraphicTileTreeArgs {
     graphic: RenderGraphic;
     iModel: IModelConnection;
     modelId: Id64String;
+    planarClipMaskPriority?: number;
     viewFlags?: ViewFlagOverrides;
 }
 
@@ -12523,8 +12533,8 @@ export abstract class TileTreeReference {
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;
     protected get _isLoadingComplete(): boolean;
-    // @alpha
-    get planarclipMaskPriority(): number;
+    // @beta
+    get planarClipMaskPriority(): number;
     // @internal
     resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;
