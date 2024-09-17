@@ -190,7 +190,7 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Result
-        // Ensure that the calculated property descriptor has `has `extendedData`property.
+        // Ensure that the calculated property field has `extendedData` items assigned to it.
         const content = await Presentation.presentation.getContentIterator({
           imodel,
           rulesetOrId: ruleset,
