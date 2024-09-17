@@ -17,6 +17,7 @@ import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
@@ -25,6 +26,10 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Angle } from "../../geometry3d/Angle";
+import { AxisIndex, Geometry } from "../../Geometry";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 
 /**
  * This function creates some sample Map4ds. The transform0 of the Map4d is passed as "worldToLocal" transform to
@@ -2176,6 +2181,110 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.1);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineStringBagOfCurves");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ChainArcBSpline", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const bezier = BSplineCurve3d.createUniformKnots([Point3d.createZero(), Point3d.create(1,1), Point3d.create(2), Point3d.create(3,1)], 4);
+    if (ck.testDefined(bezier)) {
+      const arc = Arc3d.createStartMiddleEnd(bezier.endPoint(), Point3d.create(4.5, 0.5), Point3d.create(5, -1), AngleSweep.createStartEndDegrees(0, 60));
+      if (ck.testDefined(arc)) {
+        const options = new StrokeOptions();
+        options.angleTol = Angle.createDegrees(0.0001);
+
+        const testChainIntersection = (chainA: CurveChainWithDistanceIndex, intersectAAtStart: boolean, chainB: CurveChainWithDistanceIndex, intersectBAtStart: boolean, x0: number): number => {
+          let numIntersects = 0;
+
+          const primA = chainA.path.getChild(intersectAAtStart ? 0 : chainA.path.children.length - 1)!;
+          const primB = chainB.path.getChild(intersectBAtStart ? 0 : chainB.path.children.length - 1)!;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [chainA, chainB], x0);
+
+          const globalIntersections = CurveCurve.intersectionXYPairs(chainA, true, chainB, true, 1.0e-20);
+          GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, globalIntersections, 0.1, x0);
+
+          const localIntersections = CurveCurve.intersectionXYPairs(primA, true, primB, true);
+          GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, localIntersections, 0.05, x0);
+
+          if (ck.testExactNumber(globalIntersections.length, localIntersections.length, "same # chain-chain and arc-arc extended intersections")) {
+            numIntersects = globalIntersections.length;
+            for (let i = 0; i < numIntersects; ++i) {
+              ck.testPoint3d(globalIntersections[i].detailA.point, localIntersections[i].detailA.point, "global and local intersections same for detailA");
+              ck.testPoint3d(globalIntersections[i].detailB.point, localIntersections[i].detailB.point, "global and local intersections same for detailB");
+              const globalFracA = globalIntersections[i].detailA.fraction;
+              const globalFracB = globalIntersections[i].detailB.fraction;
+              if (!Geometry.isIn01(globalFracA)) {
+                ck.testType(primA, Arc3d);
+                if (intersectAAtStart)
+                  ck.testLE(globalFracA, 0, "extending pathA off the start yields global intersection fraction < 0");
+                else
+                  ck.testLE(1, globalFracA, "extending pathA off the end yields global intersection fraction > 1");
+              }
+              if (!Geometry.isIn01(globalFracB)) {
+                ck.testType(primB, Arc3d);
+                if (intersectBAtStart)
+                  ck.testLE(globalFracB, 0, "extending pathB off the start yields global intersection fraction < 0");
+                else
+                  ck.testLE(1, globalFracB, "extending pathB off the end yields global intersection fraction > 1");
+              }
+              // adjust local fractions off the extended end
+              const adjustLocalFractionForArc = (prim: CurvePrimitive, localFraction: number, intersectAtStart: boolean): number => {
+                if (prim instanceof Arc3d) {
+                  const period = arc.sweep.fractionPeriod();
+                  if (intersectAtStart && localFraction > 1.0)
+                    localFraction -= period;
+                  else if (!intersectAtStart && localFraction < 0.0)
+                    localFraction += period;
+                }
+                return localFraction;
+              };
+              const localFracA = adjustLocalFractionForArc(primA, localIntersections[i].detailA.fraction, intersectAAtStart);
+              const localFracB = adjustLocalFractionForArc(primB, localIntersections[i].detailB.fraction, intersectBAtStart);
+              // compare local fractions to chain child details
+              const chainLocalFracA = globalIntersections[i].detailA.childDetail?.fraction;
+              if (ck.testDefined(chainLocalFracA, "chain detailA stores child detail"))
+                ck.testFraction(localFracA, chainLocalFracA, "chain detailA child fraction is the expected local fraction");
+              const chainLocalFracB = globalIntersections[i].detailB.childDetail?.fraction;
+              if (ck.testDefined(chainLocalFracB, "chain detailB stores child detail"))
+                ck.testFraction(localFracB, chainLocalFracB, "chain detailB child fraction is the expected local fraction");
+              // extend the paths to the intersection, passing chain detail
+              const extPathA = chainA.clonePartialCurve(0, globalIntersections[i].detailA, options);
+              const extPathB = intersectBAtStart
+                ? chainB.clonePartialCurve(globalIntersections[i].detailB, 1, options)
+                : chainB.clonePartialCurve(0, globalIntersections[i].detailB, options);
+              // extend the arcs to the intersection
+              const extArcA = primA.clonePartialCurve(0, localFracA);
+              const extArcB = intersectBAtStart ? primB.clonePartialCurve(localFracB, 1) : primB.clonePartialCurve(0, localFracB);
+              if (ck.testDefined(extPathA) && ck.testDefined(extPathB) && ck.testDefined(extArcA) && ck.testDefined(extArcB)) {
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, [extPathA, extPathB, extArcA, extArcB], x0, 0, i + 1);
+                ck.testPoint3d(extPathA.endPoint(), intersectBAtStart ? extPathB.startPoint() : extPathB.endPoint(), "extended paths to the intersection");
+                ck.testPoint3d(extArcA.endPoint(), intersectBAtStart ? extArcB.startPoint() : extArcB.endPoint(), "extended arcs to the intersection");
+              }
+            }
+          }
+          return numIntersects;
+        };
+
+        const pathA = CurveChainWithDistanceIndex.createCapture(Path.createArray([bezier, arc]), options);
+
+        // intersect extended chains
+        let pathB = pathA.cloneTransformed(Transform.createFixedPointAndMatrix(Point3d.create(4), Matrix3d.createDirectionalScale(Vector3d.unitX(-1), -1)), options);
+        if (ck.testDefined(pathB)) {
+          pathB.reverseInPlace(); // mirrored and reversed
+          ck.testExactNumber(4, testChainIntersection(pathA, false, pathB, true, 0), "chains have expected # arc-arc intersections");
+        }
+        // test arc-bsp intersection
+        pathB = pathA.cloneTransformed(Transform.createOriginAndMatrix(Point3d.create(4, -1), Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(90))), options);
+        if (ck.testDefined(pathB))
+          ck.testExactNumber(2, testChainIntersection(pathA, false, pathB, true, 10), "chains have expected # arc-bspline intersections");
+        pathB = pathA.cloneTransformed(Transform.createOriginAndMatrix(Point3d.create(2, -3), Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(90))), options);
+        if (ck.testDefined(pathB))
+          ck.testExactNumber(2, testChainIntersection(pathA, true, pathB, false, 15), "chains have expected # bspline-arc intersections");
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ChainArcBSpline");
     expect(ck.getNumErrors()).equals(0);
   });
 });
