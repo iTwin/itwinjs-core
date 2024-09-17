@@ -125,6 +125,8 @@ export enum ScientificType {
   ZeroNormalized,
 }
 
+/** required if type is ratio
+ * @beta */
 export enum RatioType {
   /** One to N ratio (ie 1:N) */
   OneToN,
