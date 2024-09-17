@@ -171,7 +171,7 @@ export class Field {
     priority: number,
     editor?: EditorDescription,
     renderer?: RendererDescription,
-    extendedData?: { [key: string] : unknown}
+    extendedData?: { [key: string] : unknown }
   ) {
     this.category = category;
     this.name = name;
