@@ -6,6 +6,9 @@
 
 import { BentleyError } from '@itwin/core-bentley';
 
+// @internal
+export function almostEqual(a: number, b: number, tolerance?: number): boolean;
+
 // @beta
 export interface AlternateUnitLabelsProvider {
     // (undocumented)

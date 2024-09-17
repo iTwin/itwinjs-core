@@ -11,15 +11,18 @@ import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
+  buildElementProperties,
   ClientDiagnosticsAttribute,
   Content,
   ContentDescriptorRequestOptions,
+  ContentFlags,
   ContentFormatter,
   ContentInstanceKeysRequestOptions,
   ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
   ContentUpdateInfo,
+  DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
   DisplayLabelRequestOptions,
@@ -687,16 +690,26 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @public
    */
-  public async getElementProperties(
-    requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined> {
+  public async getElementProperties<TParsedContent = ElementProperties>(
+    requestOptions: SingleElementPropertiesRequestOptions<IModelConnection, TParsedContent> & ClientDiagnosticsAttribute,
+  ): Promise<TParsedContent | undefined> {
     this.startIModelInitialization(requestOptions.imodel);
-    const results = await this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
-    // istanbul ignore if
-    if (!results) {
+    type TParser = Required<typeof requestOptions>["contentParser"];
+    const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
+    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const iter = await this.getContentIterator({
+      ...optionsNoElementId,
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        contentFlags: ContentFlags.ShowLabels,
+      },
+      rulesetOrId: "ElementProperties",
+      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+    });
+    if (!iter || iter.total === 0) {
       return undefined;
     }
-    return this._localizationHelper.getLocalizedElementProperties(results);
+    return parser(iter.descriptor, (await iter.items.next()).value);
   }
 
   /**

@@ -446,6 +446,7 @@ export namespace BlobContainer {
         ownerGuid?: GuidString;
     }
     export interface TokenProps {
+        baseUri: string;
         expiration: Date;
         metadata: Metadata;
         provider: Provider;
@@ -489,6 +490,9 @@ export class BriefcaseDb extends IModelDb {
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
     pullChanges(arg?: PullChangesArgs): Promise<void>;
     pushChanges(arg: PushChangesArgs): Promise<void>;
+    revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
+    // @internal (undocumented)
+    get skipSyncSchemasOnPullAndPush(): boolean;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
@@ -553,6 +557,8 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps[]>;
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
+    // @internal (undocumented)
+    static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
 }
 
 // @public
@@ -4681,6 +4687,13 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
 }
 
 // @public
+export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
+    onProgress?: ProgressFunction;
+    toIndex: ChangesetIndex;
+    skipSchemaChanges?: true;
+};
+
+// @public
 export abstract class RoleElement extends Element_2 {
     // (undocumented)
     static get className(): string;
@@ -4752,6 +4765,8 @@ export namespace SchemaSync {
     withReadonlyAccess: (iModel: IModelDb | {
         readonly fileName: LocalFileName;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    isEnabled: (iModel: IModelDb) => boolean;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
