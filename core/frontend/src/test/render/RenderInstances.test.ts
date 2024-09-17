@@ -11,10 +11,10 @@ import { InstancedGraphicPropsBuilder } from "../../common/internal/render/Insta
 import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
 import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
-import { ColorDef, EmptyLocalization, LinePixels, ModelFeature } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
 import { GraphicType, ViewRect } from "../../common";
 import { Color, openBlankViewport, readUniqueColors, readUniquePixelData } from "../openBlankViewport";
-import { GraphicBranch } from "../../core-frontend";
+import { GraphicBranch, StandardViewId, readGltfTemplate } from "../../core-frontend";
 import { _featureTable } from "../../common/internal/Symbols";
 
 describe("RenderInstancesParamsBuilder", () => {
@@ -102,7 +102,7 @@ describe("InstanceBuffers", () => {
   });
 });
 
-describe.only("RenderInstances", () => {
+describe("RenderInstances", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
@@ -127,6 +127,120 @@ describe.only("RenderInstances", () => {
     expect(ft.findFeature(1, feat)?.elementId).to.equal("0x2");
     expect(ft.findFeature(2, feat)?.elementId).to.equal("0x3");
     expect(ft.findFeature(3, feat)?.elementId).to.equal("0x4");
+  });
+  
+  it.only("reads gltf", async () => {
+    const gltfJson = `{
+      "scene" : 0,
+      "scenes" : [
+        {
+          "nodes" : [ 0 ]
+        }
+      ],
+  
+      "nodes" : [
+        {
+          "mesh" : 0
+        }
+      ],
+  
+      "meshes" : [
+        {
+          "primitives" : [ {
+            "attributes" : {
+              "POSITION" : 1
+            },
+            "indices" : 0
+          } ]
+        }
+      ],
+
+      "buffers" : [
+        {
+          "uri" : "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=",
+          "byteLength" : 44
+        }
+      ],
+      "bufferViews" : [
+        {
+          "buffer" : 0,
+          "byteOffset" : 0,
+          "byteLength" : 6,
+          "target" : 34963
+        },
+        {
+          "buffer" : 0,
+          "byteOffset" : 8,
+          "byteLength" : 36,
+          "target" : 34962
+        }
+      ],
+      "accessors" : [
+        {
+          "bufferView" : 0,
+          "byteOffset" : 0,
+          "componentType" : 5123,
+          "count" : 3,
+          "type" : "SCALAR",
+          "max" : [ 2 ],
+          "min" : [ 0 ]
+        },
+        {
+          "bufferView" : 1,
+          "byteOffset" : 0,
+          "componentType" : 5126,
+          "count" : 3,
+          "type" : "VEC3",
+          "max" : [ 1.0, 1.0, 0.0 ],
+          "min" : [ 0.0, 0.0, 0.0 ]
+        }
+      ],
+  
+      "asset" : {
+        "version" : "2.0"
+      }
+    }`;
+
+    const vp = openBlankViewport({ height: 100, width: 100 });
+    vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, visibleEdges: false, lighting: false });
+    vp.view.setStandardRotation(StandardViewId.Iso);
+    const viewVolume = Range3d.create(vp.iModel.projectExtents.center);
+    viewVolume.expandInPlace(1);
+    vp.view.lookAtVolume(viewVolume, vp.viewRect.aspect);
+    vp.synchWithView({ animateFrustumChange: false });
+    vp.displayStyle.backgroundColor = ColorDef.black;
+
+    const id = vp.iModel.transientIds.getNext();
+    const modelId = vp.iModel.transientIds.getNext();
+    const gltfTemplate = await readGltfTemplate({
+      gltf: JSON.parse(gltfJson),
+      iModel: vp.iModel,
+      pickableOptions: { id, modelId },
+    });
+
+    const template = gltfTemplate!.template!;
+    expect(template).not.to.be.undefined;
+
+    let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template });
+    const branch = new GraphicBranch();
+    branch.add(graphic);
+    graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.createTranslation(vp.iModel.projectExtents.center));
+    graphic = IModelApp.renderSystem.createGraphicOwner(graphic);
+
+    IModelApp.viewManager.addDecorator({
+      decorate: (context) => {
+        context.addDecoration(GraphicType.Scene, graphic);
+      },
+    });
+
+    vp.renderFrame();
+    let colors = readUniqueColors(vp);
+    expect(colors.length).to.equal(2);
+
+    let pixels = readUniquePixelData(vp);
+    expect(pixels.length).to.equal(2);
+
+    vp.dispose();
   });
   
   it("renders the same template with different positions, scales, features, and symbologies", () => {
