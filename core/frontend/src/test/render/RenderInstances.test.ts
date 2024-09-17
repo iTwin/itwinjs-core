@@ -130,6 +130,7 @@ describe("RenderInstances", () => {
   });
   
   it.only("reads gltf", async () => {
+    // a single white triangle from https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/Triangle
     const gltfJson = `{
       "scene" : 0,
       "scenes" : [
@@ -244,6 +245,8 @@ describe("RenderInstances", () => {
     vp.renderFrame();
     let colors = readUniqueColors(vp);
     expect(colors.length).to.equal(2);
+    expect(colors.contains(Color.fromColorDef(vp.displayStyle.backgroundColor))).to.be.true;
+    expect(colors.contains(Color.fromColorDef(ColorDef.white))).to.be.true;
 
     let features = readUniqueFeatures(vp);
     expect(features.length).to.equal(1);
