@@ -155,10 +155,11 @@ jobs:
           git config --local user.name imodeljs-admin
         displayName: Setup Git
 
-      # - bash: |
-      #     git checkout --track $(dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'])
-      #   displayName: Checkout to Release Branch in case of RC
-      #   condition: eq(parameters.BumpType, 'releaseCandidate')
+      - bash: |
+          echo "IM CHECKING OUT TO....$(dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'])"
+          # git checkout --track $(dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'])
+        displayName: Checkout to Release Branch in case of RC
+        condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
 
       # - script: node common/scripts/install-run-rush.js install
       #   displayName: rush install
