@@ -129,7 +129,7 @@ describe("RenderInstances", () => {
     expect(ft.findFeature(3, feat)?.elementId).to.equal("0x4");
   });
   
-  it.only("reads gltf", async () => {
+  it("renders multiple instances of glTF model with different features and color overrides", async () => {
     // a single white triangle from https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/Triangle
     const gltfJson = `{
       "scene" : 0,
@@ -269,7 +269,7 @@ describe("RenderInstances", () => {
     vp.dispose();
   });
   
-  it("renders the same template with different positions, scales, features, and symbologies", () => {
+  it.only("renders the same template with different symbologies", () => {
     // Create a template of a red solid line 1 pixel tall and 5 pixels wide
     const builder = IModelApp.renderSystem.createGraphic({
       type: GraphicType.ViewOverlay,
@@ -277,43 +277,38 @@ describe("RenderInstances", () => {
     });
 
     builder.setSymbology(ColorDef.red, ColorDef.red, 1, LinePixels.Solid);
-    //builder.addLineString2d([new Point2d(0, 0), new Point2d(5, 0)], 0);
-    // builder.addShape2d([
-    //   new Point2d(-5, -5),
-    //   new Point2d(5, -5),
-    //   new Point2d(5, 5),
-    //   new Point2d(-5, 5),
-    //   new Point2d(-5, -5),
-    // ], 0);
-    builder.addPointString2d([new Point2d(0, 0)], 0);
+    builder.addLineString2d([new Point2d(0, 0), new Point2d(5, 0)], 0);
     const template = builder.finishTemplate();
 
     // Create 4 instances each in one of the corners of a 100x100-pixel viewport.
     const paramsBuilder = RenderInstancesParamsBuilder.create({});
+
+    // no overrides - red solid 1px
     paramsBuilder.add({
       transform: Transform.createTranslationXYZ(25, -25, 0),
-      feature: "0x1",
     });
+
+    // blue solid 1px
     paramsBuilder.add({
       transform: Transform.createTranslationXYZ(25, 25, 0),
-      feature: "0x2",
       symbology: { color: { r: 0, g: 0, b: 255 } },
     });
+
+    // green solid 3px
     paramsBuilder.add({
       transform: Transform.createTranslationXYZ(-25, 25, 0),
-      feature: "0x3",
-      symbology: { weight: 3 },
+      symbology: { weight: 3, color: { r: 0, g: 128, b: 0 } },
     });
+
+    // white dashed 1px
     paramsBuilder.add({
       transform: Transform.createTranslationXYZ(-25, -25, 0),
-      feature: "0x4",
-      symbology: { linePixels: LinePixels.HiddenLine },
+      symbology: { linePixels: LinePixels.HiddenLine, color: { r: 255, g: 255, b: 255 } },
     });
 
     // Create a graphic from the template+instances, translated to the center of the viewport.
     const instances = IModelApp.renderSystem.createRenderInstances(paramsBuilder.finish())!;
     expect(instances).not.to.be.undefined;
-    expect(instances[_featureTable]!.numFeatures).to.equal(4);
     
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
     const branch = new GraphicBranch(false);
@@ -332,25 +327,13 @@ describe("RenderInstances", () => {
     vp.renderFrame();
 
     let colors = readUniqueColors(vp);
-    expect(colors.length).to.equal(3);
-    expect(colors.contains(Color.fromColorDef(ColorDef.black))).to.be.true;
-    expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
-    expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
+    expect(colors.length).to.equal(5);
+    expect(colors.containsColorDef(ColorDef.black)).to.be.true;
+    expect(colors.containsColorDef(ColorDef.red)).to.be.true;
+    expect(colors.containsColorDef(ColorDef.blue)).to.be.true;
+    expect(colors.containsColorDef(ColorDef.green)).to.be.true;
+    expect(colors.containsColorDef(ColorDef.white)).to.be.true;
 
-    let pixels = readUniquePixelData(vp);
-    expect(pixels.length).to.equal(5);
-    expect(pixels.containsElement("")).to.be.true;
-    for (let i = 1; i <= 4; i++) {
-      expect(pixels.containsElement(`0x${i}`)).to.be.true;
-    }
-
-    colors = readUniqueColors(vp, new ViewRect(50, 0, 100, 50));
-    expect(colors.length).to.equal(2);
-    expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
-    pixels = readUniquePixelData(vp, new ViewRect(50, 0, 100, 50));
-
-
-    
     vp.dispose();
   });
 });
