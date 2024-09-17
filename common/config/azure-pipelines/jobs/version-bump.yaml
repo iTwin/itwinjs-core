@@ -160,7 +160,7 @@ jobs:
           # git checkout --track ${RELEASE_BRANCH_NAME}
         displayName: Checkout to Release Branch in case of RC
         env:
-          RELEASE_BRANCH_NAME: $(dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'])
+          RELEASE_BRANCH_NAME: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
         condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
 
       # - script: node common/scripts/install-run-rush.js install
