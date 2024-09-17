@@ -40,6 +40,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Test Simple Field",
       "name": "test-simple-field",
@@ -53,6 +54,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Test Properties Field",
       "name": "test-properties-field",
@@ -75,10 +77,12 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "itemsField": Object {
         "category": "test-category",
         "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Array Items Field",
         "name": "array-items-field",
@@ -123,12 +127,14 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Test Struct Properties Field",
       "memberFields": Array [
         Object {
           "category": "test-category",
           "editor": undefined,
+          "extendedData": undefined,
           "isReadonly": false,
           "label": "Test Struct Member Field",
           "name": "test-struct-member-field",
@@ -182,6 +188,7 @@ Object {
       "category": "test-category",
       "contentClassInfo": "0x2",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Test Nested Content Field",
       "name": "test-nested-content-field",
@@ -189,6 +196,7 @@ Object {
         Object {
           "category": "test-category",
           "editor": undefined,
+          "extendedData": undefined,
           "isReadonly": false,
           "label": "Test Nested Properties Field",
           "name": "test-nested-properties-field",
@@ -238,6 +246,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Test Properties Field With Navigation Property Info",
       "name": "test-properties-field-with-navigation-property-info",
@@ -355,6 +364,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Simple Field",
       "name": "SimpleField",
@@ -368,6 +378,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Properties Field",
       "name": "PropertiesField",
@@ -393,6 +404,7 @@ Object {
       "category": "test-category",
       "contentClassInfo": "0x1",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Nested Content",
       "name": "NestedContentField",
@@ -400,6 +412,7 @@ Object {
         Object {
           "category": "test-category",
           "editor": undefined,
+          "extendedData": undefined,
           "isReadonly": false,
           "label": "Simple Field",
           "name": "SimpleField",

@@ -5,8 +5,8 @@ publish: false
 
 Table of contents:
 
-- [IModelDb](#display)
-  - [Revert timeline changes](#revert-timeline-changes)
+- [Revert timeline changes](#revert-timeline-changes)
+- [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
 
 ### Revert timeline changes
 
@@ -21,3 +21,9 @@ Some detail and requirements are as following.
 - The revert operation necessitates a schema lock (an exclusive lock on the iModel) because it does not lock each individual element affected by the revert.
 - If no description is provided after a revert, a default description for the changeset will be created and pushed, which releases the schema lock.
 - Schema changes are not reverted during SchemaSync, or they can be optionally skipped when SchemaSync is not utilized.
+
+## Presentation
+
+### Calculated properties specification enhancements
+
+A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md). The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
