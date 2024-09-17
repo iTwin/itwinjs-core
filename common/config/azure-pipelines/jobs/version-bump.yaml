@@ -73,21 +73,18 @@ jobs:
       #   displayName: Switching to source branch
 
       - bash: |
-          echo "getting commit with version..."
           git fetch --all
           # get the latest commit message that matches the pattern x.x.x-dev.x.
           latest_version=$(git log --pretty=format:"%s" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+' | head -n 1)
-          echo "hello $latest_version"
+
           # check if a version was found
           if [ -z "$latest_version" ]; then
               echo "No version with the specified pattern found."
               exit 1
           fi
-          # set version variable
-          echo "##vso[task.setVariable variable=version;isOutput=true]$latest_version"
 
-          echo  The current version is $(version)
-          officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$(version)")
+          echo  The current version is $latest_version
+          officialVersion=$(sed -e 's/.[0-9]*-dev.*$/.x/' <<<"$latest_version")
 
           branchName="release/"$officialVersion
 
