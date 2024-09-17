@@ -84,26 +84,6 @@ export class SchemaContextEditor {
   }
 
   /**
-   * Reverts all the current edits of the context.
-   */
-  public async revertCurrentEdits(): Promise<void> {
-    for (const change of this._currentEdits) {
-      await this.revertEdit(change);
-    }
-
-    this._currentEdits = [];
-  }
-
-  /**
-   * Reverts the edit represented by the given ISchemaEditInfo object.
-   * @param edit The edit to revert.
-   */
-  public async revertEdit(edit: ISchemaEditInfo): Promise<void> {
-    await edit.revertEdit();
-    this.removeEdit(edit);
-  }
-
-  /**
    * Removes the given ISchemaEditInfo instance from the current collection of edits.
    * @param editInfo The ISchemaEditInfo instance to remove.
    */

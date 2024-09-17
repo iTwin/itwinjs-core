@@ -6,7 +6,7 @@ import {
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { EditOption, EditOptions } from "../../Editing/EditInfoObjects/EditOptions";
+import { EditOptions } from "../../Editing/EditInfoObjects/EditOptions";
 import { RenamePropertyEdit } from "../../Editing/EditInfoObjects/RenamePropertyEdit";
 import { ISchemaEditInfo } from "../../Editing/EditInfoObjects/SchemaEditInfo";
 import { SchemaEditType } from "../../Editing/SchemaEditType";
@@ -262,52 +262,6 @@ describe("Properties editing tests", () => {
       await testEditor.entities.properties.setName(baseClassKey, "BasePropertyName", "ChildPropertyName", EditOptions.allowPropertyOverrides);
 
       expect(property.name).to.eql("ChildPropertyName");
-    });
-
-    it("should successfully revert property rename and all property overrides", async () => {
-      const refSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "RefSchema",
-        version: "1.0.0",
-        alias: "rs",
-        items: {
-          testEntityBase: {
-            schemaItemType: "EntityClass",
-            label: "ExampleEntity",
-            description: "An example entity class.",
-          },
-        },
-      };
-
-      const refSchema = await Schema.fromJson(refSchemaJson, context);
-      await testEditor.addSchemaReference(testKey, refSchema);
-      const baseClassKey = new SchemaItemKey("testEntityBase", refSchema.schemaKey);
-      const childResult = await testEditor.entities.create(testKey, "testEntityChild", ECClassModifier.None, "testLabel", baseClassKey);
-      const grandChildResult = await testEditor.entities.create(testKey, "testEntityGrandChild", ECClassModifier.None, "testLabel", childResult);
-
-      await testEditor.entities.createPrimitiveProperty(baseClassKey, "TestPropertyName", PrimitiveType.Double);
-      await testEditor.entities.createPrimitiveProperty(childResult, "TestPropertyName", PrimitiveType.Double);
-      await testEditor.entities.createPrimitiveProperty(grandChildResult, "TestPropertyName", PrimitiveType.Double);
-
-      const baseEntity = await (await testEditor.getSchema(refSchema.schemaKey)).getItem<EntityClass>("testEntityBase");
-      const childEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityChild");
-      const grandChildEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityGrandChild");
-
-      const baseProperty = await baseEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
-      const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
-      const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
-
-      await testEditor.entities.properties.setName(baseClassKey, "TestPropertyName", "NewPropertyName", EditOptions.default.with([EditOption.ChangeDerived, EditOption.AllowPropertyOverrides]));
-
-      expect(baseProperty.fullName).to.eql("testEntityBase.NewPropertyName");
-      expect(childProperty.fullName).to.eql("testEntityChild.NewPropertyName");
-      expect(grandChildProperty.fullName).to.eql("testEntityGrandChild.NewPropertyName");
-
-      await testEditor.revertCurrentEdits();
-
-      expect(baseProperty.fullName).to.eql("testEntityBase.TestPropertyName");
-      expect(childProperty.fullName).to.eql("testEntityChild.TestPropertyName");
-      expect(grandChildProperty.fullName).to.eql("testEntityGrandChild.TestPropertyName");
     });
 
     it("should successfully rename class property", async () => {

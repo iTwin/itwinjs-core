@@ -91,7 +91,7 @@ export class Properties {
       await this.validatePropertyAgainstDerivedProperties(existingProperty.class, existingProperty, newPropertyName, elements.gatheredDerivedClasses, options);
 
     // Create change info object to allow for edit cancelling and change reversal.
-    const editInfo = new RenamePropertyEdit(existingProperty.class, newPropertyName, propertyName, elements, this.revertSetName.bind(this));
+    const editInfo = new RenamePropertyEdit(existingProperty.class, newPropertyName, propertyName, elements);
     this._schemaEditor.addEditInfo(editInfo);
 
     // Callback returns false to cancel the edit.
@@ -295,29 +295,6 @@ export class Properties {
       for (const propertyToRename of renameChangeInfo.derivedProperties) {
         const property = await this.getPropertyFromId(propertyToRename);
         property.setName(new ECName(renameChangeInfo.newPropertyName))
-      }
-    }
-  }
-
-  private async revertSetName(changeInfo: ISchemaEditInfo): Promise<void> {
-    const renameInfo = changeInfo as RenamePropertyEdit;
-
-    if (renameInfo.baseProperties) {
-      for (const propertyId of renameInfo.baseProperties) {
-        const ecName = new ECName(renameInfo.oldPropertyName);
-        const property = await this.getPropertyFromId(propertyId);
-        property.setName(ecName);
-      }
-    }
-
-    const property = await this.getProperty(renameInfo.modifiedClass.schemaItemKey, renameInfo.newPropertyName) as MutableProperty;
-    property.setName(new ECName(renameInfo.oldPropertyName));
-
-    if (renameInfo.derivedProperties) {
-      for (const propertyId of renameInfo.derivedProperties) {
-        const ecName = new ECName(renameInfo.oldPropertyName);
-        const property = await this.getPropertyFromId(propertyId);
-        property.setName(ecName);
       }
     }
   }

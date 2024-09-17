@@ -1,6 +1,6 @@
 import { ECClass, Property } from "@itwin/ecschema-metadata";
 import { ECElementSelection } from "../ECElementSelection";
-import { SchemaChangeRevertCallback, SchemaEditInfoBase } from "./SchemaEditInfo";
+import { SchemaEditInfoBase } from "./SchemaEditInfo";
 import { EditOptions } from "./EditOptions";
 import { ClassId, PropertyId } from "../SchemaItemIdentifiers";
 import { SchemaEditType } from "../SchemaEditType";
@@ -31,10 +31,9 @@ export class RenamePropertyEdit extends SchemaEditInfoBase {
    * @param newPropertyName The new property name.
    * @param oldPropertyName The old property name.
    * @param selectedElements The ECElementSelection containing base/derived properties affected by this edit.
-   * @param revertCallback The SchemaChangeRevertCallback function to revert the edit.
    */
-  constructor (modifiedClass: ECClass, newPropertyName: string, oldPropertyName: string, selectedElements: ECElementSelection, revertCallback?: SchemaChangeRevertCallback) {
-    super(modifiedClass.schemaItemType, selectedElements.options, revertCallback);
+  constructor (modifiedClass: ECClass, newPropertyName: string, oldPropertyName: string, selectedElements: ECElementSelection) {
+    super(modifiedClass.schemaItemType, selectedElements.options);
     this.modifiedClass = ClassId.fromECClass(modifiedClass);
     this.newPropertyName = newPropertyName;
     this.oldPropertyName = oldPropertyName;

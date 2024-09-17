@@ -2,11 +2,6 @@ import { SchemaItemType } from "@itwin/ecschema-metadata";
 import { EditOptions } from "./EditOptions";
 import { SchemaEditType } from "../SchemaEditType";
 
-/**
- * Defines the function used to revert a specific edit defined by the ISchemaEditInfo type parameter.
- * @alpha
- */
-export type SchemaChangeRevertCallback = <T extends ISchemaEditInfo>(changeInfo: T) => Promise<void>;
 
 /**
  * Defines the function used begin (true) or cancel (false) a specific edit operation defined by the ISchemaEditInfo type parameter.
@@ -28,7 +23,6 @@ export interface ISchemaEditInfo {
   readonly editOptions?: EditOptions;
   readonly editType: SchemaEditType;
   readonly schemaItemType: SchemaItemType;
-  revertEdit(): Promise<void>;
 }
 
 /**
@@ -47,19 +41,14 @@ export abstract class SchemaEditInfoBase implements ISchemaEditInfo {
   /** The SchemaItemType of the SchemaItem being modified. */
   public readonly schemaItemType: SchemaItemType;
 
-  /** TODO: experimental */
-  protected readonly revertCallback?: SchemaChangeRevertCallback;
-
   /**
    * Initializes a new SchemaEditInfoBase instance.
    * @param schemaItemType The type of SchemaItem being modified.
    * @param editOptions The options that control the edit operation.
-   * @param revertCallback The callback used to revert the edit operation.
    */
-  constructor(schemaItemType: SchemaItemType, editOptions?: EditOptions, revertCallback?: SchemaChangeRevertCallback) {
+  constructor(schemaItemType: SchemaItemType, editOptions?: EditOptions) {
     this.editOptions = editOptions;
     this.schemaItemType = schemaItemType;
-    this.revertCallback = revertCallback;
   }
 
   /**
@@ -84,15 +73,5 @@ export abstract class SchemaEditInfoBase implements ISchemaEditInfo {
    */
   public get changeDerived(): boolean {
     return this.editOptions ? this.editOptions.changeDerived : false;
-  }
-
-  /**
-   * Calls the revertCallback function, reverting the edit operation.
-   */
-  public async revertEdit(): Promise<void> {
-    if (!this.revertCallback)
-      return;
-
-    await this.revertCallback(this);
   }
 }
