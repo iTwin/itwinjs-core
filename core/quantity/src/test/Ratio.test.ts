@@ -242,7 +242,7 @@ describe("Ratio format tests", () => {
 
   describe("specific parse ratio string tests", () => {
     async function testRatioParser(
-      testData: { output: number, inputRatio: string, precision?: number, parseError?: ParseError }[],
+      testData: { output: number, inputRatio: string, precision?: number, parseError?: ParseError }[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName
     ) {
 
       const ratioJson: FormatProps = {
@@ -250,7 +250,7 @@ describe("Ratio format tests", () => {
         ratioType: "NToOne",
         composite: {
           includeZero: true,
-          units: [{ name: vHUnitName }],
+          units: [{ name: presentationUnitStr }],
         },
       };
 
@@ -259,7 +259,7 @@ describe("Ratio format tests", () => {
       await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
       assert.isTrue(ratioFormat.hasUnits);
 
-      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(vHUnitName);
+      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(persistenceUnitStr);
       assert.isTrue(persistenceUnit.isValid);
 
       const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
@@ -282,6 +282,16 @@ describe("Ratio format tests", () => {
         }
       }
     }
+
+    it("zero value", async () => {
+      const testData: { output: number, inputRatio: string, parseError?: ParseError }[] = [
+        { output: 0.0, inputRatio: "0:1", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
+        { output: 0.0, inputRatio: "0:999", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
+        { output: 0.0, inputRatio: "0:0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
+        { output: 0.0, inputRatio: "0:0.0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
+      ];
+      await testRatioParser(testData, vHUnitName, hVUnitName);
+    });
 
     it("single number", async () => {
       const testData: { output: number, inputRatio: string }[] = [
