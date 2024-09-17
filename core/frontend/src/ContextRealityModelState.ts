@@ -50,7 +50,10 @@ export class ContextRealityModelState extends ContextRealityModel {
         name: props.name,
         classifiers: this.classifiers,
         planarClipMask: this.planarClipMaskSettings,
-        getDisplaySettings: () => this.displaySettings,
+        getDisplaySettings: () => {
+          const override = this.modelId ? displayStyle.settings.getRealityModelDisplaySettings(this.modelId): undefined;
+          return override ?? this._displaySettings;
+        },
       }) :
       createOrbitGtTileTreeReference({
         iModel,
