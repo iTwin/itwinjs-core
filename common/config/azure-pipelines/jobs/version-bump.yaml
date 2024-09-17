@@ -90,7 +90,7 @@ jobs:
 
           echo Release branch name is $branchName
 
-          echo "##vso[task.setvariable variable=releaseBranchName]$branchName"
+          echo "##vso[task.setvariable variable=releaseBranchName;isOutput=true]$branchName"
         displayName: Get Branch Name
         name: getBranchName
 
