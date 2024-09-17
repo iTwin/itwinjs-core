@@ -69,6 +69,7 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
 }
 
 /** Properties for a [[ContentLayoutDef]]
+ * @public
  * @deprecated in 4.10.x. Use `ContentLayoutProps` from `@itwin/appui-react`.
  */
 export interface ContentLayoutProps extends LayoutFragmentProps {
