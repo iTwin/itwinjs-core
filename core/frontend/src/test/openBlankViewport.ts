@@ -232,9 +232,15 @@ export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNo
   return set;
 }
 
-export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): SortedArray<Feature | undefined> {
-  const features = new SortedArray<Feature | undefined>((lhs, rhs) => comparePossiblyUndefined((l, r) => l.compare(r), lhs, rhs));
-  processPixels(vp, (pixel) => features.insert(pixel.feature), readRect, excludeNonLocatable);
+export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): SortedArray<Feature> {
+  const features = new SortedArray<Feature>((lhs, rhs) => lhs.compare(rhs));
+  processPixels(vp, (pixel) => {
+    if (pixel.feature) {
+      features.insert(pixel.feature);
+    }
+  },
+  readRect, excludeNonLocatable);
+    
   return features;
 }
 

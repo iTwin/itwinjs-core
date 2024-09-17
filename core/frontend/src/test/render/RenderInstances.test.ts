@@ -11,7 +11,7 @@ import { InstancedGraphicPropsBuilder } from "../../common/internal/render/Insta
 import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
 import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
-import { ColorDef, EmptyLocalization, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
 import { GraphicType, ViewRect } from "../../common";
 import { Color, openBlankViewport, readUniqueColors, readUniqueFeatures, readUniquePixelData } from "../openBlankViewport";
 import { GraphicBranch, StandardViewId, readGltfTemplate } from "../../core-frontend";
@@ -210,8 +210,8 @@ describe("RenderInstances", () => {
     vp.synchWithView({ animateFrustumChange: false });
     vp.displayStyle.backgroundColor = ColorDef.black;
 
-    const id = vp.iModel.transientIds.getNext();
-    const modelId = vp.iModel.transientIds.getNext();
+    const id = "0x1";
+    const modelId = "0x2";
     const gltfTemplate = await readGltfTemplate({
       gltf: JSON.parse(gltfJson),
       iModel: vp.iModel,
@@ -223,7 +223,7 @@ describe("RenderInstances", () => {
 
     const instancesBuilder = RenderInstancesParamsBuilder.create({ modelId });
     instancesBuilder.add({
-      feature: vp.iModel.transientIds.getNext(),
+      feature: "0x3",
       transform: Transform.createIdentity(),
     });
     const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
@@ -246,7 +246,8 @@ describe("RenderInstances", () => {
     expect(colors.length).to.equal(2);
 
     let features = readUniqueFeatures(vp);
-    expect(features.length).to.equal(2);
+    expect(features.length).to.equal(1);
+    expect(features.contains(new Feature("0x3"))).to.be.true;
 
     vp.dispose();
   });
