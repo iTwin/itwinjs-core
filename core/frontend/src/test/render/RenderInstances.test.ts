@@ -13,7 +13,7 @@ import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/Instanc
 import { IModelApp } from "../../IModelApp";
 import { ColorDef, EmptyLocalization, Feature, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
 import { GraphicType, ViewRect } from "../../common";
-import { Color, openBlankViewport, readUniqueColors, readUniqueFeatures, readUniquePixelData } from "../openBlankViewport";
+import { Color, openBlankViewport, readColorCounts, readUniqueColors, readUniqueFeatures, readUniquePixelData } from "../openBlankViewport";
 import { GraphicBranch, StandardViewId, readGltfTemplate } from "../../core-frontend";
 import { _featureTable } from "../../common/internal/Symbols";
 
@@ -326,14 +326,27 @@ describe("RenderInstances", () => {
     vp.displayStyle.backgroundColor = ColorDef.black;
     vp.renderFrame();
 
-    let colors = readUniqueColors(vp);
-    expect(colors.length).to.equal(5);
-    expect(colors.containsColorDef(ColorDef.black)).to.be.true;
-    expect(colors.containsColorDef(ColorDef.red)).to.be.true;
-    expect(colors.containsColorDef(ColorDef.blue)).to.be.true;
-    expect(colors.containsColorDef(ColorDef.green)).to.be.true;
-    expect(colors.containsColorDef(ColorDef.white)).to.be.true;
+    // let colors = readUniqueColors(vp);
+    // expect(colors.length).to.equal(5);
+    // expect(colors.containsColorDef(ColorDef.black)).to.be.true;
+    // expect(colors.containsColorDef(ColorDef.red)).to.be.true;
+    // expect(colors.containsColorDef(ColorDef.blue)).to.be.true;
+    // expect(colors.containsColorDef(ColorDef.green)).to.be.true;
+    // expect(colors.containsColorDef(ColorDef.white)).to.be.true;
 
+    const colors = readColorCounts(vp);
+    expect(colors.size).to.equal(5);
+    const background = colors.get(Color.fromColorDef(ColorDef.black))!;
+    const red = colors.get(Color.fromColorDef(ColorDef.red))!;
+    const blue = colors.get(Color.fromColorDef(ColorDef.blue))!;
+    const green= colors.get(Color.fromColorDef(ColorDef.green))!;
+    const white = colors.get(Color.fromColorDef(ColorDef.white))!;
+
+    expect(white).lessThan(red);
+    expect(red).to.equal(blue);
+    expect(green).greaterThan(red);
+    expect(background).greaterThan(green);
+    
     vp.dispose();
   });
 });

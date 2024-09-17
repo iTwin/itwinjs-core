@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Id64String, SortedArray, comparePossiblyUndefined } from "@itwin/core-bentley";
+import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
@@ -264,6 +264,22 @@ export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const colors = new ColorSet();
   for (const rgba of u32)
     colors.insert(Color.from(rgba));
+
+  return colors;
+}
+
+export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<Color, number> {
+  const colors = new Dictionary<Color, number>((lhs, rhs) => lhs.compare(rhs));
+
+  const rect = readRect ?? vp.viewRect;
+  const buffer = vp.readImageBuffer({ rect })!;
+  expect(buffer).not.to.be.undefined;
+  const u32 = new Uint32Array(buffer.data.buffer);
+  for (const rgba of u32) {
+    const color = Color.from(rgba);
+    const count = colors.get(color) ?? 0;
+    colors.set(color, count + 1);
+  }
 
   return colors;
 }
