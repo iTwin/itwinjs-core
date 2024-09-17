@@ -273,7 +273,7 @@ export class CivilContoursSettings implements IDisposable {
   private addWidth(parent1: HTMLElement, major: boolean): Slider {
     const props: SliderProps = {
       name: " Width ", id: major ? "major_width" : "minor_width", parent: parent1,
-      min: "1.5", max: "10", step: "0.5",
+      min: "1.5", max: "9", step: "0.5",
       value: "1.5",
       readout: "right", verticalAlign: false, textAlign: false,
       handler: (slider) => {
