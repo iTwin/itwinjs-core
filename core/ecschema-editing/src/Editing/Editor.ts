@@ -26,7 +26,7 @@ import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
 import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
-import { ISchemaEditChangeInfo } from "./ChangeInfo/ChangeInfo";
+import { ISchemaEditInfo } from "./EditInfoObjects/SchemaEditInfo";
 import { CustomAttributeId, SchemaId, SchemaItemId } from "./SchemaItemIdentifiers";
 import { SchemaEditType } from "./SchemaEditType";
 
@@ -35,7 +35,7 @@ import { SchemaEditType } from "./SchemaEditType";
  * @alpha
  */
 export class SchemaContextEditor {
-  private _currentChanges: ISchemaEditChangeInfo[] = [];
+  private _currentEdits: ISchemaEditInfo[] = [];
   private _schemaContext: SchemaContext;
 
   public readonly entities = new Entities(this);
@@ -65,40 +65,70 @@ export class SchemaContextEditor {
   /** Allows you to get schema classes and items through regular SchemaContext methods. */
   public get schemaContext(): SchemaContext { return this._schemaContext; }
 
+  /** Gets the current ISchemaEditInfo instances from the context. */
+  public get currentEditInfo() {
+    return this._currentEdits;
+  }
+
   public async finish(): Promise<SchemaContext> {
-    this._currentChanges = [];
+    this._currentEdits = [];
     return this._schemaContext;
   }
 
-  public addEditInfo(changeInfo: ISchemaEditChangeInfo) {
-    const length = this._currentChanges.push(changeInfo);
-    changeInfo.sequence = length - 1;
+  /**
+   * Adds a ISchemaEditInfo object to the editor context.
+   * @param changeInfo The ISchemaEditInfo to add.
+   */
+  public addEditInfo(changeInfo: ISchemaEditInfo) {
+    this._currentEdits.push(changeInfo);
   }
 
-  public async revertCurrentChanges(): Promise<void> {
-    for (const change of this._currentChanges) {
-      await this.revertChange(change);
+  /**
+   * Reverts all the current edits of the context.
+   */
+  public async revertCurrentEdits(): Promise<void> {
+    for (const change of this._currentEdits) {
+      await this.revertEdit(change);
     }
 
-    this._currentChanges = [];
+    this._currentEdits = [];
   }
 
-  public async revertChange(change: ISchemaEditChangeInfo): Promise<void> {
-    await change.revertChange();
-    this.removeChange(change);
+  /**
+   * Reverts the edit represented by the given ISchemaEditInfo object.
+   * @param edit The edit to revert.
+   */
+  public async revertEdit(edit: ISchemaEditInfo): Promise<void> {
+    await edit.revertEdit();
+    this.removeEdit(edit);
   }
 
-  public changeCancelled(change: ISchemaEditChangeInfo) {
-    this.removeChange(change);
+  /**
+   * Removes the given ISchemaEditInfo instance from the current collection of edits.
+   * @param editInfo The ISchemaEditInfo instance to remove.
+   */
+  public removeEdit(editInfo: ISchemaEditInfo) {
+    const index = this._currentEdits.indexOf(editInfo);
+    if (-1 === index)
+      return;
+
+    this._currentEdits = this._currentEdits.splice(index, 1);
   }
 
-  public removeChange(change: ISchemaEditChangeInfo) {
-    this._currentChanges = this._currentChanges.splice(change.sequence, 1);
-    change.sequence = -1;
-  }
+  /**
+   * Calls the beginEditCallback function.
+   * @returns True if the edit should continue, false otherwise.
+   */
+  public async beginEdit(editInfo: ISchemaEditInfo): Promise<boolean> {
+    // Edit continues if no callback is available
+    if (!editInfo.editOptions || !editInfo.editOptions.beginEditCallback)
+      return true;
 
-  public get changeInfo() {
-    return this._currentChanges;
+    const startEdit = await editInfo.editOptions.beginEditCallback(editInfo);
+    if (!startEdit) {
+      this.editCancelled(editInfo);
+    }
+    return startEdit;
   }
 
   /**
@@ -245,27 +275,6 @@ export class SchemaContextEditor {
     return schemaItem;
   }
 
-  private removeReference(schema: Schema, refSchema: Schema) {
-    const index: number = schema.references.indexOf(refSchema);
-    if (index !== -1) {
-      schema.references.splice(index, 1);
-    }
-  }
-
-  private removeCustomAttribute(schema: Schema, customAttribute: CustomAttribute) {
-    assert(schema.customAttributes !== undefined);
-    const map = schema.customAttributes as Map<string, CustomAttribute>;
-    map.delete(customAttribute.className);
-  }
-
-  private async lookupSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<MutableSchema> {
-    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, matchType);
-    if (schema === undefined)
-      throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
-
-    return schema;
-  }
-
   /**
    * Sets the Schemas description.
    * @param schemaKey The SchemaKey identifying the schema.
@@ -312,14 +321,40 @@ export class SchemaContextEditor {
           throw new SchemaEditingError(ECEditingStatus.SchemaAliasAlreadyExists, new SchemaId(schemaKey), undefined, undefined, `Schema ${currentSchema.name} already uses the alias '${alias}'.`);
       }
       schema.setAlias(alias);
-    } catch(e: any) {
+    } catch (e: any) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
         throw new SchemaEditingError(SchemaEditType.SetSchemaAlias, new SchemaId(schemaKey),
           new SchemaEditingError(ECEditingStatus.InvalidSchemaAlias, new SchemaId(schemaKey)));
       }
 
-      throw new SchemaEditingError(SchemaEditType.SetSchemaAlias,  new SchemaId(schemaKey), e);
+      throw new SchemaEditingError(SchemaEditType.SetSchemaAlias, new SchemaId(schemaKey), e);
     }
   }
+
+  private removeReference(schema: Schema, refSchema: Schema) {
+    const index: number = schema.references.indexOf(refSchema);
+    if (index !== -1) {
+      schema.references.splice(index, 1);
+    }
+  }
+
+  private removeCustomAttribute(schema: Schema, customAttribute: CustomAttribute) {
+    assert(schema.customAttributes !== undefined);
+    const map = schema.customAttributes as Map<string, CustomAttribute>;
+    map.delete(customAttribute.className);
+  }
+
+  private async lookupSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<MutableSchema> {
+    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, matchType);
+    if (schema === undefined)
+      throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
+
+    return schema;
+  }
+
+  private async editCancelled(change: ISchemaEditInfo): Promise<void> {
+    this.removeEdit(change);
+  }
+
 }
 

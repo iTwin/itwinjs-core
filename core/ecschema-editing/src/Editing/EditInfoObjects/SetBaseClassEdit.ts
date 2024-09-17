@@ -1,19 +1,15 @@
 import { ECClass } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../Editor";
 import { ECElementSelection } from "../ECElementSelection";
-import { ISchemaEditChangeProps, SchemaEditChangeBase } from "./ChangeInfo";
+import { SchemaEditInfoBase } from "./SchemaEditInfo";
 import { ClassId, ECClassSchemaItems } from "../SchemaItemIdentifiers";
 import { SchemaEditType } from "../SchemaEditType";
 
-/** Used for JSON serialization/deserialization. Props for [[SetBaseClassChange]]. */
-export interface SetBaseClassChangeProps extends ISchemaEditChangeProps {
-  readonly newBaseClass?: ClassId;
-  readonly oldBaseClass?: ClassId;
-}
 
-/** ISchemaEditChangeInfo implementation base class edits. */
-
-export class SetBaseClassChange extends SchemaEditChangeBase {
+/**
+ * ISchemaEditInfo implementation base class edits.
+ * @alpha
+ */
+export class SetBaseClassEdit extends SchemaEditInfoBase {
   /** editType is SchemaEditType.SetPropertyName */
   public readonly editType = SchemaEditType.SetBaseClass;
   /** The ClassId of the EC Class being modified. */
@@ -27,14 +23,13 @@ export class SetBaseClassChange extends SchemaEditChangeBase {
 
   /**
    * Initializes a new SetBaseClassChange instance.
-   * @param contextEditor The SchemaContextEditor that wraps a SchemaContext.
    * @param modifiedClass The ECClass holding the property being modified.
    * @param newBaseClass The new base class.
    * @param oldBaseClass The old base class.
    * @param selectedElements The ECElementSelection containing derived classes affected by this edit.
    */
-  constructor(contextEditor: SchemaContextEditor, modifiedClass: ECClass, newBaseClass: ECClass | undefined, oldBaseClass: ECClass | undefined, selectedElements: ECElementSelection) {
-    super(contextEditor, modifiedClass.schemaItemType, selectedElements.options);
+  constructor(modifiedClass: ECClass, newBaseClass: ECClass | undefined, oldBaseClass: ECClass | undefined, selectedElements: ECElementSelection) {
+    super(modifiedClass.schemaItemType, selectedElements.options);
     this.modifiedClass = ClassId.fromECClass(modifiedClass);
     this.newBaseClass = newBaseClass ? ClassId.fromECClass(modifiedClass) : undefined;
     this.oldBaseClass = oldBaseClass ? ClassId.fromECClass(oldBaseClass) : undefined;

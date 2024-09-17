@@ -26,8 +26,8 @@ import { MutableSchema } from "./Mutable/MutableSchema";
 import { PropertyId, SchemaItemId, ClassId, CustomAttributeId } from "./SchemaItemIdentifiers";
 import { SchemaEditType } from "./SchemaEditType";
 import { ECElementSelection } from "./ECElementSelection";
-import { ChangeOptions } from "./ChangeInfo/ChangeOptions";
-import { SetBaseClassChange } from "./ChangeInfo/SetBaseClassChange";
+import { EditOptions } from "./EditInfoObjects/EditOptions";
+import { SetBaseClassEdit } from "./EditInfoObjects/SetBaseClassEdit";
 
 export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
 
@@ -276,7 +276,7 @@ export class ECClasses extends SchemaItems {
    * @param itemKey The SchemaItemKey of the Item.
    * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
    */
-  public async setBaseClass(itemKey: SchemaItemKey, baseClassKey: SchemaItemKey | undefined, options: ChangeOptions = ChangeOptions.default): Promise<void> {
+  public async setBaseClass(itemKey: SchemaItemKey, baseClassKey: SchemaItemKey | undefined, options: EditOptions = EditOptions.default): Promise<void> {
 
     try {
       const classItem = await this.getSchemaItem<ECClass>(itemKey);
@@ -306,10 +306,11 @@ export class ECClasses extends SchemaItems {
       }
 
       // Create change info object to allow for edit cancelling
-      const changeInfo = new SetBaseClassChange(this.schemaEditor, classItem, baseClassItem, await classItem.baseClass, elements);
+      const editInfo = new SetBaseClassEdit(classItem, baseClassItem, await classItem.baseClass, elements);
+      this.schemaEditor.addEditInfo(editInfo);
 
       // Callback returns false to cancel the edit.
-      if (!(await changeInfo.beginChange()))
+      if (!(await this.schemaEditor.beginEdit(editInfo)))
         return;
 
       classItem.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem);

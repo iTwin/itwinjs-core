@@ -471,9 +471,9 @@ describe("Editor tests", () => {
       testEditor = new SchemaContextEditor(context);
 
       await expect(testEditor.setAlias(testSchema.schemaKey, "123")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", SchemaEditType.SetSchemaAlias);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.SetSchemaAlias);
         expect(error).to.have.nested.property("innerError.message", `Could not set the alias for schema ${testSchema.name} because the specified alias is not a valid ECName.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaAlias);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidSchemaAlias);
       });
 
       expect(testSchema.alias).to.equal("vs");
@@ -501,9 +501,9 @@ describe("Editor tests", () => {
 
       // tests case-insensitive search (ts2 === TS2)
       await expect(testEditor.setAlias(testSchema1.schemaKey, "ts2")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", SchemaEditType.SetSchemaAlias);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.SetSchemaAlias);
         expect(error).to.have.nested.property("innerError.message", `Schema ${testSchema2.name} already uses the alias 'ts2'.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaAliasAlreadyExists);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaAliasAlreadyExists);
       });
 
       expect(testSchema1.alias).to.equal("ts1");

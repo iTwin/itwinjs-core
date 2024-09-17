@@ -6,11 +6,11 @@ import {
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { ChangeOption, ChangeOptions } from "../../Editing/ChangeInfo/ChangeOptions";
-import { RenamePropertyChange } from "../../Editing/ChangeInfo/RenamePropertyChange";
-import { ISchemaEditChangeInfo } from "../../Editing/ChangeInfo/ChangeInfo";
+import { EditOption, EditOptions } from "../../Editing/EditInfoObjects/EditOptions";
+import { RenamePropertyEdit } from "../../Editing/EditInfoObjects/RenamePropertyEdit";
+import { ISchemaEditInfo } from "../../Editing/EditInfoObjects/SchemaEditInfo";
 import { SchemaEditType } from "../../Editing/SchemaEditType";
-import { NumberAttributeChangeInfo } from "../../Editing/ChangeInfo/NumberAttributeChangeInfo";
+import { NumberAttributeEdit } from "../../Editing/EditInfoObjects/NumberAttributeEdit";
 import { PropertyId } from "../../Editing/SchemaItemIdentifiers";
 
 describe("Properties editing tests", () => {
@@ -48,19 +48,21 @@ describe("Properties editing tests", () => {
       const property = await entity?.getProperty("TestProperty") as PrimitiveProperty;
       expect(property.name).to.eql("TestProperty");
 
-      const beginEdit = async (changeInfo: ISchemaEditChangeInfo): Promise<boolean> => {
-        const renameInfo = changeInfo as RenamePropertyChange;
+      const beginEdit = async (changeInfo: ISchemaEditInfo): Promise<boolean> => {
+        const renameInfo = changeInfo as RenamePropertyEdit;
         expect(renameInfo.editType).to.eq(SchemaEditType.SetPropertyName);
         expect(renameInfo.modifiedClass.schemaItemKey).to.deep.equal(entity?.key);
         expect(renameInfo.newPropertyName).to.eq("TestProperty1")
         expect(renameInfo.oldPropertyName).to.eq("TestProperty")
         return false;
       }
-      const options = ChangeOptions.default;
+      const options = EditOptions.default;
       options.beginEditCallback = beginEdit;
       await testEditor.entities.properties.setName(entityKey, "TestProperty", "TestProperty1", options);
 
       expect(property.name).to.eql("TestProperty");
+
+      testEditor.currentEditInfo
     });
 
     it("should successfully rename property and all property overrides", async () => {
@@ -94,7 +96,7 @@ describe("Properties editing tests", () => {
       const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
       const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
 
-      await testEditor.entities.properties.setName(baseClassKey, "TestPropertyName", "NewPropertyName", ChangeOptions.includeDerived);
+      await testEditor.entities.properties.setName(baseClassKey, "TestPropertyName", "NewPropertyName", EditOptions.includeDerived);
 
       expect(childProperty.fullName).to.eql("testEntityChild.NewPropertyName");
       expect(grandChildProperty.fullName).to.eql("testEntityGrandChild.NewPropertyName");
@@ -197,7 +199,7 @@ describe("Properties editing tests", () => {
       const testClass = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
       const testProperty = await testClass!.getProperty("ChildPropertyName") as PrimitiveProperty;
 
-      await testEditor.entities.properties.setName(result, "ChildPropertyName", "BasePropertyName", ChangeOptions.allowPropertyOverrides);
+      await testEditor.entities.properties.setName(result, "ChildPropertyName", "BasePropertyName", EditOptions.allowPropertyOverrides);
 
       expect(testProperty.name).to.eql("BasePropertyName");
     });
@@ -257,7 +259,7 @@ describe("Properties editing tests", () => {
       const baseClass = await refSchema.getItem<ECClass>(baseClassKey.name);
       const property = await baseClass?.getProperty("BasePropertyName", true) as PrimitiveProperty;
 
-      await testEditor.entities.properties.setName(baseClassKey, "BasePropertyName", "ChildPropertyName", ChangeOptions.allowPropertyOverrides);
+      await testEditor.entities.properties.setName(baseClassKey, "BasePropertyName", "ChildPropertyName", EditOptions.allowPropertyOverrides);
 
       expect(property.name).to.eql("ChildPropertyName");
     });
@@ -295,13 +297,13 @@ describe("Properties editing tests", () => {
       const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
       const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
 
-      await testEditor.entities.properties.setName(baseClassKey, "TestPropertyName", "NewPropertyName", ChangeOptions.default.with([ChangeOption.ChangeDerived, ChangeOption.AllowPropertyOverrides]));
+      await testEditor.entities.properties.setName(baseClassKey, "TestPropertyName", "NewPropertyName", EditOptions.default.with([EditOption.ChangeDerived, EditOption.AllowPropertyOverrides]));
 
       expect(baseProperty.fullName).to.eql("testEntityBase.NewPropertyName");
       expect(childProperty.fullName).to.eql("testEntityChild.NewPropertyName");
       expect(grandChildProperty.fullName).to.eql("testEntityGrandChild.NewPropertyName");
 
-      await testEditor.revertCurrentChanges();
+      await testEditor.revertCurrentEdits();
 
       expect(baseProperty.fullName).to.eql("testEntityBase.TestPropertyName");
       expect(childProperty.fullName).to.eql("testEntityChild.TestPropertyName");
@@ -355,7 +357,7 @@ describe("Properties editing tests", () => {
 
       await testEditor.entities.properties.setPriority(entityKey, "TestProperty", 1);
 
-      const changeInfo = testEditor.changeInfo[0] as NumberAttributeChangeInfo;
+      const changeInfo = testEditor.currentEditInfo[0] as NumberAttributeEdit;
 
       expect(changeInfo.editType).to.eql(SchemaEditType.SetPriority);
       expect(changeInfo.newValue).to.eql(1);
@@ -784,9 +786,9 @@ describe("Properties editing tests", () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
 
       await expect(testEditor.entities.properties.setKindOfQuantity(entityKey, "testProperty", notAKindOfQuantity)).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", SchemaEditType.SetKindOfQuantity);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.SetKindOfQuantity);
         expect(error).to.have.nested.property("innerError.message", `Expected ${notAKindOfQuantity.fullName} to be of type KindOfQuantity.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidSchemaItemType);
       });
     });
 
@@ -795,10 +797,10 @@ describe("Properties editing tests", () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
 
       await expect(testEditor.entities.properties.setKindOfQuantity(entityKey, "testProperty", unknownKOQ)).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", SchemaEditType.SetKindOfQuantity);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.SetKindOfQuantity);
 
         expect(error).to.have.nested.property("innerError.message", `KindOfQuantity ${unknownKOQ.fullName} could not be found in the schema ${testKey.name}.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaItemNotFound);
       });
     });
   });

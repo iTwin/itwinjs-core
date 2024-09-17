@@ -1,6 +1,6 @@
 import { CustomAttributeContainerProps, ECClass, Property, RelationshipClass, RelationshipConstraint, Schema, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { ChangeOptions } from "./ChangeInfo/ChangeOptions";
+import { EditOptions } from "./EditInfoObjects/EditOptions";
 import { AbstractConstraintId, BaseClassId, CustomAttributeId, ECClassSchemaItems, ISchemaTypeIdentifier, RelationshipConstraintId } from "./SchemaItemIdentifiers";
 
 
@@ -25,7 +25,7 @@ export class ECElementSelection {
   private _schema: Schema;
   private _ecClass?: ECClass;
   private _property?: Property;
-  private _options: ChangeOptions;
+  private _options: EditOptions;
   public gatherProperties = true;
 
   private _reachedStartingClass = false;
@@ -35,7 +35,7 @@ export class ECElementSelection {
   private _gatheredBaseProperties: Array<Property>;
   private _gatheredDerivedProperties: Array<Property>;
 
-  constructor(public schemaEditor: SchemaContextEditor, schema: Schema, ecClass: ECClass | undefined, property: Property | undefined, options: ChangeOptions) {
+  constructor(public schemaEditor: SchemaContextEditor, schema: Schema, ecClass: ECClass | undefined, property: Property | undefined, options: EditOptions) {
     this._schema = schema;
     this._ecClass = ecClass;
     this._property = property;
@@ -52,7 +52,7 @@ export class ECElementSelection {
     return this._schema;
   }
 
-  public get options(): ChangeOptions {
+  public get options(): EditOptions {
     return this._options;
   }
 

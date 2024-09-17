@@ -18,12 +18,12 @@ import { ECClassSchemaItems } from "./ECClasses";
 import { ECEditingStatus, SchemaEditingError } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 import { ECElementSelection } from "./ECElementSelection";
-import { ChangeOptions } from "./ChangeInfo/ChangeOptions";
-import { ISchemaEditChangeInfo } from "./ChangeInfo/ChangeInfo";
-import { RenamePropertyChange } from "./ChangeInfo/RenamePropertyChange";
+import { EditOptions } from "./EditInfoObjects/EditOptions";
+import { ISchemaEditInfo } from "./EditInfoObjects/SchemaEditInfo";
+import { RenamePropertyEdit } from "./EditInfoObjects/RenamePropertyEdit";
 import { ClassId, CustomAttributeId, PropertyId, PropertyTypeName, SchemaId } from "./SchemaItemIdentifiers";
 import { SchemaEditType } from "./SchemaEditType";
-import { NumberAttributeChangeInfo } from "./ChangeInfo/NumberAttributeChangeInfo";
+import { NumberAttributeEdit } from "./EditInfoObjects/NumberAttributeEdit";
 
 type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimitiveOrEnumPropertyBase | MutableNavigationProperty | MutableStructProperty;
 
@@ -35,14 +35,14 @@ export class Properties {
   public constructor(protected ecClassType: ECClassSchemaItems, protected _schemaEditor: SchemaContextEditor) {
   }
 
-  public async revertChange(changeInfo: ISchemaEditChangeInfo) {
+  public async revertChange(changeInfo: ISchemaEditInfo) {
     switch (changeInfo.editType) {
       case SchemaEditType.SetPropertyName:
 
     }
   }
 
-  public async setName(classKey: SchemaItemKey, propertyName: string, newPropertyName: string, options: ChangeOptions = ChangeOptions.default) {
+  public async setName(classKey: SchemaItemKey, propertyName: string, newPropertyName: string, options: EditOptions = EditOptions.default) {
     let newECName: ECName;
     try {
       newECName = new ECName(newPropertyName);
@@ -91,14 +91,15 @@ export class Properties {
       await this.validatePropertyAgainstDerivedProperties(existingProperty.class, existingProperty, newPropertyName, elements.gatheredDerivedClasses, options);
 
     // Create change info object to allow for edit cancelling and change reversal.
-    const changeInfo = new RenamePropertyChange(this._schemaEditor, existingProperty.class, newPropertyName, propertyName, elements, this.revertSetName.bind(this));
+    const editInfo = new RenamePropertyEdit(existingProperty.class, newPropertyName, propertyName, elements, this.revertSetName.bind(this));
+    this._schemaEditor.addEditInfo(editInfo);
 
     // Callback returns false to cancel the edit.
-    if (!(await changeInfo.beginChange()))
+    if (!(await this._schemaEditor.beginEdit(editInfo)))
       return;
 
     // Rename base and/or derived properties
-    await this.renameAllCollectedOverrides(changeInfo);
+    await this.renameAllCollectedOverrides(editInfo);
 
     // set local name
     existingProperty.setName(newECName);
@@ -162,7 +163,9 @@ export class Properties {
         throw new SchemaEditingError(SchemaEditType.SetPriority, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    new NumberAttributeChangeInfo(this._schemaEditor, SchemaEditType.SetPriority, priority, property.priority, property);
+    const editInfo = new NumberAttributeEdit(SchemaEditType.SetPriority, priority, property.priority, property);
+    this._schemaEditor.addEditInfo(editInfo);
+
     property.setPriority(priority);
   }
 
@@ -280,7 +283,7 @@ export class Properties {
     return property;
   }
 
-  private async renameAllCollectedOverrides(renameChangeInfo: RenamePropertyChange): Promise<void> {
+  private async renameAllCollectedOverrides(renameChangeInfo: RenamePropertyEdit): Promise<void> {
     if (!renameChangeInfo.isLocalChange && renameChangeInfo.changeBase && renameChangeInfo.baseProperties) {
       for (const propertyToRename of renameChangeInfo.baseProperties) {
         const property = await this.getPropertyFromId(propertyToRename);
@@ -296,8 +299,8 @@ export class Properties {
     }
   }
 
-  private async revertSetName(changeInfo: ISchemaEditChangeInfo): Promise<void> {
-    const renameInfo = changeInfo as RenamePropertyChange;
+  private async revertSetName(changeInfo: ISchemaEditInfo): Promise<void> {
+    const renameInfo = changeInfo as RenamePropertyEdit;
 
     if (renameInfo.baseProperties) {
       for (const propertyId of renameInfo.baseProperties) {
@@ -340,7 +343,7 @@ export class Properties {
   }
 
   /** If you are calling for a newly added property, set newName to undefined. If you are renaming a property, set newName. */
-  private async validatePropertyAgainstDerivedProperties(baseClass: ECClass, baseProperty: Property, newName: string | undefined, derivedClasses: Map<string, ECClass>, options: ChangeOptions) {
+  private async validatePropertyAgainstDerivedProperties(baseClass: ECClass, baseProperty: Property, newName: string | undefined, derivedClasses: Map<string, ECClass>, options: EditOptions) {
     for (const mapItem of derivedClasses) {
       const derivedClass = mapItem[1];
       // If this is a new property, newName will be undefined, as opposed to renaming a property

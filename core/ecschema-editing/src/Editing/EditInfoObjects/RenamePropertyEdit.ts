@@ -1,19 +1,16 @@
 import { ECClass, Property } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../Editor";
 import { ECElementSelection } from "../ECElementSelection";
-import { ISchemaEditChangeProps, SchemaChangeRevertCallback, SchemaEditChangeBase } from "./ChangeInfo";
-import { ChangeOptions } from "./ChangeOptions";
+import { SchemaChangeRevertCallback, SchemaEditInfoBase } from "./SchemaEditInfo";
+import { EditOptions } from "./EditOptions";
 import { ClassId, PropertyId } from "../SchemaItemIdentifiers";
 import { SchemaEditType } from "../SchemaEditType";
 
-/** Used for JSON serialization/deserialization. Props for [[RenamePropertyChange]]. */
-export interface RenamePropertyChangeProps extends ISchemaEditChangeProps {
-  readonly newPropertyName: string;
-  readonly oldPropertyName: string;
-}
 
-/** ISchemaEditChangeInfo implementation for property rename edits. */
-export class RenamePropertyChange extends SchemaEditChangeBase {
+/**
+ * ISchemaEditInfo implementation for property rename edits.
+ * @alpha
+ */
+export class RenamePropertyEdit extends SchemaEditInfoBase {
   /** editType is SchemaEditType.SetPropertyName */
   public readonly editType = SchemaEditType.SetPropertyName;
   /** The ClassId of the EC Class being modified. */
@@ -36,12 +33,12 @@ export class RenamePropertyChange extends SchemaEditChangeBase {
    * @param selectedElements The ECElementSelection containing base/derived properties affected by this edit.
    * @param revertCallback The SchemaChangeRevertCallback function to revert the edit.
    */
-  constructor(contextEditor: SchemaContextEditor, modifiedClass: ECClass, newPropertyName: string, oldPropertyName: string, selectedElements: ECElementSelection, revertCallback?: SchemaChangeRevertCallback) {
-    super(contextEditor, modifiedClass.schemaItemType, selectedElements.options, revertCallback);
+  constructor (modifiedClass: ECClass, newPropertyName: string, oldPropertyName: string, selectedElements: ECElementSelection, revertCallback?: SchemaChangeRevertCallback) {
+    super(modifiedClass.schemaItemType, selectedElements.options, revertCallback);
     this.modifiedClass = ClassId.fromECClass(modifiedClass);
     this.newPropertyName = newPropertyName;
     this.oldPropertyName = oldPropertyName;
-    if (!ChangeOptions.isChangeOptions(selectedElements)) {
+    if (!EditOptions.isChangeOptions(selectedElements)) {
       this.baseProperties = this.getPropertyIds(selectedElements.gatheredBaseProperties);
       this.derivedProperties = this.getPropertyIds(selectedElements.gatheredDerivedProperties);
     }

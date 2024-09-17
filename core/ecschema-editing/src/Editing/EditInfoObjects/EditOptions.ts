@@ -1,10 +1,10 @@
-import { BeginSchemaEditCallback } from "./ChangeInfo";
+import { BeginSchemaEditCallback } from "./SchemaEditInfo";
 
 /**
  * Defines potential options for all the edit operations available in the editing API.
  * @alpha
  */
-export enum ChangeOption {
+export enum EditOption {
   LocalChange = "LocalChange",
   StopRelabelOnFirstPropertyOverrideWithADifferentLabel = "StopRelabelOnFirstPropertyOverrideWithADifferentLabel",
   ChangeBase = "ChangeBase",
@@ -20,39 +20,10 @@ export enum ChangeOption {
 }
 
 /**
- * Used for JSON serialization/deserialization. Defines the possible options that control CustomAttribute related edits.
- * TODO: probably not needed...
- * @alpha
- */
-export interface CustomAttributeOptionProps {
-  readonly updateCustomAttributeReferences: boolean;
-  readonly removeCustomAttributesIfClassRemoved: boolean;
-  readonly removeCustomAttributePropertyValues: boolean;
-  readonly removeCustomAttributesIfPropertyRemoved: boolean;
-}
-
-/**
- * Used for JSON serialization/deserialization. Defines the possible options that control how a particular edit should be performed.
- * TODO: probably not needed...
- * @alpha
- */
-export interface ChangeOptionProps {
-  readonly changeBase: boolean;
-  readonly changeDerived: boolean;
-  readonly allowPropertyOverrides: boolean;
-  readonly breakInheritanceChain: boolean;
-  readonly leavePropertyOverrides: boolean;
-  readonly leaveRelationshipClassEndpoints: boolean;
-  readonly stopRelabelOnFirstPropertyOverrideWithDifferentLabel: boolean;
-  readonly localChange: boolean;
-  readonly attributeOptions: CustomAttributeOptionProps;
-}
-
-/**
  * Class that defines the options that are applied to a given edit operation.
  * @alpha
  */
-export class ChangeOptions {
+export class EditOptions {
   /** Indicates if the edit should be propagated to base classes/properties, if applicable. Default to false. */
   public changeBase = false;
 
@@ -81,60 +52,83 @@ export class ChangeOptions {
   public localChange = false;
 
 
+  /** The CustomAttributeOptions options which is set to [[CustomAttributeOptions.Default]] */
   public attributeOptions = CustomAttributeOptions.default();
 
   private _extendedOptions: Map<string, any>;
-  public beginChangeCallback?: BeginSchemaEditCallback;
+  private _beginEditCallback?: BeginSchemaEditCallback;
 
 
   constructor() {
     this._extendedOptions = new Map<string, object>();
   }
 
-  public set beginEditCallback(callback: BeginSchemaEditCallback) {
-    this.beginChangeCallback = callback;
+  /** Gets the BeginSchemaEditCallback function. Maybe undefined. */
+  public get beginEditCallback(): BeginSchemaEditCallback | undefined {
+    return this._beginEditCallback;
   }
 
+  /** Sets the BeginSchemaEditCallback function. Called before the edit operation starts. */
+  public set beginEditCallback(callback: BeginSchemaEditCallback) {
+    this._beginEditCallback = callback;
+  }
+
+  /** Gets the custom edit options. */
   public get customOptions(): Map<string, any> {
     return this._extendedOptions;
   }
 
+  /**
+   * Sets an extended/custom edit option.
+   * @param key The key identifying the option.
+   * @param value The edit option value.
+   */
   public setExtendedOption(key: string, value: any) {
     this._extendedOptions.set(key, value);
   }
 
+  /**
+   * Gets a custom edit option by it's key.
+   * @param key The key of the edit option.
+   * @returns The value of the edit option of type 'any'.
+   */
   public getExtendedOption(key: string): any {
     return this._extendedOptions.get(key);
   }
 
-  public with(changeOptions: ChangeOption[]): ChangeOptions {
-    for (const option of changeOptions) {
-      ChangeOptions.setOption(this, option);
+  /**
+   * Updates the current EditOptions instance with the given options.
+   * @param editOptions An array of EditOption values to set.
+   * @returns The updated EditOptions.
+   */
+  public with(editOptions: EditOption[]): EditOptions {
+    for (const option of editOptions) {
+      EditOptions.setOption(this, option);
     }
     return this;
   }
 
   /** All options are set to false except for [[attributeOptions]] which is set to [[CustomAttributeOptions.Default]] */
-  public static get default(): ChangeOptions {
-    return new ChangeOptions ();
+  public static get default(): EditOptions {
+    return new EditOptions();
   }
 
   /** All options are set to false except for changeBase. */
-  public static get includeBase(): ChangeOptions {
+  public static get includeBase(): EditOptions {
     const options = this.default;
     options.changeBase = true;
     return options;
   }
 
   /** All options are set to false except for changeDerived. */
-  public static get includeDerived(): ChangeOptions {
+  public static get includeDerived(): EditOptions {
     const options = this.default;
     options.changeDerived = true;
     return options;
   }
 
   /** All options are set to false except for changeBase and changeDerived. */
-  public static get includeBaseAndDerived(): ChangeOptions {
+  public static get includeBaseAndDerived(): EditOptions {
     const options = this.default;
     options.changeBase = true;
     options.changeDerived = true;
@@ -142,20 +136,20 @@ export class ChangeOptions {
   }
 
   /** All options are set to false except for allowPropertyOverrides. */
-  public static get allowPropertyOverrides(): ChangeOptions {
+  public static get allowPropertyOverrides(): EditOptions {
     const options = this.default;
     options.allowPropertyOverrides = true;
     return options;
   }
 
   /**
-   * Creates a new ChangeOptions using the instance as a base and then updates
+   * Creates a new EditOptions using the instance as a base and then updates
    * the options with the given ChangeOption array.
-   * @param changeOptions
-   * @returns The new ChangeOptions instance.
+   * @param editOptions
+   * @returns The new EditOptions instance.
    */
-  public newWith(changeOptions: ChangeOption[]) {
-    const newOptions = new ChangeOptions();
+  public newWith(editOptions: EditOption[]) {
+    const newOptions = new EditOptions();
     newOptions.changeBase = this.changeBase;
     newOptions.changeDerived = this.changeDerived;
     newOptions.breakInheritanceChain = this.breakInheritanceChain;
@@ -166,59 +160,59 @@ export class ChangeOptions {
     newOptions.localChange = this.localChange;
     newOptions.attributeOptions = this.attributeOptions;
 
-    for (const option of changeOptions) {
-      ChangeOptions.setOption(newOptions, option);
+    for (const option of editOptions) {
+      EditOptions.setOption(newOptions, option);
     }
 
     return newOptions;
   }
 
   /**
-   * Type guard method to identify an object as a ChangeOptions object.
+   * Type guard method to identify an object as a EditOptions object.
    * @param obj The  object to check.
-   * @returns True if a ChangeOptions object, false otherwise.
+   * @returns True if a EditOptions object, false otherwise.
    */
-  public static isChangeOptions(obj: any): obj is ChangeOptions {
-    return (<ChangeOptions>obj).changeBase !== undefined && (<ChangeOptions>obj).changeDerived !== undefined &&
-            (<ChangeOptions>obj).breakInheritanceChain !== undefined && (<ChangeOptions>obj).leavePropertyOverrides !== undefined;
+  public static isChangeOptions(obj: any): obj is EditOptions {
+    return (<EditOptions>obj).changeBase !== undefined && (<EditOptions>obj).changeDerived !== undefined &&
+      (<EditOptions>obj).breakInheritanceChain !== undefined && (<EditOptions>obj).leavePropertyOverrides !== undefined;
   }
 
-  private static setOption(options: ChangeOptions, option: ChangeOption) {
-    switch(option) {
-      case ChangeOption.LocalChange:
+  private static setOption(options: EditOptions, option: EditOption) {
+    switch (option) {
+      case EditOption.LocalChange:
         options.localChange = true;
         break;
-      case ChangeOption.BreakInheritanceChain:
+      case EditOption.BreakInheritanceChain:
         options.breakInheritanceChain = true;
         break;
-      case ChangeOption.ChangeBase:
+      case EditOption.ChangeBase:
         options.changeBase = true;
         break;
-      case ChangeOption.ChangeDerived:
+      case EditOption.ChangeDerived:
         options.changeDerived = true;
         break;
-      case ChangeOption.LeavePropertyOverrides:
+      case EditOption.LeavePropertyOverrides:
         options.leavePropertyOverrides = true;
         break;
-      case ChangeOption.AllowPropertyOverrides:
+      case EditOption.AllowPropertyOverrides:
         options.allowPropertyOverrides = true;
         break;
-      case ChangeOption.LeaveRelationshipClassEndpoints:
+      case EditOption.LeaveRelationshipClassEndpoints:
         options.leaveRelationshipClassEndpoints = true;
         break;
-      case ChangeOption.StopRelabelOnFirstPropertyOverrideWithADifferentLabel:
+      case EditOption.StopRelabelOnFirstPropertyOverrideWithADifferentLabel:
         options.stopRelabelOnFirstPropertyOverrideWithDifferentLabel = true;
         break;
-      case ChangeOption.RemoveCustomAttributePropertyValues:
+      case EditOption.RemoveCustomAttributePropertyValues:
         options.attributeOptions.removeCustomAttributePropertyValues = true;
         break;
-      case ChangeOption.RemoveCustomAttributesIfClassRemoved:
+      case EditOption.RemoveCustomAttributesIfClassRemoved:
         options.attributeOptions.removeCustomAttributesIfClassRemoved = true;
         break;
-      case ChangeOption.RemoveCustomAttributesIfPropertyRemoved:
+      case EditOption.RemoveCustomAttributesIfPropertyRemoved:
         options.attributeOptions.removeCustomAttributesIfPropertyRemoved = true;
         break;
-      case ChangeOption.UpdateCustomAttributeReferences:
+      case EditOption.UpdateCustomAttributeReferences:
         options.attributeOptions.updateCustomAttributeReferences = true;
         break;
     }
@@ -241,6 +235,6 @@ export class CustomAttributeOptions {
 
   /** Returns default options. All options are set to true, except removeCustomAttributesIfPropertyRemoved is false. */
   public static default(): CustomAttributeOptions {
-    return new CustomAttributeOptions ();
+    return new CustomAttributeOptions();
   }
 }
