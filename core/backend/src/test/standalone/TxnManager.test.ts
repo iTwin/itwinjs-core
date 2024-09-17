@@ -4,21 +4,46 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { BeDuration, BeEvent, DbResult, Guid, GuidString, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { Arc3d, IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  Code, ColorByName, ColorDef, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, PhysicalElementProps, SubCategoryAppearance, TxnAction, UpgradeOptions
 } from "@itwin/core-common";
 import {
   _nativeDb,
+  BriefcaseDb,
   ChangeInstanceKey,
   ChannelControl,
-  IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
+  ECSqlStatement,
+  HubMock,
+  IModelJsFs, PhysicalModel, PullMergeMethod, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
+import { HubWrappers, IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps, TestUserType } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 /// cspell:ignore accum
+
+async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
+  try {
+    await test();
+  } catch (e) {
+    if (e instanceof Error && msg) {
+      assert.equal(e.message, msg);
+    }
+    return;
+  }
+  throw new Error(`Failed to throw error with message: "${msg}"`);
+};
+
+function getCount(imodel: BriefcaseDb, className: string): number {
+  let result = 0;
+  imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
+    assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
+    result = stmt.getValue(0).getInteger();
+  });
+  return result;
+}
 
 describe("TxnManager", () => {
   let imodel: StandaloneDb;
@@ -922,3 +947,236 @@ describe("TxnManager", () => {
     assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e3);
   });
 });
+
+for (const pullMergeMethod of ["Merge", "Rebase"] as PullMergeMethod[]) {
+  describe(`TxnManager Push-Pull-Merge-Rebase (PullMergeMethod: ${pullMergeMethod}) `, () => {
+    let iTwinId: GuidString;
+    const accessTokens: string[] = [];
+    const briefcases: BriefcaseDb[] = [];
+    const txns: TxnManager[] = [];
+    const iModelName = "TxnManagerTestIModel";
+
+    before(() => {
+      HubMock.startup("MergeConflictTest", KnownTestLocations.outputDir);
+      iTwinId = HubMock.iTwinId;
+    });
+
+    after(() => HubMock.shutdown());
+
+    beforeEach(async () => {
+      const iModelId = await HubMock.createNewIModel({ accessToken: accessTokens[0], iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+      assert.isNotEmpty(iModelId);
+
+      for (let i = 0; i < 4; i++) {
+        accessTokens[i] = await HubWrappers.getAccessToken(TestUserType.Regular);
+        briefcases[i] = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessTokens[i], iTwinId, iModelId, noLock: true, pullMergeMethod });
+        briefcases[i].channels.addAllowedChannel(ChannelControl.sharedChannelName);
+        txns[i] = briefcases[i].txns;
+        assert.strictEqual(briefcases[i].pullMergeMethod, pullMergeMethod);
+      }
+    });
+
+    afterEach(async () => {
+      for (const briefcase of briefcases) {
+        if (briefcase.isOpen) {
+          briefcase.abandonChanges();
+          briefcase.close();
+        }
+      }
+    });
+
+    function assertTxnStates(txn: TxnManager, hasLocalChanges: boolean, hasUnsavedChanges: boolean, hasPendingTxns: boolean, isUndoPossible: boolean, isRedoPossible: boolean, message: string) {
+      assert.strictEqual(txn.hasLocalChanges, hasLocalChanges, `hasLocalChanges: ${message}`);
+      assert.strictEqual(txn.hasUnsavedChanges, hasUnsavedChanges, `hasUnsavedChanges: ${message}`);
+      assert.strictEqual(txn.hasPendingTxns, hasPendingTxns, `hasPendingTxns: ${message}`);
+      assert.strictEqual(txn.isUndoPossible, isUndoPossible, `isUndoPossible: ${message}`);
+      assert.strictEqual(txn.isRedoPossible, isRedoPossible, `isRedoPossible: ${message}`);
+    }
+
+    it("Pull with pending Txns", async () => {
+      for (const txn of txns) {
+        assertTxnStates(txn, false, false, false, false, false, "initial state");
+      }
+      // This test checks various states of local briefcases during pull
+      // [0]: source imodel which pushes out the changes
+      // [1]: briefcase which has no changes
+      // [2]: briefcase with saved changes
+      // [3]: briefcase with unsaved changes (then save, undo and pull)
+
+      IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[0], IModelTestUtils.getUniqueModelCode(briefcases[0], "firstPhysicalModel"), false);
+
+      assertTxnStates(txns[0], true, true, false, false, false, "initial create");
+      briefcases[0].saveChanges("inserted first model");
+      assertTxnStates(txns[0], true, false, true, true, false, "initial saved changes");
+
+      await briefcases[0].pushChanges({ accessToken: accessTokens[0], description: "new physical model" });
+      assertTxnStates(txns[0], false, false, false, false, false, "pushed changes");
+
+      // [1] model has no changes
+      await briefcases[1].pullChanges();
+      assertTxnStates(txns[1], false, false, false, false, false, "pulled changes");
+
+      // [2] model has saved changes
+      IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[2], IModelTestUtils.getUniqueModelCode(briefcases[2], "localPhysicalModel"), false);
+      briefcases[2].saveChanges("inserted local model");
+      assertTxnStates(txns[2], true, false, true, true, false, "briefcase 2 with saved local changes");
+      assert.strictEqual(txns[2].getUndoString(), "inserted local model");
+
+      await briefcases[2].pullChanges();
+      if(pullMergeMethod === "Merge") {
+        assert.strictEqual(txns[2].getUndoString(), "Merged");
+        assertTxnStates(txns[2], true, false, true, true, false, "briefcase 2 after pull");
+      } else {
+        assertTxnStates(txns[2], true, false, true, false, false, "briefcase 2 after pull");
+      }
+      assert.strictEqual(2, getCount(briefcases[2], PhysicalModel.classFullName)); // the pulled and local models
+
+      // [3] model gets unsaved changes
+      IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[3], IModelTestUtils.getUniqueModelCode(briefcases[3], "localPhysicalModel"), false);
+      assertTxnStates(txns[3], true, true, false, false, false, "briefcase 3 with unsaved local changes");
+      await assertThrowsAsync(async () => briefcases[3].pullChanges(), "cannot processed due to unsaved changes.");
+      assertTxnStates(txns[3], true, true, false, false, false, "briefcase 3 after pull with unsaved changes");
+
+      // [3] model: now save, undo, pull and redo
+      briefcases[3].saveChanges("Temporarily save changes");
+      assertTxnStates(txns[3], true, false, true, true, false, "briefcase 3 with saved local changes");
+      assert.strictEqual(1, getCount(briefcases[3], PhysicalModel.classFullName)); // the local model
+      assert.strictEqual(txns[3].reverseTxns(1), IModelStatus.Success);
+      assertTxnStates(txns[3], false, false, false, false, true, "briefcase 3 after undo");
+      assert.strictEqual(0, getCount(briefcases[3], PhysicalModel.classFullName)); // no model
+      await briefcases[3].pullChanges();
+
+      assert.strictEqual(1, getCount(briefcases[3], PhysicalModel.classFullName));
+      assertTxnStates(txns[3], false, false, false, false, true, "briefcase 3 after pull");
+      // TODO: "redo possible" should be false, if we try to reinstate, it will crash!
+      /*
+        assert.strictEqual(txns[3].reinstateTxn(), IModelStatus.Success);
+        assert.strictEqual(2, getCount(briefcases[3], PhysicalModel.classFullName)); // the pulled and local models
+        assertTxnStates(txns[3], true, false, true, true, false, "briefcase 3 after redo");
+      */
+    });
+  }); // describe
+} // for each pullMergeMethod
+
+interface TestClassProps extends PhysicalElementProps {
+  a?: string;
+  b?: string;
+  c?: string;
+  d?: string;
+}
+
+describe("TxnManager mixed PullMergeMethods", () => {
+  // This will use 4 briefcases to test element property merging between methods
+  // [0]: Source Briefcase to initialize data
+  // [1]: Briefcase with Rebase
+  // [2]: Briefcase with Merge
+  // [3]: another Briefcase with Rebase
+  let iTwinId: GuidString;
+  const accessTokens: string[] = [];
+  const briefcases: BriefcaseDb[] = [];
+  const txns: TxnManager[] = [];
+  const iModelName = "TxnManagerPullMergeRebaseTest2";
+
+  before(() => {
+    HubMock.startup("MergeConflictTest", KnownTestLocations.outputDir);
+    iTwinId = HubMock.iTwinId;
+  });
+
+  after(() => HubMock.shutdown());
+
+  beforeEach(async () => {
+    const iModelId = await HubMock.createNewIModel({ accessToken: accessTokens[0], iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    assert.isNotEmpty(iModelId);
+
+    for (let i = 0; i < 4; i++) {
+      accessTokens[i] = await HubWrappers.getAccessToken(TestUserType.Regular);
+      briefcases[i] = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessTokens[i], iTwinId, iModelId, noLock: true, pullMergeMethod: (i === 2 ? "Merge" : "Rebase") });
+      briefcases[i].channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      txns[i] = briefcases[i].txns;
+    }
+  });
+
+  afterEach(async () => {
+    for (const briefcase of briefcases) {
+      if (briefcase.isOpen) {
+        // briefcase.abandonChanges();
+        briefcase.close();
+      }
+    }
+  });
+
+  it("Merge element properties from various briefcases combining different pull merge methods", async () => {
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.15" alias="bis"/>
+        <ECEntityClass typeName="TestClass" modifier="Sealed">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="A" typeName="string"/>
+            <ECProperty propertyName="B" typeName="string"/>
+            <ECProperty propertyName="C" typeName="string"/>
+            <ECProperty propertyName="D" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await briefcases[0].importSchemaStrings([schema]);
+
+    const spatialCategoryId = SpatialCategory.insert(briefcases[0], IModel.dictionaryId, "MyCategory",
+      new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
+    const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(briefcases[0], Code.createEmpty(), true);
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+    const geometryStream: GeometryStreamProps = [];
+    for (const geom of geomArray) {
+      const arcData = IModelJson.Writer.toIModelJson(geom);
+      geometryStream.push(arcData);
+    }
+
+    const testClassProps: TestClassProps = {
+      classFullName: "TestSchema:TestClass",
+      model: modelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      a: "A1",
+      b: "B1",
+      c: "C1",
+      d: "D1",
+    };
+    const element = briefcases[0].elements.createElement(testClassProps);
+    const elementId = briefcases[0].elements.insertElement(element.toJSON());
+    briefcases[0].saveChanges();
+    await briefcases[0].pushChanges({ accessToken: accessTokens[0], description: "initial setup" });
+
+    await briefcases[1].pullChanges();
+    const element1Props = briefcases[1].elements.getElementProps<TestClassProps>(elementId);
+    element1Props.b = "B2";
+    briefcases[1].elements.updateElement(element1Props);
+    briefcases[1].saveChanges();
+    await briefcases[1].pushChanges({ accessToken: accessTokens[1], description: "updated element property B" });
+
+    await briefcases[2].pullChanges();
+    const element2Props = briefcases[2].elements.getElementProps<TestClassProps>(elementId);
+    element2Props.c = "C3";
+    briefcases[2].elements.updateElement(element2Props);
+    briefcases[2].saveChanges();
+    await briefcases[2].pushChanges({ accessToken: accessTokens[2], description: "updated element property C" });
+
+    await briefcases[3].pullChanges();
+    const element3Props = briefcases[3].elements.getElementProps<TestClassProps>(elementId);
+    element3Props.d = "D4";
+    briefcases[3].elements.updateElement(element3Props);
+    briefcases[3].saveChanges();
+    await briefcases[3].pushChanges({ accessToken: accessTokens[3], description: "updated element property D" });
+
+    for(const briefcase of briefcases) {
+      await briefcase.pullChanges();
+      const finalModelProps = briefcase.elements.getElementProps<TestClassProps>(elementId);
+      assert.strictEqual(finalModelProps.a, "A1");
+      assert.strictEqual(finalModelProps.b, "B2");
+      assert.strictEqual(finalModelProps.c, "C3");
+      assert.strictEqual(finalModelProps.d, "D4");
+    }
+  });
+}); // describe

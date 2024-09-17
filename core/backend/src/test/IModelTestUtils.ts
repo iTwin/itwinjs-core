@@ -25,7 +25,7 @@ import {
   DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect,
   ElementUniqueAspect, ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost,
   IModelJsFs, InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject,
-  PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
+  PhysicalPartition, PullMergeMethod, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../core-backend";
 import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
@@ -144,7 +144,7 @@ export class HubWrappers {
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
-  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseArg & { noLock?: true }): Promise<BriefcaseDb> {
+  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseArg & { noLock?: true } & { pullMergeMethod?: PullMergeMethod }): Promise<BriefcaseDb> {
     const props = await BriefcaseManager.downloadBriefcase(args);
     if (args.noLock) {
       const briefcase = await BriefcaseDb.open({ fileName: props.fileName });
@@ -152,7 +152,11 @@ export class HubWrappers {
       briefcase.saveChanges();
       briefcase.close();
     }
-    return BriefcaseDb.open({ fileName: props.fileName });
+    const bc = await BriefcaseDb.open({ fileName: props.fileName });
+    if (args.pullMergeMethod)
+      bc.pullMergeMethod = args.pullMergeMethod;
+
+    return bc;
   }
 
   /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */

@@ -19,11 +19,12 @@ import {
   BriefcaseDb,
   ChannelControl,
   DictionaryModel,
+  PullMergeMethod,
   SpatialCategory,
   SqliteChangesetReader,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { ChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
+import { ChangesetConflictArgs, MergeChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
 
@@ -53,8 +54,9 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
 }
 
 Logger.setLevel("Changeset", LogLevel.Trace);
+const kPullMergeMethod = "Merge" as PullMergeMethod;
 
-describe("Changeset conflict handler", () => {
+describe("Changeset conflict handler (Only work with PullMergeMethod: Merge)", () => {
   let iTwinId: GuidString;
   let accessToken1: string;
   let accessToken2: string;
@@ -112,13 +114,13 @@ describe("Changeset conflict handler", () => {
     accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
     const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
     assert.isNotEmpty(rwIModelId);
-    b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
+    b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true, pullMergeMethod: kPullMergeMethod });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true });
+    b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId, iModelId: rwIModelId, noLock: true, pullMergeMethod: kPullMergeMethod });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true });
+    b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken3, iTwinId, iModelId: rwIModelId, noLock: true, pullMergeMethod: kPullMergeMethod });
 
     [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       b1,
@@ -429,7 +431,7 @@ describe("Changeset conflict handler", () => {
     await fakeChangesetConflictHandler(
       b2,
       async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
-      (arg: ChangesetConflictArgs) => {
+      (arg: MergeChangesetConflictArgs) => {
 
         // *** SqliteChangeReader API test ***
         const reader = SqliteChangesetReader.openFile({ fileName: arg.changesetFile!, db: b2 });
@@ -551,8 +553,8 @@ describe("Changeset conflict handler", () => {
         // 5 - StrData
         expect(arg.getValueBinary(5, DbChangeStage.Old)).deep.equals(new Uint8Array([116, 101, 115, 116]));
         expect(arg.getValueBinary(5, DbChangeStage.New)).deep.equals(new Uint8Array([116, 101, 115, 116, 49]));
-        expect(arg.getValueId(5, DbChangeStage.New)).is.equals("0");
-        expect(arg.getValueId(5, DbChangeStage.Old)).is.equals("0");
+        expect(arg.getValueId(5, DbChangeStage.New)).is.equals("0x0");
+        expect(arg.getValueId(5, DbChangeStage.Old)).is.equals("0x0");
         expect(arg.getValueText(5, DbChangeStage.New)).is.equals("test1");
         expect(arg.getValueText(5, DbChangeStage.Old)).is.equals("test");
         expect(arg.getValueType(5, DbChangeStage.New)).is.equals(DbValueType.TextVal);

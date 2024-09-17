@@ -62,12 +62,13 @@ import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from
 import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
-import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { ChangesetConflictArgs, MergeChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { LockControl } from "./LockControl";
 import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { _close, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+
 
 // spell:ignore fontid fontmap
 
@@ -2579,6 +2580,8 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
+  /** @internal */
+  public pullMergeMethod = IModelHost.pullMergeMethod;
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -2774,12 +2777,12 @@ export class BriefcaseDb extends IModelDb {
                 throw e;
               }
             },
-            appParams:{
+            appParams: {
               author: { name: "unknown" },
               origin: { name: "unknown" },
             },
-            close: () => {},
-            initialize: async () => {},
+            close: () => { },
+            initialize: async () => { },
           };
         }
       }
@@ -2788,9 +2791,8 @@ export class BriefcaseDb extends IModelDb {
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
-
-  /**  This is called by native code when applying a changeset */
-  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+  /* This is called by native code when applying a changeset */
+  private onChangesetConflict(args: MergeChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
 
     const category = "DgnCore";

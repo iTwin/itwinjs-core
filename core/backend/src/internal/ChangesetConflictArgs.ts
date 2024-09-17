@@ -14,7 +14,6 @@ export interface ChangesetConflictArgs {
   opcode: DbOpcode;
   indirect: boolean;
   tableName: string;
-  changesetFile?: string;
   columnCount: number;
   getForeignKeyConflicts: () => number;
   dump: () => void;
@@ -29,3 +28,16 @@ export interface ChangesetConflictArgs {
   isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
 }
 
+export interface MergeChangesetConflictArgs extends ChangesetConflictArgs {
+  changesetFile?: string;
+}
+
+export interface TxnArgs {
+  id: Id64String;
+  type: "Data" | "Schema";
+  descr: string;
+}
+
+export interface RebaseChangesetConflictArgs extends ChangesetConflictArgs {
+  txn: TxnArgs;
+}
