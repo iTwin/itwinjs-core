@@ -225,10 +225,22 @@ describe("RenderInstances", () => {
     const instancesBuilder = RenderInstancesParamsBuilder.create({ modelId });
     instancesBuilder.add({
       feature: "0x3",
-      transform: Transform.createIdentity(),
+      transform: Transform.createTranslationXYZ(-1, 0, 0),
+    });
+    instancesBuilder.add({
+      feature: "0x4",
+      transform: Transform.createTranslationXYZ(1, 0, 0),
+    });
+    instancesBuilder.add({
+      feature: "0x5",
+      transform: Transform.createTranslationXYZ(0, 1, 0),
+    });
+    instancesBuilder.add({
+      feature: "0x6",
+      transform: Transform.createTranslationXYZ(0, -1, 0),
     });
     const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
-    expect(instances[_featureTable]!.numFeatures).to.equal(1);
+    expect(instances[_featureTable]!.numFeatures).to.equal(4);
 
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
     const branch = new GraphicBranch();
@@ -249,7 +261,7 @@ describe("RenderInstances", () => {
     expect(colors.contains(Color.fromColorDef(ColorDef.white))).to.be.true;
 
     let features = readUniqueFeatures(vp);
-    expect(features.length).to.equal(1);
+    expect(features.length).to.equal(4);
     expect(features.contains(new Feature("0x3"))).to.be.true;
 
     vp.dispose();
