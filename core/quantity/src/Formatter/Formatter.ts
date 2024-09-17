@@ -230,7 +230,7 @@ export class Formatter {
 
       if (spec.format.type === FormatType.Ratio){
         if (1 !== spec.format.units!.length)
-          throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid unit specification, we require single presentation unit`);
+          throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid unit specification, we require single presentation unit when using format type 'ratio'`);
         compositeStrings.push(this.formatRatio(unitValue, spec));
         continue;
       }
