@@ -241,7 +241,7 @@ export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNon
     }
   },
   readRect, excludeNonLocatable);
-    
+
   return features;
 }
 

@@ -41,7 +41,7 @@ describe("GraphicTemplate", () => {
     graphic.dispose();
     expectDisposed(template, false);
   });
-  
+
   it("is not instanceable if GraphicBuilder or GraphicDescription specifies a view-independent origin", () => {
     function makeTemplate(viewIndependent: boolean): GraphicTemplate {
       const builder = IModelApp.renderSystem.createGraphic({

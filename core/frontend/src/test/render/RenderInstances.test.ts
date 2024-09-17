@@ -12,9 +12,9 @@ import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/rend
 import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
 import { ColorDef, EmptyLocalization, Feature, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
-import { GraphicType, ViewRect } from "../../common";
-import { Color, openBlankViewport, readColorCounts, readUniqueColors, readUniqueFeatures, readUniquePixelData } from "../openBlankViewport";
-import { GraphicBranch, StandardViewId, readGltfTemplate } from "../../core-frontend";
+import { GraphicType } from "../../common";
+import { Color, openBlankViewport, readColorCounts, readUniqueColors, readUniqueFeatures } from "../openBlankViewport";
+import { GraphicBranch, readGltfTemplate, StandardViewId } from "../../core-frontend";
 import { _featureTable } from "../../common/internal/Symbols";
 
 describe("RenderInstancesParamsBuilder", () => {
@@ -128,7 +128,7 @@ describe("RenderInstances", () => {
     expect(ft.findFeature(2, feat)?.elementId).to.equal("0x3");
     expect(ft.findFeature(3, feat)?.elementId).to.equal("0x4");
   });
-  
+
   it("renders multiple instances of glTF model with different features and color overrides", async () => {
     // a single white triangle from https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/Triangle
     const gltfJson = `{
@@ -219,7 +219,7 @@ describe("RenderInstances", () => {
       pickableOptions: { id, modelId },
     });
 
-    const template = gltfTemplate!.template!;
+    const template = gltfTemplate!.template;
     expect(template).not.to.be.undefined;
 
     const instancesBuilder = RenderInstancesParamsBuilder.create({ modelId });
@@ -256,20 +256,20 @@ describe("RenderInstances", () => {
     });
 
     vp.renderFrame();
-    let colors = readUniqueColors(vp);
+    const colors = readUniqueColors(vp);
     expect(colors.length).to.equal(3);
     expect(colors.containsColorDef(vp.displayStyle.backgroundColor)).to.be.true;
     expect(colors.containsColorDef(ColorDef.white)).to.be.true;
     expect(colors.containsColorDef(ColorDef.blue)).to.be.true;
 
-    let features = readUniqueFeatures(vp);
+    const features = readUniqueFeatures(vp);
     expect(features.length).to.equal(4);
     expect(features.contains(new Feature("0x3"))).to.be.true;
 
     vp.dispose();
   });
-  
-  it.only("renders the same template with different symbologies", () => {
+
+  it("renders the same template with different symbologies", () => {
     // Create a template of a red solid line 1 pixel tall and 5 pixels wide
     const builder = IModelApp.renderSystem.createGraphic({
       type: GraphicType.ViewOverlay,
@@ -309,7 +309,7 @@ describe("RenderInstances", () => {
     // Create a graphic from the template+instances, translated to the center of the viewport.
     const instances = IModelApp.renderSystem.createRenderInstances(paramsBuilder.finish())!;
     expect(instances).not.to.be.undefined;
-    
+
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
     const branch = new GraphicBranch(false);
     branch.add(graphic);
@@ -326,14 +326,6 @@ describe("RenderInstances", () => {
     vp.displayStyle.backgroundColor = ColorDef.black;
     vp.renderFrame();
 
-    // let colors = readUniqueColors(vp);
-    // expect(colors.length).to.equal(5);
-    // expect(colors.containsColorDef(ColorDef.black)).to.be.true;
-    // expect(colors.containsColorDef(ColorDef.red)).to.be.true;
-    // expect(colors.containsColorDef(ColorDef.blue)).to.be.true;
-    // expect(colors.containsColorDef(ColorDef.green)).to.be.true;
-    // expect(colors.containsColorDef(ColorDef.white)).to.be.true;
-
     const colors = readColorCounts(vp);
     expect(colors.size).to.equal(5);
     const background = colors.get(Color.fromColorDef(ColorDef.black))!;
@@ -342,11 +334,15 @@ describe("RenderInstances", () => {
     const green= colors.get(Color.fromColorDef(ColorDef.green))!;
     const white = colors.get(Color.fromColorDef(ColorDef.white))!;
 
+    // dashed - fewer pixels
     expect(white).lessThan(red);
+    // solid, same width => same number of pixels
     expect(red).to.equal(blue);
+    // wider => more pixels
     expect(green).greaterThan(red);
+    // most of view is background
     expect(background).greaterThan(green);
-    
+
     vp.dispose();
   });
 });
