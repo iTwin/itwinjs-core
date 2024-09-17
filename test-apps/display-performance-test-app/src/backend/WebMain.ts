@@ -9,6 +9,7 @@ import * as path from "path";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 
 /* eslint-disable no-console */
 
@@ -36,13 +37,16 @@ function startWebServer() {
   });
   // Run the server...
   appExp.set("port", 3000);
-  const announceWebServer = () => { };
+  const announceWebServer = () => console.log(`Serving web files on port 3000`);
   DisplayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
 }
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   // Initialize the webserver
   startWebServer();
+
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(LogLevel.Info);
 
   // Initialize the backend
   await initializeBackend();
@@ -61,6 +65,7 @@ function startWebServer() {
     else if (arg === "egl"){
       chromeFlags.push("--use-gl=angle");
       chromeFlags.push("--use-angle=gl-egl");
+      chromeFlags.push("--enable-logging");
     }
   });
 
@@ -108,9 +113,11 @@ function startWebServer() {
       if (process.platform === "darwin") { // Ie, if running on Mac
         child_process.execSync("open -a \"Google Chrome\" http://localhost:3000");
       } else {
+        console.log(`logLevel: verbose`);
         chromeLauncher.launch({ // eslint-disable-line @typescript-eslint/no-floating-promises
           startingUrl: "http://localhost:3000",
           chromeFlags,
+          logLevel: "verbose",
         }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
       }
       break;

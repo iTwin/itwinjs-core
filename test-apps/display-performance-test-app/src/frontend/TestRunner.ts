@@ -5,7 +5,7 @@
 
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
-  assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, Dictionary, Id64, Id64Array, Id64String, Logger, LoggingMetaData, LogLevel, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
@@ -208,6 +208,12 @@ export class TestRunner {
     const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation}\n  format: Time_started  ModelName  [ViewName]`;
     await this.logToConsole(msg);
     await this.logToFile(msg, { noAppend: true });
+
+    const logConsole = (level: string) => async (category: string, message: string, metaData: LoggingMetaData) =>
+      this.logToConsole(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`);
+
+    Logger.initialize(logConsole("Error"), logConsole("Warning"), logConsole("Info"), logConsole("Trace"));
+    Logger.setLevelDefault(LogLevel.Info);
 
     let needRestart = this.curConfig.requiresRestart(new TestConfig({})); // If current config differs from default, restart
     const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
