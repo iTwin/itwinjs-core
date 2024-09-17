@@ -159,6 +159,7 @@ jobs:
 
       - bash: |
           echo IM CHECKING OUT TO....$(releaseBranchName)
+          git fetch --all
           git checkout --track $(releaseBranchName)
         displayName: Checkout to Release Branch in case of RC
         condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
