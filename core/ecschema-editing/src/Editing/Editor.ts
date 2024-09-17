@@ -70,9 +70,10 @@ export class SchemaContextEditor {
     return this._currentEdits;
   }
 
-  public async finish(): Promise<SchemaContext> {
+  public async finish(): Promise<ISchemaEditInfo[]> {
+    const edits = this._currentEdits.slice();
     this._currentEdits = [];
-    return this._schemaContext;
+    return edits;
   }
 
   /**
