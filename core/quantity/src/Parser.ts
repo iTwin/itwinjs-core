@@ -844,8 +844,9 @@ export class Parser {
     try {
       converted = quantity.convertTo(spec.outUnit, unitConversion);
     } catch (err){
+      // for input of "0:N" with reversed unit
       if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero){
-        return { ok: true, value: 0.0 };
+        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
       }
     }
 
