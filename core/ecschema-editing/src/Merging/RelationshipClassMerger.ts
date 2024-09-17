@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { type RelationshipClassDifference, type RelationshipConstraintClassDifference, type RelationshipConstraintDifference } from "../Differencing/SchemaDifference";
-import { type MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
-import { locateSchemaItem, type SchemaItemMergerHandler, updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
+import type { RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference } from "../Differencing/SchemaDifference";
+import type { MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
+import { locateSchemaItem, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 import { modifyClass } from "./ClassMerger";
 import { SchemaMergeContext } from "./SchemaMerger";
 import { EntityClass, Mixin, parseStrength, parseStrengthDirection, RelationshipClass, RelationshipConstraintProps, RelationshipMultiplicity, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
@@ -12,42 +12,40 @@ import { EntityClass, Mixin, parseStrength, parseStrengthDirection, Relationship
 type ConstraintClassTypes = EntityClass | Mixin | RelationshipClass;
 
 /**
- * Defines a merge handler to merge RelationshipClass schema items.
+ * Merges a new RelationshipClass into the target schema.
  * @internal
  */
-export const relationshipClassMerger: SchemaItemMergerHandler<RelationshipClassDifference> = {
-  async add(context, change) {
-    if (change.difference.strength === undefined) {
-      throw new Error("RelationshipClass must define strength");
-    }
-    if (change.difference.strengthDirection === undefined) {
-      throw new Error("RelationshipClass must define strengthDirection");
-    }
-    if (change.difference.source === undefined) {
-      throw new Error("RelationshipClass must define a source constraint");
-    }
-    if (change.difference.target === undefined) {
-      throw new Error("RelationshipClass must define a target constraint");
-    }
+export async function addRelationshipClass(context: SchemaMergeContext, change: RelationshipClassDifference) {
+  if (change.difference.strength === undefined) {
+    throw new Error("RelationshipClass must define strength");
+  }
+  if (change.difference.strengthDirection === undefined) {
+    throw new Error("RelationshipClass must define strengthDirection");
+  }
+  if (change.difference.source === undefined) {
+    throw new Error("RelationshipClass must define a source constraint");
+  }
+  if (change.difference.target === undefined) {
+    throw new Error("RelationshipClass must define a target constraint");
+  }
 
-    return context.editor.relationships.createFromProps(context.targetSchemaKey, {
-      ...change.difference,
-      name: change.itemName,
-      schemaItemType: change.schemaType,
-      strength: change.difference.strength,
-      strengthDirection: change.difference.strengthDirection,
-      source: await updateRelationshipConstraintKey(context, change.difference.source),
-      target: await updateRelationshipConstraintKey(context, change.difference.target),
-    });
-  },
-  async modify(context, change, itemKey, item: MutableRelationshipClass) {
-    await modifyRelationshipClass(context, change, itemKey, item);
-  },
-};
+  await context.editor.relationships.createFromProps(context.targetSchemaKey, {
+    ...change.difference,
+    name: change.itemName,
+    schemaItemType: change.schemaType,
+    strength: change.difference.strength,
+    strengthDirection: change.difference.strengthDirection,
+    source: await updateRelationshipConstraintKey(context, change.difference.source),
+    target: await updateRelationshipConstraintKey(context, change.difference.target),
+  });
+}
 
-async function modifyRelationshipClass(context: SchemaMergeContext, change: RelationshipClassDifference, itemKey: SchemaItemKey, item: MutableRelationshipClass) {
-  // The following modifications will only be applied if the items gets modified
-  // and not the 2nd pass when adding a RelationshipClass.
+/**
+ * Merges differences to an existing RelationshipClass in the target schema.
+ * @internal
+ */
+export async function modifyRelationshipClass(context: SchemaMergeContext, change: RelationshipClassDifference, itemKey: SchemaItemKey) {
+  const item = await context.targetSchema.lookupItem(itemKey) as MutableRelationshipClass;
   if(change.changeType === "modify") {
     if(change.difference.strength !== undefined) {
       if (item.strength === undefined) {
