@@ -32,7 +32,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
     super();
     this._perpVector = Vector3d.createZero();
     this._maxDistance = 0.0;
-    this._localToWorld = ray.toRigidZFrame()!;
+    this._localToWorld = ray.toRigidZFrame();
   }
   private _localPoint = Point3d.create();
   private _worldPoint = Point3d.create();

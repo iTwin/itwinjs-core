@@ -555,7 +555,7 @@ describe("Class merger tests", () => {
     expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
   });
 
-  it.skip("should throw an error when merging classes with different schema item types", async () => {
+  it("should throw an error when merging classes with different schema item types", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -580,7 +580,7 @@ describe("Class merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith("Changing the class 'TestClass' type is not supported.");
+    await expect(merge).to.be.rejectedWith("Changing the type of item 'TestClass' not supported.");
   });
 
   it("should throw an error when merging class modifier changed from Abstract to Sealed", async () => {
@@ -665,7 +665,7 @@ describe("Class merger tests", () => {
     });
   });
 
-  it.skip("should throw an error when merging entity base class changed from existing one to undefined", async () => {
+  it("should throw an error when merging entity base class changed from existing one to undefined", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -772,61 +772,6 @@ describe("Class merger tests", () => {
     });
 
     await expect(merge).to.be.rejectedWith("Changing the mixin 'TestMixin' appliesTo is not supported.");
-  });
-
-  it("should throw an error when merging entity classes with different mixins", async () => {
-    const jsonObj = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "TestSchema",
-      version: "01.00.15",
-      alias: "test",
-      items: {
-        TestBase: {
-          schemaItemType: "EntityClass",
-          modifier: "Abstract",
-        },
-        TestMixin: {
-          schemaItemType: "Mixin",
-          appliesTo: "TestSchema.TestBase",
-        },
-      },
-    };
-
-    await Schema.fromJson(jsonObj, targetContext);
-    await Schema.fromJson({
-      ...targetJson,
-      references: [
-        ...targetJson.references,
-        {
-          name: "TestSchema",
-          version: "01.00.15",
-        },
-      ],
-      items: {
-        TargetMixin: {
-          schemaItemType: "Mixin",
-          appliesTo: "TestSchema.TestBase",
-        },
-      },
-    }, targetContext);
-
-    const merger = new SchemaMerger(targetContext);
-    const merge = merger.merge({
-      sourceSchemaName: "SourceSchema.01.02.03",
-      targetSchemaName: "TargetSchema.01.00.00",
-      differences: [
-        {
-          changeType: "modify" as any,
-          schemaType: SchemaOtherTypes.EntityClassMixin,
-          itemName: "TestEntity",
-          difference: [
-            "TestSchema.TestMixin",
-          ],
-        },
-      ],
-    });
-
-    await expect(merge).to.be.rejectedWith("Changing the entity class 'TestEntity' mixins is not supported.");
   });
 
   it("should throw an error when merging entity class with a unknown mixins", async () => {

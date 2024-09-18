@@ -61,12 +61,11 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           }
         }
         if (points.length > 1) {
-          const tolerance = this._options.colinearPointTolerance;
-          const compressedPointsA = PolylineOps.compressShortEdges(points, tolerance);
-          const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, tolerance);
+          const compressedPointsA = PolylineOps.compressShortEdges(points, this._options.duplicatePointTolerance);
+          const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, this._options.colinearPointTolerance);
           if (i0 === 0 && i1 === numOriginal) {
             // points is the entire curve, and the curve is closed.   Maybe the first and last segments are colinear.
-            PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, tolerance);
+            PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, this._options.duplicatePointTolerance, this._options.colinearPointTolerance);
           }
           if (compressedPointsB.length < 2) {
             // Collapsed to a point?  Make a single point linestring

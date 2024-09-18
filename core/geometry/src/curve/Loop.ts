@@ -9,6 +9,7 @@
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
@@ -41,7 +42,10 @@ export class Loop extends CurveChain {
   public static create(...curves: CurvePrimitive[]): Loop {
     const result = new Loop();
     for (const curve of curves) {
-      result.children.push(curve);
+      if (curve instanceof CurveChainWithDistanceIndex)
+        result.children.push(...curve.path.children);
+      else
+        result.children.push(curve);
     }
     return result;
   }
@@ -50,11 +54,7 @@ export class Loop extends CurveChain {
    * @param curves array of individual curve primitives
    */
   public static createArray(curves: CurvePrimitive[]): Loop {
-    const result = new Loop();
-    for (const curve of curves) {
-      result.children.push(curve);
-    }
-    return result;
+    return this.create(...curves);
   }
   /** Create a loop from an array of points */
   public static createPolygon(points: IndexedXYZCollection | Point3d[]): Loop {

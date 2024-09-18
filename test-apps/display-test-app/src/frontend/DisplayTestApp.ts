@@ -193,6 +193,10 @@ const dtaFrontendMain = async () => {
     return;
   }
 
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(LogLevel.Warning);
+  Logger.setLevel("core-frontend.Render", LogLevel.Error);
+
   // We can call RPC at this point (after startup), so if not mobile, call RPC and get true env from backend,
   // then shutdown frontend, init vars again based on possibly changed configuration, then startup again
   // (All that to workaround the fact that we can't call RPC before we start to get the true env first.)
@@ -279,9 +283,6 @@ const dtaFrontendMain = async () => {
 
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView(iModel);
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel("core-frontend.Render", LogLevel.Error);
 
     if (configuration.startupMacro)
       await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);

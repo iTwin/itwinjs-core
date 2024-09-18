@@ -9,13 +9,11 @@
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
+import { getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { SchemaMergingVisitor } from "./SchemaMergingVisitor";
+import { SchemaMergingWalker } from "./SchemaMergingWalker";
+import type { SchemaEdits } from "./Edits/SchemaEdits";
 import { ECEditingStatus, SchemaEditingError } from "../Editing/Exception";
-import { type AnySchemaDifference, getSchemaDifferences, type SchemaDifference, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
-import { type SchemaEdits } from "./Edits/SchemaEdits";
-import { mergeCustomAttribute } from "./CustomAttributeMerger";
-import { mergeSchemaItems } from "./SchemaItemMerger";
-import { mergeSchemaReferences } from "./SchemaReferenceMerger";
-import * as Utils from "../Differencing/Utils";
 
 /**
  * Defines the context of a Schema merging run.
@@ -93,55 +91,17 @@ export class SchemaMerger {
       throw new Error(`The target schema '${targetSchemaKey.name}' is not dynamic. Only dynamic schemas are supported for merging.`);
     }
 
-    const context: SchemaMergeContext = {
+    const visitor = new SchemaMergingVisitor({
       editor: this._editor,
       targetSchema: schema,
       targetSchemaKey,
       sourceSchemaKey,
-    };
+    });
 
-    await mergeSchemaDifferences(context, differenceResult.differences);
+    const walker = new SchemaMergingWalker(visitor);
+    await walker.traverse(differenceResult.differences, "add");
+    await walker.traverse(differenceResult.differences, "modify");
 
     return schema;
-  }
-}
-
-/**
- * Merges the schema differences in the target schema.
- * @param context       The current merging context.
- * @param differences   The differences between a source schema and the target schema.
- * @internal
- */
-async function mergeSchemaDifferences(context: SchemaMergeContext, differences: AnySchemaDifference[]): Promise<void> {
-  for (const referenceDifference of differences.filter(Utils.isSchemaReferenceDifference)) {
-    await mergeSchemaReferences(context, referenceDifference);
-  }
-
-  for (const schemaDifference of differences.filter(Utils.isSchemaDifference)) {
-    await mergeSchemaProperties(context, schemaDifference);
-  }
-
-  // Filter a list of possible schema item changes. This list gets filtered and order in the
-  // mergeSchemaItems method.
-  for await (const _mergeResult of mergeSchemaItems(context, differences)) {
-  }
-
-  // At last the custom attributes gets merged because it could be that the CustomAttributes
-  // depend on classes that has to get merged in as items before.
-  for (const customAttributeDifference of differences.filter(Utils.isCustomAttributeDifference)) {
-    await mergeCustomAttribute(context, customAttributeDifference);
-  }
-}
-
-/**
- * Sets the editable properties of a Schema.
- * @internal
- */
-async function mergeSchemaProperties(context: SchemaMergeContext, { difference }: SchemaDifference) {
-  if (difference.label !== undefined) {
-    await context.editor.setDisplayLabel(context.targetSchemaKey, difference.label);
-  }
-  if (difference.description !== undefined) {
-    await context.editor.setDescription(context.targetSchemaKey, difference.description);
   }
 }

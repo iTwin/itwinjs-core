@@ -10,6 +10,7 @@ import { IModelDb, RpcTrace } from "@itwin/core-backend";
 import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
+  buildElementProperties,
   ClientDiagnostics,
   ComputeSelectionRequestOptions,
   ComputeSelectionRpcRequestOptions,
@@ -19,6 +20,7 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
+  DefaultContentDisplayTypes,
   DescriptorJSON,
   Diagnostics,
   DisplayLabelRpcRequestOptions,
@@ -428,7 +430,21 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     requestOptions: SingleElementPropertiesRpcRequestOptions,
   ): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      return this.getManager(requestOptions.clientId).getDetail().getElementProperties(options);
+      const manager = this.getManager(requestOptions.clientId);
+      const { elementId, ...optionsNoElementId } = options;
+      const content = await manager.getDetail().getContent({
+        ...optionsNoElementId,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+      });
+      if (!content || content.contentSet.length === 0) {
+        return undefined;
+      }
+      return buildElementProperties(content.descriptor, content.contentSet[0]);
     });
   }
 
