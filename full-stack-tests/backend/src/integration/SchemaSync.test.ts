@@ -5,13 +5,14 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, CloudSqlite, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, DbResult, Guid, OpenMode } from "@itwin/core-bentley";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
 import { EOL } from "os";
-import { ChangesetType } from "@itwin/core-common";
+import { ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 const storageType = "azure" as const;
 interface TinySchemaRef {
   name: string;
@@ -1033,6 +1034,218 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
+    HubMock.shutdown();
+  });
+
+  it("revert timeline changes", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const iTwinId = HubMock.iTwinId;
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const b1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    assert.isTrue(SchemaSync.isEnabled(b1));
+    assert.isTrue(SchemaSync.isEnabled(b2));
+
+    let nProps = 0;
+    // 1. Import schema with class that span overflow table.
+    const addPropertyAndImportSchema = async (b: BriefcaseDb) => {
+      ++nProps;
+      const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00.${nProps}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            ${Array(nProps).fill(undefined).map((_, i) => `<ECProperty propertyName="p${i + 1}" typeName="string"/>`).join("\n")}
+        </ECEntityClass>
+    </ECSchema>`;
+      await b.importSchemaStrings([schema]);
+    };
+    await addPropertyAndImportSchema(b1);
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(b1, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(b1, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: "setup category", accessToken: adminToken });
+
+    const createEl = async (args: { [key: string]: any }) => {
+      await b1.locks.acquireLocks({ exclusive: drawingModelId });
+      const geomArray: Arc3d[] = [
+        Arc3d.createXY(Point3d.create(0, 0), 5),
+        Arc3d.createXY(Point3d.create(5, 5), 2),
+        Arc3d.createXY(Point3d.create(-5, -5), 20),
+      ];
+
+      const geometryStream: GeometryStreamProps = [];
+      for (const geom of geomArray) {
+        const arcData = IModelJson.Writer.toIModelJson(geom);
+        geometryStream.push(arcData);
+      }
+
+      const e1 = {
+        classFullName: `TestDomain:Test2dElement`,
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        geom: geometryStream,
+        ...args,
+      };
+      return b1.elements.insertElement(e1);;
+    };
+    const updateEl = async (id: Id64String, args: { [key: string]: any }) => {
+      await b1.locks.acquireLocks({ exclusive: id });
+      const updatedElementProps = Object.assign(b1.elements.getElementProps(id), args);
+      b1.elements.updateElement(updatedElementProps);
+    };
+
+    const deleteEl = async (id: Id64String) => {
+      await b1.locks.acquireLocks({ exclusive: id });
+      b1.elements.deleteElement(id);
+    };
+    const getChanges = async () => {
+      return HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir: path.join(KnownTestLocations.outputDir, rwIModelId, "changesets") });
+    };
+
+    const findEl = (id: Id64String, b = b1) => {
+      try {
+        return b.elements.getElementProps(id);
+      } catch (e) {
+        return undefined;
+      }
+    };
+    // 2. Insert a element for the class
+    const el1 = await createEl({ p1: "test1" });
+    const el2 = await createEl({ p1: "test2" });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert 2 elements" });
+
+    // 3. Update the element.
+    await updateEl(el1, { p1: "test3" });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update element 1" });
+
+    // 4. Delete the element.
+    await deleteEl(el2);
+    const el3 = await createEl({ p1: "test4" });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "delete element 2" });
+
+    // 5. import schema and insert element 4 & update element 3
+    await addPropertyAndImportSchema(b1);
+    const el4 = await createEl({ p1: "test5", p2: "test6" });
+    await updateEl(el3, { p1: "test7", p2: "test8" });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "import schema, insert element 4 & update element 3" });
+
+    assert.isDefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isDefined(findEl(el3));
+    assert.isDefined(findEl(el4));
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
+    // 6. Revert to timeline 2
+    await b2.revertAndPushChanges({ toIndex: 3, description: "revert to timeline 2" });
+
+    assert.equal((await getChanges()).at(-1)!.description, "revert to timeline 2");
+    await b1.pullChanges();
+    assert.isUndefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isUndefined(findEl(el3));
+    assert.isUndefined(findEl(el4));
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
+
+    await b2.revertAndPushChanges({ toIndex: 7, description: "reinstate last reverted changeset" });
+    assert.equal((await getChanges()).at(-1)!.description, "reinstate last reverted changeset");
+    await b1.pullChanges();
+    assert.isDefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isDefined(findEl(el3));
+    assert.isDefined(findEl(el4));
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
+
+    await addPropertyAndImportSchema(b1);
+    const el5 = await createEl({ p1: "test9", p2: "test10", p3: "test11" });
+    await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "import schema, insert element 5 & update element 1" });
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+
+    // skip schema changes & auto generated comment
+    await b1.revertAndPushChanges({ toIndex: 2, skipSchemaChanges: true });
+    assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 9 to 2 (schema changes skipped)");
+    assert.isUndefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isUndefined(findEl(el3));
+    assert.isUndefined(findEl(el4));
+    assert.isUndefined(findEl(el5));
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+
+    await b1.revertAndPushChanges({ toIndex: 10 });
+    assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 10 to 10 (schema changes skipped)");
+    assert.isDefined(findEl(el1));
+    assert.isUndefined(findEl(el2));
+    assert.isDefined(findEl(el3));
+    assert.isDefined(findEl(el4));
+    assert.isDefined(findEl(el5));
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+
+    // schema sync should be skip for revert
+    await b2.pullChanges();
+    const b3 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    assert.isTrue(SchemaSync.isEnabled(b3));
+
+    await addPropertyAndImportSchema(b1);
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    // b3 should get new property via schema sync
+    await b3.pullChanges();
+    assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    // b2 should not see new property even after revert
+    assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+    await b2.revertAndPushChanges({ toIndex: 11 });
+    assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 11 to 11 (schema changes skipped)");
+    assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
+
+    await b1.pullChanges();
+    await b2.pullChanges();
+    await b3.pullChanges();
+
+    assert.isUndefined(findEl(el1, b1));
+    assert.isUndefined(findEl(el2, b1));
+    assert.isUndefined(findEl(el3, b1));
+    assert.isUndefined(findEl(el4, b1));
+    assert.isUndefined(findEl(el5, b1));
+    assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    assert.isUndefined(findEl(el1, b2));
+    assert.isUndefined(findEl(el2, b2));
+    assert.isUndefined(findEl(el3, b2));
+    assert.isUndefined(findEl(el4, b2));
+    assert.isUndefined(findEl(el5, b2));
+    assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    assert.isUndefined(findEl(el1, b3));
+    assert.isUndefined(findEl(el2, b3));
+    assert.isUndefined(findEl(el3, b3));
+    assert.isUndefined(findEl(el4, b3));
+    assert.isUndefined(findEl(el5, b3));
+    assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
+
+    b1.close();
+    b2.close();
+    b3.close();
     HubMock.shutdown();
   });
 });
