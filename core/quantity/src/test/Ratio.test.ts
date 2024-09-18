@@ -20,7 +20,7 @@ describe("Ratio format tests", () => {
       composite: {
         includeZero: true,
         units: [
-          { name: presentationUnitStr}, // presentation unit
+          { name: presentationUnitStr }, // presentation unit
         ],
       },
     };
