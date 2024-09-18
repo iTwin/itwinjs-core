@@ -6,7 +6,7 @@
  * @module Geometry
  */
 import { flatbuffers } from "flatbuffers";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { BentleyStatus, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
@@ -150,6 +150,48 @@ export interface ElementGeometryBuilderParamsForPart {
   entryArray: ElementGeometryDataEntry[];
   /** If true, create geometry part with 2d geometry */
   is2dPart?: boolean;
+}
+
+/** Request parameters for [IModelDb.updateElementGeometryCache]($core-backend)
+ * @beta
+ */
+export interface ElementGeometryCacheRequestProps {
+  /** Geometric element to populate geometry cache for. Clear cache for all elements when undefined. */
+  id?: Id64String;
+}
+
+/** Response parameters for [IModelDb.updateElementGeometryCache]($core-backend)
+ * @beta
+ */
+export interface ElementGeometryCacheResponseProps {
+  /** Cache creation status */
+  status: BentleyStatus;
+  /** Count of displayable entries in element's geometry stream */
+  numGeom?: number;
+  /** Count of part references in element's geometry stream */
+  numPart?: number;
+  /** Count of solid/volumetric geometry in element's geometry stream */
+  numSolid?: number;
+  /** Count of surface/region geometry in element's geometry stream */
+  numSurface?: number;
+  /** Count of curve/path geometry in element's geometry stream */
+  numCurve?: number;
+  /** Count of text/image/non-geometric displayable entries in element's geometry stream */
+  numOther?: number;
+}
+
+/** Request parameters for [IModelDb.elementGeometryCacheOperation]($core-backend)
+ * @beta
+ */
+export interface ElementGeometryCacheOperationRequestProps {
+  /** Target element id, tool element ids can be supplied by parameters... */
+  id: Id64String;
+  /** Requested operation */
+  op: number;
+  /** Parameters for operation */
+  params?: any;
+  /** Callback for result when element's geometry stream is requested in flatbuffer or graphic formats */
+  onGeometry?: ElementGeometryFunction;
 }
 
 /** Values for [[BRepGeometryCreate.operation]]
