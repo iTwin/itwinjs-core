@@ -9,9 +9,9 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
@@ -223,6 +223,15 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
+  }
+  public async openSnapshot(filePath: string, opts?: SnapshotOpenOptions | undefined): Promise<IModelConnectionProps> {
+    let resolvedFileName: string | undefined = filePath;
+    if (IModelHost.snapshotFileNameResolver) {
+      resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath);
+      if (!resolvedFileName)
+        throw new IModelNotFoundResponse();
+    }
+    return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
   }
   public async closeIModel(key: string): Promise<void> {
     IModelDb.findByKey(key).close();

@@ -35,6 +35,7 @@ import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
+import { IpcApp } from "./IpcApp";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -776,28 +777,30 @@ export class SnapshotConnection extends IModelConnection {
   private _isRemote?: boolean;
 
   /** Open an IModelConnection to a read-only snapshot iModel from a file name.
-   * @note This method is intended for desktop or mobile applications and should not be used for web applications.
+   * @note This method is intended for desktop or mobile applications and is not available for web applications.
    */
   public static async openFile(filePath: string): Promise<SnapshotConnection> {
-    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    RpcManager.setIModel({ iModelId: "undefined", key: filePath });
+    if (!IpcApp.isValid)
+      throw new Error("IPC required to open a snapshot");
 
-    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
-    const connection = new SnapshotConnection(openResponse);
-    connection.routingContext = routingContext;
+
+    const connectionProps = await IpcApp.appFunctionIpc.openSnapshot(filePath);
+    const connection = new SnapshotConnection(connectionProps);
     IModelConnection.onOpen.raiseEvent(connection);
+
     return connection;
   }
 
   /** Open an IModelConnection to a remote read-only snapshot iModel from a key that will be resolved by the backend.
    * @note This method is intended for web applications.
+   * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     RpcManager.setIModel({ iModelId: "undefined", key: fileKey });
 
-    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey);
+    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey); // eslint-disable-line deprecation/deprecation
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
     const connection = new SnapshotConnection(openResponse);
     connection.routingContext = routingContext;
@@ -818,7 +821,7 @@ export class SnapshotConnection extends IModelConnection {
     this.beforeClose();
     try {
       if (!this.isRemote) {
-        await SnapshotIModelRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps());
+        await IpcApp.appFunctionIpc.closeIModel(this.key);
       }
     } finally {
       this._isClosed = true;
