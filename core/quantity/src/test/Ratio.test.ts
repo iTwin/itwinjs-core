@@ -242,9 +242,10 @@ describe("Ratio format tests", () => {
 
   describe("specific parse ratio string tests", () => {
     async function testRatioParser(
-      testData: { output: number, inputRatio: string, precision?: number, parseError?: ParseError }[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName
-    ) {
-
+      testData: { output: number, inputRatio: string, precision?: number, parseError?: ParseError }[],
+      presentationUnitStr: string = vHUnitName,
+      persistenceUnitStr: string = vHUnitName,
+    ): Promise<void> {
       const ratioJson: FormatProps = {
         type: "Ratio",
         ratioType: "NToOne",
@@ -256,29 +257,35 @@ describe("Ratio format tests", () => {
 
       const unitsProvider = new TestUnitsProvider();
       const ratioFormat = new Format("Ratio");
-      await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
-      assert.isTrue(ratioFormat.hasUnits);
+
+      try {
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+      } catch (error) {
+        assert.fail("Failed to create ratio format from JSON");
+      }
+
+      assert.isTrue(ratioFormat.hasUnits, "Ratio format should have units");
 
       const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(persistenceUnitStr);
-      assert.isTrue(persistenceUnit.isValid);
+      assert.isTrue(persistenceUnit.isValid, "Persistence unit should be valid");
 
       const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
-      for (const entry of testData) {
-        const parserRatioResult = Parser.parseQuantityString(entry.inputRatio, ratioParser);
 
-        if (entry.parseError) { // if it is expecting an error
-          assert.isTrue(Parser.isParseError(parserRatioResult));
-          // Check if parserRatioResult has the err property, which signifies a ParseQuantityError
-          if ("error" in parserRatioResult)
-            expect(parserRatioResult.error).to.equal(entry.parseError);
-          else
-            assert.fail(`Expected parse error for input ratio string ${entry.inputRatio}`);
+      for (const { output, inputRatio, parseError } of testData) {
+        const parserRatioResult = Parser.parseQuantityString(inputRatio, ratioParser);
 
+        if (parseError) {
+          assert.isTrue(Parser.isParseError(parserRatioResult), `Expected parse error for input ratio string ${inputRatio}`);
+          if ("error" in parserRatioResult) {
+            expect(parserRatioResult.error).to.equal(parseError);
+          } else {
+            assert.fail(`Expected parse error for input ratio string ${inputRatio}`);
+          }
         } else {
-          if (!Parser.isParsedQuantity(parserRatioResult))
-            assert.fail(`Expected a parsed from ratio string ${entry.inputRatio}`);
-
-          expect(parserRatioResult.value).to.equal(entry.output);
+          if (!Parser.isParsedQuantity(parserRatioResult)) {
+            assert.fail(`Expected a parsed quantity from ratio string ${inputRatio}`);
+          }
+          expect(parserRatioResult.value).to.equal(output);
         }
       }
     }
