@@ -72,6 +72,6 @@ describe("Phenomenon merger tests", () => {
           },
         },
       ],
-    })).to.be.rejectedWith("The Phenomenon testPhenomenon has an invalid 'definition' attribute.");
+    })).rejects.toThrow("The Phenomenon testPhenomenon has an invalid 'definition' attribute.");
   });
 });

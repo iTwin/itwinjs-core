@@ -31,12 +31,13 @@ describe("Schema merge tests", () => {
       differences: [],
     });
 
-    await expect(merge).to.be.rejectedWith(SchemaConflictsError, "Schema's can't be merged if there are unresolved conflicts.")
-      .then((error: SchemaConflictsError) => {
-        expect(error.sourceSchema.name).equals("SourceSchema", "Unexpected source schema name");
-        expect(error.targetSchema.name).equals("TargetSchema", "Unexpected target schema name");
-        expect(error.conflicts).includes(conflict);
-      });
+    await expect(merge).rejects.toThrow(SchemaConflictsError);
+    await merge.catch((error: SchemaConflictsError) => {
+      expect(error.message).toBe("Schema's can't be merged if there are unresolved conflicts.");
+      expect(error.sourceSchema.name).toBe("SourceSchema");
+      expect(error.targetSchema.name).toBe("TargetSchema");
+      expect(error.conflicts).toContain(conflict);
+    });
   });
 
   it("should merge label and description from schema", async () => {

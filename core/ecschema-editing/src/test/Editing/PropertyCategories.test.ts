@@ -21,8 +21,8 @@ describe("Property Category tests", () => {
   it("should create a valid PropertyCategory", async () => {
     const result = await testEditor.propertyCategories.create(testKey, "testPropCategory", 5);
     const testPropCategory = await testEditor.schemaContext.getSchemaItem(result) as PropertyCategory;
-    expect(testPropCategory.priority).to.eql(5);
-    expect(testPropCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
+    expect(testPropCategory.priority).toBe(5);
+    expect(testPropCategory.schemaItemType).toBe(SchemaItemType.PropertyCategory);
   });
 
   it("should create a valid Property Category from props", async () => {
@@ -33,26 +33,30 @@ describe("Property Category tests", () => {
     };
     const result = await testEditor.propertyCategories.createFromProps(testKey, propCatProps);
     const testPropCategory = await testEditor.schemaContext.getSchemaItem(result) as PropertyCategory;
-    expect(testPropCategory.priority).to.eql(9);
-    expect(testPropCategory.label).to.eql("testLbl");
-    expect(testPropCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
+    expect(testPropCategory.priority).toBe(9);
+    expect(testPropCategory.label).toBe("testLbl");
+    expect(testPropCategory.schemaItemType).toBe(SchemaItemType.PropertyCategory);
   });
 
   it("try creating PropertyCategory to unknown schema, throws error", async () => {
     const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.propertyCategories.create(badKey, "testPropCategory", 5)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+    await expect(testEditor.propertyCategories.create(badKey, "testPropCategory", 5)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: expect.objectContaining({
+        message: `Schema Key ${badKey.toString(true)} could not be found in the context.`,
+        errorNumber: ECEditingStatus.SchemaNotFound,
+      }),
     });
   });
 
   it("try creating PropertyCategory with existing name, throws error", async () => {
     await testEditor.propertyCategories.create(testKey, "testPropCategory", 5);
-    await expect(testEditor.propertyCategories.create(testKey, "testPropCategory", 5)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `PropertyCategory testSchema.testPropCategory already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    await expect(testEditor.propertyCategories.create(testKey, "testPropCategory", 5)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: expect.objectContaining({
+        message: `PropertyCategory testSchema.testPropCategory already exists in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNameAlreadyExists,
+      }),
     });
   });
 });

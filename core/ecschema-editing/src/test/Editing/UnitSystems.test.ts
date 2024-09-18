@@ -26,26 +26,30 @@ describe("UnitSystems tests", () => {
     };
     const result = await testEditor.unitSystems.createFromProps(testKey, unitSystemProps);
     const testUnitSystem = await testEditor.schemaContext.getSchemaItem(result) as UnitSystem;
-    expect(testUnitSystem.schemaItemType).to.eql(SchemaItemType.UnitSystem);
-    expect(testUnitSystem.fullName).to.eql("testSchema.testUnitSystem");
-    expect(testUnitSystem.label).to.eql("testDec");
+    expect(testUnitSystem.schemaItemType).toBe(SchemaItemType.UnitSystem);
+    expect(testUnitSystem.fullName).toBe("testSchema.testUnitSystem");
+    expect(testUnitSystem.label).toBe("testDec");
   });
 
-  it("try creating Unit to unknown schema, throws error", async () => {
-    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.unitSystems.create(badKey, "testUnitSystem", "testDefinition")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+  it("try creating UnitSystem to unknown schema, throws error", async () => {
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
+    await expect(testEditor.unitSystems.create(badKey, "testUnitSystem", "testDefinition")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: expect.objectContaining({
+        message: `Schema Key ${badKey.toString(true)} could not be found in the context.`,
+        errorNumber: ECEditingStatus.SchemaNotFound,
+      }),
     });
   });
 
-  it("try creating Unit with existing name, throws error", async () => {
+  it("try creating UnitSystem with existing name, throws error", async () => {
     await testEditor.unitSystems.create(testKey, "testUnitSystem", "testDefinition");
-    await expect(testEditor.unitSystems.create(testKey, "testUnitSystem", "testDefinition")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `UnitSystem testSchema.testUnitSystem already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    await expect(testEditor.unitSystems.create(testKey, "testUnitSystem", "testDefinition")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: expect.objectContaining({
+        message: `UnitSystem testSchema.testUnitSystem already exists in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNameAlreadyExists,
+      }),
     });
   });
 });

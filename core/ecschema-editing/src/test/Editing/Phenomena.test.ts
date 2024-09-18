@@ -40,19 +40,23 @@ describe("Phenomenons tests", () => {
 
   it("try creating Phenomenon class to unknown schema, throws error", async () => {
     const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.phenomenons.create(badKey, "testPhenomenon", "Units.LENGTH(2)")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+    await expect(testEditor.phenomenons.create(badKey, "testPhenomenon", "Units.LENGTH(2)")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: expect.objectContaining({
+        message: `Schema Key ${badKey.toString(true)} could not be found in the context.`,
+        errorNumber: ECEditingStatus.SchemaNotFound,
+      }),
     });
   });
 
   it("try creating Phenomenon with existing name, throws error", async () => {
     await testEditor.phenomenons.create(testKey, "testPhenomenon", "Units.LENGTH(2)");
-    await expect(testEditor.phenomenons.create(testKey, "testPhenomenon", "Units.LENGTH(2)")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Phenomenon testSchema.testPhenomenon already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    await expect(testEditor.phenomenons.create(testKey, "testPhenomenon", "Units.LENGTH(2)")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: expect.objectContaining({
+        message: `Phenomenon testSchema.testPhenomenon already exists in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNameAlreadyExists,
+      }),
     });
   });
 });
