@@ -227,3 +227,62 @@ This format specifies units which have labels that are intentionally missing or 
       }
     }
 ```
+
+This is an example of ratio format. The ratioType is specified to OneToN and the presentation unit is set to horizontal_per_vertical
+
+
+```json
+  "MyRatioFormat": {
+    "type": "Ratio",
+    "ratioType": "OneToN",  // Formats the ratio in "1:N" form
+    "composite": {
+        "includeZero": true,
+        "units": [
+            { "name": "Units.HORIZONTAL_PER_VERTICAL" },
+        ],
+    },
+};
+```
+
+
+This is an example of bearing format. It defines a Bearing type for angles, breaking them into degrees, minutes, and seconds, separated by colons (:)
+
+
+```json
+  "MyBearingFormat": {
+      "minWidth": 2,
+      "type": "Bearing",
+      "revolutionUnit": "Units.REVOLUTION",
+      "composite": {
+        "includeZero": true,
+        "spacer": ":",
+        "units": [
+          { "name": "Units.ARC_DEG" },
+          { "name": "Units.ARC_MINUTE" },
+          { "name": "Units.ARC_SECOND" },
+        ],
+      },
+};
+```
+
+
+This is an example of an Azimuth format in decimal notation. It formats angles in degrees with 3 decimal places, includes trailing zeroes, and appends a degree symbol (°) without additional spacing.
+
+
+```json
+    "MyAzimuthDecimalFormat": {
+      "formatTraits": ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      "minWidth": 6,
+      "precision": 3,
+      "type": "Azimuth",
+      "uomSeparator": "",
+      "revolutionUnit": "Units.REVOLUTION",
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [
+          { "name": "Units.ARC_DEG", "label": "°" }
+        ],
+      },
+  }
+```
