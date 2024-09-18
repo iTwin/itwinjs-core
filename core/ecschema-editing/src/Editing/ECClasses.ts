@@ -307,7 +307,6 @@ export class ECClasses extends SchemaItems {
 
       // Create change info object to allow for edit cancelling
       const editInfo = new SetBaseClassEdit(classItem, baseClassItem, await classItem.baseClass, elements);
-      this.schemaEditor.addEditInfo(editInfo);
 
       // Callback returns false to cancel the edit.
       if (!(await this.schemaEditor.beginEdit(editInfo)))

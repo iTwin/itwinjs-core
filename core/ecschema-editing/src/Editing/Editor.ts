@@ -70,46 +70,31 @@ export class SchemaContextEditor {
     return this._currentEdits;
   }
 
-  public async finish(): Promise<ISchemaEditInfo[]> {
-    const edits = this._currentEdits.slice();
-    this._currentEdits = [];
-    return edits;
-  }
-
   /**
-   * Adds a ISchemaEditInfo object to the editor context.
-   * @param changeInfo The ISchemaEditInfo to add.
-   */
-  public addEditInfo(changeInfo: ISchemaEditInfo) {
-    this._currentEdits.push(changeInfo);
-  }
-
-  /**
-   * Removes the given ISchemaEditInfo instance from the current collection of edits.
-   * @param editInfo The ISchemaEditInfo instance to remove.
-   */
-  public removeEdit(editInfo: ISchemaEditInfo) {
-    const index = this._currentEdits.indexOf(editInfo);
-    if (-1 === index)
-      return;
-
-    this._currentEdits = this._currentEdits.splice(index, 1);
-  }
-
-  /**
-   * Calls the beginEditCallback function.
+   * Calls the beginEditCallback function. If the callback returns true, the edit information will
+   * added to the editor context for tracking. Always returns true if no callback is specified in
+   * the edit options.
    * @returns True if the edit should continue, false otherwise.
    */
   public async beginEdit(editInfo: ISchemaEditInfo): Promise<boolean> {
     // Edit continues if no callback is available
-    if (!editInfo.editOptions || !editInfo.editOptions.beginEditCallback)
+    if (!editInfo.editOptions || !editInfo.editOptions.beginEditCallback) {
+      this._currentEdits.push(editInfo);
       return true;
+    }
 
     const startEdit = await editInfo.editOptions.beginEditCallback(editInfo);
-    if (!startEdit) {
-      this.editCancelled(editInfo);
+    if (startEdit) {
+      this._currentEdits.push(editInfo);
     }
+
     return startEdit;
+  }
+
+  public async finish(): Promise<ISchemaEditInfo[]> {
+    const edits = this._currentEdits.slice();
+    this._currentEdits = [];
+    return edits;
   }
 
   /**
@@ -332,10 +317,5 @@ export class SchemaContextEditor {
 
     return schema;
   }
-
-  private async editCancelled(change: ISchemaEditInfo): Promise<void> {
-    this.removeEdit(change);
-  }
-
 }
 

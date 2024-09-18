@@ -92,7 +92,6 @@ export class Properties {
 
     // Create change info object to allow for edit cancelling and change reversal.
     const editInfo = new RenamePropertyEdit(existingProperty.class, newPropertyName, propertyName, elements);
-    this._schemaEditor.addEditInfo(editInfo);
 
     // Callback returns false to cancel the edit.
     if (!(await this._schemaEditor.beginEdit(editInfo)))
@@ -164,7 +163,8 @@ export class Properties {
       });
 
     const editInfo = new NumberAttributeEdit(SchemaEditType.SetPriority, priority, property.priority, property);
-    this._schemaEditor.addEditInfo(editInfo);
+    if (!this._schemaEditor.beginEdit(editInfo))
+      return;
 
     property.setPriority(priority);
   }
