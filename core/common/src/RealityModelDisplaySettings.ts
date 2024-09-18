@@ -293,9 +293,6 @@ export class RealityModelDisplaySettings {
     const overrideColorRatio = this.overrideColorRatio === RealityModelDisplaySettings.defaults.overrideColorRatio ? undefined : this.overrideColorRatio;
     const visible = this.visible === RealityModelDisplaySettings.defaults.visible ? undefined : this.visible;
 
-    if (undefined === pointCloud && undefined === overrideColorRatio)
-      return undefined;
-
     const props: RealityModelDisplayProps = { };
     if (undefined !== pointCloud)
       props.pointCloud = pointCloud;
@@ -306,7 +303,7 @@ export class RealityModelDisplaySettings {
     if (undefined !== visible)
       props.visible = visible;
 
-    return props;
+    return Object.keys(props).length === 0 ? undefined : props;
   }
 
   /** Returns true if these settings are identical to `other`. */
