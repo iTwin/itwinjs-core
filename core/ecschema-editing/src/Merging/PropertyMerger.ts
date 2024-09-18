@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import type { SchemaMergeContext } from "./SchemaMerger";
-import type { ClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
+import type { AnyClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
 import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./SchemaItemMerger";
+import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
 import { ECClasses } from "../Editing/ECClasses";
@@ -34,7 +34,7 @@ export async function mergePropertyDifference(context: SchemaMergeContext, chang
 /**
  * @internal
  */
-export async function mergeClassProperties(context: SchemaMergeContext, change: ClassItemDifference, itemKey: SchemaItemKey): Promise<void> {
+export async function mergeClassProperties(context: SchemaMergeContext, change: AnyClassItemDifference, itemKey: SchemaItemKey): Promise<void> {
   for (const property of change.difference.properties || []) {
     await mergeClassProperty(context, change, itemKey, property);
   }

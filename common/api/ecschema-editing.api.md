@@ -76,6 +76,9 @@ import { Unit } from '@itwin/ecschema-metadata';
 import { UnitSystem } from '@itwin/ecschema-metadata';
 import { UnitSystemProps } from '@itwin/ecschema-metadata';
 
+// @alpha
+export type AnyClassItemDifference = EntityClassDifference | MixinClassDifference | StructClassDifference | CustomAttributeClassDifference | RelationshipClassDifference;
+
 // @beta
 export type AnyDiagnostic = IDiagnostic<AnyECType, any[]>;
 
@@ -92,7 +95,7 @@ export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference |
 export type AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit;
 
 // @alpha
-export type AnySchemaItemDifference = ClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference;
+export type AnySchemaItemDifference = AnyClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference;
 
 // @alpha
 export type AnySchemaItemPathDifference = RelationshipConstraintDifference | RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference;
@@ -177,9 +180,6 @@ export class ClassId extends SchemaItemId implements IClassIdentifier {
     // (undocumented)
     readonly typeIdentifier = SchemaTypeIdentifiers.ClassIdentifier;
 }
-
-// @alpha
-export type ClassItemDifference = EntityClassDifference | MixinClassDifference | StructClassDifference | CustomAttributeClassDifference | RelationshipClassDifference;
 
 // @alpha
 export interface ClassPropertyDifference {
@@ -1310,7 +1310,7 @@ export interface ISchemaTypeIdentifier {
 }
 
 // @alpha
-export function isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference;
+export function isClassDifference(difference: AnySchemaDifference): difference is AnyClassItemDifference;
 
 // @alpha
 export function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference;

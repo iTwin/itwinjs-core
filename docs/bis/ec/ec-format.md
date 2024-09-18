@@ -87,7 +87,7 @@ Supported scientific type:
 - `normalized`
 - `zeroNormalized`
 
-**RatioType** determines the type of ratio format to use. Only valid and its required when the type is ratio.
+**ratioType** determines the type of ratio format to use. Only valid and is required when the type is ratio.
 
 Supported ratio type:
 
