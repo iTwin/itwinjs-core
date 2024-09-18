@@ -2,84 +2,52 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { primitiveTypeToString, SchemaItemKey } from "@itwin/ecschema-metadata";
-import type { EnumerationDifference, EnumeratorDifference } from "../Differencing/SchemaDifference";
-import type { SchemaItemMergerHandler } from "./SchemaItemMerger";
+import { primitiveTypeToString, type SchemaItemKey } from "@itwin/ecschema-metadata";
+import type { EnumerationDifference } from "../Differencing/SchemaDifference";
+import type { SchemaMergeContext } from "./SchemaMerger";
 import type { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
 
 /**
- * Defines a merge handler to merge Enumeration schema items.
+ * Merges a new Enumeration into the target schema.
  * @internal
  */
-export const enumerationMerger: SchemaItemMergerHandler<EnumerationDifference> = {
-  async add(context, change: EnumerationDifference) {
-    if (change.difference.type === undefined) {
-      throw new Error("Enumerations must define a type property");
-    }
-    if (change.difference.isStrict === undefined) {
-      throw new Error("Enumerations must define whether enumeration is strict.");
-    }
-    if (change.difference.enumerators === undefined) {
-      throw new Error("Enumerations must define at least ine enumerator.");
-    }
+export async function addEnumeration(context: SchemaMergeContext, change: EnumerationDifference) {
+  if (change.difference.type === undefined) {
+    throw new Error("Enumerations must define a type property");
+  }
+  if (change.difference.isStrict === undefined) {
+    throw new Error("Enumerations must define whether enumeration is strict.");
+  }
+  if (change.difference.enumerators === undefined) {
+    throw new Error("Enumerations must define at least ine enumerator.");
+  }
 
-    return context.editor.enumerations.createFromProps(context.targetSchemaKey, {
-      ...change.difference,
-      name: change.itemName,
-      schemaItemType: change.schemaType,
-      type: change.difference.type,
-      isStrict: change.difference.isStrict,
-      enumerators: change.difference.enumerators,
-    });
-  },
-  async modify(_context, change, itemKey, item: MutableEnumeration) {
-    if(change.difference.type !== undefined) {
-      throw new Error(`The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(item.type!)}", not "${change.difference.type}".`);
-    }
-    if(change.difference.label !== undefined) {
-      item.setDisplayLabel(change.difference.label);
-    }
-    if(change.difference.description !== undefined) {
-      item.setDescription(change.difference.description);
-    }
-    if(change.difference.isStrict !== undefined) {
-      item.setIsStrict(change.difference.isStrict);
-    }
-  },
-};
+  await context.editor.enumerations.createFromProps(context.targetSchemaKey, {
+    ...change.difference,
+    name: change.itemName,
+    schemaItemType: change.schemaType,
+    type: change.difference.type,
+    isStrict: change.difference.isStrict,
+    enumerators: change.difference.enumerators,
+  });
+}
 
 /**
- * Defines a merge handler to merge Enumeration schema items.
+ * Merges differences to an existing Enumeration in the target schema.
  * @internal
  */
-export const enumeratorMerger: SchemaItemMergerHandler<EnumeratorDifference> = {
-  async add(context, change) {
-    if (change.difference.name === undefined) {
-      throw new Error("Enumerators must define a name");
-    }
-    if (change.difference.value === undefined) {
-      throw new Error("Enumerators must define a value");
-    }
-
-    const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-    await context.editor.enumerations.addEnumerator(itemKey, {
-      name: change.difference.name,
-      value: change.difference.value,
-      label: change.difference.label,
-      description: change.difference.description,
-    });
-    return itemKey;
-  },
-  async modify(context, change, itemKey) {
-    if(change.difference.value !== undefined) {
-      throw new Error(`Failed to merge enumerator attribute, Enumerator "${change.path}" has different values.`);
-    }
-
-    if(change.difference.description !== undefined) {
-      await context.editor.enumerations.setEnumeratorDescription(itemKey, change.path, change.difference.description);
-    }
-    if(change.difference.label !== undefined) {
-      await context.editor.enumerations.setEnumeratorLabel(itemKey, change.path, change.difference.label);
-    }
-  },
-};
+export async function modifyEnumeration(context: SchemaMergeContext, change: EnumerationDifference, itemKey: SchemaItemKey) {
+  const enumeration = await context.targetSchema.lookupItem(itemKey) as MutableEnumeration;
+  if(change.difference.type !== undefined) {
+    throw new Error(`The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(enumeration.type!)}", not "${change.difference.type}".`);
+  }
+  if(change.difference.label !== undefined) {
+    await context.editor.enumerations.setDisplayLabel(itemKey, change.difference.label);
+  }
+  if(change.difference.description !== undefined) {
+    await context.editor.enumerations.setDescription(itemKey, change.difference.description);
+  }
+  if(change.difference.isStrict !== undefined) {
+    enumeration.setIsStrict(change.difference.isStrict);
+  }
+}

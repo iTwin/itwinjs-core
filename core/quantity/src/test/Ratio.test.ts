@@ -27,7 +27,7 @@ describe("Ratio format tests", () => {
       composite: {
         includeZero: true,
         units: [
-          { name: presentationUnitStr}, // presentation unit
+          { name: presentationUnitStr }, // presentation unit
         ],
       },
     };
@@ -250,7 +250,7 @@ describe("Ratio format tests", () => {
       const testData: TestData[] = [
         { magnitude: 1.0 / 7, ratio: "143:1000" },
         { magnitude: 2.0 / 7, ratio: "143:500" }, // comes down from 286:1000
-        { magnitude: 1.0 / 7, ratio: "1429:10000", precision: 4}, 
+        { magnitude: 1.0 / 7, ratio: "1429:10000", precision: 4},
         { magnitude: 2.0 / 7, ratio: "2857:10000", precision: 4},
       ];
       await testRatioType("useGreatestCommonDivisor", testData);
@@ -273,11 +273,17 @@ describe("Ratio format tests", () => {
 
       const unitsProvider = new TestUnitsProvider();
       const ratioFormat = new Format("Ratio");
-      await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
-      assert.isTrue(ratioFormat.hasUnits);
+
+      try {
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+      } catch (error) {
+        assert.fail("Failed to create ratio format from JSON");
+      }
+
+      assert.isTrue(ratioFormat.hasUnits, "Ratio format should have units");
 
       const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(persistenceUnitStr);
-      assert.isTrue(persistenceUnit.isValid);
+      assert.isTrue(persistenceUnit.isValid, "Persistence unit should be valid");
 
       const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
       for (const entry of testData) {
