@@ -350,18 +350,18 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
       viewMatrix4.m21 = viewMatrix3d.at(2, 1);
       viewMatrix4.m22 = viewMatrix3d.at(2, 2);
 
-      viewMatrix4.m30 = eyePoint.x;
-      viewMatrix4.m31 = eyePoint.y;
-      viewMatrix4.m32 = eyePoint.z;
+      const translationMatrix = Matrix4.fromIdentity();
+      translationMatrix.m30 = -eyePoint.x;
+      translationMatrix.m31 = -eyePoint.y;
+      translationMatrix.m32 = -eyePoint.z;
 
-      console.log(viewMatrix4);
-
-      const invViewMatrix = Matrix4.fromInverse(viewMatrix4);
+      const combinedMatrix = Matrix4.fromProduct(viewMatrix4, translationMatrix);
+      const invViewMatrix = Matrix4.fromInverse(combinedMatrix);
       if (invViewMatrix) {
         uniform.setMatrix4(invViewMatrix);
       }
 
-      // console.log(invViewMatrix);
+      console.log(invViewMatrix);
 
     });
   }, VariablePrecision.High);
