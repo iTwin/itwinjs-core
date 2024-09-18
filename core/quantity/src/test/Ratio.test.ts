@@ -102,7 +102,6 @@ describe("Ratio format tests", () => {
         { magnitude: 0.25, ratio: "1:4" },
         { magnitude: 4, ratio: "4:1" },
         { magnitude: 0.6667, ratio: "1:1.5" },
-
       ];
       await testRatioType("ValueBased", testData);
     });
@@ -117,6 +116,7 @@ describe("Ratio format tests", () => {
         { magnitude: 0.2857, ratio: "143:500" },
         { magnitude: 0.25, ratio: "1:4" },
         { magnitude: 0.6667, ratio: "667:1000" },
+
       ];
       await testRatioType("UseGreatestCommonDivisor", testData);
     });
@@ -132,6 +132,11 @@ describe("Ratio format tests", () => {
         { magnitude: 3, ratio: "1:0.333", precision: 3 },
         { magnitude: 3, ratio: "1:0.3333", precision: 4 },
 
+        { magnitude: 0.667, ratio: "1:1.49925", precision: 5},
+        { magnitude: 0.667, ratio: "1:1.4993", precision: 4},
+        { magnitude: 0.667, ratio: "1:1.499", precision: 3},
+        { magnitude: 0.667, ratio: "1:1.5", precision: 2},
+        { magnitude: 0.667, ratio: "1:1.5", precision: 1},
       ];
       await testRatioType("OneToN", testData);
     });
@@ -216,6 +221,8 @@ describe("Ratio format tests", () => {
 
     it("large/small value", async () => {
       const testData: TestData[] = [
+        { magnitude: 0.0004, ratio: "0:1" },
+        { magnitude: 0.0005, ratio: "0.001:1" }, // threshold due to precision3
         { magnitude: 0.00000001, ratio: "0:1" },
         { magnitude: 100000000, ratio: "100000000:1" },
       ];
@@ -242,7 +249,9 @@ describe("Ratio format tests", () => {
     it("irrational number", async () => {
       const testData: TestData[] = [
         { magnitude: 1.0 / 7, ratio: "143:1000" },
-        { magnitude: 2.0 / 7, ratio: "143:500" }, // loses precision from 0.28571428571 to 0.286
+        { magnitude: 2.0 / 7, ratio: "143:500" }, // comes down from 286:1000
+        { magnitude: 1.0 / 7, ratio: "1429:10000", precision: 4}, 
+        { magnitude: 2.0 / 7, ratio: "2857:10000", precision: 4},
       ];
       await testRatioType("useGreatestCommonDivisor", testData);
     });
