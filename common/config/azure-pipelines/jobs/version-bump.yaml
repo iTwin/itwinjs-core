@@ -269,8 +269,8 @@ jobs:
           git config --local user.name imodeljs-admin
         displayName: "Setup Git"
 
-      - bash: git checkout --track origin/$(Build.SourceBranchName)
-        displayName: Switching to source branch
+      # - bash: git checkout --track origin/$(Build.SourceBranchName)
+      #   displayName: Switching to source branch
 
       # Running this rush command will bump the version number to the next minor version, which in turn deletes everything within common/change.
       - bash: node common/scripts/install-run-rush version --override-bump minor --version-policy prerelease-monorepo-lockStep --bump
