@@ -525,19 +525,5 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
 /** @internal */
 export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined {
   const template = createGraphicTemplateFromDescription(descr, context, system);
-
-  let graphic = system.createGraphicFromTemplate({ template });
-  if (!graphic) {
-    return undefined;
-  }
-
-  assert(isGraphicDescription(descr));
-
-  if (descr.translation) {
-    const branch = new GraphicBranch(true);
-    branch.add(graphic);
-    graphic = system.createBranch(branch, Transform.createTranslation(Point3d.fromJSON(descr.translation)));
-  }
-
-  return graphic;
+  return system.createGraphicFromTemplate({ template });
 }
