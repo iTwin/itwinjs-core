@@ -47,30 +47,21 @@ vec4 unpackAndNormalize2BytesVec4(vec4 f, bool upper) {
 }
 `;
 
+const maxDefs = 5;
 const applyContours = `
   int contourNdx = int(v_contourNdx + 0.5);
   if (contourNdx > 14) // 15 => no contours
     return baseColor;
     // return vec4(0.0, 0.5, 1.0, 1.0); // debug for contourNdx map
 
-  const int maxDefs = 5; // max number of contour definitions allowed, have to change index arrays if this changes
+  const int maxDefs = ${maxDefs}; // max number of contour definitions allowed, have to change index arrays if this changes
   int contourNdxC = clamp(contourNdx, 0, maxDefs - 1);
 
-#if 0
-  uint contourDefsNdx[maxDefs] = uint[](0u, 2u, 3u, 5u, 6u);
-  uint intervalsPairNdx[maxDefs] = uint[](1u, 1u, 4u, 4u, 7u);
-  vec4 rgbf = u_contourDefs[contourDefsNdx[contourNdxC]];
-  vec4 intervalsPair = u_contourDefs[intervalsPairNdx[contourNdxC]];
-  // intervals.r => minor interval distance, intervals.g => major index count
-  vec2 intervals = (contourNdxC & 1) > 0 ? intervalsPair.ba : intervalsPair.rg;
-
-#else
   bool even = (contourNdxC & 1) == 0;
   vec4 rgbf = u_contourDefs[even ? contourNdxC * 3 / 2 : (contourNdxC - 1) * 3 / 2 + 2];
   vec4 intervalsPair = u_contourDefs[(contourNdxC / 2) * 3 + 1];
   // intervals.r => minor interval distance, intervals.g => major index count
   vec2 intervals = even ? intervalsPair.rg : intervalsPair.ba;
-#endif
 
   // determine if this is in the vicinity of a major contour line
   bool maj = (fract((abs(v_height) + 0.15) / intervals.g) < (0.3 / intervals.g));
@@ -87,18 +78,14 @@ const applyContours = `
   float dx = dFdx(contourAlpha);
   float dy = dFdy(contourAlpha);
 
-  if (contourNdx < 15) {
-    const float patLength = 32.0;
-    uint patterns[10] = uint[](0xffffffffu, 0x80808080u, 0xf8f8f8f8u, 0xffe0ffe0u, 0xfe10fe10u, 0xe0e0e0e0u, 0xf888f888u, 0xff18ff18u, 0xccccccccu, 0x00000001u);
+  const float patLength = 32.0;
+  uint patterns[10] = uint[](0xffffffffu, 0x80808080u, 0xf8f8f8f8u, 0xffe0ffe0u, 0xfe10fe10u, 0xe0e0e0e0u, 0xf888f888u, 0xff18ff18u, 0xccccccccu, 0x00000001u);
 
-    float offset = trunc((abs(dx) > abs(dy)) ? gl_FragCoord.y : gl_FragCoord.x);
-    offset = mod(offset, patLength);
-    uint msk = 1u << uint(offset);
-    contourAlpha *= (patterns[lineCodeWt / 16] & msk) > 0u ? 1.0 : 0.0;
-    return vec4(mix(baseColor.rgb, rgbf.rgb, contourAlpha), baseColor.a);
-  } else {
-    return (baseColor);
-  }
+  float offset = trunc((abs(dx) > abs(dy)) ? gl_FragCoord.y : gl_FragCoord.x);
+  offset = mod(offset, patLength);
+  uint msk = 1u << uint(offset);
+  contourAlpha *= (patterns[lineCodeWt / 16] & msk) > 0u ? 1.0 : 0.0;
+  return vec4(mix(baseColor.rgb, rgbf.rgb, contourAlpha), baseColor.a);
 `;
 
 /** @internal */
