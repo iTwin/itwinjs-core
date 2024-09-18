@@ -27,8 +27,8 @@ describe("Inverted Units tests", () => {
     const result = await testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey);
     const invertedUnit = await testEditor.schemaContext.getSchemaItem(result) as InvertedUnit;
 
-    expect(await invertedUnit.invertsUnit).to.eql(await testEditor.schemaContext.getSchemaItem(invertsUnitKey));
-    expect(invertedUnit.fullName).to.eql("testSchema.testInvertedUnit");
+    expect(await invertedUnit.invertsUnit).toEqual(await testEditor.schemaContext.getSchemaItem(invertsUnitKey));
+    expect(invertedUnit.fullName).toEqual("testSchema.testInvertedUnit");
   });
 
   it("should create a valid Inverted Unit from props", async () => {
@@ -42,43 +42,51 @@ describe("Inverted Units tests", () => {
     const result = await testEditor.invertedUnits.createFromProps(testKey, invertedUnitProps);
     const invertedUnit = await testEditor.schemaContext.getSchemaItem(result) as InvertedUnit;
 
-    expect(await invertedUnit.invertsUnit).to.eql(await testEditor.schemaContext.getSchemaItem(invertsUnitKey));
-    expect(invertedUnit.fullName).to.eql("testSchema.testInvertedUnit");
+    expect(await invertedUnit.invertsUnit).toEqual(await testEditor.schemaContext.getSchemaItem(invertsUnitKey));
+    expect(invertedUnit.fullName).toEqual("testSchema.testInvertedUnit");
   });
 
   it("try creating InvertedUnit in unknown schema, throws error", async () => {
     const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.invertedUnits.create(badKey, "testInvertedUnit", invertsUnitKey, unitSystemKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+    await expect(testEditor.invertedUnits.create(badKey, "testInvertedUnit", invertsUnitKey, unitSystemKey)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `Schema Key ${badKey.toString(true)} could not be found in the context.`,
+        errorNumber: ECEditingStatus.SchemaNotFound,
+      },
     });
   });
 
   it("try creating InvertedUnit with existing name, throws error", async () => {
     await testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey);
-    await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `InvertedUnit testSchema.testInvertedUnit already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, unitSystemKey)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `InvertedUnit testSchema.testInvertedUnit already exists in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNameAlreadyExists,
+      },
     });
   });
 
   it("try creating InvertedUnit with unknown invertsUnit, throws error", async () => {
     const badKey = new SchemaItemKey("unknownInvertsUnit", testKey);
-    await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", badKey, unitSystemKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Unit ${badKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+    await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", badKey, unitSystemKey)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `Unit ${badKey.fullName} could not be found in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNotFound,
+      },
     });
   });
 
   it("try creating InvertedUnit with unknown unitSystem, throws error", async () => {
     const badKey = new SchemaItemKey("unknownUnitSystem", testKey);
-    await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, badKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `UnitSystem ${badKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+    await expect(testEditor.invertedUnits.create(testKey, "testInvertedUnit", invertsUnitKey, badKey)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `UnitSystem ${badKey.fullName} could not be found in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNotFound,
+      },
     });
   });
 });

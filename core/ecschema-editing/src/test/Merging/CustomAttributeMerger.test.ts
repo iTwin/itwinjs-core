@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, RelationshipClass, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -118,7 +118,7 @@ describe("Custom Attribute merge", () => {
     });
 
     const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-    expect(mergedEntity!.toJSON().customAttributes).deep.eq(
+    expect(mergedEntity!.toJSON().customAttributes).toEqual(
       [
         {
           IntProp: 5,
@@ -210,7 +210,7 @@ describe("Custom Attribute merge", () => {
       ],
     });
     const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
-    expect(mergedEntity!.toJSON().properties).deep.eq(
+    expect(mergedEntity!.toJSON().properties).toEqual(
       [
         {
           name: "DoubleProp",
@@ -287,7 +287,7 @@ describe("Custom Attribute merge", () => {
       ],
     });
 
-    expect(mergedSchema.toJSON().customAttributes).deep.eq(
+    expect(mergedSchema.toJSON().customAttributes).toEqual(
       [
         {
           className: "TargetSchema.TestCA",
@@ -408,7 +408,7 @@ describe("Custom Attribute merge", () => {
     });
 
     const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
-    expect(mergedRelationship!.toJSON().source).deep.eq({
+    expect(mergedRelationship!.toJSON().source).toEqual({
       customAttributes: [
         {
           className: "TestSchema.TestCA",
@@ -425,7 +425,7 @@ describe("Custom Attribute merge", () => {
         "TargetSchema.BaseEntity",
       ],
     });
-    expect(mergedRelationship!.toJSON().target).deep.eq({
+    expect(mergedRelationship!.toJSON().target).toEqual({
       customAttributes: [
         {
           className: "TestSchema.TestCA",
@@ -539,13 +539,13 @@ describe("Custom Attribute merge", () => {
     });
 
     const testClassItem = await mergedSchema.getItem<EntityClass>("TestClass");
-    expect(testClassItem!.toJSON()).deep.eq({
+    expect(testClassItem!.toJSON()).toEqual({
       schemaItemType: "EntityClass",
       label: "TestClass",
       customAttributes: [{ className: "TargetSchema.TestCAClass" }, { className: "TargetSchema.AnotherCAClass" }],
     });
     const anotherClassItem = await mergedSchema.getItem<EntityClass>("AnotherTestClass");
-    expect(anotherClassItem!.toJSON()).deep.eq({
+    expect(anotherClassItem!.toJSON()).toEqual({
       schemaItemType: "EntityClass",
       label: "TestClass",
       customAttributes: [{ className: "TargetSchema.TestCAClass", BooleanProperty: false }],

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { Enumeration, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import * as Rules from "../../../Validation/ECRules";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
@@ -22,17 +22,17 @@ describe("Enumeration rule tests", () => {
 
     const result = Rules.enumerationTypeUnsupported(enumeration);
 
-    expect(result).not.undefined;
+    expect(result).not.toBeUndefined();
     let resultHasEntries = false;
     for await (const diagnostic of result) {
       resultHasEntries = true;
-      expect(diagnostic.ecDefinition).to.equal(enumeration);
-      expect(diagnostic.messageArgs).to.eql([enumeration.fullName]);
-      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.EnumerationTypeUnsupported);
-      expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      expect(diagnostic.ecDefinition).toBe(enumeration);
+      expect(diagnostic.messageArgs).toEqual([enumeration.fullName]);
+      expect(diagnostic.category).toBe(DiagnosticCategory.Error);
+      expect(diagnostic.code).toBe(Rules.DiagnosticCodes.EnumerationTypeUnsupported);
+      expect(diagnostic.diagnosticType).toBe(DiagnosticType.SchemaItem);
     }
-    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    expect(resultHasEntries).toBe(true);
   });
 
   it("enumerationTypeUnsupported, string type, rule passes.", async () => {
@@ -40,7 +40,7 @@ describe("Enumeration rule tests", () => {
 
     const result = Rules.enumerationTypeUnsupported(enumeration);
     for await (const _diagnostic of result) {
-      expect(false, "Rule should have passed").to.be.true;
+      expect(false, "Rule should have passed").toBe(true);
     }
   });
 
@@ -49,7 +49,7 @@ describe("Enumeration rule tests", () => {
 
     const result = Rules.enumerationTypeUnsupported(enumeration);
     for await (const _diagnostic of result) {
-      expect(false, "Rule should have passed").to.be.true;
+      expect(false, "Rule should have passed").toBe(true);
     }
   });
 });

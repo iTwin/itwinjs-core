@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -145,7 +145,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "StringProp",
         type: "PrimitiveProperty",
         typeName: "string",
@@ -190,7 +190,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<StructClass>("TestStruct");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "IntArrayProp",
         type: "PrimitiveArrayProperty",
         description: "Description for int array property",
@@ -247,7 +247,7 @@ describe("Property merger tests", () => {
         ],
       });
       const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCA");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "EnumProp",
         type: "PrimitiveProperty",
         typeName: "TargetSchema.TestEnumeration",
@@ -301,7 +301,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCA");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "EnumArrayProp",
         type: "PrimitiveArrayProperty",
         description: "Description for enumeration array property",
@@ -367,7 +367,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<StructClass>("TestStruct");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "BoolProp",
         type: "PrimitiveProperty",
         typeName: "boolean",
@@ -425,7 +425,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "StructArrayProp",
         type: "StructArrayProperty",
         typeName: "TargetSchema.TestStruct",
@@ -477,7 +477,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "NavigationProp",
         type: "NavigationProperty",
         description: "Description for navigation property",
@@ -530,7 +530,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<Mixin>("TestMixin");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "NavigationProp",
         type: "NavigationProperty",
         description: "Description for navigation property",
@@ -592,7 +592,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "StringProp",
         type: "PrimitiveProperty",
         typeName: "string",
@@ -648,7 +648,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "IntArrayProp",
         type: "PrimitiveArrayProperty",
         typeName: "int",
@@ -710,7 +710,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<StructClass>("TestStruct");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "EnumProp",
         type: "PrimitiveProperty",
         typeName: "TestSchema.TestEnumeration",
@@ -768,7 +768,7 @@ describe("Property merger tests", () => {
         ],
       });
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "EnumArrayProp",
         type: "PrimitiveArrayProperty",
         typeName: "TargetSchema.TestEnumeration",
@@ -819,7 +819,7 @@ describe("Property merger tests", () => {
         ],
       });
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "StructProp",
         type: "StructProperty",
         typeName: "TargetSchema.TestStruct",
@@ -881,7 +881,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCA");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "StructArrayProp",
         type: "StructArrayProperty",
         typeName: "TestSchema.TestStruct",
@@ -939,7 +939,7 @@ describe("Property merger tests", () => {
       });
 
       const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-      expect(mergedItem!.toJSON().properties).deep.eq([{
+      expect(mergedItem!.toJSON().properties).toEqual([{
         name: "NavProp",
         type: "NavigationProperty",
         description: "Description for Navigation Property",
@@ -981,7 +981,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestStruct.Prop' primitiveType is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestStruct.Prop' primitiveType is not supported.");
     });
 
     it("should throw an error when merging array properties primitive type changed from double to string", async () => {
@@ -1016,7 +1016,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestCA.ArrProp' primitiveType is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestCA.ArrProp' primitiveType is not supported.");
     });
 
     it("should throw an error when merging properties type changed from PrimitiveArrayProperty to PrimitiveProperty", async () => {
@@ -1050,7 +1050,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.Prop' type is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestEntity.Prop' type is not supported.");
     });
 
     it("should throw an error when merging properties kind of quantity changed", async () => {
@@ -1092,7 +1092,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.Prop' kind of quantity is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestEntity.Prop' kind of quantity is not supported.");
     });
 
     it("should throw an error when merging struct properties structClass changed", async () => {
@@ -1137,7 +1137,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.StructProp' structClass is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestEntity.StructProp' structClass is not supported.");
     });
 
     it("should throw an error when merging struct array properties structClass changed", async () => {
@@ -1180,7 +1180,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestStruct.StructArrayProp' structClass is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestStruct.StructArrayProp' structClass is not supported.");
     });
 
     it("should throw an error when merging enumeration properties enumeration changed", async () => {
@@ -1233,7 +1233,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.EnumProp' enumeration is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestEntity.EnumProp' enumeration is not supported.");
     });
 
     it("should throw an error when merging enumeration array properties enumeration changed", async () => {
@@ -1295,7 +1295,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.EnumArrayProp' enumeration is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestEntity.EnumArrayProp' enumeration is not supported.");
     });
 
     it("should throw an error when merging navigation properties direction changed", async () => {
@@ -1337,7 +1337,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.NavProp' direction is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestEntity.NavProp' direction is not supported.");
     });
 
     it("should throw an error when merging navigation properties relationship class changed", async () => {
@@ -1405,7 +1405,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.NavProp' relationship class is not supported.");
+      await expect(merge).rejects.toThrow("Changing the property 'TestEntity.NavProp' relationship class is not supported.");
     });
   });
 });

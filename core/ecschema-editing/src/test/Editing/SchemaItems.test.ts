@@ -1,5 +1,5 @@
 import { SchemaContext, SchemaItemKey, SchemaKey, UnitSystem } from "@itwin/ecschema-metadata";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
 
@@ -18,36 +18,39 @@ describe("Properties editing tests", () => {
   it("should successfully set SchemaItem description", async () => {
     const key = await testEditor.unitSystems.create(testKey, "TestUnitSystem");
     const item = await testEditor.schemaContext.getSchemaItem<UnitSystem>(key) as UnitSystem;
-    expect(item.description).to.eql(undefined);
+    expect(item?.description).toBeUndefined();
     await testEditor.unitSystems.setDescription(key, "test description");
-    expect(item.description).to.eql("test description");
+    expect(item?.description).toBe("test description");
   });
 
   it("should successfully set SchemaItem displayLabel", async () => {
     const key = await testEditor.unitSystems.create(testKey, "TestUnitSystem");
     const item = await testEditor.schemaContext.getSchemaItem<UnitSystem>(key) as UnitSystem;
-    expect(item.label).to.eql(undefined);
+    expect(item?.label).toBeUndefined();
     await testEditor.unitSystems.setDisplayLabel(key, "TestLabel");
-    expect(item.label).to.eql("TestLabel");
+    expect(item?.label).toBe("TestLabel");
   });
 
   it("try setting description to unknown SchemaItem, returns error", async () => {
     const unknownKey = new SchemaItemKey("testUnitSystem", testKey);
 
-    await expect(testEditor.unitSystems.setDescription(unknownKey, "test description")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetDescription);
-      expect(error).to.have.nested.property("innerError.message", `UnitSystem ${unknownKey.fullName} could not be found in the schema context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+    await expect(testEditor.unitSystems.setDescription(unknownKey, "test description")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.SetDescription,
+      innerError: {
+        message: `UnitSystem ${unknownKey.fullName} could not be found in the schema context.`,
+        errorNumber: ECEditingStatus.SchemaItemNotFoundInContext,
+      },
     });
   });
-
   it("try setting label to unknown SchemaItem, returns error", async () => {
     const unknownKey = new SchemaItemKey("testUnitSystem", testKey);
 
-    await expect(testEditor.unitSystems.setDisplayLabel(unknownKey, "label")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetLabel);
-      expect(error).to.have.nested.property("innerError.message", `UnitSystem ${unknownKey.fullName} could not be found in the schema context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+    await expect(testEditor.unitSystems.setDisplayLabel(unknownKey, "label")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.SetLabel,
+      innerError: {
+        message: `UnitSystem ${unknownKey.fullName} could not be found in the schema context.`,
+        errorNumber: ECEditingStatus.SchemaItemNotFoundInContext,
+      },
     });
   });
 });

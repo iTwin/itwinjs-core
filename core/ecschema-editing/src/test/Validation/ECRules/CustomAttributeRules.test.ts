@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { CustomAttributeClass, ECClassModifier, EntityClass,
   Schema, SchemaContext,
 } from "@itwin/ecschema-metadata";
@@ -43,13 +43,13 @@ describe("CustomAttribute Rules Tests", () => {
       let resultHasEntries = false;
       for await (const diagnostic of result) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).to.equal(testEntity);
-        expect(diagnostic.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
-        expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-        expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.CustomAttributeNotOfConcreteClass);
-        expect(diagnostic.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
+        expect(diagnostic.ecDefinition).toBe(testEntity);
+        expect(diagnostic.messageArgs).toEqual([testEntity.fullName, "TestCASchema.TestCA"]);
+        expect(diagnostic.category).toBe(DiagnosticCategory.Error);
+        expect(diagnostic.code).toBe(Rules.DiagnosticCodes.CustomAttributeNotOfConcreteClass);
+        expect(diagnostic.diagnosticType).toBe(DiagnosticType.CustomAttributeContainer);
       }
-      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").toBe(true);
     });
 
     it("CustomAttribute is concrete, rule passes", async () => {
@@ -60,7 +60,7 @@ describe("CustomAttribute Rules Tests", () => {
 
       const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
       for await (const _diagnostic of result) {
-        expect(false, "Rule should have passed").to.be.true;
+        expect(false, "Rule should have passed").toBe(true);
       }
     });
   });
@@ -74,13 +74,13 @@ describe("CustomAttribute Rules Tests", () => {
       const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
       const results = await toArray(result);
 
-      expect(results.length).to.equal(2, "Expected 2 diagnostics");
+      expect(results.length).toEqual(2);
       const diagnostic = results[0];
-      expect(diagnostic.ecDefinition).to.equal(testEntity);
-      expect(diagnostic.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
-      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.CustomAttributeSchemaMustBeReferenced);
-      expect(diagnostic.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
+      expect(diagnostic.ecDefinition).toBe(testEntity);
+      expect(diagnostic.messageArgs).toEqual([testEntity.fullName, "TestCASchema.TestCA"]);
+      expect(diagnostic.category).toBe(DiagnosticCategory.Error);
+      expect(diagnostic.code).toBe(Rules.DiagnosticCodes.CustomAttributeSchemaMustBeReferenced);
+      expect(diagnostic.diagnosticType).toBe(DiagnosticType.CustomAttributeContainer);
     });
 
     it("CustomAttribute schema is referenced, rule passes", async () => {
@@ -91,7 +91,7 @@ describe("CustomAttribute Rules Tests", () => {
 
       const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
       for await (const _diagnostic of result) {
-        expect(false, "Rule should have passed").to.be.true;
+        expect(false, "Rule should have passed").toBe(true);
       }
     });
 
@@ -103,7 +103,7 @@ describe("CustomAttribute Rules Tests", () => {
 
       const result = Rules.validateCustomAttributeInstance(testEntity, testEntity.customAttributes!.get("TestSchema.TestCA")!);
       for await (const _diagnostic of result) {
-        expect(false, "Rule should have passed").to.be.true;
+        expect(false, "Rule should have passed").toBe(true);
       }
     });
   });

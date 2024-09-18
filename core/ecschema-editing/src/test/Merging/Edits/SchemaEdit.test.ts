@@ -114,25 +114,26 @@ describe("Schema Edit tests", () => {
       }
 
       const merger = new SchemaMerger(targetSchema.context);
-      await expect(merger.merge(differences, schemaEdits)).to.be.eventually.fulfilled;
+      await expect(merger.merge(differences, schemaEdits)).resolves.toBeDefined();
 
       storedSchemaEdits = schemaEdits.toJSON();
     }
 
-    await expect(targetSchema.getItem("ClassToBeSkipped")).to.be.eventually.undefined;
-    await expect(targetSchema.getItem("SameNameOtherItemType")).to.be.eventually.instanceOf(EntityClass).then(async (ecClass: EntityClass) => {
-      await expect(ecClass.getProperty("PropertyToSkip")).to.be.eventually.undefined;
-      await expect(ecClass.getProperty("MyProperty")).to.be.eventually.fulfilled.then((property) => {
-        expect(property, "Could not find MyProperty").to.be.not.undefined;
-        expect(property).instanceOf(PrimitiveProperty);
-        expect(property).has.property("primitiveType").equals(PrimitiveType.String);
-      });
-      await expect(ecClass.getProperty("MyProperty_1")).to.be.eventually.fulfilled.then((property) => {
-        expect(property, "Could not find MyProperty_1").to.be.not.undefined;
-        expect(property).instanceOf(PrimitiveProperty);
-        expect(property).has.property("primitiveType").equals(PrimitiveType.Boolean);
-      });
-    });
-    await expect(targetSchema.getItem("SameNameOtherItemType_1")).to.be.eventually.instanceOf(StructClass);
+    await expect(targetSchema.getItem("ClassToBeSkipped")).resolves.toBeUndefined();
+    await expect(targetSchema.getItem("SameNameOtherItemType")).resolves.toBeInstanceOf(EntityClass);
+
+    const ecClass = await targetSchema.getItem("SameNameOtherItemType") as EntityClass;
+    await expect(ecClass.getProperty("PropertyToSkip")).resolves.toBeUndefined();
+
+    const myProperty = await ecClass.getProperty("MyProperty");
+    expect(myProperty, "Could not find MyProperty").toBeDefined();
+    expect(myProperty).toBeInstanceOf(PrimitiveProperty);
+    expect(myProperty).toHaveProperty("primitiveType", PrimitiveType.String);
+
+    const myProperty1 = await ecClass.getProperty("MyProperty_1");
+    expect(myProperty1, "Could not find MyProperty_1").toBeDefined();
+    expect(myProperty1).toBeInstanceOf(PrimitiveProperty);
+    expect(myProperty1).toHaveProperty("primitiveType", PrimitiveType.Boolean);
+    await expect(targetSchema.getItem("SameNameOtherItemType_1")).resolves.toBeInstanceOf(StructClass);
   });
 });

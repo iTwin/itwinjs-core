@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   ECClassModifier, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, NavigationProperty,
   PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
@@ -36,32 +36,36 @@ describe("ECClass tests", () => {
     const newItemKey = new SchemaItemKey("testEntity2", testKey);
     testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(newItemKey);
     expect(testEntity, "renamed EntityClass could not be found in schema").to.not.be.undefined;
-    expect(testEntity?.name).to.eql("testEntity2");
+    expect(testEntity?.name).toEqual("testEntity2");
   });
 
   it("try changing class name to invalid name, throws error", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
-    await expect(testEditor.entities.setName(result1, "123")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetClassName);
-      expect(error).to.have.nested.property("innerError.message", `Could not rename class ${result1.fullName} because the specified name is not a valid ECName.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidECName);
+    await expect(testEditor.entities.setName(result1, "123")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.SetClassName,
+      innerError: {
+        message: `Could not rename class ${result1.fullName} because the specified name is not a valid ECName.`,
+        errorNumber: ECEditingStatus.InvalidECName,
+      },
     });
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
-    expect(testEntity, "originally named EntityClass should exist in the schema").to.not.be.undefined;
+    expect(testEntity, "originally named EntityClass should exist in the schema").toBeDefined();
   });
 
   it("try changing class name to existing name in the schema, returns error", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
     await testEditor.entities.create(testKey, "testEntity2", ECClassModifier.None);
-    await expect(testEditor.entities.setName(result1, "testEntity2")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetClassName);
-      expect(error).to.have.nested.property("innerError.message", `EntityClass TestSchema.testEntity2 already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    await expect(testEditor.entities.setName(result1, "testEntity2")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.SetClassName,
+      innerError: {
+        message: `EntityClass TestSchema.testEntity2 already exists in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNameAlreadyExists,
+      },
     });
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
-    expect(testEntity, "originally named EntityClass should exist in the schema").to.not.be.undefined;
+    expect(testEntity, "originally named EntityClass should exist in the schema").toBeDefined();
   });
 
   describe("Property creation tests", () => {
@@ -78,22 +82,22 @@ describe("ECClass tests", () => {
       };
       await testEditor.entities.createPrimitivePropertyFromProps(entityKey, "TestProperty", PrimitiveType.Double, propertyJson);
       const property = await entity?.getProperty("TestProperty") as PrimitiveProperty;
-      expect(property.extendedTypeName).to.eql("SomeExtendedType");
-      expect(property.minValue).to.eql(6);
-      expect(property.maxValue).to.eql(8);
-      expect(property.propertyType).to.eql(PrimitiveType.Double);
+      expect(property.extendedTypeName).toEqual("SomeExtendedType");
+      expect(property.minValue).toEqual(6);
+      expect(property.maxValue).toEqual(8);
+      expect(property.propertyType).toEqual(PrimitiveType.Double);
     });
 
     it("should successfully delete a PrimitiveProperty from class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
       let property = await entity?.getProperty("TestProperty") as PrimitiveProperty;
-      expect(property.name).to.eql("TestProperty");
+      expect(property.name).toEqual("TestProperty");
 
       await testEditor.entities.deleteProperty(entityKey, "TestProperty");
 
       // Should get undefined since property has been deleted
       property = await entity?.getProperty("TestProperty") as PrimitiveProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully create an EnumerationProperty from a JSON prop", async () => {
@@ -122,7 +126,7 @@ describe("ECClass tests", () => {
       const enumeration = await testEditor.schemaContext.getSchemaItem(enumResult) as Enumeration;
       await testEditor.entities.createEnumerationPropertyFromProps(entityKey, "TestProperty", enumeration,propertyJson);
       const property = await entity?.getProperty("TestProperty") as EnumerationProperty;
-      expect(await property.enumeration).to.eql(enumeration);
+      expect(await property.enumeration).toEqual(enumeration);
     });
 
     it("should successfully delete an EnumerationProperty from class", async () => {
@@ -130,12 +134,12 @@ describe("ECClass tests", () => {
       const testEnum = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
       let property = await entity?.getProperty("TestProperty") as EnumerationProperty;
-      expect(await property.enumeration).to.eql(testEnum);
+      expect(await property.enumeration).toEqual(testEnum);
 
       await testEditor.entities.deleteProperty(entityKey, "TestProperty");
 
       property = await entity?.getProperty("TestProperty") as EnumerationProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully create EnumerationArrayProperty from JSON prop", async () => {
@@ -159,9 +163,9 @@ describe("ECClass tests", () => {
       const enumeration = await testEditor.schemaContext.getSchemaItem(enumResults) as Enumeration;
       await testEditor.entities.createEnumerationArrayPropertyFromProps(entityKey, "TestProperty", enumeration, propertyJson);
       const property = await entity?.getProperty("TestProperty") as EnumerationArrayProperty;
-      expect(await property.enumeration).to.eql(enumeration);
-      expect(property.minOccurs).to.eql(10);
-      expect(property.maxOccurs).to.eql(101);
+      expect(await property.enumeration).toEqual(enumeration);
+      expect(property.minOccurs).toEqual(10);
+      expect(property.maxOccurs).toEqual(101);
     });
 
     it("should successfully delete EnumerationArrayProperty from class", async () => {
@@ -169,12 +173,12 @@ describe("ECClass tests", () => {
       const enumeration = new Enumeration(schema, "TestEnumeration");
       await testEditor.entities.createEnumerationArrayProperty(entityKey, "TestProperty", enumeration);
       let property = await entity?.getProperty("TestProperty") as EnumerationArrayProperty;
-      expect(await property.enumeration).to.eql(enumeration);
+      expect(await property.enumeration).toEqual(enumeration);
 
       await testEditor.entities.deleteProperty(entityKey, "TestProperty");
 
       property = await entity?.getProperty("TestProperty") as EnumerationArrayProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should create a NavigationProperty", async () => {
@@ -236,8 +240,8 @@ describe("ECClass tests", () => {
       const relationship = await testEditor.schemaContext.getSchemaItem(relationshipResult) as RelationshipClass;
       await testEditor.relationships.createNavigationProperty(relationship.key, "TestProperty", relationship,"Forward");
       const navProperty = await relationship.getProperty("TestProperty") as NavigationProperty;
-      expect(navProperty.direction).to.eql(StrengthDirection.Forward);
-      expect(await navProperty.relationshipClass).to.eql(relationship);
+      expect(navProperty.direction).toEqual(StrengthDirection.Forward);
+      expect(await navProperty.relationshipClass).toEqual(relationship);
     });
 
     it("should successfully delete a NavigationProperty from class", async () => {
@@ -245,12 +249,12 @@ describe("ECClass tests", () => {
       const relationship = new RelationshipClass(schema, "TestRelationship");
       await testEditor.entities.createNavigationProperty(entityKey, "TestProperty", relationship, StrengthDirection.Forward);
       let property = await entity?.getProperty("TestProperty") as NavigationProperty;
-      expect(await property.relationshipClass).to.eql(relationship);
+      expect(await property.relationshipClass).toEqual(relationship);
 
       await testEditor.entities.deleteProperty(entityKey, "TestProperty");
 
       property = await entity?.getProperty("TestProperty") as NavigationProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully create a PrimitiveArrayProperty from a JSON prop", async () => {
@@ -264,8 +268,8 @@ describe("ECClass tests", () => {
 
       await testEditor.entities.createPrimitiveArrayPropertyFromProps(entityKey, "TestProperty", PrimitiveType.Integer,propertyJson);
       const property = await entity?.getProperty("TestProperty") as PrimitiveArrayProperty;
-      expect(property.minOccurs).to.eql(42);
-      expect(property.maxOccurs).to.eql(55);
+      expect(property.minOccurs).toEqual(42);
+      expect(property.maxOccurs).toEqual(55);
     });
 
     it("should successfully delete a PrimitiveArrayProperty from class", async () => {
@@ -275,7 +279,7 @@ describe("ECClass tests", () => {
       await testEditor.entities.deleteProperty(entityKey, "TestProperty");
 
       property = await entity?.getProperty("TestProperty") as PrimitiveArrayProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully create a StructProperty from a JSON prop", async () => {
@@ -288,7 +292,7 @@ describe("ECClass tests", () => {
       const structClass = await testEditor.schemaContext.getSchemaItem(classResult) as StructClass;
       await testEditor.entities.createStructPropertyFromProps(entityKey, "TestProperty", structClass, propertyJson);
       const property = await entity?.getProperty("TestProperty") as StructProperty;
-      expect(property.structClass).to.eql(structClass);
+      expect(property.structClass).toEqual(structClass);
     });
 
     it("should successfully delete a StructProperty from class", async () => {
@@ -296,12 +300,12 @@ describe("ECClass tests", () => {
       const structClass = await testEditor.schemaContext.getSchemaItem(classResult) as StructClass;
       await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass);
       let property = await entity?.getProperty("TestProperty") as StructProperty;
-      expect(property.structClass).to.eql(structClass);
+      expect(property.structClass).toEqual(structClass);
 
       await testEditor.entities.deleteProperty(entityKey, "TestProperty");
 
       property = await entity?.getProperty("TestProperty") as StructProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully create a StructArrayProperty from a JSON prop", async () => {
@@ -316,9 +320,9 @@ describe("ECClass tests", () => {
       const structClass = await testEditor.schemaContext.getSchemaItem(classResult) as StructClass;
       await testEditor.entities.createStructArrayPropertyFromProps(entityKey, "TestProperty", structClass, propertyJson);
       const property = await entity?.getProperty("TestProperty") as StructArrayProperty;
-      expect(property.structClass).to.eql(structClass);
-      expect(property.minOccurs).to.eql(20);
-      expect(property.maxOccurs).to.eql(32);
+      expect(property.structClass).toEqual(structClass);
+      expect(property.minOccurs).toEqual(20);
+      expect(property.maxOccurs).toEqual(32);
     });
 
     it("should successfully delete a StructArrayProperty from class", async () => {
@@ -326,92 +330,92 @@ describe("ECClass tests", () => {
       const structClass = await testEditor.schemaContext.getSchemaItem(classResult) as StructClass;
       await testEditor.entities.createStructArrayProperty(entityKey, "TestProperty", structClass);
       let property = await entity?.getProperty("TestProperty") as StructArrayProperty;
-      expect(property.structClass).to.eql(structClass);
+      expect(property.structClass).toEqual(structClass);
 
       await testEditor.entities.deleteProperty(entityKey, "TestProperty");
 
       property = await entity?.getProperty("TestProperty") as StructArrayProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully add property type double to class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Double);
       const property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
-      expect(property.name).to.eql("prefix_TestProperty");
-      expect(property.propertyType).to.eql(PrimitiveType.Double);
+      expect(property.fullName).toEqual("testEntity.prefix_TestProperty");
+      expect(property.name).toEqual("prefix_TestProperty");
+      expect(property.propertyType).toEqual(PrimitiveType.Double);
     });
 
     it("should successfully delete property type double from class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Double);
       let property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
-      expect(property.propertyType).to.eql(PrimitiveType.Double);
+      expect(property.fullName).toEqual("testEntity.prefix_TestProperty");
+      expect(property.propertyType).toEqual(PrimitiveType.Double);
 
       await testEditor.entities.deleteProperty(entityKey, "prefix_TestProperty");
 
       property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully add property type string to class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.String);
       const property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
-      expect(property.name).to.eql("prefix_TestProperty");
-      expect(property.propertyType).to.eql(PrimitiveType.String);
+      expect(property.fullName).toEqual("testEntity.prefix_TestProperty");
+      expect(property.name).toEqual("prefix_TestProperty");
+      expect(property.propertyType).toEqual(PrimitiveType.String);
     });
 
     it("should successfully delete property type string from class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.String);
       let property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
-      expect(property.propertyType).to.eql(PrimitiveType.String);
+      expect(property.fullName).toEqual("testEntity.prefix_TestProperty");
+      expect(property.propertyType).toEqual(PrimitiveType.String);
 
       await testEditor.entities.deleteProperty(entityKey, "prefix_TestProperty");
 
       property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully add property type date time to class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.DateTime);
       const property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
-      expect(property.name).to.eql("prefix_TestProperty");
-      expect(property.propertyType).to.eql(PrimitiveType.DateTime);
+      expect(property.fullName).toEqual("testEntity.prefix_TestProperty");
+      expect(property.name).toEqual("prefix_TestProperty");
+      expect(property.propertyType).toEqual(PrimitiveType.DateTime);
     });
 
     it("should successfully delete property type date time from class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.DateTime);
       let property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
-      expect(property.propertyType).to.eql(PrimitiveType.DateTime);
+      expect(property.fullName).toEqual("testEntity.prefix_TestProperty");
+      expect(property.propertyType).toEqual(PrimitiveType.DateTime);
 
       await testEditor.entities.deleteProperty(entityKey, "prefix_TestProperty");
 
       property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("should successfully add property type integer to class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Integer);
       const property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
-      expect(property.name).to.eql("prefix_TestProperty");
-      expect(property.propertyType).to.eql(PrimitiveType.Integer);
+      expect(property.fullName).toEqual("testEntity.prefix_TestProperty");
+      expect(property.name).toEqual("prefix_TestProperty");
+      expect(property.propertyType).toEqual(PrimitiveType.Integer);
     });
 
     it("should successfully delete property type integer from class", async () => {
       await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Integer);
       let property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
-      expect(property.propertyType).to.eql(PrimitiveType.Integer);
+      expect(property.fullName).toEqual("testEntity.prefix_TestProperty");
+      expect(property.propertyType).toEqual(PrimitiveType.Integer);
 
       await testEditor.entities.deleteProperty(entityKey, "prefix_TestProperty");
 
       property = await entity?.getProperty("prefix_TestProperty") as PrimitiveProperty;
-      expect(property).to.be.undefined;
+      expect(property).toBeUndefined();
     });
 
     it("CustomAttribute defined in same schema, instance added to class successfully.", async () => {
@@ -437,7 +441,7 @@ describe("ECClass tests", () => {
       const testClass = await testSchema.getItem<EntityClass>("testEntity");
 
       await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" });
-      expect(testClass!.customAttributes && testClass!.customAttributes.has("testCustomAttribute")).to.be.true;
+      expect(testClass!.customAttributes && testClass!.customAttributes.has("testCustomAttribute")).toBe(true);
     });
 
     it("CustomAttribute defined in different schema, instance added to class successfully.", async () => {
@@ -479,7 +483,7 @@ describe("ECClass tests", () => {
       const testClass = await schemaA.getItem<EntityClass>("testEntity");
 
       await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "SchemaB.testCustomAttribute" });
-      expect(testClass!.customAttributes && testClass!.customAttributes.has("SchemaB.testCustomAttribute")).to.be.true;
+      expect(testClass!.customAttributes && testClass!.customAttributes.has("SchemaB.testCustomAttribute")).toBe(true);
     });
 
     it("Adding CustomAttribute to a class that does not exist fails as expected.", async () => {
@@ -504,10 +508,12 @@ describe("ECClass tests", () => {
       testEditor = new SchemaContextEditor(context);
       const badKey = new SchemaItemKey("BadClass", testSchema.schemaKey);
 
-      await expect(testEditor.entities.addCustomAttribute(badKey, { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
-        expect(error).to.have.nested.property("innerError.message", `EntityClass ValidSchema.BadClass could not be found in the schema ValidSchema.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      await expect(testEditor.entities.addCustomAttribute(badKey, { className: "testCustomAttribute" })).rejects.toMatchObject({
+        errorNumber: ECEditingStatus.AddCustomAttributeToClass,
+        innerError: {
+          message: `EntityClass ValidSchema.BadClass could not be found in the schema ValidSchema.`,
+          errorNumber: ECEditingStatus.SchemaItemNotFound,
+        },
       });
     });
 
@@ -533,10 +539,12 @@ describe("ECClass tests", () => {
       testEditor = new SchemaContextEditor(context);
       const testClass = await testSchema.getItem<UnitSystem>("testUnitSystem");
 
-      await expect(testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
-        expect(error).to.have.nested.property("innerError.message", `Expected ${testClass?.fullName} to be of type EntityClass.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
+      await expect(testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" })).rejects.toMatchObject({
+        errorNumber: ECEditingStatus.AddCustomAttributeToClass,
+        innerError: {
+          message: `Expected ${testClass?.fullName} to be of type EntityClass.`,
+          errorNumber: ECEditingStatus.InvalidSchemaItemType,
+        },
       });
     });
   });

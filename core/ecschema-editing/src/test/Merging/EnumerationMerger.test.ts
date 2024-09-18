@@ -53,7 +53,7 @@ describe("Enumeration merge tests", () => {
     });
 
     const mergedEnumeration = await mergedSchema.getItem("TestEnumeration") as Enumeration;
-    expect(mergedEnumeration.toJSON()).deep.equals({
+    expect(mergedEnumeration.toJSON()).toEqual({
       type: "int",
       schemaItemType: "Enumeration",
       isStrict: false,
@@ -110,7 +110,7 @@ describe("Enumeration merge tests", () => {
     });
 
     const mergedEnumeration = await mergedSchema.getItem("TestEnumeration") as Enumeration;
-    expect(mergedEnumeration.toJSON()).deep.equals({
+    expect(mergedEnumeration.toJSON()).toEqual({
       schemaItemType: "Enumeration",
       type: "string",
       isStrict: true,
@@ -169,7 +169,7 @@ describe("Enumeration merge tests", () => {
     });
 
     const mergedEnumeration = await mergedSchema.getItem("TestEnumeration") as Enumeration;
-    expect(mergedEnumeration.toJSON()).deep.equals({
+    expect(mergedEnumeration.toJSON()).toEqual({
       type: "int",
       schemaItemType: "Enumeration",
       isStrict: false,
@@ -278,7 +278,7 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith(Error, "The Enumeration TestEnumeration has an incompatible type. It must be \"string\", not \"int\".");
+    await expect(merge).rejects.toThrowError("The Enumeration TestEnumeration has an incompatible type. It must be \"string\", not \"int\".");
   });
 
   it("should throw an error if enumerator value attribute conflict exist", async () => {
@@ -317,6 +317,6 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
+    await expect(merge).rejects.toThrowError("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
   });
 });

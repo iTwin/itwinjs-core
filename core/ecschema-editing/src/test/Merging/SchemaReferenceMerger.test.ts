@@ -62,7 +62,7 @@ describe("Schema reference merging tests", () => {
       }],
     });
 
-    expect(mergedSchema.toJSON().references).deep.equals([
+    expect(mergedSchema.toJSON().references).toEqual([
       { name: "BisCore", version: "01.00.15" },
       { name: "CoreCustomAttributes", version: "01.00.03" },
     ]);
@@ -110,7 +110,7 @@ describe("Schema reference merging tests", () => {
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema);
     const bisCoreReference = await mergedSchema.getReference("BisCore");
-    expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.16");
+    expect(bisCoreReference?.schemaKey.toString()).toEqual("BisCore.01.00.16");
   });
 
   it("should fail if schema references are incompatible", async () => {
@@ -145,6 +145,6 @@ describe("Schema reference merging tests", () => {
         },
       }],
     });
-    await expect(merge).to.eventually.rejectedWith("Schemas references of BisCore have incompatible versions: 01.00.15 and 01.01.01");
+    await expect(merge).rejects.toThrow("Schemas references of BisCore have incompatible versions: 01.00.15 and 01.01.01");
   });
 });

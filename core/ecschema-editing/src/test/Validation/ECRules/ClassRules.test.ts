@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { DelayedPromiseWithProps, ECClassModifier, EntityClass,
   RelationshipClass, Schema, SchemaContext, schemaItemTypeToString,
 } from "@itwin/ecschema-metadata";
@@ -26,17 +26,17 @@ describe("ClassRule tests", () => {
 
     const result = Rules.baseClassIsSealed(entityClass);
 
-    expect(result).not.undefined;
+    expect(result).not.toBeUndefined();
     let resultHasEntries = false;
     for await (const diagnostic of result) {
       resultHasEntries = true;
-      expect(diagnostic.ecDefinition).to.equal(entityClass);
-      expect(diagnostic.messageArgs).to.eql([entityClass.fullName, baseClass.fullName]);
-      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.BaseClassIsSealed);
-      expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      expect(diagnostic.ecDefinition).toBe(entityClass);
+      expect(diagnostic.messageArgs).toEqual([entityClass.fullName, baseClass.fullName]);
+      expect(diagnostic.category).toBe(DiagnosticCategory.Error);
+      expect(diagnostic.code).toBe(Rules.DiagnosticCodes.BaseClassIsSealed);
+      expect(diagnostic.diagnosticType).toBe(DiagnosticType.SchemaItem);
     }
-    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").toBe(true);
   });
 
   it("BaseClassIsSealed, base is not sealed, rule passes.", async () => {
@@ -46,7 +46,7 @@ describe("ClassRule tests", () => {
 
     const result = Rules.baseClassIsSealed(entityClass);
     for await (const _diagnostic of result) {
-      expect(false, "Rule should have passed").to.be.true;
+      expect(false, "Rule should have passed").toBe(true);
     }
   });
 
@@ -55,7 +55,7 @@ describe("ClassRule tests", () => {
 
     const result = Rules.baseClassIsSealed(entityClass);
     for await (const _diagnostic of result) {
-      expect(false, "Rule should have passed").to.be.true;
+      expect(false, "Rule should have passed").toBe(true);
     }
   });
 
@@ -66,17 +66,17 @@ describe("ClassRule tests", () => {
     const baseType = schemaItemTypeToString(baseClass.schemaItemType);
 
     const result = Rules.baseClassIsOfDifferentType(entityClass);
-    expect(result).not.undefined;
+    expect(result).not.toBeUndefined();
     let resultHasEntries = false;
     for await (const diagnostic of result) {
       resultHasEntries = true;
-      expect(diagnostic.ecDefinition).to.equal(entityClass);
-      expect(diagnostic.messageArgs).to.eql([entityClass.fullName, baseClass.fullName, baseType]);
-      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.BaseClassOfDifferentType);
-      expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      expect(diagnostic.ecDefinition).toBe(entityClass);
+      expect(diagnostic.messageArgs).toEqual([entityClass.fullName, baseClass.fullName, baseType]);
+      expect(diagnostic.category).toBe(DiagnosticCategory.Error);
+      expect(diagnostic.code).toBe(Rules.DiagnosticCodes.BaseClassOfDifferentType);
+      expect(diagnostic.diagnosticType).toBe(DiagnosticType.SchemaItem);
     }
-    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").toBe(true);
   });
 
   it("BaseClassIsOfDifferentType, same type, rule passes.", async () => {
@@ -86,7 +86,7 @@ describe("ClassRule tests", () => {
 
     const result = Rules.baseClassIsOfDifferentType(entityClass);
     for await (const _diagnostic of result) {
-      expect(false, "Rule should have passed").to.be.true;
+      expect(false, "Rule should have passed").toBe(true);
     }
   });
 
@@ -95,7 +95,7 @@ describe("ClassRule tests", () => {
 
     const result = Rules.baseClassIsOfDifferentType(entityClass);
     for await (const _diagnostic of result) {
-      expect(false, "Rule should have passed").to.be.true;
+      expect(false, "Rule should have passed").toBe(true);
     }
   });
 });

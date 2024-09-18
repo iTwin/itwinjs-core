@@ -22,16 +22,18 @@ describe("Formats tests", () => {
   it("should create a valid Format", async () => {
     const result = await testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel");
     const format = await testEditor.schemaContext.getSchemaItem(result) as Format;
-    expect(format.fullName).to.eql("testSchema.testFormat");
-    expect(format.label).to.eql("testLabel");
+    expect(format.fullName).toBe("testSchema.testFormat");
+    expect(format.label).toBe("testLabel");
   });
 
   it("create Format with invalid type for units, throws", async () => {
     const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
-    await expect(testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel", [entityResult])).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `The specified Format unit ${entityResult.fullName} is not of type Unit or InvertedUnit`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidFormatUnitsSpecified);
+    await expect(testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel", [entityResult])).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `The specified Format unit ${entityResult.fullName} is not of type Unit or InvertedUnit`,
+        errorNumber: ECEditingStatus.InvalidFormatUnitsSpecified,
+      },
     });
   });
 
@@ -62,19 +64,23 @@ describe("Formats tests", () => {
 
   it("try creating format in unknown schema, throws error", async () => {
     const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.formats.create(badKey, "testFormat", FormatType.Decimal, "testLabel")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+    await expect(testEditor.formats.create(badKey, "testFormat", FormatType.Decimal, "testLabel")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `Schema Key ${badKey.toString(true)} could not be found in the context.`,
+        errorNumber: ECEditingStatus.SchemaNotFound,
+      },
     });
   });
 
   it("try creating format with existing name, throws error", async () => {
     await testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel");
-    await expect(testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel")).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Format testSchema.testFormat already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    await expect(testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel")).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `Format testSchema.testFormat already exists in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNameAlreadyExists,
+      },
     });
   });
   // TODO: Add test when units are given (needs the unit editing to be created.)

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ECEditingStatus } from "../../Editing/Exception";
 
@@ -42,7 +42,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<StructClass>("TestStruct");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "StructClass",
       label: "Test Structure",
       description: "Description for Test Structure",
@@ -69,7 +69,7 @@ describe("Class merger tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCAClass");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "CustomAttributeClass",
       label: "Test Custom Attribute Class",
       appliesTo: "AnyClass",
@@ -104,7 +104,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "EntityClass",
       label: "Test Entity",
       description: "Description for TestEntity",
@@ -154,7 +154,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "EntityClass",
       label: "Test Entity",
       description: "Description for TestEntity",
@@ -211,7 +211,7 @@ describe("Class merger tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "EntityClass",
       label: "Test Entity",
       description: "Description for TestEntity",
@@ -250,7 +250,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<Mixin>("TestMixin");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "Mixin",
       label: "Test Mixin",
       description: "Description for TestMixin",
@@ -307,7 +307,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<Mixin>("TestMixin");
-    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
+    expect(mergedItem!.toJSON().baseClass).toEqual("TargetSchema.TestBase");
   });
 
   it("should merge struct class changes", async () => {
@@ -339,7 +339,7 @@ describe("Class merger tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<StructClass>("TestStruct");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "StructClass",
       description: "Description for Test Structure",
       label: "Test Structure",
@@ -384,7 +384,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<StructClass>("TestStruct");
-    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
+    expect(mergedItem!.toJSON().baseClass).toEqual("TargetSchema.TestBase");
   });
 
   it("should merge custom attribute class changes", async () => {
@@ -417,7 +417,7 @@ describe("Class merger tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCAClass");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "CustomAttributeClass",
       label: "Test Custom Attribute Class",
       appliesTo: "AnyClass, AnyProperty",
@@ -465,7 +465,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCAClass");
-    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
+    expect(mergedItem!.toJSON().baseClass).toEqual("TargetSchema.TestBase");
   });
 
   it("should merge class modifier changed from Sealed to None", async () => {
@@ -495,7 +495,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "EntityClass",
       // If modifier is set to None, it won't appear in the JSON
     });
@@ -540,7 +540,7 @@ describe("Class merger tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<EntityClass>("TestEntity");
-    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
+    expect(mergedItem!.toJSON().baseClass).toEqual("TargetSchema.TestBase");
   });
 
   it("should throw an error when merging classes with different schema item types", async () => {
@@ -568,7 +568,7 @@ describe("Class merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith("Changing the type of item 'TestClass' not supported.");
+    await expect(merge).rejects.toThrow("Changing the type of item 'TestClass' not supported.");
   });
 
   it("should throw an error when merging class modifier changed from Abstract to Sealed", async () => {
@@ -598,7 +598,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' modifier is not supported.");
+    await expect(merge).rejects.toThrow("Changing the class 'TestEntity' modifier is not supported.");
   });
 
   it("should throw an error when merging entity base class to one that doesn't derive from", async () => {
@@ -646,10 +646,12 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    await expect(merge).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.SetBaseClass,
+      innerError: {
+        message: `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`,
+        errorNumber: ECEditingStatus.InvalidBaseClass,
+      },
     });
   });
 
@@ -683,7 +685,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' baseClass is not supported.");
+    await expect(merge).rejects.toThrow("Changing the class 'TestEntity' baseClass is not supported.");
   });
 
   it("should throw an error when merging entity base class changed from undefined to existing one", async () => {
@@ -719,7 +721,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' baseClass is not supported.");
+    await expect(merge).rejects.toThrow("Changing the class 'TestEntity' baseClass is not supported.");
   });
 
   it("should throw an error when merging mixins with different appliesTo values", async () => {
@@ -759,7 +761,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the mixin 'TestMixin' appliesTo is not supported.");
+    await expect(merge).rejects.toThrow("Changing the mixin 'TestMixin' appliesTo is not supported.");
   });
 
   it("should throw an error when merging entity class with a unknown mixins", async () => {
@@ -788,10 +790,12 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.AddMixin);
-      expect(error).to.have.nested.property("innerError.message", `Mixin TargetSchema.NotExistingMixin could not be found in the schema context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+    await expect(merge).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.AddMixin,
+      innerError: {
+        message: `Mixin TargetSchema.NotExistingMixin could not be found in the schema context.`,
+        errorNumber: ECEditingStatus.SchemaItemNotFoundInContext,
+      },
     });
   });
 
@@ -828,7 +832,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'TestStruct' baseClass is not supported.");
+    await expect(merge).rejects.toThrow("Changing the class 'TestStruct' baseClass is not supported.");
   });
 
   it("should throw an error when merging mixin base class to one that doesn't derive from", async () => {
@@ -874,10 +878,12 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    await expect(merge).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.SetBaseClass,
+      innerError: {
+        message: `Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.`,
+        errorNumber: ECEditingStatus.InvalidBaseClass,
+      },
     });
   });
 
@@ -916,7 +922,7 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'testCAClass' baseClass is not supported.");
+    await expect(merge).rejects.toThrow("Changing the class 'testCAClass' baseClass is not supported.");
   });
 
   it("should throw an error when merging custom attribute base class to one that doesn't derive from", async () => {
@@ -968,10 +974,12 @@ describe("Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    await expect(merge).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.SetBaseClass,
+      innerError: {
+        message: `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`,
+        errorNumber: ECEditingStatus.InvalidBaseClass,
+      },
     });
   });
 });

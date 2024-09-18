@@ -46,25 +46,29 @@ describe("KindOfQuantities tests", () => {
 
     const result = await testEditor.kindOfQuantities.createFromProps(testKey, koqProps);
     const kindOfQuantity = await testEditor.schemaContext.getSchemaItem(result) as KindOfQuantity;
-    expect(kindOfQuantity.fullName).to.eql("testSchema.testKoQ");
-    expect(await kindOfQuantity.persistenceUnit).to.eql(await testEditor.schemaContext.getSchemaItem(unitKey));
+    expect(kindOfQuantity.fullName).toBe("testSchema.testKoQ");
+    expect(await kindOfQuantity.persistenceUnit).toBe(await testEditor.schemaContext.getSchemaItem(unitKey));
   });
 
   it("try creating KindOfQuantity in unknown schema, throws error", async () => {
     const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.kindOfQuantities.create(badKey, "testInvertedUnit", unitKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+    await expect(testEditor.kindOfQuantities.create(badKey, "testInvertedUnit", unitKey)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `Schema Key ${badKey.toString(true)} could not be found in the context.`,
+        errorNumber: ECEditingStatus.SchemaNotFound,
+      },
     });
   });
 
   it("try creating KindOfQuantity with existing name, throws error", async () => {
     await testEditor.kindOfQuantities.create(testKey, "testKoq", unitKey);
-    await expect(testEditor.kindOfQuantities.create(testKey, "testKoq", unitKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `KindOfQuantity testSchema.testKoq already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    await expect(testEditor.kindOfQuantities.create(testKey, "testKoq", unitKey)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `KindOfQuantity testSchema.testKoq already exists in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNameAlreadyExists,
+      },
     });
   });
 });

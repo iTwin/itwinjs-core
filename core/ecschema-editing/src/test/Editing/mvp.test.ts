@@ -31,8 +31,8 @@ describe("SchemaEditor tests", () => {
   describe("Schema tests", () => {
     it("should create a new schema and return a SchemaEditResults", async () => {
       const schemaKey = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-      expect(schemaKey).to.not.be.undefined;
-      expect(schemaKey).to.deep.equal(new SchemaKey("testSchema", new ECVersion(1,0,0)));
+      expect(schemaKey).not.toBeUndefined();
+      expect(schemaKey).toEqual(new SchemaKey("testSchema", new ECVersion(1,0,0)));
     });
   });
 
@@ -48,142 +48,148 @@ describe("SchemaEditor tests", () => {
     it("should create BisCore.Element subclass successfully", async () => {
       const elementKey = new SchemaItemKey("Element", bisSchemaKey);
       const result = await testEditor.entities.createElement(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element");
-      expect(result).to.not.be.undefined;
-      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).not.toBeUndefined();
+      expect(result).toEqual(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as EntityClass;
-      expect(element).to.not.be.undefined;
+      expect(element).not.toBeUndefined();
       const baseClass = await element.baseClass;
-      expect(baseClass).to.not.be.undefined;
-      expect(baseClass?.key).to.deep.equal(new SchemaItemKey("Element", bisSchemaKey));
+      expect(baseClass).not.toBeUndefined();
+      expect(baseClass?.key).toEqual(new SchemaItemKey("Element", bisSchemaKey));
     });
 
     it("should create BisCore.Element grandchild successfully", async () => {
       const elementKey = new SchemaItemKey("Element", bisSchemaKey);
       const result = await testEditor.entities.createElement(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element");
-      expect(result).to.not.be.undefined;
-      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).not.toBeUndefined();
+      expect(result).toEqual(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as EntityClass;
-      expect(element).to.not.be.undefined;
+      expect(element).not.toBeUndefined();
       const baseClass = await element.baseClass;
-      expect(baseClass).to.not.be.undefined;
-      expect(baseClass?.key).to.deep.equal(new SchemaItemKey("Element", bisSchemaKey));
+      expect(baseClass).not.toBeUndefined();
+      expect(baseClass?.key).toEqual(new SchemaItemKey("Element", bisSchemaKey));
 
       const result2 = await testEditor.entities.createElement(testSchemaKey, "testElement2", ECClassModifier.None, result, "test element2");
-      expect(result2).to.not.be.undefined;
-      expect(result2).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      expect(result2).not.toBeUndefined();
+      expect(result2).toEqual(new SchemaItemKey("testElement2", testSchemaKey));
       const element2 = await testSchema!.getItem("testElement2") as EntityClass;
-      expect(element2).to.not.be.undefined;
+      expect(element2).not.toBeUndefined();
       const baseClass2 = await element2.baseClass;
-      expect(baseClass2).to.not.be.undefined;
-      expect(baseClass2?.key).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(baseClass2).not.toBeUndefined();
+      expect(baseClass2?.key).toEqual(new SchemaItemKey("testElement", testSchemaKey));
     });
 
     it("should create BisCore.ElementUniqueAspect subclass successfully", async () => {
       const uniqueAspectKey = new SchemaItemKey("ElementUniqueAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement", ECClassModifier.None, uniqueAspectKey, "test element");
-      expect(result).to.not.be.undefined;
-      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).not.toBeUndefined();
+      expect(result).toEqual(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as ECClass;
-      expect(element).to.not.be.undefined;
+      expect(element).not.toBeUndefined();
       const baseClass = await element?.baseClass;
-      expect(baseClass).to.not.be.undefined;
+      expect(baseClass).not.toBeUndefined();
       expect(baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(uniqueAspectKey));
     });
 
     it("should create BisCore.ElementUniqueAspect grandchild successfully", async () => {
       const elementKey = new SchemaItemKey("ElementUniqueAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element");
-      expect(result).to.not.be.undefined;
-      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).not.toBeUndefined();
+      expect(result).toEqual(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as EntityClass;
-      expect(element).to.not.be.undefined;
+      expect(element).not.toBeUndefined();
       const baseClass = await element.baseClass;
-      expect(baseClass).to.not.be.undefined;
-      expect(baseClass?.key).to.deep.equal(new SchemaItemKey("ElementUniqueAspect", bisSchemaKey));
+      expect(baseClass).not.toBeUndefined();
+      expect(baseClass?.key).toEqual(new SchemaItemKey("ElementUniqueAspect", bisSchemaKey));
 
       const result2 = await testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement2", ECClassModifier.None, result, "test element2");
-      expect(result2).to.not.be.undefined;
-      expect(result2).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      expect(result2).not.toBeUndefined();
+      expect(result2).toEqual(new SchemaItemKey("testElement2", testSchemaKey));
       const element2 = await testSchema!.getItem("testElement2") as EntityClass;
-      expect(element2).to.not.be.undefined;
+      expect(element2).not.toBeUndefined();
       const baseClass2 = await element2.baseClass;
-      expect(baseClass2).to.not.be.undefined;
-      expect(baseClass2?.key).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(baseClass2).not.toBeUndefined();
+      expect(baseClass2?.key).toEqual(new SchemaItemKey("testElement", testSchemaKey));
     });
 
     it("should create BisCore.ElementMultiAspect subclass successfully", async () => {
       const multiAspectKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, multiAspectKey, "test element");
-      expect(result).to.not.be.undefined;
-      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).not.toBeUndefined();
+      expect(result).toEqual(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as ECClass;
-      expect(element).to.not.be.undefined;
+      expect(element).not.toBeUndefined();
       const baseClass = await element?.baseClass;
-      expect(baseClass).to.not.be.undefined;
+      expect(baseClass).not.toBeUndefined();
       expect(baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(multiAspectKey));
     });
 
     it("should create BisCore.ElementMultiAspect grandchild successfully", async () => {
       const elementKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element");
-      expect(result).to.not.be.undefined;
-      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).not.toBeUndefined();
+      expect(result).toEqual(new SchemaItemKey("testElement", testSchemaKey));
       const element = await testSchema!.getItem("testElement") as EntityClass;
-      expect(element).to.not.be.undefined;
+      expect(element).not.toBeUndefined();
       const baseClass = await element.baseClass;
-      expect(baseClass).to.not.be.undefined;
-      expect(baseClass?.key).to.deep.equal(new SchemaItemKey("ElementMultiAspect", bisSchemaKey));
+      expect(baseClass).not.toBeUndefined();
+      expect(baseClass?.key).toEqual(new SchemaItemKey("ElementMultiAspect", bisSchemaKey));
 
       const result2 = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement2", ECClassModifier.None, result, "test element2");
-      expect(result2).to.not.be.undefined;
-      expect(result2).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      expect(result2).not.toBeUndefined();
+      expect(result2).toEqual(new SchemaItemKey("testElement2", testSchemaKey));
       const element2 = await testSchema!.getItem("testElement2") as EntityClass;
-      expect(element2).to.not.be.undefined;
+      expect(element2).not.toBeUndefined();
       const baseClass2 = await element2.baseClass;
-      expect(baseClass2).to.not.be.undefined;
-      expect(baseClass2?.key).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(baseClass2).not.toBeUndefined();
+      expect(baseClass2?.key).toEqual(new SchemaItemKey("testElement", testSchemaKey));
     });
 
     it("Creating Element, try subclassing unsupported base class, throws", async () => {
       const elementKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
-      await expect(testEditor.entities.createElement(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
-        expect(error).to.have.nested.property("innerError.message", `Expected base class ${elementKey.fullName} to derive from BisCore.Element.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElement);
+      await expect(testEditor.entities.createElement(testSchemaKey, "testElement", ECClassModifier.None, elementKey, "test element")).rejects.toMatchObject({
+        errorNumber: ECEditingStatus.CreateElement,
+        innerError: {
+          message: `Expected base class ${elementKey.fullName} to derive from BisCore.Element.`,
+          errorNumber: ECEditingStatus.BaseClassIsNotElement,
+        },
       });
     });
 
     it("Creating ElementUniqueAspect, try subclassing unsupported base class, throws", async () => {
       const uniqueAspectKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
-      await expect(testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement", ECClassModifier.None, uniqueAspectKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
-        expect(error).to.have.nested.property("innerError.message", `Expected base class ${uniqueAspectKey.fullName} to derive from BisCore.ElementUniqueAspect.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElementUniqueAspect);
+      await expect(testEditor.entities.createElementUniqueAspect(testSchemaKey, "testElement", ECClassModifier.None, uniqueAspectKey, "test element")).rejects.toMatchObject({
+        errorNumber: ECEditingStatus.CreateElement,
+        innerError: {
+          message: `Expected base class ${uniqueAspectKey.fullName} to derive from BisCore.ElementUniqueAspect.`,
+          errorNumber: ECEditingStatus.BaseClassIsNotElementUniqueAspect,
+        },
       });
     });
 
     it("Creating ElementMultiAspect, try subclassing unsupported base class, throws", async () => {
       const multiAspectKey = new SchemaItemKey("PhysicalModel", bisSchemaKey);
-      await expect(testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, multiAspectKey, "test element")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateElement);
-        expect(error).to.have.nested.property("innerError.message", `Expected base class ${multiAspectKey.fullName} to derive from BisCore.ElementMultiAspect.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.BaseClassIsNotElementMultiAspect);
+      await expect(testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, multiAspectKey, "test element")).rejects.toMatchObject({
+        errorNumber: ECEditingStatus.CreateElement,
+        innerError: {
+          message: `Expected base class ${multiAspectKey.fullName} to derive from BisCore.ElementMultiAspect.`,
+          errorNumber: ECEditingStatus.BaseClassIsNotElementMultiAspect,
+        },
       });
     });
 
     it("should delete class successfully", async () => {
       const multiAspectKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
       const result = await testEditor.entities.createElementMultiAspect(testSchemaKey, "testElement", ECClassModifier.None, multiAspectKey, "test element");
-      expect(result).to.not.be.undefined;
-      expect(result).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      expect(result).not.toBeUndefined();
+      expect(result).toEqual(new SchemaItemKey("testElement", testSchemaKey));
       let element = await testSchema!.getItem("testElement");
-      expect(element).to.not.be.undefined;
+      expect(element).not.toBeUndefined();
       await testEditor.entities.delete(result);
-      element = await testSchema!.getItem("testElements");
-      expect(element).to.be.undefined;
+      element = await testSchema!.getItem("testElement");
+      expect(element).toBeUndefined();
       const classes = testSchema!.getClasses();
       for (const _class of classes) {
-        expect(false, "Expected no classes in the schema.").to.be.true;
+        expect(false, "Expected no classes in the schema.").toBe(true);
       }
     });
 
@@ -199,29 +205,28 @@ describe("SchemaEditor tests", () => {
       it("should successfully create a PrimitiveProperty of type double", async () => {
         await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Double, "p");
         const property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
-        expect(property.name).to.equal("p_TestProperty");
+        expect(property.name).toEqual("p_TestProperty");
       });
 
       it("should successfully create a PrimitiveProperty of type String", async () => {
         await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.String, "p");
         const property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
-        expect(property.name).to.equal("p_TestProperty");
+        expect(property.name).toEqual("p_TestProperty");
       });
 
       it("should successfully create a PrimitiveProperty of type DateTime", async () => {
         await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.DateTime, "p");
         const property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
-        expect(property.name).to.equal("p_TestProperty");
+        expect(property.name).toEqual("p_TestProperty");
       });
 
       it("should successfully create a PrimitiveProperty of type Integer", async () => {
         await testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Integer, "p");
         const property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
-        expect(property.name).to.equal("p_TestProperty");
+        expect(property.name).toEqual("p_TestProperty");
       });
-
       it("try to create a property of unsupported type, throws", async () => {
-        await expect(testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Boolean, "p")).to.be.rejectedWith(Error, "Property creation is restricted to type Double, String, DateTime, and Integer.");
+        await expect(testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Boolean, "p")).rejects.toThrow("Property creation is restricted to type Double, String, DateTime, and Integer.");
       });
 
       it("should successfully delete PrimitiveProperty.", async () => {
@@ -231,8 +236,8 @@ describe("SchemaEditor tests", () => {
         await testEditor.entities.deleteProperty(entityKey as SchemaItemKey, "p_TestProperty");
 
         // Should get undefined since property has been deleted
-        property = await testEntity?.getProperty("p_TestProperty") as PrimitiveProperty;
-        expect(property).to.be.undefined;
+        property = await testEntity?.getProperty("TestProperty") as PrimitiveProperty;
+        expect(property).toBeUndefined();
       });
     });
   });

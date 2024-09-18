@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { KindOfQuantity, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -108,7 +108,7 @@ describe("KindOfQuantity merge tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
-    expect(mergedItem!.toJSON()).deep.equals({
+    expect(mergedItem!.toJSON()).toEqual({
       description: "Description of koq",
       label: "Test",
       persistenceUnit: "ReferenceSchema.TU_HORIZONTAL_PER_TU_VERTICAL",
@@ -157,7 +157,7 @@ describe("KindOfQuantity merge tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
-    expect(mergedItem!.toJSON()).deep.equals({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "KindOfQuantity",
       label: "Test",
       description: "Description of koq",
@@ -198,7 +198,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
     const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
-    expect(mergedItem!.toJSON()).deep.equals({
+    expect(mergedItem!.toJSON()).toEqual({
       description: "Description of koq",
       label: "Test",
       persistenceUnit: "ReferenceSchema.TU_PER_TU",
@@ -266,7 +266,7 @@ describe("KindOfQuantity merge tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
-    expect(mergedItem!.toJSON()).deep.eq({
+    expect(mergedItem!.toJSON()).toEqual({
       schemaItemType: "KindOfQuantity",
       label: "Test",
       description: "Description of koq",
@@ -320,7 +320,7 @@ describe("KindOfQuantity merge tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
-    expect(mergedItem!.toJSON()).deep.equals({
+    expect(mergedItem!.toJSON()).toEqual({
       description: "Description of koq",
       label: "Test",
       persistenceUnit: "ReferenceSchema.TU",
@@ -367,6 +367,6 @@ describe("KindOfQuantity merge tests", () => {
       conflicts: undefined,
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the kind of quantity 'TestKoq' persistenceUnit is not supported.");
+    await expect(merge).rejects.toThrow("Changing the kind of quantity 'TestKoq' persistenceUnit is not supported.");
   });
 });

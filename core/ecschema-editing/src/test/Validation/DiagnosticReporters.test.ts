@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
@@ -55,7 +55,7 @@ describe("DiagnosticReporters tests", () => {
       suppressions.set("schema1", ["code2"]);
       const reporter = new TestDiagnosticReporter(suppressions);
 
-      expect(reporter.suppressions).equals(suppressions);
+      expect(reporter.suppressions).toEqual(suppressions);
     });
 
     it("no suppressions, should call reportDiagnostic correctly", async () => {
@@ -65,7 +65,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(reportDiagnostic).toHaveBeenCalledWith(diag,"Test Message Param1 Param2");
+      expect(reportDiagnostic).toHaveBeenCalledWith(diag, "Test Message Param1 Param2");
     });
 
     it("rules code not in suppressions, should call reportDiagnostic correctly", async () => {
@@ -96,22 +96,22 @@ describe("DiagnosticReporters tests", () => {
 
   describe("LoggingDiagnosticReporter tests", () => {
     it("should log expected error", async () => {
-      const logMessage = vi.spyOn(Logger, "logWarning");
+      const logMessage = vi.spyOn(Logger, "logError");
       const reporter = new LoggingDiagnosticReporter();
       const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
       reporter.report(diag);
 
-      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2");
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2", expect.any(Function));
       const metaDataFunc = logMessage.mock.calls[0][2];
-      assert.isDefined(metaDataFunc);
+      expect(metaDataFunc).toBeDefined();
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
-      assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet-100");
-      expect(metaData.category).to.equal(DiagnosticCategory.Error);
-      expect(metaData.ecDefinition).to.equal(testProperty);
-      expect(metaData.messageText).to.be.undefined;
-      expect(metaData.messageArgs).to.be.undefined;
+      expect(metaData).toBeDefined();
+      expect(metaData.code).toBe("TestRuleSet-100");
+      expect(metaData.category).toBe(DiagnosticCategory.Error);
+      expect(metaData.ecDefinition).toBe(testProperty);
+      expect(metaData.messageText).toBeUndefined();
+      expect(metaData.messageArgs).toBeUndefined();
     });
 
     it("should log expected error with translated message", async () => {
@@ -123,7 +123,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Translated text Param1 Param2");
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Translated text Param1 Param2", expect.any(Function));
     });
 
     it("no message args, should log expected error with translated message", async () => {
@@ -135,7 +135,7 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Translated text");
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Translated text", expect.any(Function));
     });
 
     it("should log expected warning", async () => {
@@ -145,16 +145,16 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2");
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2", expect.any(Function));
       const metaDataFunc = logMessage.mock.calls[0][2];
-      assert.isDefined(metaDataFunc);
+      expect(metaDataFunc).toBeDefined();
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
-      assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet-100");
-      expect(metaData.category).to.equal(DiagnosticCategory.Warning);
-      expect(metaData.ecDefinition).to.equal(testProperty);
-      expect(metaData.messageText).to.be.undefined;
-      expect(metaData.messageArgs).to.be.undefined;
+      expect(metaData).toBeDefined();
+      expect(metaData.code).toBe("TestRuleSet-100");
+      expect(metaData.category).toBe(DiagnosticCategory.Warning);
+      expect(metaData.ecDefinition).toBe(testProperty);
+      expect(metaData.messageText).toBeUndefined();
+      expect(metaData.messageArgs).toBeUndefined();
     });
 
     it("should log expected message", async () => {
@@ -164,16 +164,16 @@ describe("DiagnosticReporters tests", () => {
 
       reporter.report(diag);
 
-      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2");
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2", expect.any(Function));
       const metaDataFunc = logMessage.mock.calls[0][2];
-      assert.isDefined(metaDataFunc);
+      expect(metaDataFunc).toBeDefined();
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
-      assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet-100");
-      expect(metaData.category).to.equal(DiagnosticCategory.Message);
-      expect(metaData.ecDefinition).to.equal(testProperty);
-      expect(metaData.messageText).to.be.undefined;
-      expect(metaData.messageArgs).to.be.undefined;
+      expect(metaData).toBeDefined();
+      expect(metaData.code).toBe("TestRuleSet-100");
+      expect(metaData.category).toBe(DiagnosticCategory.Message);
+      expect(metaData.ecDefinition).toBe(testProperty);
+      expect(metaData.messageText).toBeUndefined();
+      expect(metaData.messageArgs).toBeUndefined();
     });
 
     it("should log expected suggestion", async () => {
@@ -182,17 +182,16 @@ describe("DiagnosticReporters tests", () => {
       const diag = await createTestDiagnostic(DiagnosticCategory.Suggestion);
 
       reporter.report(diag);
-
-      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2");
+      expect(logMessage).toHaveBeenCalledWith("ecschema-metadata", "Test Message Param1 Param2", expect.any(Function));
       const metaDataFunc = logMessage.mock.calls[0][2];
-      assert.isDefined(metaDataFunc);
+      expect(metaDataFunc).toBeDefined();
       const metaData = BentleyError.getMetaData(metaDataFunc) as any;
-      assert.isDefined(metaData);
-      expect(metaData.code).to.equal("TestRuleSet-100");
-      expect(metaData.category).to.equal(DiagnosticCategory.Suggestion);
-      expect(metaData.ecDefinition).to.equal(testProperty);
-      expect(metaData.messageText).to.be.undefined;
-      expect(metaData.messageArgs).to.be.undefined;
+      expect(metaData).toBeDefined();
+      expect(metaData.code).toBe("TestRuleSet-100");
+      expect(metaData.category).toBe(DiagnosticCategory.Suggestion);
+      expect(metaData.ecDefinition).toBe(testProperty);
+      expect(metaData.messageText).toBeUndefined();
+      expect(metaData.messageArgs).toBeUndefined();
     });
   });
 });

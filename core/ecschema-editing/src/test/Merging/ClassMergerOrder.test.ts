@@ -5,7 +5,7 @@
 import { EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../ecschema-editing";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 describe("Class items merging order tests", () => {
   let context: SchemaContext;
@@ -58,7 +58,7 @@ describe("Class items merging order tests", () => {
     });
 
     const targetBracketBaseClass = await mergedSchema.getItem("bracket") as EntityClass;
-    expect(targetBracketBaseClass.baseClass?.fullName).to.deep.equal("TargetSchema.sps");
+    expect(targetBracketBaseClass.baseClass?.fullName).toEqual("TargetSchema.sps");
   });
 
   it("should merge entity class with derived mixins before base mixin", async () => {
@@ -104,8 +104,8 @@ describe("Class items merging order tests", () => {
     const mergedItem = await mergedSchema.getItem<EntityClass>("testClass");
     const classMixins = mergedItem?.mixins;
     if(classMixins){
-      expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
-      expect((classMixins[1]).fullName).to.deep.equal("TargetSchema.mixinB");
+      expect((classMixins[0]).fullName).toEqual("TargetSchema.mixinA");
+      expect((classMixins[1]).fullName).toEqual("TargetSchema.mixinB");
     }
     expect(classMixins?.length).be.equal(2);
   });
@@ -149,8 +149,8 @@ describe("Class items merging order tests", () => {
     });
 
     const mergedItem = await mergedSchema.getItem<Mixin>("mixinA");
-    expect(mergedItem?.appliesTo?.fullName).to.deep.equal("TargetSchema.testClass");
-    expect(mergedItem?.baseClass?.fullName).to.deep.equal("TargetSchema.testBaseMixinClass");
+    expect(mergedItem?.appliesTo?.fullName).toEqual("TargetSchema.testClass");
+    expect(mergedItem?.baseClass?.fullName).toEqual("TargetSchema.testBaseMixinClass");
   });
 
   it("it should merge missing entity class with struct properties before the struct class items", async () => {
@@ -233,7 +233,7 @@ describe("Class items merging order tests", () => {
     });
 
     const middleTarget = await mergedSchema.getItem("middle") as StructClass;
-    expect(middleTarget.toJSON()).to.deep.equal({
+    expect(middleTarget.toJSON()).toEqual({
       schemaItemType: "StructClass",
       description: "Middle test class",
       properties: [
@@ -368,7 +368,7 @@ describe("Class items merging order tests", () => {
     const middleTarget = await mergedSchema.getItem("middle") as StructClass;
     const allocationTarget = await mergedSchema.getItem("allocation") as StructClass;
 
-    expect(middleTarget.toJSON()).to.deep.equal({
+    expect(middleTarget.toJSON()).toEqual({
       schemaItemType: "StructClass",
       description: "Middle test class",
       properties: [
@@ -391,7 +391,7 @@ describe("Class items merging order tests", () => {
       ],
     });
 
-    expect(allocationTarget.toJSON()).to.deep.equal({
+    expect(allocationTarget.toJSON()).toEqual({
       schemaItemType: "StructClass",
       description: "Allocation test Class",
       properties: [

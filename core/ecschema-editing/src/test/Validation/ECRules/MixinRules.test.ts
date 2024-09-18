@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { DelayedPromiseWithProps, EntityClass, Mixin, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableEntityClass } from "../../../Editing/Mutable/MutableEntityClass";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
@@ -34,7 +34,7 @@ describe("Mixin Rule Tests", () => {
 
     const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
     for await (const _diagnostic of result) {
-      expect(false, "Rule should have passed").to.be.true;
+      expect(false, "Rule should have passed").toBe(true);
     }
   });
 
@@ -45,7 +45,7 @@ describe("Mixin Rule Tests", () => {
 
     const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
     for await (const _diagnostic of result) {
-      expect(false, "Rule should have passed").to.be.true;
+      expect(false, "Rule should have passed").toBe(true);
     }
   });
 
@@ -60,13 +60,13 @@ describe("Mixin Rule Tests", () => {
     let resultHasEntries = false;
     for await (const diagnostic of result) {
       resultHasEntries = true;
-      expect(diagnostic.ecDefinition).to.equal(entityClass);
-      expect(diagnostic.messageArgs).to.eql([mixin.fullName, entityClass.fullName, mixin.appliesTo!.fullName]);
-      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
-      expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      expect(diagnostic.ecDefinition).toBe(entityClass);
+      expect(diagnostic.messageArgs).toEqual([mixin.fullName, entityClass.fullName, mixin.appliesTo!.fullName]);
+      expect(diagnostic.category).toBe(DiagnosticCategory.Error);
+      expect(diagnostic.code).toBe(Rules.DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
+      expect(diagnostic.diagnosticType).toBe(DiagnosticType.SchemaItem);
     }
-    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").toBe(true);
   });
 
   it("MixinAppliedToClassMustDeriveFromConstraint, entity base incompatible with constraint, rule violated.", async () => {
@@ -82,12 +82,12 @@ describe("Mixin Rule Tests", () => {
     let resultHasEntries = false;
     for await (const diagnostic of result) {
       resultHasEntries = true;
-      expect(diagnostic.ecDefinition).to.equal(entityClass);
-      expect(diagnostic.messageArgs).to.eql([mixin.fullName, entityClass.fullName, mixin.appliesTo!.fullName]);
-      expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
-      expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
-      expect(diagnostic.diagnosticType).to.equal(DiagnosticType.SchemaItem);
+      expect(diagnostic.ecDefinition).toBe(entityClass);
+      expect(diagnostic.messageArgs).toEqual([mixin.fullName, entityClass.fullName, mixin.appliesTo!.fullName]);
+      expect(diagnostic.category).toBe(DiagnosticCategory.Error);
+      expect(diagnostic.code).toBe(Rules.DiagnosticCodes.MixinAppliedToClassMustDeriveFromConstraint);
+      expect(diagnostic.diagnosticType).toBe(DiagnosticType.SchemaItem);
     }
-    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").toBe(true);
   });
 });

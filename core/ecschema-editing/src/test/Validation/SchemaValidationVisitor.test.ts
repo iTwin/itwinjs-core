@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format,
   InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory, RelationshipClass,
   RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, StructClass, Unit, UnitSystem,
@@ -34,8 +34,8 @@ describe("SchemaValidationVisitor tests", () => {
     const testRuleSetB = new TestRuleSetB();
     visitor.registerRuleSet(testRuleSetB);
 
-    expect(visitor.ruleSets[testRuleSet.name]).to.be.not.undefined;
-    expect(visitor.ruleSets[testRuleSetB.name]).to.be.not.undefined;
+    expect(visitor.ruleSets[testRuleSet.name]).toBeDefined();
+    expect(visitor.ruleSets[testRuleSetB.name]).toBeDefined();
   });
 
   it("registerRuleSet, rule set already registered, throws", async () => {
@@ -48,13 +48,13 @@ describe("SchemaValidationVisitor tests", () => {
   it("registerSuppressionSet, AppliedSuppressionSet registered properly", async () => {
     const suppressionSet = new ApplySuppressionSet();
     visitor.registerRuleSuppressionSet(suppressionSet);
-    expect(visitor.suppressionSet).to.be.not.undefined;
+    expect(visitor.suppressionSet).toBeDefined();
   });
 
   it("registerSuppressionSet, AppliedSuppressionSet registered properly", async () => {
     const suppressionSet = new IgnoreSuppressionSet();
     visitor.registerRuleSuppressionSet(suppressionSet);
-    expect(visitor.suppressionSet).to.be.not.undefined;
+    expect(visitor.suppressionSet).toBeDefined();
   });
 
   it("registerReporter, reporter registered properly", async () => {
@@ -1056,7 +1056,7 @@ describe("SchemaValidationVisitor tests", () => {
       await visitor.visitCustomAttributeContainer(constraint);
 
       const diagnostic = new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(constraint, ["Param1", "Param2"]);
-      expect(reportSpy).not.toHaveBeenCalledWith(diagnostic);
+      expect(reportSpy.mock.lastCall).not.toEqual(diagnostic);
       expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     });
   });

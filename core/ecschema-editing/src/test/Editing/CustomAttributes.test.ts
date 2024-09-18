@@ -160,19 +160,23 @@ describe("CustomAttribute tests", () => {
 
   it("try creating custom attribute class with unknown base class, throws error", async () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
-    await expect(testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.StructProperty, undefined, baseClassKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `CustomAttributeClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+    await expect(testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.StructProperty, undefined, baseClassKey)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `CustomAttributeClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNotFound,
+      },
     });
   });
 
   it("try creating custom attribute class with existing name, throws error", async () => {
     await testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.StructProperty);
-    await expect(testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.StructProperty)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `CustomAttributeClass testSchema.testCustomAttribute already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+    await expect(testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.StructProperty)).rejects.toMatchObject({
+      errorNumber: ECEditingStatus.CreateSchemaItemFailed,
+      innerError: {
+        message: `CustomAttributeClass testSchema.testCustomAttribute already exists in the schema ${testKey.name}.`,
+        errorNumber: ECEditingStatus.SchemaItemNameAlreadyExists,
+      },
     });
   });
 });

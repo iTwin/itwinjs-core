@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { AnyProperty, DelayedPromiseWithProps, ECClass, EntityClass, KindOfQuantity, PrimitiveProperty, PrimitiveType,
   PropertyProps, RelationshipClass, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../../Editing/Mutable/MutableClass";
@@ -44,13 +44,13 @@ describe("PropertyRule tests", () => {
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(properties[0]);
-        expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", testBaseClass.fullName, "string", "int"]);
+        expect(diagnostic.ecDefinition).toEqual(properties[0]);
+        expect(diagnostic.messageArgs).toEqual([testClass.fullName, "TestProperty", testBaseClass.fullName, "string", "int"]);
         expect(diagnostic.messageText)
-          .eq("The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.TestBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int.");
-        expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleValueTypePropertyOverride);
-        expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          .toEqual("The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.TestBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int.");
+        expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+        expect(diagnostic.code).toEqual(Rules.DiagnosticCodes.IncompatibleValueTypePropertyOverride);
+        expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
     });
@@ -67,13 +67,13 @@ describe("PropertyRule tests", () => {
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(properties[0]);
-        expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", rootBaseClass.fullName, "string", "int"]);
+        expect(diagnostic.ecDefinition).toEqual(properties[0]);
+        expect(diagnostic.messageArgs).toEqual([testClass.fullName, "TestProperty", rootBaseClass.fullName, "string", "int"]);
         expect(diagnostic.messageText)
-          .eq("The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.RootBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int.");
-        expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleValueTypePropertyOverride);
-        expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          .toEqual("The ECProperty 'TestSchema.TestClass.TestProperty' has a base property 'TestSchema.RootBaseClass.TestProperty' with a value type of string which is incompatible with the value type of int.");
+        expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+        expect(diagnostic.code).toEqual(Rules.DiagnosticCodes.IncompatibleValueTypePropertyOverride);
+        expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
     });
@@ -140,13 +140,13 @@ describe("PropertyRule tests", () => {
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(properties[0]);
-        expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", testBaseClass.fullName, "PrimitiveArrayProperty", "PrimitiveProperty"]);
+        expect(diagnostic.ecDefinition).toEqual(properties[0]);
+        expect(diagnostic.messageArgs).toEqual([testClass.fullName, "TestProperty", testBaseClass.fullName, "PrimitiveArrayProperty", "PrimitiveProperty"]);
         expect(diagnostic.messageText)
-          .eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`);
-        expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleTypePropertyOverride);
-        expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          .toEqual(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`);
+        expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+        expect(diagnostic.code).toEqual(Rules.DiagnosticCodes.IncompatibleTypePropertyOverride);
+        expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
     });
@@ -163,13 +163,13 @@ describe("PropertyRule tests", () => {
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(properties[0]);
-        expect(diagnostic.messageArgs).deep.eq([testClass.fullName, "TestProperty", rootBaseClass.fullName, "PrimitiveArrayProperty", "PrimitiveProperty"]);
+        expect(diagnostic.ecDefinition).toEqual(properties[0]);
+        expect(diagnostic.messageArgs).toEqual([testClass.fullName, "TestProperty", rootBaseClass.fullName, "PrimitiveArrayProperty", "PrimitiveProperty"]);
         expect(diagnostic.messageText)
-          .eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`);
-        expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleTypePropertyOverride);
-        expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          .toEqual(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with a type of PrimitiveArrayProperty which is incompatible with the type of PrimitiveProperty.`);
+        expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+        expect(diagnostic.code).toEqual(Rules.DiagnosticCodes.IncompatibleTypePropertyOverride);
+        expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
     });
@@ -239,16 +239,16 @@ describe("PropertyRule tests", () => {
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(childProperties[0]);
-        expect(diagnostic.messageArgs).deep.eq([
+        expect(diagnostic.ecDefinition).toEqual(childProperties[0]);
+        expect(diagnostic.messageArgs).toEqual([
           testClass.fullName, "TestProperty", testBaseClass.fullName,
           testBaseKindOfQuantity.fullName, baseUnit.fullName, childUnit.fullName, testKindOfQuantity.fullName,
         ]);
         expect(diagnostic.messageText)
-          .eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with KindOfQuantity '${testBaseKindOfQuantity.fullName}' with persistence unit '${baseUnit.fullName}' which is not the same as the persistence unit '${childUnit.fullName}' of the provided KindOfQuantity '${testKindOfQuantity.fullName}'.`);
-        expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleUnitPropertyOverride);
-        expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          .toEqual(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${testBaseClass.fullName}.TestProperty' with KindOfQuantity '${testBaseKindOfQuantity.fullName}' with persistence unit '${baseUnit.fullName}' which is not the same as the persistence unit '${childUnit.fullName}' of the provided KindOfQuantity '${testKindOfQuantity.fullName}'.`);
+        expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+        expect(diagnostic.code).toEqual(Rules.DiagnosticCodes.IncompatibleUnitPropertyOverride);
+        expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
     });
@@ -297,15 +297,15 @@ describe("PropertyRule tests", () => {
       let resultHasEntries = false;
       for await (const diagnostic of results) {
         resultHasEntries = true;
-        expect(diagnostic.ecDefinition).eq(childProperty);
-        expect(diagnostic.messageArgs).deep.eq([
+        expect(diagnostic.ecDefinition).toEqual(childProperty);
+        expect(diagnostic.messageArgs).toEqual([
           testClass.fullName, "TestProperty", rootBaseClass.fullName,
           testBaseKindOfQuantity.fullName, baseUnit.fullName, childUnit.fullName, testKindOfQuantity.fullName,
         ]);
-        expect(diagnostic.messageText).eq(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with KindOfQuantity '${testBaseKindOfQuantity.fullName}' with persistence unit '${baseUnit.fullName}' which is not the same as the persistence unit '${childUnit.fullName}' of the provided KindOfQuantity '${testKindOfQuantity.fullName}'.`);
-        expect(diagnostic.category).eq(DiagnosticCategory.Error);
-        expect(diagnostic.code).eq(Rules.DiagnosticCodes.IncompatibleUnitPropertyOverride);
-        expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+        expect(diagnostic.messageText).toEqual(`The ECProperty '${testClass.fullName}.TestProperty' has a base property '${rootBaseClass.fullName}.TestProperty' with KindOfQuantity '${testBaseKindOfQuantity.fullName}' with persistence unit '${baseUnit.fullName}' which is not the same as the persistence unit '${childUnit.fullName}' of the provided KindOfQuantity '${testKindOfQuantity.fullName}'.`);
+        expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+        expect(diagnostic.code).toEqual(Rules.DiagnosticCodes.IncompatibleUnitPropertyOverride);
+        expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
       }
       expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
     });
@@ -601,12 +601,12 @@ describe("PropertyRule tests", () => {
         let resultHasEntries = false;
         for await (const diagnostic of results) {
           resultHasEntries = true;
-          expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship"]);
-          expect(diagnostic.messageText).eq(`The referenced relationship 'TestSchema.TestRelationship', used in NavigationProperty 'TestSourceEntity.TestProperty' is not the root relationship.`);
-          expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationRelationshipMustBeRoot.code);
-          expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          expect(diagnostic.ecDefinition).toEqual(testProperty);
+          expect(diagnostic.messageArgs).toEqual(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship"]);
+          expect(diagnostic.messageText).toEqual(`The referenced relationship 'TestSchema.TestRelationship', used in NavigationProperty 'TestSourceEntity.TestProperty' is not the root relationship.`);
+          expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+          expect(diagnostic.code).toEqual(Rules.Diagnostics.NavigationRelationshipMustBeRoot.code);
+          expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
         }
         expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
       });
@@ -690,12 +690,12 @@ describe("PropertyRule tests", () => {
         let resultHasEntries = false;
         for await (const diagnostic of results) {
           resultHasEntries = true;
-          expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship", "Forward"]);
-          expect(diagnostic.messageText).eq(`NavigationProperty 'TestSourceEntity.TestProperty' uses the relationship 'TestSchema.TestRelationship' that cannot be traversed in the 'Forward' direction due to a max multiplicity greater than 1.`);
-          expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationTargetMustHaveSingularMultiplicity.code);
-          expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          expect(diagnostic.ecDefinition).toEqual(testProperty);
+          expect(diagnostic.messageArgs).toEqual(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship", "Forward"]);
+          expect(diagnostic.messageText).toEqual(`NavigationProperty 'TestSourceEntity.TestProperty' uses the relationship 'TestSchema.TestRelationship' that cannot be traversed in the 'Forward' direction due to a max multiplicity greater than 1.`);
+          expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+          expect(diagnostic.code).toEqual(Rules.Diagnostics.NavigationTargetMustHaveSingularMultiplicity.code);
+          expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
         }
         expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
       });
@@ -777,12 +777,12 @@ describe("PropertyRule tests", () => {
         let resultHasEntries = false;
         for await (const diagnostic of results) {
           resultHasEntries = true;
-          expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestTargetEntity.TestProperty", "TestSchema.TestRelationship", "Backward"]);
-          expect(diagnostic.messageText).eq(`NavigationProperty 'TestTargetEntity.TestProperty' uses the relationship 'TestSchema.TestRelationship' that cannot be traversed in the 'Backward' direction due to a max multiplicity greater than 1.`);
-          expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationTargetMustHaveSingularMultiplicity.code);
-          expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          expect(diagnostic.ecDefinition).toEqual(testProperty);
+          expect(diagnostic.messageArgs).toEqual(["TestTargetEntity.TestProperty", "TestSchema.TestRelationship", "Backward"]);
+          expect(diagnostic.messageText).toEqual(`NavigationProperty 'TestTargetEntity.TestProperty' uses the relationship 'TestSchema.TestRelationship' that cannot be traversed in the 'Backward' direction due to a max multiplicity greater than 1.`);
+          expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+          expect(diagnostic.code).toEqual(Rules.Diagnostics.NavigationTargetMustHaveSingularMultiplicity.code);
+          expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
         }
         expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
       });
@@ -866,12 +866,12 @@ describe("PropertyRule tests", () => {
         let resultHasEntries = false;
         for await (const diagnostic of results) {
           resultHasEntries = true;
-          expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship"]);
-          expect(diagnostic.messageText).eq(`The NavigationProperty 'TestSourceEntity.TestProperty', using the relationship 'TestSchema.TestRelationship', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin.`);
-          expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin.code);
-          expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          expect(diagnostic.ecDefinition).toEqual(testProperty);
+          expect(diagnostic.messageArgs).toEqual(["TestSourceEntity.TestProperty", "TestSchema.TestRelationship"]);
+          expect(diagnostic.messageText).toEqual(`The NavigationProperty 'TestSourceEntity.TestProperty', using the relationship 'TestSchema.TestRelationship', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin.`);
+          expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+          expect(diagnostic.code).toEqual(Rules.Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin.code);
+          expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
         }
         expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
       });
@@ -953,12 +953,12 @@ describe("PropertyRule tests", () => {
         let resultHasEntries = false;
         for await (const diagnostic of results) {
           resultHasEntries = true;
-          expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestTargetEntity.TestProperty", "TestSchema.TestRelationship"]);
-          expect(diagnostic.messageText).eq(`The NavigationProperty 'TestTargetEntity.TestProperty', using the relationship 'TestSchema.TestRelationship', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin.`);
-          expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin.code);
-          expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          expect(diagnostic.ecDefinition).toEqual(testProperty);
+          expect(diagnostic.messageArgs).toEqual(["TestTargetEntity.TestProperty", "TestSchema.TestRelationship"]);
+          expect(diagnostic.messageText).toEqual(`The NavigationProperty 'TestTargetEntity.TestProperty', using the relationship 'TestSchema.TestRelationship', points to a RelationshipClass, which is not allowed.  NavigationProperties must point to an EntityClass or Mixin.`);
+          expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+          expect(diagnostic.code).toEqual(Rules.Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin.code);
+          expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
         }
         expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
       });
@@ -1042,12 +1042,12 @@ describe("PropertyRule tests", () => {
         let resultHasEntries = false;
         for await (const diagnostic of results) {
           resultHasEntries = true;
-          expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestSourceEntity", "TestProperty", "TestSchema.TestRelationship", "source"]);
-          expect(diagnostic.messageText).eq(`The class 'TestSourceEntity' of NavigationProperty 'TestProperty' is not supported by the source constraint of the referenced relationship 'TestSchema.TestRelationship'.`);
-          expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship.code);
-          expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          expect(diagnostic.ecDefinition).toEqual(testProperty);
+          expect(diagnostic.messageArgs).toEqual(["TestSourceEntity", "TestProperty", "TestSchema.TestRelationship", "source"]);
+          expect(diagnostic.messageText).toEqual(`The class 'TestSourceEntity' of NavigationProperty 'TestProperty' is not supported by the source constraint of the referenced relationship 'TestSchema.TestRelationship'.`);
+          expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+          expect(diagnostic.code).toEqual(Rules.Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship.code);
+          expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
         }
         expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
       });
@@ -1129,12 +1129,12 @@ describe("PropertyRule tests", () => {
         let resultHasEntries = false;
         for await (const diagnostic of results) {
           resultHasEntries = true;
-          expect(diagnostic.ecDefinition).eq(testProperty);
-          expect(diagnostic.messageArgs).deep.eq(["TestTargetEntity", "TestProperty", "TestSchema.TestRelationship", "target"]);
-          expect(diagnostic.messageText).eq(`The class 'TestTargetEntity' of NavigationProperty 'TestProperty' is not supported by the target constraint of the referenced relationship 'TestSchema.TestRelationship'.`);
-          expect(diagnostic.category).eq(DiagnosticCategory.Error);
-          expect(diagnostic.code).eq(Rules.Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship.code);
-          expect(diagnostic.diagnosticType).eq(DiagnosticType.Property);
+          expect(diagnostic.ecDefinition).toEqual(testProperty);
+          expect(diagnostic.messageArgs).toEqual(["TestTargetEntity", "TestProperty", "TestSchema.TestRelationship", "target"]);
+          expect(diagnostic.messageText).toEqual(`The class 'TestTargetEntity' of NavigationProperty 'TestProperty' is not supported by the target constraint of the referenced relationship 'TestSchema.TestRelationship'.`);
+          expect(diagnostic.category).toEqual(DiagnosticCategory.Error);
+          expect(diagnostic.code).toEqual(Rules.Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship.code);
+          expect(diagnostic.diagnosticType).toEqual(DiagnosticType.Property);
         }
         expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").true;
       });
