@@ -1021,7 +1021,7 @@ export class Geometry {
    * Return `numerator` divided by `denominator` (with a given `largestResult`).
    * @param numerator the numerator
    * @param denominator the denominator
-   * @param largestResult the ratio threshold
+   * @param largestResult the ratio threshold, defaults to [[largeCoordinateResult]]
    * @returns return `numerator/denominator` but if the ratio exceeds `largestResult`, return `undefined`.
    */
   public static conditionalDivideCoordinate(
