@@ -140,181 +140,181 @@ jobs:
     dependsOn: CreateBranch
     condition: in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped')
     variables:
-      releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
-    steps:
-      - checkout: self
+      releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ] # TODO: TEST if skip previous step error?
+    # steps:
+    #   - checkout: self
 
-      - task: NodeTool@0
-        displayName: Use Node 20.x
-        inputs:
-          versionSpec: 20.x
-          checkLatest: true
+    #   - task: NodeTool@0
+    #     displayName: Use Node 20.x
+    #     inputs:
+    #       versionSpec: 20.x
+    #       checkLatest: true
 
-      - bash: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-          git config --local user.name imodeljs-admin
-        displayName: Setup Git
+    #   - bash: |
+    #       git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+    #       git config --local user.name imodeljs-admin
+    #     displayName: Setup Git
 
-      - bash: |
-          git fetch --all
-          git checkout --track origin/$(releaseBranchName)
-        displayName: Checkout to Release Branch in case of RC
-        condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
+    #   - bash: |
+    #       git fetch --all
+    #       git checkout --track origin/$(releaseBranchName)
+    #     displayName: Checkout to Release Branch in case of RC
+    #     condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
 
-      - script: node common/scripts/install-run-rush.js install
-        displayName: rush install
+    #   - script: node common/scripts/install-run-rush.js install
+    #     displayName: rush install
 
-      - bash: node common/scripts/install-run-rush.js audit
-        displayName: rush audit
+    #   - bash: node common/scripts/install-run-rush.js audit
+    #     displayName: rush audit
 
-      # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
-      - ? ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}
-        : - bash: "node common/scripts/install-run-rush version --bump"
-            displayName: Rush version --bump
+    #   # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
+    #   - ? ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}
+    #     : - bash: "node common/scripts/install-run-rush version --bump"
+    #         displayName: Rush version --bump
 
-      # Support two separate bump types on release branches
-      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
-        : - bash: "node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump"
-            displayName: Release version bump
-            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+    #   # Support two separate bump types on release branches
+    #   - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
+    #     : - bash: "node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump"
+    #         displayName: Release version bump
+    #         condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
-      - bash: |
-          version=$(jq '.[] | .version' common/config/rush/version-policies.json)
+    #   - bash: |
+    #       version=$(jq '.[] | .version' common/config/rush/version-policies.json)
 
-          # Remove quotes or else vso task complains
-          quotelessVersion=$(sed -e 's/^"//' -e 's/"$//' <<<"$version")
-          echo "##vso[build.updatebuildnumber]iModel.js_$quotelessVersion"
-          echo "##vso[task.setvariable variable=version;isOutput=true]$quotelessVersion"
-        displayName: Get new version number
-        name: getVersion
+    #       # Remove quotes or else vso task complains
+    #       quotelessVersion=$(sed -e 's/^"//' -e 's/"$//' <<<"$version")
+    #       echo "##vso[build.updatebuildnumber]iModel.js_$quotelessVersion"
+    #       echo "##vso[task.setvariable variable=version;isOutput=true]$quotelessVersion"
+    #     displayName: Get new version number
+    #     name: getVersion
 
-      # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
-      - ${{ if eq(parameters.BumpType, 'minor') }}:
-          - powershell: |
-              $sourceFile = 'docs/changehistory/NextVersion.md'
+    #   # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
+    #   - ${{ if eq(parameters.BumpType, 'minor') }}:
+    #       - powershell: |
+    #           $sourceFile = 'docs/changehistory/NextVersion.md'
 
-              # If NextVersion has content do work
-              IF ((Get-Content -Path $sourceFile -ReadCount 1 | Measure-Object -line).Lines -gt 5) {
-                  # Replace placeholder header
-                  (Get-Content $sourceFile ) -replace 'NextVersion', "$(getVersion.version) Change Notes" | Set-Content $sourceFile
+    #           # If NextVersion has content do work
+    #           IF ((Get-Content -Path $sourceFile -ReadCount 1 | Measure-Object -line).Lines -gt 5) {
+    #               # Replace placeholder header
+    #               (Get-Content $sourceFile ) -replace 'NextVersion', "$(getVersion.version) Change Notes" | Set-Content $sourceFile
 
-                  # Remove old frontmatter
-                  (Get-Content $sourceFile | Select-Object -Skip 3) | Set-Content $sourceFile
+    #               # Remove old frontmatter
+    #               (Get-Content $sourceFile | Select-Object -Skip 3) | Set-Content $sourceFile
 
-                  # Copy NextVersion to index.md
-                  Copy-Item $sourceFile docs/changehistory/index.md -Force
+    #               # Copy NextVersion to index.md
+    #               Copy-Item $sourceFile docs/changehistory/index.md -Force
 
-                  # Add relevant frontmatter
-                  "---`ndeltaDoc: true`nversion: '$(getVersion.version)'`n---`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
+    #               # Add relevant frontmatter
+    #               "---`ndeltaDoc: true`nversion: '$(getVersion.version)'`n---`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
 
-                  # Rename NextVersion
-                  Rename-Item -Path $sourceFile -NewName "$(getVersion.version).md"
+    #               # Rename NextVersion
+    #               Rename-Item -Path $sourceFile -NewName "$(getVersion.version).md"
 
-                  # Add link to leftNav.md
-                  (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$(getVersion.version)](./$(getVersion.version).md)" | Set-Content -Path docs/changehistory/leftNav.md
+    #               # Add link to leftNav.md
+    #               (Get-Content -Raw -Path docs/changehistory/leftNav.md) -replace "### Versions`n", "### Versions`n`n- [$(getVersion.version)](./$(getVersion.version).md)" | Set-Content -Path docs/changehistory/leftNav.md
 
-                  # Create new NextVersion.md
-                  New-Item $sourceFile
+    #               # Create new NextVersion.md
+    #               New-Item $sourceFile
 
-                  # Update NextVersion.md with template
-                  "---`npublish: false`n---`n# NextVersion`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
-              }
+    #               # Update NextVersion.md with template
+    #               "---`npublish: false`n---`n# NextVersion`n" + (Get-Content $sourceFile | Out-String) | Set-Content $sourceFile
+    #           }
 
-              # Change header tab in docSite.json
-              (Get-Content 'docs/config/docSites.json') -replace '\".*?\":\s.?\"changehistory\"', "`"v$(getVersion.version)`": `"changehistory`"" | Set-Content 'docs/config/docSites.json'
+    #           # Change header tab in docSite.json
+    #           (Get-Content 'docs/config/docSites.json') -replace '\".*?\":\s.?\"changehistory\"', "`"v$(getVersion.version)`": `"changehistory`"" | Set-Content 'docs/config/docSites.json'
 
-            failOnStderr: true
-            displayName: NextVersion.md rename and replace
-            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+    #         failOnStderr: true
+    #         displayName: NextVersion.md rename and replace
+    #         condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
-      - bash: "git add ."
-        displayName: Git add
+    #   - bash: "git add ."
+    #     displayName: Git add
 
-      - bash: |
-          echo Committing version bump $(getVersion.version)...
+    #   - bash: |
+    #       echo Committing version bump $(getVersion.version)...
 
-          git commit -m "$(getVersion.version)" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
-        displayName: Commit version bump
+    #       git commit -m "$(getVersion.version)" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
+    #     displayName: Commit version bump
 
-      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
-        : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
-            displayName: Create git tag
+    #   - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
+    #     : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
+    #         displayName: Create git tag
 
-      - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
-        displayName: Push version bump for release candidate
-        condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
+    #   - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
+    #     displayName: Push version bump for release candidate
+    #     condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
 
-      - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)"
-        displayName: Push version bump for non-release candidate
-        condition: ne('${{ parameters.BumpType }}', 'releaseCandidate')
+    #   - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)"
+    #     displayName: Push version bump for non-release candidate
+    #     condition: ne('${{ parameters.BumpType }}', 'releaseCandidate')
 
-  - job: UpdateMaster
-    displayName: Update master to next minor version
-    dependsOn: Bump
-    condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-    steps:
-      - checkout: self
-      - task: NodeTool@0
-        displayName: "Use Node 20.x"
-        inputs:
-          versionSpec: 20.x
-          checkLatest: true
+  # - job: UpdateMaster
+  #   displayName: Update master to next minor version
+  #   dependsOn: Bump
+  #   condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master')) # TODO: check if after checkout still in master
+  #   steps:
+  #     - checkout: self
+  #     - task: NodeTool@0
+  #       displayName: "Use Node 20.x"
+  #       inputs:
+  #         versionSpec: 20.x
+  #         checkLatest: true
 
-      - bash: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
-          git config --local user.name imodeljs-admin
-        displayName: "Setup Git"
+  #     - bash: |
+  #         git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+  #         git config --local user.name imodeljs-admin
+  #       displayName: "Setup Git"
 
-      - bash: git checkout --track origin/$(Build.SourceBranchName)
-        displayName: Switching to source branch
+  #     - bash: git checkout --track origin/$(Build.SourceBranchName)
+  #       displayName: Switching to source branch
 
-      # Running this rush command will bump the version number to the next minor version, which in turn deletes everything within common/change.
-      - bash: node common/scripts/install-run-rush version --override-bump minor --version-policy prerelease-monorepo-lockStep --bump
-        displayName: Update to new dev version on master
+  #     # Running this rush command will bump the version number to the next minor version, which in turn deletes everything within common/change.
+  #     - bash: node common/scripts/install-run-rush version --override-bump minor --version-policy prerelease-monorepo-lockStep --bump
+  #       displayName: Update to new dev version on master
 
-      # Only add the changes which delete the changelogs, we do not want them on master anymore.
-      - bash: git add common
-        displayName: "Add changelog deletion"
+  #     # Only add the changes which delete the changelogs, we do not want them on master anymore.
+  #     - bash: git add common
+  #       displayName: "Add changelog deletion"
 
-      - bash: |
-          # Resets all changes, other than the deletion of the changelogs.
-          git checkout -- .
+  #     - bash: |
+  #         # Resets all changes, other than the deletion of the changelogs.
+  #         git checkout -- .
 
-          # Cleans up all untracked files. This could happen if there are new packages that do not have change logs yet.
-          git clean -f -d
+  #         # Cleans up all untracked files. This could happen if there are new packages that do not have change logs yet.
+  #         git clean -f -d
 
-          git status
-        displayName: Reset all changes besides changelog
+  #         git status
+  #       displayName: Reset all changes besides changelog
 
-      # The real rush command that we would like to run.
-      # Sets the version number to the next version's first pre-release version.
-      - bash: node common/scripts/install-run-rush version --override-bump preminor --version-policy prerelease-monorepo-lockStep --bump --override-prerelease-id dev
-        displayName: Rush version to new pre-release version
+  #     # The real rush command that we would like to run.
+  #     # Sets the version number to the next version's first pre-release version.
+  #     - bash: node common/scripts/install-run-rush version --override-bump preminor --version-policy prerelease-monorepo-lockStep --bump --override-prerelease-id dev
+  #       displayName: Rush version to new pre-release version
 
-      - powershell: |
-          # Clear the current NextVersion.md to prepare for the next version on master.
-          $sourceFile = 'docs/changehistory/NextVersion.md'
+  #     - powershell: |
+  #         # Clear the current NextVersion.md to prepare for the next version on master.
+  #         $sourceFile = 'docs/changehistory/NextVersion.md'
 
-          # Overwrite everything with just the header
-          "---`npublish: false`n---`n# NextVersion`n" | Set-Content $sourceFile
-        displayName: "Clear current NextVersion.md"
+  #         # Overwrite everything with just the header
+  #         "---`npublish: false`n---`n# NextVersion`n" | Set-Content $sourceFile
+  #       displayName: "Clear current NextVersion.md"
 
-      - bash: git add .
-        displayName: Git add all changes
+  #     - bash: git add .
+  #       displayName: Git add all changes
 
-      - powershell: |
-          # Get the new dev version number. (Hint this is different than the overall version number used elsewhere)
-          $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+  #     - powershell: |
+  #         # Get the new dev version number. (Hint this is different than the overall version number used elsewhere)
+  #         $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
 
-          $newVersion = $json[0].version
+  #         $newVersion = $json[0].version
 
-          Write-Host The new version is $newVersion
-          Write-Host Committing version bump...
+  #         Write-Host The new version is $newVersion
+  #         Write-Host Committing version bump...
 
-          git commit -m "$newVersion" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
+  #         git commit -m "$newVersion" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
 
-          git status
-        displayName: Get version and committing
+  #         git status
+  #       displayName: Get version and committing
 
-      - bash: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName) -q
-        displayName: "Push version bump"
+  #     - bash: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName) -q
+  #       displayName: "Push version bump"
