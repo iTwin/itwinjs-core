@@ -30,6 +30,13 @@
           "$ref": "#/definitions/PropertyEditorSpecification",
           "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
         },
+        "extendedData": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "A map of ECExpressions whose\nevaluation results are used as extended data values.",
+          "type": "object"
+        },
         "label": {
           "description": "Specifies label of the calculated property. Supports localization.",
           "type": "string"

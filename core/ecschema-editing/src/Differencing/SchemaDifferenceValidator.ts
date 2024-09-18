@@ -7,9 +7,9 @@
  */
 
 import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { AnySchemaDifference, AnySchemaItemDifference, ClassItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaOtherTypes, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaOtherTypes, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
-import { ISchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
+import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 
 /**
  * Validates the given array of schema differences and returns a list of conflicts if the
@@ -33,7 +33,7 @@ export async function validateDifferences(differences: AnySchemaDifference[], ta
  * The SchemaDifferenceValidationVisitor class is an implementation of ISchemaDifferenceVisitor and
  * validates the given SchemaDifferences if the violate against some EC Rules.
  */
-class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
+class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
 
   public readonly conflicts: Array<SchemaDifferenceConflict>;
   private readonly _sourceSchema: Schema;
@@ -99,7 +99,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
   /**
    * Shared base-class validation for all types of ClassItemDifference union.
    */
-  private async visitBaseClassDifference(entry: ClassItemDifference, targetClassItem: ECClass) {
+  private async visitBaseClassDifference(entry: AnyClassItemDifference, targetClassItem: ECClass) {
     if (entry.difference.baseClass === undefined && targetClassItem.baseClass !== undefined) {
       return this.addConflict({
         code: ConflictCode.RemovingBaseClass,
@@ -145,7 +145,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
   /**
    * Shared validation for all types of ClassItemDifference union.
    */
-  private async visitClassDifference(entry: ClassItemDifference) {
+  private async visitClassDifference(entry: AnyClassItemDifference) {
     const targetClassItem = await this._targetSchema.getItem<ECClass>(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, targetClassItem)) {
       return;
@@ -160,7 +160,7 @@ class SchemaDifferenceValidationVisitor implements ISchemaDifferenceVisitor {
   /**
    * Validation the modifiers of all types of ClassItemDifference union.
    */
-  private async visitClassModifierDifference(entry: ClassItemDifference, targetClass: ECClass) {
+  private async visitClassModifierDifference(entry: AnyClassItemDifference, targetClass: ECClass) {
     if (entry.difference.modifier) {
       const changedModifier = parseClassModifier(entry.difference.modifier);
       if (changedModifier !== undefined && changedModifier !== ECClassModifier.None) {
