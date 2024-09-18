@@ -214,9 +214,6 @@ export class Formatter {
       if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
-      // let unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
-      // put this in try catch, if caught QuantityError(QuantityStatus.InvertingZero), if the spec.format.type is Ratio, we will return 1:0
-
       let unitValue = 0.0;
       try {
         unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;

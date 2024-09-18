@@ -112,7 +112,7 @@ export enum FormatType {
   Bearing,
   /** Azimuth angle e.g. 45°30'00". Requires provided quantities to be of the angle phenomenon */
   Azimuth,
-  /** Eg. 1:2 or 0.3:1. Requires provided quantities to be of the slope phenomenon */
+  /** Ratio display e,g. 1:2 or 0.3:1.  */
   Ratio,
 }
 
