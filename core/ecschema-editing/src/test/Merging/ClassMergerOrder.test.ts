@@ -31,7 +31,7 @@ describe("Class items merging order tests", () => {
   it("should merge the missing entity class with base class before the base class item", async () => {
     await Schema.fromJson(targetJson, context);
     const merger = new SchemaMerger(context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -64,14 +64,16 @@ describe("Class items merging order tests", () => {
       ],
     });
 
-    const targetBracketBaseClass = await mergedSchema.getItem("bracket") as EntityClass;
-    expect(targetBracketBaseClass.baseClass?.fullName).to.deep.equal("TargetSchema.sps");
+    await expect(schema.getItem("bracket")).to.be.eventually.not.undefined
+      .then((mergedItem: EntityClass) => {
+        expect(mergedItem).to.have.a.nested.property("baseClass.fullName", "TargetSchema.sps");
+      });
   });
 
   it("should merge entity class with derived mixins before base mixin", async () => {
     await Schema.fromJson(targetJson, context);
     const merger = new SchemaMerger(context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -108,7 +110,7 @@ describe("Class items merging order tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<EntityClass>("testClass");
+    const mergedItem = await schema.getItem<EntityClass>("testClass");
     const classMixins = mergedItem?.mixins;
     if (classMixins) {
       expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
@@ -120,7 +122,7 @@ describe("Class items merging order tests", () => {
   it("should merge missing mixin with baseClass and appliesTo before the base class item and class that it appliesTo", async () => {
     await Schema.fromJson(targetJson, context);
     const merger = new SchemaMerger(context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -155,7 +157,7 @@ describe("Class items merging order tests", () => {
       conflicts: undefined,
     });
 
-    const mergedItem = await mergedSchema.getItem<Mixin>("mixinA");
+    const mergedItem = await schema.getItem<Mixin>("mixinA");
     expect(mergedItem?.appliesTo?.fullName).to.deep.equal("TargetSchema.testClass");
     expect(mergedItem?.baseClass?.fullName).to.deep.equal("TargetSchema.testBaseMixinClass");
   });
@@ -163,7 +165,7 @@ describe("Class items merging order tests", () => {
   it("it should merge missing entity class with struct properties before the struct class items", async () => {
     await Schema.fromJson(targetJson, context);
     const merger = new SchemaMerger(context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -239,7 +241,7 @@ describe("Class items merging order tests", () => {
       ],
     });
 
-    const middleTarget = await mergedSchema.getItem("middle") as StructClass;
+    const middleTarget = await schema.getItem("middle") as StructClass;
     expect(middleTarget.toJSON()).to.deep.equal({
       schemaItemType: "StructClass",
       description: "Middle test class",
@@ -303,7 +305,7 @@ describe("Class items merging order tests", () => {
     }, context);
 
     const merger = new SchemaMerger(context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -372,8 +374,8 @@ describe("Class items merging order tests", () => {
       ],
     });
 
-    const middleTarget = await mergedSchema.getItem("middle") as StructClass;
-    const allocationTarget = await mergedSchema.getItem("allocation") as StructClass;
+    const middleTarget = await schema.getItem("middle") as StructClass;
+    const allocationTarget = await schema.getItem("allocation") as StructClass;
 
     expect(middleTarget.toJSON()).to.deep.equal({
       schemaItemType: "StructClass",

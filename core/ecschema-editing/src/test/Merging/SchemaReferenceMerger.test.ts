@@ -37,7 +37,7 @@ describe("Schema reference merging tests", () => {
     }, targetSchemaContext);
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [{
@@ -50,7 +50,7 @@ describe("Schema reference merging tests", () => {
       }],
     });
 
-    await expect(mergedSchema.getReference("TestSchema")).to.be.eventually.not.undefined
+    await expect(schema.getReference("TestSchema")).to.be.eventually.not.undefined
       .then((reference: Schema) => {
         expect(reference).to.have.a.property("name", "TestSchema", "unexpected schema name");
         expect(reference).to.have.a.property("readVersion", 1, "unexpected read version");
@@ -70,7 +70,7 @@ describe("Schema reference merging tests", () => {
     }, targetSchemaContext);
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [{
@@ -83,7 +83,7 @@ describe("Schema reference merging tests", () => {
       }],
     });
 
-    await expect(mergedSchema.getReference("BisCore")).to.be.eventually.not.undefined
+    await expect(schema.getReference("BisCore")).to.be.eventually.not.undefined
       .then((reference: Schema) => {
         expect(reference).to.have.a.property("name", "BisCore", "unexpected schema name");
         expect(reference).to.have.a.property("readVersion", 1, "unexpected read version");

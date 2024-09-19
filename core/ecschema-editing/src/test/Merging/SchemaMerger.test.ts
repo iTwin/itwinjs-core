@@ -90,7 +90,7 @@ describe("Schema merge tests", () => {
     const newLabel = "This is the new Label";
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [{
@@ -102,8 +102,8 @@ describe("Schema merge tests", () => {
         },
       }],
     });
-    expect(mergedSchema).to.have.a.property("label", newLabel, "unexpected source label");
-    expect(mergedSchema).to.have.a.property("description", newDescription, "unexpected source description");
+    expect(schema).to.have.a.property("label", newLabel, "unexpected source label");
+    expect(schema).to.have.a.property("description", newDescription, "unexpected source description");
   });
 
   it("should merge Schema Items case insensitive", async () => {
@@ -128,7 +128,7 @@ describe("Schema merge tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [{
@@ -141,8 +141,8 @@ describe("Schema merge tests", () => {
       }],
     });
 
-    expect(mergedSchema).to.have.a.property("customAttributes").is.not.undefined;
-    expect(mergedSchema).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+    expect(schema).to.have.a.property("customAttributes").is.not.undefined;
+    expect(schema).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
       return customAttributes.has("TargetSchema.TestCustomAttribute");
     });
   });

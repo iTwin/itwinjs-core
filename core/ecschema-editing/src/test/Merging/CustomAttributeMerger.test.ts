@@ -64,7 +64,7 @@ describe("Custom Attribute merge", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -124,7 +124,7 @@ describe("Custom Attribute merge", () => {
       conflicts: undefined,
     });
 
-    const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+    const mergedEntity = await schema.getItem<EntityClass>("TestEntity");
     expect(mergedEntity!.toJSON().customAttributes).deep.eq(
       [
         {
@@ -177,7 +177,7 @@ describe("Custom Attribute merge", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -216,7 +216,7 @@ describe("Custom Attribute merge", () => {
         },
       ],
     });
-    const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+    const mergedEntity = await schema.getItem<EntityClass>("TestEntity");
     expect(mergedEntity!.toJSON().properties).deep.eq(
       [
         {
@@ -260,7 +260,7 @@ describe("Custom Attribute merge", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -294,7 +294,7 @@ describe("Custom Attribute merge", () => {
       ],
     });
 
-    expect(mergedSchema.toJSON().customAttributes).deep.eq(
+    expect(schema.toJSON().customAttributes).deep.eq(
       [
         ...targetJson.customAttributes,
         {
@@ -355,7 +355,7 @@ describe("Custom Attribute merge", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -415,7 +415,7 @@ describe("Custom Attribute merge", () => {
       ],
     });
 
-    const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+    const mergedRelationship = await schema.getItem<RelationshipClass>("TestRelationship");
     expect(mergedRelationship!.toJSON().source).deep.eq({
       customAttributes: [
         {
@@ -471,7 +471,7 @@ describe("Custom Attribute merge", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -546,13 +546,13 @@ describe("Custom Attribute merge", () => {
       conflicts: undefined,
     });
 
-    const testClassItem = await mergedSchema.getItem<EntityClass>("TestClass");
+    const testClassItem = await schema.getItem<EntityClass>("TestClass");
     expect(testClassItem!.toJSON()).deep.eq({
       schemaItemType: "EntityClass",
       label: "TestClass",
       customAttributes: [{ className: "TargetSchema.TestCAClass" }, { className: "TargetSchema.AnotherCAClass" }],
     });
-    const anotherClassItem = await mergedSchema.getItem<EntityClass>("AnotherTestClass");
+    const anotherClassItem = await schema.getItem<EntityClass>("AnotherTestClass");
     expect(anotherClassItem!.toJSON()).deep.eq({
       schemaItemType: "EntityClass",
       label: "TestClass",

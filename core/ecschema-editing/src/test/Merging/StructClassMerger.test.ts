@@ -31,7 +31,7 @@ describe("StructClass merger tests", () => {
   it("should merge missing struct class", async () => {
     await Schema.fromJson(targetJson, targetContext);
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -47,7 +47,7 @@ describe("StructClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestStruct")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestStruct")).to.be.eventually.not.undefined
       .then((mergedItem: StructClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.StructClass);
         expect(mergedItem).to.have.a.property("label", "Test Structure");
@@ -67,7 +67,7 @@ describe("StructClass merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -83,7 +83,7 @@ describe("StructClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestStruct")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestStruct")).to.be.eventually.not.undefined
       .then((mergedItem: StructClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.StructClass);
         expect(mergedItem).to.have.a.property("label", "Test Structure");
@@ -106,7 +106,7 @@ describe("StructClass merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -129,7 +129,7 @@ describe("StructClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestStruct")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestStruct")).to.be.eventually.not.undefined
       .then((mergedItem: StructClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.StructClass);
         expect(mergedItem).to.have.a.nested.property("baseClass.fullName", "TargetSchema.TestBase");

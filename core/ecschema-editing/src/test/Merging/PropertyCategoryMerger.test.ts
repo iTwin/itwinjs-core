@@ -26,7 +26,7 @@ describe("PropertyCategory merge tests", () => {
   it("should merge missing PropertyCategory", async () => {
     const targetSchema = await Schema.fromJson(targetJson, await BisTestHelper.getNewContext());
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -42,7 +42,7 @@ describe("PropertyCategory merge tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestPropertyCategory")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestPropertyCategory")).to.be.eventually.not.undefined
       .then((propertyCategory: PropertyCategory) => {
         expect(propertyCategory).to.have.a.property("schemaItemType", SchemaItemType.PropertyCategory);
         expect(propertyCategory).to.have.a.property("label", "ValueTrack Metadata");
@@ -63,7 +63,7 @@ describe("PropertyCategory merge tests", () => {
     }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -78,7 +78,7 @@ describe("PropertyCategory merge tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestPropertyCategory")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestPropertyCategory")).to.be.eventually.not.undefined
       .then((propertyCategory: PropertyCategory) => {
         expect(propertyCategory).to.have.a.property("schemaItemType", SchemaItemType.PropertyCategory);
         expect(propertyCategory).to.have.a.property("label", "ValueTrack Metadata");

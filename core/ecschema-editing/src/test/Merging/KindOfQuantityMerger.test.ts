@@ -88,7 +88,7 @@ describe("KindOfQuantity merge tests", () => {
   it("should merge missing kind of quantity with persistent InvertedUnit ", async () => {
     await Schema.fromJson(targetJson, targetContext);
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -114,7 +114,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await schema.getItem<KindOfQuantity>("TestKoq");
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",
@@ -146,7 +146,7 @@ describe("KindOfQuantity merge tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -164,7 +164,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await schema.getItem<KindOfQuantity>("TestKoq");
     expect(mergedItem!.toJSON()).deep.equals({
       schemaItemType: "KindOfQuantity",
       label: "Test",
@@ -177,7 +177,7 @@ describe("KindOfQuantity merge tests", () => {
   it("should merge missing kind of quantity with presentation format", async () => {
     await Schema.fromJson(targetJson, targetContext);
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -205,7 +205,7 @@ describe("KindOfQuantity merge tests", () => {
         },
       ],
     });
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await schema.getItem<KindOfQuantity>("TestKoq");
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",
@@ -251,7 +251,7 @@ describe("KindOfQuantity merge tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -274,7 +274,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await schema.getItem<KindOfQuantity>("TestKoq");
     expect(mergedItem!.toJSON()).deep.eq({
       schemaItemType: "KindOfQuantity",
       label: "Test",
@@ -312,7 +312,7 @@ describe("KindOfQuantity merge tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -329,7 +329,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await schema.getItem<KindOfQuantity>("TestKoq");
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",

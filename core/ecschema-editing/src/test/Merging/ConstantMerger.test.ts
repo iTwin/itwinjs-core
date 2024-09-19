@@ -43,7 +43,7 @@ describe("Constant merger tests", () => {
     }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -63,7 +63,7 @@ describe("Constant merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("testConstant")).to.be.eventually.not.undefined
+    await expect(schema.getItem("testConstant")).to.be.eventually.not.undefined
       .then((constant: Constant) => {
         expect(constant).to.have.a.property("schemaItemType", SchemaItemType.Constant);
         expect(constant).to.have.a.property("label", "Test Constant");
@@ -93,7 +93,7 @@ describe("Constant merger tests", () => {
     await Schema.fromJson(targetJson, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -121,7 +121,7 @@ describe("Constant merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("testConstant")).to.be.eventually.not.undefined
+    await expect(schema.getItem("testConstant")).to.be.eventually.not.undefined
       .then((constant: Constant) => {
         expect(constant).to.have.a.property("schemaItemType", SchemaItemType.Constant);
         expect(constant).to.have.a.property("label", "Test Constant");

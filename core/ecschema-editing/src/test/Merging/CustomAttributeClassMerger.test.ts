@@ -32,7 +32,7 @@ describe("CustomAttributeClass merger tests", () => {
   it("should merge missing custom attribute class", async () => {
     await Schema.fromJson(targetJson, targetContext);
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -48,7 +48,7 @@ describe("CustomAttributeClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestCAClass")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestCAClass")).to.be.eventually.not.undefined
       .then((mergedItem: CustomAttributeClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.CustomAttributeClass);
         expect(mergedItem).to.have.a.property("label", "Test Custom Attribute Class");
@@ -69,7 +69,7 @@ describe("CustomAttributeClass merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -85,7 +85,7 @@ describe("CustomAttributeClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestCAClass")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestCAClass")).to.be.eventually.not.undefined
       .then((mergedItem: CustomAttributeClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.CustomAttributeClass);
         expect(mergedItem).to.have.a.property("label", "Test Custom Attribute Class");
@@ -110,7 +110,7 @@ describe("CustomAttributeClass merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -133,8 +133,11 @@ describe("CustomAttributeClass merger tests", () => {
         },
       ],
     });
-    const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCAClass");
-    expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
+
+    await expect(schema.getItem("TestCAClass")).to.be.eventually.not.undefined
+      .then((mergedItem: CustomAttributeClass) => {
+        expect(mergedItem).to.have.a.nested.property("baseClass.fullName", "TargetSchema.TestBase");
+      });
   });
 
   it("should throw an error when merging custom attribute base class changed from undefined to existing one", async () => {

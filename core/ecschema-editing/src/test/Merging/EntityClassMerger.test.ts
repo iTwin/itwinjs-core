@@ -33,7 +33,7 @@ describe("EntityClass merger tests", () => {
   it("should merge missing entity class with baseClass", async () => {
     await Schema.fromJson(targetJson, targetContext);
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -58,7 +58,7 @@ describe("EntityClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEntity")).to.be.eventually.not.undefined
       .then((mergedItem: EntityClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.EntityClass);
         expect(mergedItem).to.have.a.property("label", "Test Entity");
@@ -84,7 +84,7 @@ describe("EntityClass merger tests", () => {
     await Schema.fromJson(referencedSchema, targetContext);
     await Schema.fromJson(targetJson, targetContext);
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -109,7 +109,7 @@ describe("EntityClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEntity")).to.be.eventually.not.undefined
       .then((mergedItem: EntityClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.EntityClass);
         expect(mergedItem).to.have.a.property("label", "Test Entity");
@@ -138,7 +138,7 @@ describe("EntityClass merger tests", () => {
     await Schema.fromJson(referencedSchema, targetContext);
     await Schema.fromJson(targetJson, targetContext);
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -166,7 +166,7 @@ describe("EntityClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEntity")).to.be.eventually.not.undefined
       .then((mergedItem: EntityClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.EntityClass);
         expect(mergedItem).to.have.a.property("label", "Test Entity");
@@ -190,7 +190,7 @@ describe("EntityClass merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -205,7 +205,7 @@ describe("EntityClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEntity")).to.be.eventually.not.undefined
       .then((mergedItem: EntityClass) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.EntityClass);
         expect(mergedItem).to.have.a.property("modifier", ECClassModifier.None);
@@ -228,7 +228,7 @@ describe("EntityClass merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -251,7 +251,7 @@ describe("EntityClass merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEntity")).to.be.eventually.not.undefined
       .then((mergedItem: EntityClass) => {
         expect(mergedItem).to.have.a.nested.property("baseClass.fullName", "TargetSchema.TestBase");
       });

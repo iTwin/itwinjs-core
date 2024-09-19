@@ -27,6 +27,15 @@ export interface SchemaMergeContext {
 }
 
 /**
+ * Defines the result of a Schema merging run.
+ * @alpha
+ */
+export interface SchemaMergeResult {
+  /** The merged schema */
+  readonly schema: Schema;
+}
+
+/**
  * Class to merge two schemas together.
  * @see [[merge]] or [[mergeSchemas]] to merge two schemas together.
  * @beta
@@ -51,7 +60,7 @@ export class SchemaMerger {
    * @returns             The merged target schema.
    * @alpha
    */
-  public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema> {
+  public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<SchemaMergeResult> {
     return this.merge(await getSchemaDifferences(targetSchema, sourceSchema), edits);
   }
 
@@ -61,7 +70,7 @@ export class SchemaMerger {
    * @param edits             An optional instance of schema edits that shall be applied before the schemas get merged.
    * @alpha
    */
-  public async merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<Schema> {
+  public async merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<SchemaMergeResult> {
     const targetSchemaKey = SchemaKey.parseString(differenceResult.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differenceResult.sourceSchemaName);
 
@@ -80,12 +89,13 @@ export class SchemaMerger {
       );
     }
 
-    const schema = await this._editor.getSchema(targetSchemaKey).catch((error: Error) => {
-      if (error instanceof SchemaEditingError && error.errorNumber === ECEditingStatus.SchemaNotFound) {
-        throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
-      }
-      throw error;
-    });
+    const schema = await this._editor.getSchema(targetSchemaKey)
+      .catch((error: Error) => {
+        if (error instanceof SchemaEditingError && error.errorNumber === ECEditingStatus.SchemaNotFound) {
+          throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+        }
+        throw error;
+      });
 
     if (!schema.customAttributes || !schema.customAttributes.has("CoreCustomAttributes.DynamicSchema")) {
       throw new Error(`The target schema '${targetSchemaKey.name}' is not dynamic. Only dynamic schemas are supported for merging.`);
@@ -102,6 +112,8 @@ export class SchemaMerger {
     await walker.traverse(differenceResult.differences, "add");
     await walker.traverse(differenceResult.differences, "modify");
 
-    return schema;
+    return {
+      schema,
+    };
   }
 }

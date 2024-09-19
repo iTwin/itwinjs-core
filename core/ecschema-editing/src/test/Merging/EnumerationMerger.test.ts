@@ -31,7 +31,7 @@ describe("Enumeration merge tests", () => {
     }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -59,7 +59,7 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEnumeration")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEnumeration")).to.be.eventually.not.undefined
       .then((mergedEnumeration: Enumeration) => {
         expect(mergedEnumeration).to.have.a.property("schemaItemType", SchemaItemType.Enumeration);
         expect(mergedEnumeration).to.have.a.property("isInt", true);
@@ -98,7 +98,7 @@ describe("Enumeration merge tests", () => {
     }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -117,7 +117,7 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEnumeration")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEnumeration")).to.be.eventually.not.undefined
       .then((mergedEnumeration: Enumeration) => {
         expect(mergedEnumeration).to.have.a.property("schemaItemType", SchemaItemType.Enumeration);
         expect(mergedEnumeration).to.have.a.property("isString", true);
@@ -161,7 +161,7 @@ describe("Enumeration merge tests", () => {
     }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -179,7 +179,7 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEnumeration")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEnumeration")).to.be.eventually.not.undefined
       .then((mergedEnumeration: Enumeration) => {
         expect(mergedEnumeration).to.have.a.property("schemaItemType", SchemaItemType.Enumeration);
         expect(mergedEnumeration).to.have.a.property("isInt", true);
@@ -225,7 +225,7 @@ describe("Enumeration merge tests", () => {
     }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -242,7 +242,7 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestEnumeration")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestEnumeration")).to.be.eventually.not.undefined
       .then((mergedEnumeration: Enumeration) => {
         expect(mergedEnumeration).to.have.a.property("schemaItemType", SchemaItemType.Enumeration);
         expect(mergedEnumeration).to.have.a.property("isInt", true);

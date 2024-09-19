@@ -24,7 +24,7 @@ describe("Unit system merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [{
@@ -38,7 +38,7 @@ describe("Unit system merger tests", () => {
       }],
     });
 
-    await expect(mergedSchema.getItem("testUnitSystem")).to.be.eventually.not.undefined
+    await expect(schema.getItem("testUnitSystem")).to.be.eventually.not.undefined
       .then((mergedUnitSystem: UnitSystem) => {
         expect(mergedUnitSystem).to.have.a.property("label", "Imperial");
         expect(mergedUnitSystem).to.have.a.property("description", "Imperial Unit System");
@@ -66,7 +66,7 @@ describe("Unit system merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [{
@@ -80,7 +80,7 @@ describe("Unit system merger tests", () => {
       }],
     });
 
-    await expect(mergedSchema.getItem("testUnitSystem")).to.be.eventually.not.undefined
+    await expect(schema.getItem("testUnitSystem")).to.be.eventually.not.undefined
       .then((mergedUnitSystem: UnitSystem) => {
         expect(mergedUnitSystem).to.have.a.property("label", "New Imperial");
         expect(mergedUnitSystem).to.have.a.property("description", "New Imperial Unit System");

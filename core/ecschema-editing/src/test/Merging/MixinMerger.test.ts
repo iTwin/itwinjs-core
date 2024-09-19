@@ -31,7 +31,7 @@ describe("Mixin merger tests", () => {
   it("should merge missing mixin", async () => {
     await Schema.fromJson(targetJson, targetContext);
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -56,7 +56,7 @@ describe("Mixin merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestMixin")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestMixin")).to.be.eventually.not.undefined
       .then((mergedItem: Mixin) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.Mixin);
         expect(mergedItem).to.have.a.property("label", "Test Mixin");
@@ -90,7 +90,7 @@ describe("Mixin merger tests", () => {
     }, targetContext);
 
     const merger = new SchemaMerger(targetContext);
-    const mergedSchema = await merger.merge({
+    const { schema } = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       differences: [
@@ -114,7 +114,7 @@ describe("Mixin merger tests", () => {
       ],
     });
 
-    await expect(mergedSchema.getItem("TestMixin")).to.be.eventually.not.undefined
+    await expect(schema.getItem("TestMixin")).to.be.eventually.not.undefined
       .then((mergedItem: Mixin) => {
         expect(mergedItem).to.have.a.property("schemaItemType", SchemaItemType.Mixin);
         expect(mergedItem).to.have.a.nested.property("baseClass.fullName", "TargetSchema.TestBase");
