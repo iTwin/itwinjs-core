@@ -11,7 +11,7 @@ import {
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, ContextRealityModel, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -31,6 +31,7 @@ import {
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { SpatialClassifiersState } from "../SpatialClassifiersState";
+import { ContextRealityModelState } from "../ContextRealityModelState";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -559,6 +560,7 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
+    contextRealityModel?: ContextRealityModel;
   }
 
   export interface ReferenceProps extends ReferenceBaseProps {
@@ -577,6 +579,7 @@ export namespace RealityModelTileTree {
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
+    protected _contextRealityModel?: ContextRealityModel;
 
     public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -610,6 +613,7 @@ export namespace RealityModelTileTree {
       this._iModel = props.iModel;
       this._source = props.source;
       this._getDisplaySettings = () => props.getDisplaySettings();
+      this._contextRealityModel = props.contextRealityModel;
 
       if (props.planarClipMask)
         this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
@@ -636,6 +640,10 @@ export namespace RealityModelTileTree {
     }
 
     public override addToScene(context: SceneContext): void {
+      if (this._contextRealityModel?.invisible === true) {
+        return;
+      }
+
       // NB: The classifier must be added first, so we can find it when adding our own tiles.
       if (this._classifier && this._classifier.activeClassifier)
         this._classifier.addToScene(context);

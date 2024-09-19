@@ -164,6 +164,10 @@ export interface ContextRealityModelProps {
    * @beta
    */
   displaySettings?: RealityModelDisplayProps;
+  /** See [[ContextRealityModel.invisible]].
+   * @beta
+   */
+  invisible?: boolean;
 }
 
 /** @public */
@@ -207,6 +211,9 @@ export namespace ContextRealityModelProps {
     if (input.classifiers)
       output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ...x.flags } }; });
 
+    if (input.invisible)
+      output.invisible = input.invisible;
+
     return output;
   }
 }
@@ -234,6 +241,10 @@ export class ContextRealityModel {
   public readonly description: string;
   /** An optional identifier that, if present, can be used to elide a request to the reality data service. */
   public readonly realityDataId?: string;
+  /** If true, reality model is not drawn.
+   * @beta
+  */
+  public readonly invisible?: boolean;
   private readonly _classifiers: SpatialClassifiers;
   /** @alpha */
   public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -262,6 +273,7 @@ export class ContextRealityModel {
     this.orbitGtBlob = props.orbitGtBlob;
     this.realityDataId = props.realityDataId;
     this.description = props.description ?? "";
+    this.invisible = props.invisible ?? false;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
     this._displaySettings = RealityModelDisplaySettings.fromJSON(props.displaySettings);
 

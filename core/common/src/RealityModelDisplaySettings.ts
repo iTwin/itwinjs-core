@@ -72,7 +72,6 @@ export interface RealityModelDisplayProps {
   /** See [[RealityModelDisplaySettings.overrideColorRatio]]. */
   overrideColorRatio?: number;
   // ###TODO when we need it: mesh?: RealityMeshDisplayProps;
-  visible?: boolean;
 }
 
 /** Settings that control how a point cloud reality model is displayed within a [Viewport]($frontend).
@@ -268,15 +267,12 @@ export class RealityModelDisplaySettings {
    */
   public readonly pointCloud: PointCloudDisplaySettings;
 
-  public readonly visible: boolean;
-
   /** Settings with all properties initialized to their default values. */
-  public static defaults = new RealityModelDisplaySettings(undefined, PointCloudDisplaySettings.defaults, undefined);
+  public static defaults = new RealityModelDisplaySettings(undefined, PointCloudDisplaySettings.defaults);
 
-  private constructor(overrideColorRatio: number | undefined, pointCloud: PointCloudDisplaySettings, visible: boolean|undefined) {
+  private constructor(overrideColorRatio: number | undefined, pointCloud: PointCloudDisplaySettings) {
     this.overrideColorRatio = overrideColorRatio ?? 0.5;
     this.pointCloud = pointCloud;
-    this.visible = visible ?? true;
   }
 
   /** Create display settings from their JSON representation. If `props` is `undefined`, the default settings are returned. */
@@ -284,14 +280,16 @@ export class RealityModelDisplaySettings {
     if (!props)
       return this.defaults;
 
-    return new RealityModelDisplaySettings(props.overrideColorRatio, PointCloudDisplaySettings.fromJSON(props.pointCloud), props.visible);
+    return new RealityModelDisplaySettings(props.overrideColorRatio, PointCloudDisplaySettings.fromJSON(props.pointCloud));
   }
 
   /** Convert these settings to their JSON representation, which is `undefined` if all of their properties match the default settings. */
   public toJSON(): RealityModelDisplayProps | undefined {
     const pointCloud = this.pointCloud.toJSON();
     const overrideColorRatio = this.overrideColorRatio === RealityModelDisplaySettings.defaults.overrideColorRatio ? undefined : this.overrideColorRatio;
-    const visible = this.visible === RealityModelDisplaySettings.defaults.visible ? undefined : this.visible;
+
+    if (undefined === pointCloud && undefined === overrideColorRatio)
+      return undefined;
 
     const props: RealityModelDisplayProps = { };
     if (undefined !== pointCloud)
@@ -300,10 +298,7 @@ export class RealityModelDisplaySettings {
     if (undefined !== overrideColorRatio)
       props.overrideColorRatio = overrideColorRatio;
 
-    if (undefined !== visible)
-      props.visible = visible;
-
-    return Object.keys(props).length === 0 ? undefined : props;
+    return props;
   }
 
   /** Returns true if these settings are identical to `other`. */
@@ -318,7 +313,6 @@ export class RealityModelDisplaySettings {
   public clone(changedProps: RealityModelDisplayProps): RealityModelDisplaySettings {
     const pointCloud = changedProps.pointCloud ? this.pointCloud.clone(changedProps.pointCloud) : this.pointCloud;
     const colorRatio = changedProps.hasOwnProperty("overrideColorRatio") ? changedProps.overrideColorRatio : this.overrideColorRatio;
-    const visible = changedProps.hasOwnProperty("visible") ? changedProps.visible : this.visible;
-    return new RealityModelDisplaySettings(colorRatio, pointCloud, visible);
+    return new RealityModelDisplaySettings(colorRatio, pointCloud);
   }
 }

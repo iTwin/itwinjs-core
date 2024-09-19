@@ -260,9 +260,6 @@ export class RealityTileTree extends TileTree {
     const preloadDebugBuilder = (debugControl && debugControl.displayRealityTilePreload) ? args.context.createSceneGraphicBuilder() : undefined;
     const graphicTypeBranches = new Map<TileGraphicType, GraphicBranch>();
 
-    if (args.graphics.realityModelDisplaySettings?.visible === false)
-      return;
-
     const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadDebugBuilder);
     args.processSelectedTiles(selectedTiles);
     let sortIndices;
