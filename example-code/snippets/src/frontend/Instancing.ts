@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, IModelConnection, RenderGraphic, RenderInstancesParamsBuilder, readGltfTemplate } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, readGltfTemplate, RenderGraphic, RenderInstancesParamsBuilder } from "@itwin/core-frontend";
 import { Point3d, Transform } from "@itwin/core-geometry";
 
 // __PUBLISH_EXTRACT_START__
