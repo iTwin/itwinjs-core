@@ -9,13 +9,17 @@ import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceI
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { UnionRegion } from "../../curve/UnionRegion";
+import { AxisIndex, Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
@@ -26,10 +30,6 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Angle } from "../../geometry3d/Angle";
-import { AxisIndex, Geometry } from "../../Geometry";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
 
 /**
  * This function creates some sample Map4ds. The transform0 of the Map4d is passed as "worldToLocal" transform to
