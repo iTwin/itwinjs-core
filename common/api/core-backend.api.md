@@ -18,6 +18,7 @@ import { BaselineShift } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
+import { BentleyStatus } from '@itwin/core-bentley';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -71,6 +72,9 @@ import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
+import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
+import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
+import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
 import { ElementGeometryRequest } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
@@ -3082,6 +3086,8 @@ export abstract class IModelDb extends IModel {
     // @beta
     deleteSettingDictionary(name: string): void;
     // @beta
+    elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
+    // @beta
     elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus;
     // (undocumented)
     readonly elements: IModelDb.Elements;
@@ -3186,6 +3192,8 @@ export abstract class IModelDb extends IModel {
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
+    // @beta
+    updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps>;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
