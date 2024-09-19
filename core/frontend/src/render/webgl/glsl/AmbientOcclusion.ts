@@ -108,7 +108,7 @@ const computeAmbientOcclusion = `
 
       vec3 curWorldPos = computeWorldPosition(curViewPos);
       vec3 diffVecWorld = curWorldPos - worldPos;
-      float zLength = length(diffVec);
+      float zLength = length(diffVecWorld);
 
       // float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
       // float weight = smoothstep(0.0, 1.0, zLengthCap / zLength);
@@ -163,13 +163,9 @@ vec4 computePositionFromDepth(vec2 tc, float nonLinearDepth) {
 
 const computeWorldPosition = `
 vec3 computeWorldPosition(vec3 viewPos) {
-    // Convert the view position to a 4D vector by adding a 1 in the w component.
     vec4 viewPos4D = vec4(viewPos, 1.0);
-
-    // Transform the view position into world space using the inverse view matrix.
     vec4 worldPos4D = u_invView * viewPos4D;
 
-    // Return the 3D world position by dropping the w component.
     return worldPos4D.xyz;
 }
 
