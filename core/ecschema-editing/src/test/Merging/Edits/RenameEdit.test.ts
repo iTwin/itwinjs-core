@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, KindOfQuantity, Mixin, NavigationProperty, PropertyCategory, RelationshipClass, Schema, SchemaContext, StructArrayProperty, StructClass, StructProperty } from "@itwin/ecschema-metadata";
 import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
+import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 import { expect } from "chai";
 import "chai-as-promised";
 
@@ -18,6 +19,17 @@ describe("Rename change tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      {
+        name: "CoreCustomAttributes",
+        version: "01.00.01",
+      },
+    ],
+    customAttributes: [
+      {
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
+    ],
   };
 
   const sourceJson = {
@@ -71,7 +83,7 @@ describe("Rename change tests", () => {
   };
 
   beforeEach(async () => {
-    targetContext = new SchemaContext();
+    targetContext = await BisTestHelper.getNewContext();
     sourceContext = new SchemaContext();
   });
 
