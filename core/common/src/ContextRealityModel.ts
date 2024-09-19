@@ -241,10 +241,8 @@ export class ContextRealityModel {
   public readonly description: string;
   /** An optional identifier that, if present, can be used to elide a request to the reality data service. */
   public readonly realityDataId?: string;
-  /** If true, reality model is not drawn.
-   * @beta
-  */
-  public readonly invisible?: boolean;
+
+  private _invisible: boolean;
   private readonly _classifiers: SpatialClassifiers;
   /** @alpha */
   public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -260,6 +258,7 @@ export class ContextRealityModel {
    * @beta
    */
   public readonly onDisplaySettingsChanged = new BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>();
+  public readonly onInvisibleChanged = new BeEvent<(invisible: boolean, model: ContextRealityModel) => void>();
 
   /** Construct a new context reality model.
    * @param props JSON representation of the reality model, which will be kept in sync with changes made via the ContextRealityModel's methods.
@@ -273,7 +272,7 @@ export class ContextRealityModel {
     this.orbitGtBlob = props.orbitGtBlob;
     this.realityDataId = props.realityDataId;
     this.description = props.description ?? "";
-    this.invisible = props.invisible ?? false;
+    this._invisible = props.invisible ?? false;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
     this._displaySettings = RealityModelDisplaySettings.fromJSON(props.displaySettings);
 
@@ -332,6 +331,18 @@ export class ContextRealityModel {
     this._displaySettings = settings;
   }
 
+  /** If true, reality model is not drawn.
+   * @beta
+  */
+  public get invisible(): boolean {
+    return this._invisible;
+  }
+  public set invisible(invisible: boolean) {
+    this.onInvisibleChanged.raiseEvent(invisible, this);
+    this._props.invisible = invisible;
+    this._invisible = invisible;
+  }
+
   /** Convert this model to its JSON representation. */
   public toJSON(): ContextRealityModelProps {
     return ContextRealityModelProps.clone(this._props);
@@ -388,6 +399,10 @@ export class ContextRealityModels {
    * @beta
    */
   public readonly onDisplaySettingsChanged = new BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>();
+  /** Event dispatched just before [[ContextRealityModel.invisible]] is modified for one of the reality models.
+   * @beta
+   */
+  public readonly onInvisibleChanged = new BeEvent<(model: ContextRealityModel, invisible: boolean) => void>();
   /** Event dispatched when a model is [[add]]ed, [[delete]]d, [[replace]]d, or [[update]]d. */
   public readonly onChanged = new BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>();
 
@@ -551,6 +566,8 @@ export class ContextRealityModels {
     model.onAppearanceOverridesChanged.addListener(this.handleAppearanceOverridesChanged, this);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onDisplaySettingsChanged.addListener(this.handleDisplaySettingsChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    model.onInvisibleChanged.addListener(this.handleInvisibleChanged, this);
     return model;
   }
 
@@ -561,6 +578,8 @@ export class ContextRealityModels {
     model.onAppearanceOverridesChanged.removeListener(this.handleAppearanceOverridesChanged, this);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onDisplaySettingsChanged.removeListener(this.handleDisplaySettingsChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    model.onInvisibleChanged.removeListener(this.handleInvisibleChanged, this);
   }
 
   private handlePlanarClipMaskChanged(mask: PlanarClipMaskSettings | undefined, model: ContextRealityModel): void {
@@ -573,5 +592,9 @@ export class ContextRealityModels {
 
   private handleDisplaySettingsChanged(settings: RealityModelDisplaySettings, model: ContextRealityModel): void {
     this.onDisplaySettingsChanged.raiseEvent(model, settings);
+  }
+
+  private handleInvisibleChanged(invisible: boolean, model: ContextRealityModel): void {
+    this.onInvisibleChanged.raiseEvent(model, invisible);
   }
 }
