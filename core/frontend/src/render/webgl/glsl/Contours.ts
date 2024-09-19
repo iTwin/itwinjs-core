@@ -63,15 +63,20 @@ const applyContours = `
   // intervals.r => minor interval distance, intervals.g => major index count
   vec2 intervals = even ? intervalsPair.rg : intervalsPair.ba;
 
+  float coord = v_height / intervals.r;
   // determine if this is in the vicinity of a major contour line
-  bool maj = (fract((abs(v_height) + 0.15) / intervals.g) < (0.3 / intervals.g));
+  bool maj = (fract((abs(coord) + 0.15) / intervals.g) < (0.3 / intervals.g));
   rgbf = unpackAndNormalize2BytesVec4(rgbf, maj);
   // rgba.a => (4-bit linecode / 4-bit weight) maj/min, where the 4-bit weight is a 3-bit weight value with one fraction bit and a 1.5 offset.   This gives a weight range of 1.5 to 9 in 0.5 increments.
   int lineCodeWt = int((rgbf.a * 255.0) + 0.5);
-  float lineRadius = (float(lineCodeWt & 0xf) * 0.5 + 1.5) * 0.5;
+  // first * 0.5 is for fractional part of width, then have to add 1.0 for offset, then another 1.0 for actual width bias
+  float lineRadius = (float(lineCodeWt & 0xf) * 0.5 + 2.0) * 0.5;
 
-  float coord = v_height / intervals.r;
+  // abs(fract(coord - 0.5) - 0.5) will produce 0. at the contour line, and 0.5 at the mid-point between contour lines
+  // fwidth(coord) is sum of absolute diffs in coord in adjacent pixels
   float line = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
+  // If line is 0 (like at contour line), contourAlpha = lineRadius (so will use draw in contour color)
+	// If line >= lineRadius, contourAlpha = 0 (so won't show contour)
   float contourAlpha = lineRadius - min(line, lineRadius);
 
   // figure out which direction line is going, to know which screen pattern offset to use

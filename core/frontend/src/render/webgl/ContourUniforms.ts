@@ -49,12 +49,12 @@ export class ContourUniforms {
 
   private packPatWidth(startNdx: number, majorPattern: number, minorPattern: number, majorWidth: number, minorWidth: number) {
     // pack 2 bytes into this float, which is 4th float of vec4
-    //   width is a 4-bit value that is biased by 1.5 based and has 3-bits value with one fraction bit, so range is 1.5 to 9
+    //   width is a 4-bit value that is biased by 1.0 and has 3-bits value with one fraction bit, so range is 1.0 to 8.5
     //   pattern is a line code index 0 to 10 (0 is solid)
     //   pack major into upper byte (upper nibble -> pattern, lower nibble -> 4-bit encoded width)
     //   pack minor into lower byte (upper nibble -> pattern, lower nibble -> 4-bit encoded width)
-    const majWt = Math.floor((Math.min(9, Math.max(1.5, majorWidth)) - 1.5) * 2 + 0.5);
-    const minWt = Math.floor((Math.min(9, Math.max(1.5, minorWidth)) - 1.5) * 2 + 0.5);
+    const majWt = Math.floor((Math.min(8.5, Math.max(1.0, majorWidth)) - 1.0) * 2 + 0.5);
+    const minWt = Math.floor((Math.min(8.5, Math.max(1.0, minorWidth)) - 1.0) * 2 + 0.5);
     this._contourDefs[startNdx+3] = majorPattern * 4096 + majWt * 256 + minorPattern * 16 + minWt;
   }
 

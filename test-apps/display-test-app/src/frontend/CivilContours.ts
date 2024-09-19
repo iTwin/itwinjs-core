@@ -18,7 +18,7 @@ import { Viewport, ViewState } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 // size of widget or panel
-const winSize = { top: 0, left: 0, width: 311, height: 300 };
+const winSize = { top: 0, left: 0, width: 318, height: 300 };
 const indent1 = "5px";
 const bottomSpace1 = "3px";
 const bottomSpace2 = "5px";
@@ -240,6 +240,7 @@ export class CivilContoursSettings implements IDisposable {
       handler: (value) => this.updateInterval(value, major),
       min: major ? 1 : 0,
       // max: 65536,
+      parseAsFloat: true,
       step: 1,
       name: major ? "Major Count " : "Minor Interval ",
     });
@@ -273,7 +274,7 @@ export class CivilContoursSettings implements IDisposable {
   private addWidth(parent1: HTMLElement, major: boolean): Slider {
     const props: SliderProps = {
       name: " Width ", id: major ? "major_width" : "minor_width", parent: parent1,
-      min: "1.5", max: "9", step: "0.5",
+      min: "1.0", max: "8.5", step: "0.5",
       value: "1.5",
       readout: "right", verticalAlign: false, textAlign: false,
       handler: (slider) => {
