@@ -17,15 +17,10 @@ describe("Class items merging order tests", () => {
     version: "1.0.0",
     alias: "target",
     references: [
-      {
-        name: "CoreCustomAttributes",
-        version: "01.00.01",
-      },
+      { name: "CoreCustomAttributes", version: "01.00.01" },
     ],
     customAttributes: [
-      {
-        className: "CoreCustomAttributes.DynamicSchema",
-      },
+      { className: "CoreCustomAttributes.DynamicSchema" },
     ],
   };
 

@@ -16,15 +16,10 @@ describe("Unit system merger tests", () => {
       version: "1.0.0",
       alias: "target",
       references: [
-        {
-          name: "CoreCustomAttributes",
-          version: "01.00.01",
-        },
+        { name: "CoreCustomAttributes", version: "01.00.01" },
       ],
       customAttributes: [
-        {
-          className: "CoreCustomAttributes.DynamicSchema",
-        },
+        { className: "CoreCustomAttributes.DynamicSchema" },
       ],
     }, targetContext);
 
@@ -43,10 +38,11 @@ describe("Unit system merger tests", () => {
       }],
     });
 
-    const mergedUnitSystem = await mergedSchema.getItem("testUnitSystem") as UnitSystem;
-    expect(mergedUnitSystem).is.not.undefined;
-    expect(mergedUnitSystem.label).equals("Imperial");
-    expect(mergedUnitSystem.description).equals("Imperial Unit System");
+    await expect(mergedSchema.getItem("testUnitSystem")).to.be.eventually.not.undefined
+      .then((mergedUnitSystem: UnitSystem) => {
+        expect(mergedUnitSystem).to.have.a.property("label", "Imperial");
+        expect(mergedUnitSystem).to.have.a.property("description", "Imperial Unit System");
+      });
   });
 
   it("should merge unit system with new label and description", async () => {
@@ -57,15 +53,10 @@ describe("Unit system merger tests", () => {
       version: "1.0.0",
       alias: "target",
       references: [
-        {
-          name: "CoreCustomAttributes",
-          version: "01.00.01",
-        },
+        { name: "CoreCustomAttributes", version: "01.00.01" },
       ],
       customAttributes: [
-        {
-          className: "CoreCustomAttributes.DynamicSchema",
-        },
+        { className: "CoreCustomAttributes.DynamicSchema" },
       ],
       items: {
         testUnitSystem: {
@@ -89,9 +80,10 @@ describe("Unit system merger tests", () => {
       }],
     });
 
-    const mergedUnitSystem = await mergedSchema.getItem("testUnitSystem") as UnitSystem;
-    expect(mergedUnitSystem).is.not.undefined;
-    expect(mergedUnitSystem.label).equals("New Imperial");
-    expect(mergedUnitSystem.description).equals("New Imperial Unit System");
+    await expect(mergedSchema.getItem("testUnitSystem")).to.be.eventually.not.undefined
+      .then((mergedUnitSystem: UnitSystem) => {
+        expect(mergedUnitSystem).to.have.a.property("label", "New Imperial");
+        expect(mergedUnitSystem).to.have.a.property("description", "New Imperial Unit System");
+      });
   });
 });

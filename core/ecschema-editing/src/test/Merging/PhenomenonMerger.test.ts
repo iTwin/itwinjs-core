@@ -14,15 +14,10 @@ describe("Phenomenon merger tests", () => {
     version: "1.0.0",
     alias: "target",
     references: [
-      {
-        name: "CoreCustomAttributes",
-        version: "01.00.01",
-      },
+      { name: "CoreCustomAttributes", version: "01.00.01" },
     ],
     customAttributes: [
-      {
-        className: "CoreCustomAttributes.DynamicSchema",
-      },
+      { className: "CoreCustomAttributes.DynamicSchema" },
     ],
   };
 
@@ -47,13 +42,13 @@ describe("Phenomenon merger tests", () => {
       ],
     });
 
-    const mergedPhenomenon = await mergedSchema.getItem<Phenomenon>("testPhenomenon");
-    expect(mergedPhenomenon!.toJSON()).deep.equals({
-      schemaItemType: "Phenomenon",
-      label: "Area",
-      description: "Area description",
-      definition: "Units.LENGTH(2)",
-    });
+    await expect(mergedSchema.getItem("testPhenomenon")).to.be.eventually.not.undefined
+      .then((phenomenon: Phenomenon) => {
+        expect(phenomenon).to.have.a.property("schemaItemType", SchemaItemType.Phenomenon);
+        expect(phenomenon).to.have.a.property("label").to.equal("Area");
+        expect(phenomenon).to.have.a.property("description").to.equal("Area description");
+        expect(phenomenon).to.have.a.property("definition").to.equal("Units.LENGTH(2)");
+      });
   });
 
   it("should throw error for definition conflict", async () => {

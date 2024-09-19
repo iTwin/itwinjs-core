@@ -16,15 +16,10 @@ describe("Schema reference merging tests", () => {
     version: "1.0.0",
     alias: "target",
     references: [
-      {
-        name: "CoreCustomAttributes",
-        version: "01.00.01",
-      },
+      { name: "CoreCustomAttributes", version: "01.00.01" },
     ],
     customAttributes: [
-      {
-        className: "CoreCustomAttributes.DynamicSchema",
-      },
+      { className: "CoreCustomAttributes.DynamicSchema" },
     ],
   };
 
@@ -55,10 +50,13 @@ describe("Schema reference merging tests", () => {
       }],
     });
 
-    expect(mergedSchema.toJSON().references).deep.equals([
-      { name: "CoreCustomAttributes", version: "01.00.01" },
-      { name: "TestSchema", version: "01.00.15" },
-    ]);
+    await expect(mergedSchema.getReference("TestSchema")).to.be.eventually.not.undefined
+      .then((reference: Schema) => {
+        expect(reference).to.have.a.property("name", "TestSchema", "unexpected schema name");
+        expect(reference).to.have.a.property("readVersion", 1, "unexpected read version");
+        expect(reference).to.have.a.property("writeVersion", 0, "unexpected write version");
+        expect(reference).to.have.a.property("minorVersion", 15, "unexpected minor version");
+      });
   });
 
   it("should not merge if target has more recent schema references", async () => {
@@ -67,10 +65,7 @@ describe("Schema reference merging tests", () => {
       ...targetJson,
       references: [
         ...targetJson.references,
-        {
-          name: "BisCore",
-          version: "01.00.01",
-        },
+        { name: "BisCore", version: "01.00.01" },
       ],
     }, targetSchemaContext);
 
@@ -87,8 +82,14 @@ describe("Schema reference merging tests", () => {
         },
       }],
     });
-    const bisCoreReference = await mergedSchema.getReference("BisCore");
-    expect(bisCoreReference?.schemaKey.toString()).equals("BisCore.01.00.01");
+
+    await expect(mergedSchema.getReference("BisCore")).to.be.eventually.not.undefined
+      .then((reference: Schema) => {
+        expect(reference).to.have.a.property("name", "BisCore", "unexpected schema name");
+        expect(reference).to.have.a.property("readVersion", 1, "unexpected read version");
+        expect(reference).to.have.a.property("writeVersion", 0, "unexpected write version");
+        expect(reference).to.have.a.property("minorVersion", 1, "unexpected minor version");
+      });
   });
 
   it("should fail if schema references are incompatible", async () => {
@@ -97,10 +98,7 @@ describe("Schema reference merging tests", () => {
       ...targetJson,
       references: [
         ...targetJson.references,
-        {
-          name: "BisCore",
-          version: "01.00.01",
-        },
+        { name: "BisCore", version: "01.00.01" },
       ],
     }, targetSchemaContext);
 

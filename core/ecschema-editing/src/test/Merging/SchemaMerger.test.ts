@@ -35,8 +35,8 @@ describe("Schema merge tests", () => {
 
     await expect(merge).to.be.rejectedWith(SchemaConflictsError, "Schema's can't be merged if there are unresolved conflicts.")
       .then((error: SchemaConflictsError) => {
-        expect(error.sourceSchema.name).equals("SourceSchema", "Unexpected source schema name");
-        expect(error.targetSchema.name).equals("TargetSchema", "Unexpected target schema name");
+        expect(error).to.have.a.nested.property("sourceSchema.name", "SourceSchema", "Unexpected source schema name");
+        expect(error).to.have.a.nested.property("targetSchema.name", "TargetSchema", "Unexpected target schema name");
         expect(error.conflicts).includes(conflict);
       });
   });
@@ -79,15 +79,10 @@ describe("Schema merge tests", () => {
       version: "1.0.0",
       alias: "target",
       references: [
-        {
-          name: "CoreCustomAttributes",
-          version: "01.00.01",
-        },
+        { name: "CoreCustomAttributes", version: "01.00.01" },
       ],
       customAttributes: [
-        {
-          className: "CoreCustomAttributes.DynamicSchema",
-        },
+        { className: "CoreCustomAttributes.DynamicSchema" },
       ],
     }, targetContext);
 
@@ -107,8 +102,8 @@ describe("Schema merge tests", () => {
         },
       }],
     });
-    expect(mergedSchema.label).equals(newLabel, "unexpected source label");
-    expect(mergedSchema.description).equals(newDescription, "unexpected source description");
+    expect(mergedSchema).to.have.a.property("label", newLabel, "unexpected source label");
+    expect(mergedSchema).to.have.a.property("description", newDescription, "unexpected source description");
   });
 
   it("should merge Schema Items case insensitive", async () => {
@@ -119,15 +114,10 @@ describe("Schema merge tests", () => {
       version: "1.0.0",
       alias: "target",
       references: [
-        {
-          name: "CoreCustomAttributes",
-          version: "01.00.01",
-        },
+        { name: "CoreCustomAttributes", version: "01.00.01" },
       ],
       customAttributes: [
-        {
-          className: "CoreCustomAttributes.DynamicSchema",
-        },
+        { className: "CoreCustomAttributes.DynamicSchema" },
       ],
       items: {
         TestCustomAttribute: {
@@ -151,7 +141,9 @@ describe("Schema merge tests", () => {
       }],
     });
 
-    expect(mergedSchema.customAttributes).is.not.undefined;
-    expect(mergedSchema.customAttributes!.has("TargetSchema.TestCustomAttribute"));
+    expect(mergedSchema).to.have.a.property("customAttributes").is.not.undefined;
+    expect(mergedSchema).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+      return customAttributes.has("TargetSchema.TestCustomAttribute");
+    });
   });
 });

@@ -16,15 +16,10 @@ describe("PropertyCategory merge tests", () => {
     version: "1.0.0",
     alias: "target",
     references: [
-      {
-        name: "CoreCustomAttributes",
-        version: "01.00.01",
-      },
+      { name: "CoreCustomAttributes", version: "01.00.01" },
     ],
     customAttributes: [
-      {
-        className: "CoreCustomAttributes.DynamicSchema",
-      },
+      { className: "CoreCustomAttributes.DynamicSchema" },
     ],
   };
 
@@ -47,12 +42,12 @@ describe("PropertyCategory merge tests", () => {
       ],
     });
 
-    const mergedCategory = await mergedSchema.getItem<PropertyCategory>("TestPropertyCategory");
-    expect(mergedCategory!.toJSON()).deep.equals({
-      schemaItemType: "PropertyCategory",
-      label: "ValueTrack Metadata",
-      priority: 100000,
-    });
+    await expect(mergedSchema.getItem("TestPropertyCategory")).to.be.eventually.not.undefined
+      .then((propertyCategory: PropertyCategory) => {
+        expect(propertyCategory).to.have.a.property("schemaItemType", SchemaItemType.PropertyCategory);
+        expect(propertyCategory).to.have.a.property("label", "ValueTrack Metadata");
+        expect(propertyCategory).to.have.a.property("priority", 100000);
+      });
   });
 
   it("should override PropertyCategory", async () => {
@@ -83,11 +78,11 @@ describe("PropertyCategory merge tests", () => {
       ],
     });
 
-    const mergedCategory = await mergedSchema.getItem<PropertyCategory>("TestPropertyCategory");
-    expect(mergedCategory!.toJSON()).deep.eq({
-      schemaItemType: "PropertyCategory",
-      label: "ValueTrack Metadata",
-      priority: 99,
-    });
+    await expect(mergedSchema.getItem("TestPropertyCategory")).to.be.eventually.not.undefined
+      .then((propertyCategory: PropertyCategory) => {
+        expect(propertyCategory).to.have.a.property("schemaItemType", SchemaItemType.PropertyCategory);
+        expect(propertyCategory).to.have.a.property("label", "ValueTrack Metadata");
+        expect(propertyCategory).to.have.a.property("priority", 99);
+      });
   });
 });

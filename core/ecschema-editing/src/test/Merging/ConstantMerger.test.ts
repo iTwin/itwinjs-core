@@ -15,15 +15,10 @@ describe("Constant merger tests", () => {
     version: "1.0.0",
     alias: "target",
     references: [
-      {
-        name: "CoreCustomAttributes",
-        version: "01.00.01",
-      },
+      { name: "CoreCustomAttributes", version: "01.00.01" },
     ],
     customAttributes: [
-      {
-        className: "CoreCustomAttributes.DynamicSchema",
-      },
+      { className: "CoreCustomAttributes.DynamicSchema" },
     ],
   };
   const referenceJson = {
@@ -47,16 +42,6 @@ describe("Constant merger tests", () => {
       },
     }, await BisTestHelper.getNewContext());
 
-    const testConstant = {
-      schemaItemType: "Constant",
-      label: "Test Constant",
-      description: "testing a constant",
-      phenomenon: "TargetSchema.testPhenomenon",
-      definition: "PI",
-      numerator: 5.5,
-      denominator: 5.1,
-    };
-
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
@@ -78,10 +63,16 @@ describe("Constant merger tests", () => {
       ],
     });
 
-    const mergedConstant = await mergedSchema.getItem<Constant>("testConstant");
-    const mergedConstantToJSON = mergedConstant!.toJSON(false, false);
-
-    expect(mergedConstantToJSON).deep.eq(testConstant);
+    await expect(mergedSchema.getItem("testConstant")).to.be.eventually.not.undefined
+      .then((constant: Constant) => {
+        expect(constant).to.have.a.property("schemaItemType", SchemaItemType.Constant);
+        expect(constant).to.have.a.property("label", "Test Constant");
+        expect(constant).to.have.a.property("description", "testing a constant");
+        expect(constant).to.have.a.nested.property("phenomenon.fullName", "TargetSchema.testPhenomenon");
+        expect(constant).to.have.a.property("definition", "PI");
+        expect(constant).to.have.a.property("numerator", 5.5);
+        expect(constant).to.have.a.property("denominator", 5.1);
+      });
   });
 
   it("it should merge missing constant with referenced phenomenon", async () => {
@@ -130,8 +121,16 @@ describe("Constant merger tests", () => {
       ],
     });
 
-    const mergedConstant = await mergedSchema.getItem<Constant>("testConstant");
-    expect((mergedConstant?.phenomenon)?.fullName).to.be.equals("ReferenceSchema.testPhenomenon");
+    await expect(mergedSchema.getItem("testConstant")).to.be.eventually.not.undefined
+      .then((constant: Constant) => {
+        expect(constant).to.have.a.property("schemaItemType", SchemaItemType.Constant);
+        expect(constant).to.have.a.property("label", "Test Constant");
+        expect(constant).to.have.a.property("description", "testing a constant");
+        expect(constant).to.have.a.nested.property("phenomenon.fullName", "ReferenceSchema.testPhenomenon");
+        expect(constant).to.have.a.property("definition", "PI");
+        expect(constant).to.have.a.property("numerator", 5);
+        expect(constant).to.have.a.property("denominator", 5.1);
+      });
   });
 
   it("it should throw error if definition conflict exist", async () => {
