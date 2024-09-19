@@ -19,17 +19,13 @@ import {
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
+import { ECXmlVersion } from "./Helper";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
 
 type PrimitiveArray = PrimitiveValue[];
 type PrimitiveValue = string | number | boolean | Date;
-
-interface ECXmlVersion {
-  readVersion: number;
-  writeVersion: number;
-}
 
 /** @internal */
 export class XmlParser extends AbstractParser<Element> {
@@ -68,7 +64,7 @@ export class XmlParser extends AbstractParser<Element> {
     const xmlNamespace = schemaInfo.getAttribute("xmlns");
     if (xmlNamespace) {
       this._xmlNamespace = xmlNamespace;
-      this._ecXmlVersion = this.parseXmlNamespace(this._xmlNamespace);
+      this._ecXmlVersion = XmlParser.parseXmlNamespace(this._xmlNamespace);
     }
 
     this._schemaItems = new Map<string, [string, Element]>();
@@ -108,6 +104,8 @@ export class XmlParser extends AbstractParser<Element> {
       alias,
       label: displayLabel,
       description,
+      ecXmlMajorVersion: this._ecXmlVersion.readVersion,
+      ecXmlMinorVersion: this._ecXmlVersion.writeVersion,
     };
 
     return schemaProps;
@@ -1212,7 +1210,7 @@ export class XmlParser extends AbstractParser<Element> {
     return true;
   }
 
-  private parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
+  public static parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
     const regEx = new RegExp(`^${ECXML_URI}\\.([0-9]+)\\.([0-9]+)$`);
     const match = xmlNamespace.match(regEx);
     if (!match)

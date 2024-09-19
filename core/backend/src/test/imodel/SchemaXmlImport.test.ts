@@ -56,7 +56,7 @@ describe("Schema XML Import Tests", () => {
     };
 
     // Incrementing major ECXml version is not supported
-    for (let testCase of [`4.1`, `5.10`]) {
+    for (const testCase of [`4.1`, `5.10`]) {
       assert(!(await helperFunction(imodel, [`<ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${testCase}"/>`], true)), `Schema ${testCase} import should not have succeeded.`);
       assert(!(await helperFunction(imodel, [`TestSchema`], false)), `Schema ${testCase} test should not have succeeded.`);
     }
@@ -74,7 +74,7 @@ describe("Schema XML Import Tests", () => {
     }
 
     // Schema should be imported successfully
-    for (let testCase of [`3.2`, `3.5`]) {
+    for (const testCase of [`3.2`, `3.5`]) {
       assert(await helperFunction(imodel, [`<ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${testCase}"/>`], true), `Schema ${testCase} import should have succeeded.`);
       assert(await helperFunction(imodel, [`TestSchema`], false), `Schema ${testCase} test should have succeeded.`);
     }

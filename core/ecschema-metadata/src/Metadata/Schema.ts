@@ -7,9 +7,10 @@
  */
 
 import { SchemaContext } from "../Context";
-import { SchemaReadHelper } from "../Deserialization/Helper";
+import { ECXmlVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "../Deserialization/JsonProps";
+import { XmlParser } from "../Deserialization/XmlParser";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -40,6 +41,7 @@ const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
  * @beta
  */
 export class Schema implements CustomAttributeContainerProps {
+  private static _currentECXmlVersion = "3.2";
   private _context: SchemaContext;
   protected _schemaKey?: SchemaKey;
   protected _alias?: string;
@@ -48,6 +50,8 @@ export class Schema implements CustomAttributeContainerProps {
   public readonly references: Schema[];
   private readonly _items: Map<string, SchemaItem>;
   private _customAttributes?: Map<string, CustomAttribute>;
+  private _originalECXmlMajorVersion?: number;
+  private _originalECXmlMinorVersion?: number;
   /**
    * Constructs an empty Schema with the given name and version in the provided context.
    * @param context The SchemaContext that will control the lifetime of the schema
@@ -82,21 +86,45 @@ export class Schema implements CustomAttributeContainerProps {
     } else if (nameOrKey !== undefined) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not have the required 'alias' attribute.`);
     }
+
+    this._originalECXmlMajorVersion = Schema.currentECXmlMajorVersion;
+    this._originalECXmlMinorVersion = Schema.currentECXmlMinorVersion;
   }
 
   public get schemaKey() {
     if (undefined === this._schemaKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema '${this.name}' has an invalid SchemaKey.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
     return this._schemaKey;
   }
 
-  public get name() { return this.schemaKey.name; }
+  public get name() {
+    if (this._schemaKey === undefined)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+    return this.schemaKey.name;
+  }
 
-  public get readVersion() { return this.schemaKey.readVersion; }
+  public get readVersion() {
+    if (this._schemaKey === undefined)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+    return this.schemaKey.readVersion;
+  }
 
-  public get writeVersion() { return this.schemaKey.writeVersion; }
+  public get writeVersion() {
+    if (this._schemaKey === undefined)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+    return this.schemaKey.writeVersion;
+  }
 
-  public get minorVersion() { return this.schemaKey.minorVersion; }
+  public get minorVersion() {
+    if (this._schemaKey === undefined)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+    return this.schemaKey.minorVersion;
+  }
+
+  public get originalECXmlMajorVersion() { return this._originalECXmlMajorVersion; }
+  public get originalECXmlMinorVersion() { return this._originalECXmlMinorVersion; }
+  public static get currentECXmlMajorVersion(): number { return parseInt(Schema._currentECXmlVersion.split(".")[0], 10); }
+  public static get currentECXmlMinorVersion(): number { return parseInt(Schema._currentECXmlVersion.split(".")[1], 10); }
 
   public get alias() {
     if (this._alias === undefined || this._alias === null) {
@@ -521,6 +549,9 @@ export class Schema implements CustomAttributeContainerProps {
    * Save this Schema's properties to an object for serializing to JSON.
    */
   public toJSON(): SchemaProps {
+    if (!this.isECXmlVersionSupported())
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be serialized.`);
+
     const schemaJson: { [value: string]: any } = {};
     schemaJson.$schema = SCHEMAURL3_2_JSON; // $schema is required
     schemaJson.name = this.name; // name is required
@@ -550,6 +581,9 @@ export class Schema implements CustomAttributeContainerProps {
    * @param schemaXml An empty DOM document to which the schema will be written
    */
   public async toXml(schemaXml: Document): Promise<Document> {
+    if (!this.isECXmlVersionSupported())
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be serialized.`);
+
     const schemaMetadata = schemaXml.createElement("ECSchema");
     schemaMetadata.setAttribute("xmlns", SCHEMAURL3_2_XML);
     schemaMetadata.setAttribute("version", this.schemaKey.version.toString());
@@ -590,6 +624,36 @@ export class Schema implements CustomAttributeContainerProps {
     return schemaXml;
   }
 
+  // Check if the ECXml Major version is greater than the current ECXml version supported.
+  // If a specific ECXml version is given, check against that version.
+  // If no argument is given, check against the original ECXml version of the schema.
+  private isECXmlMajorVersionSupported(ecXmlMajorVersionToCheck?: number): boolean {
+    // If argument is supplied, check the argument against the current ECXml version supported
+    if (ecXmlMajorVersionToCheck !== undefined)
+      return (Schema.currentECXmlMajorVersion >= ecXmlMajorVersionToCheck);
+
+    // If argument is not supplied, check against the original ECXml version of the schema
+    if (this.originalECXmlMajorVersion === undefined)
+      return false;
+    return (Schema.currentECXmlMajorVersion >= this.originalECXmlMajorVersion);
+  }
+
+  // Check if the full ECXml version is greater than the current ECXml version supported.
+  // If a specific ECXml version is given, check against that version.
+  // If no argument is given, check against the original ECXml version of the schema.
+  private isECXmlVersionSupported(ecXmlMajorVersionToCheck?: number, ecXmlMinorVersionToCheck?: number): boolean {
+    // If arguments are supplied, check the arguments against the current ECXml version supported
+    if (ecXmlMajorVersionToCheck !== undefined && ecXmlMinorVersionToCheck !== undefined) {
+      if (!this.isECXmlMajorVersionSupported(ecXmlMajorVersionToCheck))
+        return false;
+      return (Schema.currentECXmlMinorVersion >= ecXmlMinorVersionToCheck);
+    }
+    // If arguments are not supplied, check against the original ECXml version of the schema
+    if (!this.isECXmlMajorVersionSupported() || this.originalECXmlMinorVersion === undefined)
+      return false;
+    return (Schema.currentECXmlMinorVersion >= this.originalECXmlMinorVersion);
+  }
+
   /**
    * Loads the schema header (name, version alias, label and description) from the input SchemaProps
    */
@@ -605,8 +669,22 @@ export class Schema implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
     }
 
-    if (SCHEMAURL3_2_JSON !== schemaProps.$schema && SCHEMAURL3_2_XML !== schemaProps.$schema) // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema ${this.name} has an unsupported namespace '${schemaProps.$schema}'.`);
+    if (schemaProps.$schema.match(`https://dev\.bentley\.com/json_schemas/ec/([0-9]+)/ecschema`) == null && schemaProps.$schema.match(`http://www\.bentley\.com/schemas/Bentley\.ECXML\.([0-9]+)`) == null)
+      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema '${this.name}' has an unsupported namespace '${schemaProps.$schema}'.`);
+
+    // The schema props have not been parsed. Parse the ECXml version from the $schema attribute
+    let ecVersion: ECXmlVersion;
+    if (schemaProps.ecXmlMajorVersion === undefined || schemaProps.ecXmlMinorVersion === undefined) {
+      ecVersion = ((schemaProps.$schema.search("ECXML") !== -1) ? XmlParser.parseXmlNamespace(schemaProps.$schema) : JsonParser.parseJSUri(schemaProps.$schema)) as unknown as ECXmlVersion;
+    } else {
+      ecVersion = { readVersion: schemaProps.ecXmlMajorVersion, writeVersion: schemaProps.ecXmlMinorVersion } as unknown as ECXmlVersion;
+    }
+
+    this._originalECXmlMajorVersion = ecVersion?.readVersion;
+    this._originalECXmlMinorVersion = ecVersion?.writeVersion;
+
+    if (!this.isECXmlMajorVersionSupported(ecVersion?.readVersion))
+      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be loaded.`);
 
     if (ECName.validate(schemaProps.alias)) {
       this._alias = schemaProps.alias;

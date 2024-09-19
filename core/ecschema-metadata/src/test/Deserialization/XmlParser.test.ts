@@ -1654,6 +1654,8 @@ describe("XmlParser", () => {
         alias: "testschema",
         description: "A test schema",
         label: undefined,
+        ecXmlMajorVersion: Schema.currentECXmlMajorVersion,
+        ecXmlMinorVersion: Schema.currentECXmlMinorVersion,
       } as SchemaProps;
 
       const actualProps = parser.parseSchema();

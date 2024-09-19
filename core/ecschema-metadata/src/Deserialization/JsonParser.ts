@@ -14,11 +14,14 @@ import {
   PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
   StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
+import { ECXmlVersion } from "./Helper";
 
 interface UnknownObject { readonly [name: string]: unknown }
 function isObject(x: unknown): x is UnknownObject {
   return typeof (x) === "object";
 }
+
+const SCHEMAURL_JSON = "https://dev\.bentley\.com/json_schemas/ec";
 
 /** @internal */
 export class JsonParser extends AbstractParser<UnknownObject> {
@@ -34,6 +37,16 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
     this._rawSchema = rawSchema;
     this._schemaName = rawSchema.name as string | undefined;
+  }
+
+  public static parseJSUri(uri: string): ECXmlVersion | undefined {
+    const match = uri.match(`^${SCHEMAURL_JSON}/([0-9]+)/ecschema$`);
+    if (!match)
+      return;
+
+    const readVersion = parseInt(match[1][0], 10);
+    const writeVersion = parseInt(match[1][1], 10);
+    return { readVersion, writeVersion };
   }
 
   /**
@@ -72,7 +85,13 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this._schemaName} has an invalid 'description' attribute. It should be of type 'string'.`);
     }
 
-    return (this._rawSchema as unknown) as SchemaProps;
+    const ecVersions = JsonParser.parseJSUri(this._rawSchema.$schema);
+
+    return {
+      ...this._rawSchema,
+      ecXmlMajorVersion: ecVersions?.readVersion,
+      ecXmlMinorVersion: ecVersions?.writeVersion,
+    } as unknown as SchemaProps;
   }
 
   public *getReferences(): Iterable<SchemaReferenceProps> {

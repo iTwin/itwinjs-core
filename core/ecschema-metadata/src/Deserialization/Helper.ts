@@ -30,6 +30,11 @@ import { SchemaGraph } from "../utils/SchemaGraph";
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
 
+export interface ECXmlVersion {
+  readVersion: number;
+  writeVersion: number;
+}
+
 /**
  * This class properly handles the order the deserialization of ECSchemas and SchemaItems from serialized formats.
  * For example, when deserializing an ECClass most times all base class should be de-serialized before the given class.
