@@ -11,6 +11,7 @@ import { SchemaContextEditor } from "../../Editing/Editor";
 import { AnyDiagnostic } from "../../Validation/Diagnostic";
 import { Diagnostics } from "../../Validation/ECRules";
 import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -137,8 +138,8 @@ describe("Editor tests", () => {
         testKey = schemaA.schemaKey;
 
         await expect(testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
-          expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
-          expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+          expect(error).to.have.property("schemaEditType", SchemaEditType.AddCustomAttributeToClass);
+          expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.RuleViolation);
           expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from CustomAttribute SchemaB.TestCustomAttribute, container ${testKey.name}: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
           const violations = error.innerError.ruleViolations as AnyDiagnostic[];
           expect(violations[0]).to.deep.equal(new Diagnostics.CustomAttributeClassNotFound(schemaA, ["SchemaA", "SchemaB.TestCustomAttribute"]));
@@ -218,8 +219,8 @@ describe("Editor tests", () => {
         try {
           await testEditor.addSchemaReference(schemaA.schemaKey, schemaC);
         } catch (e: any) {
-          expect(e).to.have.property("errorNumber", ECEditingStatus.AddSchemaReference);
-          expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+          expect(e).to.have.property("schemaEditType", SchemaEditType.AddSchemaReference);
+          expect(e).to.have.nested.property("innerError.errorStatus", ECEditingStatus.RuleViolation);
           expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Schema ${schemaA.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
           const violations = e.innerError.ruleViolations as AnyDiagnostic[];
           expect(violations[0]).to.deep.equal(new Diagnostics.SchemaRefAliasMustBeUnique(schemaA, [schemaA.name, "b", "SchemaB", "SchemaC"]));
@@ -470,9 +471,9 @@ describe("Editor tests", () => {
       testEditor = new SchemaContextEditor(context);
 
       await expect(testEditor.setAlias(testSchema.schemaKey, "123")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.SetSchemaAlias);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.SetSchemaAlias);
         expect(error).to.have.nested.property("innerError.message", `Could not set the alias for schema ${testSchema.name} because the specified alias is not a valid ECName.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaAlias);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.InvalidSchemaAlias);
       });
 
       expect(testSchema.alias).to.equal("vs");
@@ -500,9 +501,9 @@ describe("Editor tests", () => {
 
       // tests case-insensitive search (ts2 === TS2)
       await expect(testEditor.setAlias(testSchema1.schemaKey, "ts2")).to.be.eventually.rejected.then(function (error) {
-        expect(error).to.have.property("errorNumber", ECEditingStatus.SetSchemaAlias);
+        expect(error).to.have.property("schemaEditType", SchemaEditType.SetSchemaAlias);
         expect(error).to.have.nested.property("innerError.message", `Schema ${testSchema2.name} already uses the alias 'ts2'.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaAliasAlreadyExists);
+        expect(error).to.have.nested.property("innerError.errorStatus", ECEditingStatus.SchemaAliasAlreadyExists);
       });
 
       expect(testSchema1.alias).to.equal("ts1");

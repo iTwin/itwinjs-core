@@ -87,6 +87,16 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
+  /**
+   * Resets the property map entry with the new property name.  Must be called when a property name changes.
+   * @param property The property with the new name.
+   * @param oldName The old property name.
+   */
+  // public propertyNameChanged(property: Property, oldName: string) {
+  //   this._properties?.delete(oldName);
+  //   this._properties?.set(property.name, property);
+  // }
+
   public getBaseClassSync(): ECClass | undefined {
     if (!this.baseClass) {
       return undefined;
@@ -622,6 +632,37 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     for (const baseClass of baseClasses) {
       if (callback(baseClass, arg))
         return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Asynchronously traverses through the inheritance tree, using depth-first traversal, calling the given callback
+   * function for each derived class encountered.
+   * @param callback The function to call for each derived class in the hierarchy.
+   * @param arg An argument that will be passed as the second parameter to the callback function.
+   */
+  public async traverseDerivedClasses(callback: (ecClass: ECClass, out: (traverseDerivedClasses: boolean) => void, arg?: any) => Promise<boolean>, arg?: any): Promise<boolean> {
+    for await (const schemaItem of this.schema.context.getSchemaItems()) {
+      let traverseDerivedClasses = false;
+
+      if(ECClass.isECClass(schemaItem) && await schemaItem.is(this)) {
+        if (!schemaItem.baseClass)
+          continue;
+
+        if ((await schemaItem.baseClass).key.matches(this.key)) {
+          if (await callback(schemaItem,
+            (result) => { traverseDerivedClasses = result; }, arg)) {
+            return true;
+          }
+        }
+
+        if (traverseDerivedClasses) {
+          if (await schemaItem.traverseDerivedClasses (callback, arg))
+            return true;
+        }
+      }
     }
 
     return false;

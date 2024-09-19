@@ -56,6 +56,12 @@ describe("Property", () => {
     testRelationship = await mutable.createRelationshipClass("TestRelationship");
   });
 
+  it("should successfully rename property", async () => {
+    testClass
+
+  });
+
+
   describe("type guards", () => {
     let primitiveProperty: PrimitiveProperty;
     let enumProperty: EnumerationProperty;
