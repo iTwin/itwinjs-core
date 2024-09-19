@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Enumeration, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Enumeration, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { describe, expect, it } from "vitest";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -16,12 +17,18 @@ describe("Enumeration merge tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
 
   it("should merge missing enumeration", async () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -53,22 +60,22 @@ describe("Enumeration merge tests", () => {
     });
 
     const mergedEnumeration = await mergedSchema.getItem("TestEnumeration") as Enumeration;
-    expect(mergedEnumeration.toJSON()).toEqual({
-      type: "int",
-      schemaItemType: "Enumeration",
-      isStrict: false,
-      enumerators: [
-        {
-          label: "first value",
-          name: "FirstValue",
-          value: 0,
-        },
-        {
-          label: "second value",
-          name: "SecondValue",
-          value: 1,
-        },
-      ],
+    expect(mergedEnumeration).toBeDefined();
+    expect(mergedEnumeration.schemaItemType).toBe(SchemaItemType.Enumeration);
+    expect(mergedEnumeration.isInt).toBe(true);
+    expect(mergedEnumeration.isStrict).toBe(false);
+    expect(mergedEnumeration.enumerators).toHaveLength(2);
+    expect(mergedEnumeration.enumerators[0]).toEqual({
+      description: undefined,
+      label: "first value",
+      name: "FirstValue",
+      value: 0,
+    });
+    expect(mergedEnumeration.enumerators[1]).toEqual({
+      description: undefined,
+      label: "second value",
+      name: "SecondValue",
+      value: 1,
     });
   });
 
@@ -87,7 +94,7 @@ describe("Enumeration merge tests", () => {
           }],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -110,20 +117,22 @@ describe("Enumeration merge tests", () => {
     });
 
     const mergedEnumeration = await mergedSchema.getItem("TestEnumeration") as Enumeration;
-    expect(mergedEnumeration.toJSON()).toEqual({
-      schemaItemType: "Enumeration",
-      type: "string",
-      isStrict: true,
-      enumerators: [{
-        name: "AnotherValue",
-        label: "totally different value",
-        value: "T",
-      },
-      {
-        name: "FirstValue",
-        label: "first value",
-        value: "F",
-      }],
+    expect(mergedEnumeration).toBeDefined();
+    expect(mergedEnumeration.schemaItemType).toBe(SchemaItemType.Enumeration);
+    expect(mergedEnumeration.isString).toBe(true);
+    expect(mergedEnumeration.isStrict).toBe(true);
+    expect(mergedEnumeration.enumerators).toHaveLength(2);
+    expect(mergedEnumeration.enumerators[0]).toEqual({
+      description: undefined,
+      label: "totally different value",
+      name: "AnotherValue",
+      value: "T",
+    });
+    expect(mergedEnumeration.enumerators[1]).toEqual({
+      description: undefined,
+      label: "first value",
+      name: "FirstValue",
+      value: "F",
     });
   });
 
@@ -147,7 +156,7 @@ describe("Enumeration merge tests", () => {
           }],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -169,27 +178,28 @@ describe("Enumeration merge tests", () => {
     });
 
     const mergedEnumeration = await mergedSchema.getItem("TestEnumeration") as Enumeration;
-    expect(mergedEnumeration.toJSON()).toEqual({
-      type: "int",
-      schemaItemType: "Enumeration",
-      isStrict: false,
-      enumerators: [
-        {
-          label: "first value",
-          name: "FirstValue",
-          value: 0,
-        },
-        {
-          label: "second value",
-          name: "SecondValue",
-          value: 1,
-        },
-        {
-          label: "Third value",
-          name: "ThirdValue",
-          value: 2,
-        },
-      ],
+    expect(mergedEnumeration).toBeDefined();
+    expect(mergedEnumeration.schemaItemType).toBe(SchemaItemType.Enumeration);
+    expect(mergedEnumeration.isInt).toBe(true);
+    expect(mergedEnumeration.isStrict).toBe(false);
+    expect(mergedEnumeration.enumerators).toHaveLength(3);
+    expect(mergedEnumeration.enumerators[0]).toEqual({
+      description: undefined,
+      label: "first value",
+      name: "FirstValue",
+      value: 0,
+    });
+    expect(mergedEnumeration.enumerators[1]).toEqual({
+      description: undefined,
+      label: "second value",
+      name: "SecondValue",
+      value: 1,
+    });
+    expect(mergedEnumeration.enumerators[2]).toEqual({
+      description: undefined,
+      label: "Third value",
+      name: "ThirdValue",
+      value: 2,
     });
   });
 
@@ -209,7 +219,7 @@ describe("Enumeration merge tests", () => {
           ],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -230,18 +240,16 @@ describe("Enumeration merge tests", () => {
     });
 
     const mergedEnumeration = await mergedSchema.getItem("TestEnumeration") as Enumeration;
-    expect(mergedEnumeration.toJSON()).deep.eq({
-      type: "int",
-      schemaItemType: "Enumeration",
-      isStrict: true,
-      enumerators: [
-        {
-          description: "This is for enumerator one",
-          label: "Enumerator One",
-          name: "EnumeratorOne",
-          value: 100,
-        },
-      ],
+    expect(mergedEnumeration).toBeDefined();
+    expect(mergedEnumeration.schemaItemType).toBe(SchemaItemType.Enumeration);
+    expect(mergedEnumeration.isInt).toBe(true);
+    expect(mergedEnumeration.isStrict).toBe(true);
+    expect(mergedEnumeration.enumerators).toHaveLength(1);
+    expect(mergedEnumeration.enumerators[0]).toEqual({
+      description: "This is for enumerator one",
+      label: "Enumerator One",
+      name: "EnumeratorOne",
+      value: 100,
     });
   });
 
@@ -260,7 +268,7 @@ describe("Enumeration merge tests", () => {
           }],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const merge = merger.merge({
@@ -298,7 +306,7 @@ describe("Enumeration merge tests", () => {
           ],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const merge = merger.merge({

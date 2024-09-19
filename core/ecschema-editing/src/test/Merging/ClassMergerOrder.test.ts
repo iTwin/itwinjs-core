@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { SchemaMerger } from "../../ecschema-editing";
+
+import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { beforeEach, describe, expect, it } from "vitest";
 
 describe("Class items merging order tests", () => {
@@ -15,10 +17,16 @@ describe("Class items merging order tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
 
   beforeEach(async () => {
-    context = new SchemaContext();
+    context = await BisTestHelper.getNewContext();
   });
 
   it("should merge the missing entity class with base class before the base class item", async () => {
@@ -103,11 +111,11 @@ describe("Class items merging order tests", () => {
 
     const mergedItem = await mergedSchema.getItem<EntityClass>("testClass");
     const classMixins = mergedItem?.mixins;
-    if(classMixins){
+    if (classMixins) {
       expect((classMixins[0]).fullName).toEqual("TargetSchema.mixinA");
       expect((classMixins[1]).fullName).toEqual("TargetSchema.mixinB");
     }
-    expect(classMixins?.length).be.equal(2);
+    expect(classMixins?.length).toEqual(2);
   });
 
   it("should merge missing mixin with baseClass and appliesTo before the base class item and class that it appliesTo", async () => {
@@ -257,7 +265,7 @@ describe("Class items merging order tests", () => {
     });
   });
 
-  it("it should merge missing struct properties of existing entity class before the struct class item",async () => {
+  it("it should merge missing struct properties of existing entity class before the struct class item", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {

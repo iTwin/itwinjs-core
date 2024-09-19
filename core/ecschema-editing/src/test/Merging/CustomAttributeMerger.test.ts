@@ -6,6 +6,7 @@ import { EntityClass, RelationshipClass, Schema, SchemaContext, SchemaItemType }
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -16,10 +17,16 @@ describe("Custom Attribute merge", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
 
   beforeEach(async () => {
-    targetContext = new SchemaContext();
+    targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TestSchema",
@@ -289,6 +296,7 @@ describe("Custom Attribute merge", () => {
 
     expect(mergedSchema.toJSON().customAttributes).toEqual(
       [
+        ...targetJson.customAttributes,
         {
           className: "TargetSchema.TestCA",
         },

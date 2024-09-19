@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
+import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -15,6 +16,17 @@ describe("Schema Edit tests", () => {
       name: "ConflictSchema",
       version: "1.0.0",
       alias: "conflict",
+      references: [
+        {
+          name: "CoreCustomAttributes",
+          version: "01.00.01",
+        },
+      ],
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.DynamicSchema",
+        },
+      ],
       items: {
         SameNameOtherItemType: {
           schemaItemType: "EntityClass",
@@ -27,7 +39,7 @@ describe("Schema Edit tests", () => {
           ],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const sourceSchemas: Schema[] = [
       // 1st case: Conflicting name

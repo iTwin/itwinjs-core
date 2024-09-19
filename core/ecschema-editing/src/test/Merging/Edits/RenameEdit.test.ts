@@ -5,6 +5,7 @@
 import { CustomAttributeClass, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, KindOfQuantity, Mixin, NavigationProperty, PropertyCategory, RelationshipClass, Schema, SchemaContext, StructArrayProperty, StructClass, StructProperty } from "@itwin/ecschema-metadata";
 import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
 import { beforeEach, describe, expect, it } from "vitest";
+import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -17,6 +18,17 @@ describe("Rename change tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      {
+        name: "CoreCustomAttributes",
+        version: "01.00.01",
+      },
+    ],
+    customAttributes: [
+      {
+        className: "CoreCustomAttributes.DynamicSchema",
+      },
+    ],
   };
 
   const sourceJson = {
@@ -70,7 +82,7 @@ describe("Rename change tests", () => {
   };
 
   beforeEach(async () => {
-    targetContext = new SchemaContext();
+    targetContext = await BisTestHelper.getNewContext();
     sourceContext = new SchemaContext();
   });
 

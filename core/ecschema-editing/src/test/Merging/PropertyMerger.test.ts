@@ -6,6 +6,8 @@ import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, Schema
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
+
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Property merger tests", () => {
@@ -15,6 +17,12 @@ describe("Property merger tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
 
   const testJson = {
@@ -87,7 +95,7 @@ describe("Property merger tests", () => {
   };
 
   beforeEach(async () => {
-    targetContext = new SchemaContext();
+    targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson(testJson, targetContext);
   });
 
@@ -546,6 +554,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -666,6 +675,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -835,6 +845,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -899,6 +910,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -1303,6 +1315,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -1345,6 +1358,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
