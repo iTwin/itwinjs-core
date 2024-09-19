@@ -11,7 +11,7 @@ import {
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, ContextRealityModel, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -31,7 +31,6 @@ import {
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { SpatialClassifiersState } from "../SpatialClassifiersState";
-import { ContextRealityModelState } from "../ContextRealityModelState";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
