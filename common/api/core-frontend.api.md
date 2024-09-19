@@ -9028,6 +9028,8 @@ export namespace RealityModelTileTree {
         // (undocumented)
         get isGlobal(): boolean;
         // (undocumented)
+        protected _isInvisible?: () => boolean;
+        // (undocumented)
         protected _mapDrapeTree?: TileTreeReference;
         // (undocumented)
         protected get maskModelIds(): string | undefined;
@@ -9059,6 +9061,8 @@ export namespace RealityModelTileTree {
         getDisplaySettings(): RealityModelDisplaySettings;
         // (undocumented)
         iModel: IModelConnection;
+        // (undocumented)
+        isInvisible?: () => boolean;
         // (undocumented)
         modelId?: Id64String;
         // (undocumented)
