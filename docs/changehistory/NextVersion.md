@@ -6,7 +6,6 @@ publish: false
 
 Table of contents:
 
-<<<<<<< HEAD
 - [Quantity](#quantity)
 - [Electron 32 support](#electron-32-support)
 - [Geometry](#geometry)
@@ -19,11 +18,7 @@ Table of contents:
   - [ECExpression to get related instance label](#ecexpression-to-get-related-instance-label)
   - [Referencing schema-based categories in property overrides and calculated properties](#referencing-schema-based-categories-in-property-overrides-and-calculated-properties)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
-=======
-- [Revert timeline changes](#revert-timeline-changes)
-- [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
-- [API Deprecations](#api-deprecations)
->>>>>>> a438fdac4e (deprecate appui-abstract content apis (#7167))
+  - [API Deprecations](#api-deprecations)
 
 ## Quantity
 
@@ -119,7 +114,6 @@ In some cases there may be a need to place specific property in the same group a
 
 ### Calculated properties specification enhancements
 
-<<<<<<< HEAD
 A number of enhancements have been made to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md):
 
 - The [`value`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-value) is now optional. If not provided, the value of resulting property will be `undefined`.
@@ -127,8 +121,6 @@ A number of enhancements have been made to [calculated properties specification]
 - A new optional [`type`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-type) attribute has been added. The attribute allows specifying value type of the calculated property, allowing the property to have other types than `string`. The default value is `string`.
 
 - A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added. The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
-=======
-A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md). The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
 
 ## API deprecations
 
@@ -137,4 +129,3 @@ A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesS
 - `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
 
 - `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.
->>>>>>> a438fdac4e (deprecate appui-abstract content apis (#7167))
