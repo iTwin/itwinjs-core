@@ -18,6 +18,7 @@ Table of contents:
   - [ECExpression to get related instance label](#ecexpression-to-get-related-instance-label)
   - [Referencing schema-based categories in property overrides and calculated properties](#referencing-schema-based-categories-in-property-overrides-and-calculated-properties)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
+  - [API Deprecations](#api-deprecations)
 
 ## Quantity
 
@@ -120,3 +121,11 @@ A number of enhancements have been made to [calculated properties specification]
 - A new optional [`type`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-type) attribute has been added. The attribute allows specifying value type of the calculated property, allowing the property to have other types than `string`. The default value is `string`.
 
 - A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added. The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
+
+## API deprecations
+
+### @itwin/appui-abstract
+
+- `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
+
+- `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.
