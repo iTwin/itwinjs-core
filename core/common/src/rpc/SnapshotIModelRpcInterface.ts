@@ -20,7 +20,7 @@ const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefi
 /** The RPC interface for working with *snapshot* iModels.
  * This interface is intended for desktop and mobile products. Web products are discouraged from registering this interface.
  * @internal
- * @deprecated in 4.10. Check [[IpcAppFunctions]] or [[ConnectionConnection]] for replacements.
+ * @deprecated in 4.10. Check [[IpcAppFunctions]] or [[CheckpointConnection]] for replacements.
  */
 export abstract class SnapshotIModelRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** Returns the SnapshotIModelRpcInterface client instance for the frontend. */
@@ -47,7 +47,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface { // eslin
   public async openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
   /**
-   * @deprecated in 4.10. Use [[ConnectionConnection.openRemote]].
+   * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
    */
   @RpcOperation.setRoutingProps(unknownIModelId)
   public async openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
