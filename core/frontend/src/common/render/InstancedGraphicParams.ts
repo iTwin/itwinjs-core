@@ -103,7 +103,7 @@ export namespace InstancedGraphicParams { // eslint-disable-line @typescript-esl
     return props;
   }
 
-  /** Create an [[InstancedGraphicParams]] rfom an [[InstancedGraphicProps]]. */
+  /** Create an [[InstancedGraphicParams]] from an [[InstancedGraphicProps]]. */
   export function fromProps(props: InstancedGraphicProps): InstancedGraphicParams {
     return {
       ...props,
