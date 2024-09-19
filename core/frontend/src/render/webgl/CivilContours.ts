@@ -16,6 +16,7 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 import { BatchOptions } from "../../common/render/BatchOptions";
+import { ContourUniforms } from "./ContourUniforms";
 
 function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number): { width: number, height: number } {
   const maxSize = System.instance.maxTextureSize;
@@ -99,8 +100,8 @@ export class CivilContours implements WebGLDisposable {
 
     // setup an efficient way to compare feature subcategories with lists in terrains
     const subCatMap = new Id64.Uint32Map<number>();
-    // NB: index should be a max of 14 - has to fit in 4 bits and 15 is reserved for no terrain def
-    for (let index = 0, len = contours.terrains.length; index < len; ++index) {
+    // NB: index also has to be a max of 14 - has to fit in 4 bits with value 15 reserved for no terrain def
+    for (let index = 0, len = contours.terrains.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
       const subCats = contours.terrains[index]?.subCategories;
       if (subCats !== undefined) {
         for (const subCat of subCats)

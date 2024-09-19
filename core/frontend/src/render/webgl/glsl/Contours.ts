@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module WebGL
  */
+import { ContourUniforms } from "../ContourUniforms";
 import { TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderComponent, ProgramBuilder, VariableType,
@@ -47,14 +48,13 @@ vec4 unpackAndNormalize2BytesVec4(vec4 f, bool upper) {
 }
 `;
 
-const maxDefs = 5;
 const applyContours = `
   int contourNdx = int(v_contourNdx + 0.5);
   if (contourNdx > 14) // 15 => no contours
     return baseColor;
     // return vec4(0.0, 0.5, 1.0, 1.0); // debug for contourNdx map
 
-  const int maxDefs = ${maxDefs}; // max number of contour definitions allowed, have to change index arrays if this changes
+  const int maxDefs = ${ContourUniforms.maxContourDefs}; // max number of contour definitions allowed, have to change index arrays if this changes
   int contourNdxC = clamp(contourNdx, 0, maxDefs - 1);
 
   bool even = (contourNdxC & 1) == 0;

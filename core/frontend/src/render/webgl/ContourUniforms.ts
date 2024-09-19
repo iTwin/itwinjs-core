@@ -15,19 +15,18 @@ import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
 
-const _maxContourDefs = 5; // number of concurrent contour definitions supported
-
 /** Maintains state for uniforms related to thematic display.
  * @internal
  */
 export class ContourUniforms {
-  private readonly _contourDefsSize = Math.ceil(_maxContourDefs * 1.5);
+  // max number of concurrent contour definitions supported
+  public static readonly maxContourDefs = 5;
+  private readonly _contourDefsSize = Math.ceil(ContourUniforms.maxContourDefs * 1.5);
   private readonly _contourDefs = new Float32Array(this._contourDefsSize * 4);
   private _contourDisplay?: CivilContourDisplay;
 
   public syncKey = 0;
 
-  public get contourDefsSize() { return this._contourDefsSize; }
   public get contourDisplay(): CivilContourDisplay | undefined {
     return this._contourDisplay;
   }
@@ -102,7 +101,7 @@ export class ContourUniforms {
            (If just 1 contour def remains then it takes 2 vec4 uniforms, of which 1.5 is actually used.)
     */
 
-    for (let index = 0, len = this.contourDisplay.terrains.length; index < len && index < _maxContourDefs; ++index) {
+    for (let index = 0, len = this.contourDisplay.terrains.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
       const contourDef = this.contourDisplay.terrains[index]?.contourDef ?? CivilContour.fromJSON({});;
       const even = (index & 1) === 0;
       const colorDefsNdx = (even ? index * 1.5 : (index - 1) * 1.5 + 2) * 4;
