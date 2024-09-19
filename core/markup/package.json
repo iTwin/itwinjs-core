@@ -39,7 +39,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@svgdotjs/svg.js": "3.0.13"
+    "@svgdotjs/svg.js": "3.2.4"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^4.10.0-dev.2",

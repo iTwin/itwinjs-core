@@ -53,7 +53,7 @@ export abstract class ModifyHandle {
   public setMouseHandler(target: MarkupElement) {
     const node = target.node;
     node.addEventListener("mousedown", (event) => {
-      const ev = event as MouseEvent;
+      const ev = event;
       if (0 === ev.button && undefined === this.handles.active)
         this.handles.active = this;
     });
@@ -252,7 +252,7 @@ class MoveHandle extends ModifyHandle {
   }
   public modify(ev: BeButtonEvent): void {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint);
-    const dist = evPt.minus(this._lastPos!);
+    const dist = evPt.minus(this._lastPos ?? ({ x: 0, y: 0, z: 0 }));
     this._lastPos = evPt;
     this.handles.el.translate(dist.x, dist.y); // move the element
   }
@@ -482,7 +482,7 @@ export class MarkupSelected {
         g.each((index, children) => {
           const child = children[index];
           const oldPos = child.position();
-          child.toParent(g.parent());
+          child.toParent(g.parent()!);
           undo.onRepositioned(child, oldPos, g);
         }, false);
 

@@ -808,7 +808,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': ^4.0.2
-      '@svgdotjs/svg.js': 3.0.13
+      '@svgdotjs/svg.js': 3.2.4
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       babel-loader: ~8.2.5
@@ -824,7 +824,7 @@ importers:
       typescript: ~5.3.3
       webpack: ^5.76.0
     dependencies:
-      '@svgdotjs/svg.js': 3.0.13
+      '@svgdotjs/svg.js': 3.2.4
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -4846,8 +4846,8 @@ packages:
   /@sinonjs/text-encoding/0.7.2:
     resolution: {integrity: sha512-sXXKG+uL9IrKqViTtao2Ws6dy0znu9sOaP1di/jKGW1M6VssO8vlpXCQcpZ+jisQ1tTFAC5Jo/EOzFbggBagFQ==}
 
-  /@svgdotjs/svg.js/3.0.13:
-    resolution: {integrity: sha512-Ix3dobG2DvdK5f2SHtZdiiLwi+G0RDuDfwA4tZ1eqTGoiopia8JIfeWGeA0h2frFHcLDXnYvNiVGtW4y6cSDig==}
+  /@svgdotjs/svg.js/3.2.4:
+    resolution: {integrity: sha512-BjJ/7vWNowlX3Z8O4ywT58DqbNRyYlkk6Yz/D13aB7hGmfQTvGX4Tkgtm/ApYlu9M7lCQi15xUEidqMUmdMYwg==}
     dev: false
 
   /@szmarczak/http-timer/1.1.2:
@@ -13195,7 +13195,7 @@ packages:
       perfect-debounce: 1.0.0
       picocolors: 1.0.1
       sirv: 2.0.4
-      vite: 5.3.3_@types+node@18.16.20
+      vite: 5.3.3
     transitivePeerDependencies:
       - rollup
       - supports-color
