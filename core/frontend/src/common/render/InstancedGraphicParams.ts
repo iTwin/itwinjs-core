@@ -6,9 +6,7 @@
  * @module Rendering
  */
 
-import {
-  Point2d, Point3d, Range3d, Transform,
-} from "@itwin/core-geometry";
+import { LowAndHighXYZ, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
  * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
@@ -44,6 +42,75 @@ export interface InstancedGraphicParams {
 
   /** If defined, the combined range of all instances of the geometry. */
   readonly range?: Range3d;
+}
+
+/** A representation of an [[InstancedGraphicParams]] that can be copied using [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone),
+ * e.g., when transferring between Workers. This representation is used by [[RenderInstancesParams]].
+ * @see [[InstancedGraphicParams.toProps]] and [[InstancedGraphicParams.fromProps]] to convert between representations.
+ * @see [[InstancedGraphicProps.collectTransferables]] to extract Transferable objects for structured clone.
+ * @public
+ */
+export type InstancedGraphicProps = Omit<InstancedGraphicParams, "transformCenter" | "range"> & {
+  transformCenter: XYAndZ;
+  range?: LowAndHighXYZ;
+};
+
+/** @public */
+export namespace InstancedGraphicProps { // eslint-disable-line @typescript-eslint/no-redeclare
+  /** Add all [Transferable objects](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects) from `props`
+   * into `xfers`.
+   */
+  export function collectTransferables(xfers: Set<Transferable>, props: InstancedGraphicProps): void {
+    xfers.add(props.transforms.buffer);
+    if (props.featureIds) {
+      xfers.add(props.featureIds.buffer);
+    }
+
+    if (props.symbologyOverrides) {
+      xfers.add(props.symbologyOverrides.buffer);
+    }
+  }
+}
+
+/** @public */
+export namespace InstancedGraphicParams { // eslint-disable-line @typescript-eslint/no-redeclare
+  /** Convert `params` to a representation that can be copied using [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone). */
+  export function toProps(params: InstancedGraphicParams): InstancedGraphicProps {
+    const props: InstancedGraphicProps = {
+      ...params,
+      transformCenter: {
+        x: params.transformCenter.x,
+        y: params.transformCenter.y,
+        z: params.transformCenter.z,
+      },
+    };
+
+    if (params.range) {
+      props.range = {
+        low: {
+          x: params.range.low.x,
+          y: params.range.low.y,
+          z: params.range.low.z,
+        },
+        high: {
+          x: params.range.high.x,
+          y: params.range.high.y,
+          z: params.range.high.z,
+        },
+      };
+    }
+
+    return props;
+  }
+
+  /** Create an [[InstancedGraphicParams]] from an [[InstancedGraphicProps]]. */
+  export function fromProps(props: InstancedGraphicProps): InstancedGraphicParams {
+    return {
+      ...props,
+      transformCenter: Point3d.fromJSON(props.transformCenter),
+      range: props.range ? Range3d.fromJSON(props.range) : undefined,
+    };
+  }
 }
 
 /** Parameters for creating a [[RenderGraphic]] representing a patterned area.
