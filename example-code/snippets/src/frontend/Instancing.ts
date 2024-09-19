@@ -6,12 +6,8 @@
 import { IModelApp, IModelConnection, readGltfTemplate, RenderGraphic, RenderInstancesParamsBuilder } from "@itwin/core-frontend";
 import { Point3d, Transform } from "@itwin/core-geometry";
 
-// __PUBLISH_EXTRACT_START__
-/** Create a graphic that renders the specified glTF model at multiple positions.
- * @param gltf The raw glTF describing the model.
- * @param positions The locations at which to draw each instance of the model.
- * @param iModel The iModel to be associated with the graphic.
- */
+// __PUBLISH_EXTRACT_START__ Gltf_Instancing
+/** Create a graphic that renders multiple instances of a glTF model. */
 export async function instanceGltfModel(gltf: Uint8Array | object, positions: Point3d[], iModel: IModelConnection): Promise<RenderGraphic> {
   // Decode the raw glTF as an instanceable  template.
   const template = (await readGltfTemplate({ gltf, iModel }))?.template;

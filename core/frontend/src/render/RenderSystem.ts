@@ -227,6 +227,10 @@ export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
 /** Contains the WebGL resources necessary to draw multiple [[Instance]]s of a [[GraphicTemplate]] using [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html).
  * Use [[RenderSystem.createRenderInstances]] to create one.
  * The instances may be associated with [Feature]($common)s, in which case those features override any defined in the template itself.
+ * Example usage:
+ * ```ts
+ * [[include:Gltf_Instancing]]
+ * ```
  * @beta
  */
 export interface RenderInstances {
