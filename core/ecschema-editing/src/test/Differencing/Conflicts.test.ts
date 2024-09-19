@@ -635,7 +635,7 @@ describe("Schema Difference Conflicts", () => {
               {
                 name: "TestProperty",
                 type: "PrimitiveProperty",
-                typeName: "ConflictSchema.TestEnum",
+                typeName: "string",
               },
             ],
           },
@@ -666,7 +666,7 @@ describe("Schema Difference Conflicts", () => {
         schemaType: "EntityClass",
         itemName: "TestItem",
         path: "TestProperty",
-        source: "ConflictSchema.TestEnum",
+        source: "string",
         target: "int",
         description: "Target class already contains a property with a different type.",
       });
