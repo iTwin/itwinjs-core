@@ -21,7 +21,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
-    "test": "npm run -s webpackTests && certa -r chrome",
+    "test": "vitest --run",
     "cover": "npm -s test",
     "test:debug": "certa -r chrome --debug",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2 && npm run -s webpackTestWorker",
@@ -70,6 +70,8 @@
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
     "@types/sinon": "^17.0.2",
+    "@vitest/coverage-istanbul": "^2.1.1",
+    "@vitest/browser": "^2.1.1",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
@@ -84,6 +86,7 @@
     "source-map-loader": "^4.0.0",
     "typescript": "~5.3.3",
     "typemoq": "^2.1.0",
+    "vitest": "^2.1.1",
     "webpack": "^5.76.0"
   },
   "//dependencies": [

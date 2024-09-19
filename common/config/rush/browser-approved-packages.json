@@ -387,8 +387,12 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@vitest/browser",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@vitest/coverage-istanbul",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -900,7 +904,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "webpack",
