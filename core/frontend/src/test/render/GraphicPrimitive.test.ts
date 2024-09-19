@@ -30,6 +30,7 @@ describe("GraphicPrimitive", () => {
     public override activateGraphicParams() { }
     public override resolveGradient() { return undefined; }
     public finish() { return {} as any; }
+    public finishTemplate() { return {} as any; }
 
     public override addLineString(points: Point3d[]) { this.primitive = { type: "linestring", points }; }
     public override addLineString2d(points: Point2d[], zDepth: number) { this.primitive = { type: "linestring2d", points, zDepth }; }
