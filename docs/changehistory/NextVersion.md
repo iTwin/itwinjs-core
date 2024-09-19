@@ -7,6 +7,7 @@ Table of contents:
 
 - [Revert timeline changes](#revert-timeline-changes)
 - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
+- [API Deprecations](#api-deprecations)
 
 ### Revert timeline changes
 
@@ -27,3 +28,11 @@ Some detail and requirements are as following.
 ### Calculated properties specification enhancements
 
 A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md). The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
+
+## API deprecations
+
+### @itwin/appui-abstract
+
+- `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
+
+- `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.
