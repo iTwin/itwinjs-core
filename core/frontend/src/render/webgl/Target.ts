@@ -743,7 +743,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return true;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, _excludedElements?: Iterable<Id64String>): void {
     if (!this.assignDC())
       return;
 
