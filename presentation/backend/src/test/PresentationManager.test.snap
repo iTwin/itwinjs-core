@@ -53,6 +53,7 @@ Object {
       Object {
         "category": "test-category",
         "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Uzbekistan",
@@ -127,6 +128,7 @@ Object {
       Object {
         "category": "test-category",
         "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Investor",
@@ -201,6 +203,7 @@ Object {
       Object {
         "category": "test-category",
         "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Virginia",
@@ -333,6 +336,7 @@ Object {
       Object {
         "category": "test-category",
         "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Properties Field",
         "name": "e-markets",
@@ -416,6 +420,7 @@ Object {
       Object {
         "category": "test-category",
         "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Properties Field",
         "name": "HTTP",
@@ -499,6 +504,7 @@ Object {
       Object {
         "category": "test-category",
         "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Not specified",
         "name": "Legacy",
@@ -569,6 +575,7 @@ Object {
           "some_param": 17857,
         },
       },
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "generating",
       "name": "Primitive property field with editor",
@@ -604,6 +611,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": true,
       "label": "bus Strategist Facilitator",
       "name": "Complex array of structs property field",
@@ -660,6 +668,7 @@ Object {
       "category": "test-category",
       "contentClassInfo": "0x1",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "24/7 Home Loan Account stable",
       "name": "Nested content field",
@@ -667,6 +676,7 @@ Object {
         Object {
           "category": "test-category",
           "editor": undefined,
+          "extendedData": undefined,
           "isReadonly": true,
           "label": "Avon Planner Ways",
           "name": "Simple property field",
