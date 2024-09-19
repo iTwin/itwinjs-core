@@ -560,7 +560,7 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
-    contextRealityModel?: ContextRealityModel;
+    isInvisible?: () => boolean;
   }
 
   export interface ReferenceProps extends ReferenceBaseProps {
@@ -579,7 +579,7 @@ export namespace RealityModelTileTree {
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
-    protected _contextRealityModel?: ContextRealityModel;
+    protected _isInvisible?: () => boolean;
 
     public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -613,7 +613,7 @@ export namespace RealityModelTileTree {
       this._iModel = props.iModel;
       this._source = props.source;
       this._getDisplaySettings = () => props.getDisplaySettings();
-      this._contextRealityModel = props.contextRealityModel;
+      this._isInvisible = props.isInvisible;
 
       if (props.planarClipMask)
         this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
@@ -640,7 +640,7 @@ export namespace RealityModelTileTree {
     }
 
     public override addToScene(context: SceneContext): void {
-      if (this._contextRealityModel?.invisible === true) {
+      if (this._isInvisible && this._isInvisible() === true) {
         return;
       }
 
