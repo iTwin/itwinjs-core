@@ -13,5 +13,8 @@ export default defineConfig({
         'text'
       ]
     }
+  },
+  optimizeDeps: {
+    exclude: ['core-frontend']
   }
 })

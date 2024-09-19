@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { IDisposable } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
@@ -102,14 +102,14 @@ describe("GraphicBranch", () => {
     branch.add(unowned);
 
     owningBranch.dispose();
-    expect(isDisposed(owningBranch)).to.be.true;
-    expect(isDisposed(owned)).to.be.true;
-    expect(owningBranch.entries.length).to.equal(0);
+    expect(isDisposed(owningBranch)).toBe(true);
+    expect(isDisposed(owned)).toBe(true);
+    expect(owningBranch.entries.length).toBe(0);
 
     branch.dispose();
-    expect(isDisposed(branch)).to.be.true;
-    expect(isDisposed(unowned)).to.be.false;
-    expect(branch.entries.length).to.equal(0);
+    expect(isDisposed(branch)).toBe(true);
+    expect(isDisposed(unowned)).toBe(false);
+    expect(branch.entries.length).toBe(0);
   });
 
   it("should not dispose of graphics owned by a graphic owner", () => {
@@ -123,10 +123,10 @@ describe("GraphicBranch", () => {
     branch.add(unowned);
 
     branch.dispose();
-    expect(isDisposed(branch)).to.be.true;
-    expect(branch.entries.length).to.equal(0);
-    expect(isDisposed(owner)).to.be.true;
-    expect(isDisposed(unowned)).to.be.true;
-    expect(isDisposed(owned)).to.be.false;
+    expect(isDisposed(branch)).toBe(true);
+    expect(branch.entries.length).toBe(0);
+    expect(isDisposed(owner)).toBe(true);
+    expect(isDisposed(unowned)).toBe(true);
+    expect(isDisposed(owned)).toBe(false);
   });
 });

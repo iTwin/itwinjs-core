@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import sinon from "sinon";
 import { IModelApp } from "../IModelApp";
 import { Cartographic, EmptyLocalization, GlobeMode } from "@itwin/core-common";

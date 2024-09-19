@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
@@ -19,7 +19,7 @@ import { createBlankConnection } from "./createBlankConnection";
 describe("ContextRealityModelState", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection();
   });
@@ -28,7 +28,7 @@ describe("ContextRealityModelState", () => {
     imodel.tiles.reset();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await IModelApp.shutdown();
   });

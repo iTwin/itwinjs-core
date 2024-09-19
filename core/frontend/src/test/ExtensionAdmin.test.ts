@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import chai, { expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 import { ExtensionManifest, RemoteExtensionProvider } from "../core-frontend";
 import { ExtensionAdmin } from "../extension/ExtensionAdmin";
-import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 
 describe("ExtensionAdmin", () => {
@@ -30,8 +29,7 @@ describe("ExtensionAdmin", () => {
     activationEvents: [],
   }));
 
-  before(async () => {
-    chai.use(chaiAsPromised);
+  beforeAll(async () => {
     sinon.stub(RemoteExtensionProvider.prototype, "getManifest").returns(stubManifest);
   });
 

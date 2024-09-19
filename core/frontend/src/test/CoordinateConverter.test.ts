@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point3d, Range3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation, EmptyLocalization, GeoCoordStatus, PointWithStatus } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
@@ -59,12 +59,12 @@ describe("CoordinateConverter", () => {
     }));
   }
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     iModel = new Connection();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await iModel.close();
     await IModelApp.shutdown();
   });

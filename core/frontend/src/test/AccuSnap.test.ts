@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Id64String } from "@itwin/core-bentley";
 import { Angle, AxisIndex, LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
 import { EmptyLocalization, GeometryClass, RenderSchedule, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
@@ -46,8 +46,8 @@ function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
 }
 
 describe("AccuSnap", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   describe("requestSnap", () => {
     function overrideRequestSnap(iModel: IModelConnection, impl?: (props: SnapRequestProps) => SnapResponseProps): void {

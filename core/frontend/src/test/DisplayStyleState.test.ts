@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Code, DisplayStyle3dProps, EmptyLocalization, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
@@ -14,12 +14,12 @@ describe("DisplayStyleState", () => {
   describe("schedule script state", () => {
     let iModel: IModelConnection;
 
-    before(async () => {
+    beforeAll(async () => {
       await IModelApp.startup({ localization: new EmptyLocalization() });
       iModel = createBlankConnection();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await iModel.close();
       await IModelApp.shutdown();
     });
