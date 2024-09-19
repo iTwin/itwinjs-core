@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
+import { Point2d, Point3d } from "@itwin/core-geometry";
 import {
   AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
@@ -14,12 +14,13 @@ import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
-import { openBlankViewport, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
+import { openBlankViewport, readUniquePixelData, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
 import * as sinon from "sinon";
 import { GraphicType } from "../common/render/GraphicType";
+import { RenderGraphic } from "../render/RenderGraphic";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -569,8 +570,44 @@ describe("Viewport", () => {
     });
 
     it.only("can filter out specified elements", async () => {
-      
-    })
+      class SquareDecorator {
+        private readonly _graphic: RenderGraphic;
+
+        public constructor(z: number, id: string, vp: Viewport) {
+          const pts = [
+            new Point3d(-10, -10, z), new Point3d(10, -10, z), new Point3d(10, 10, z), new Point3d(-10, 10, z), new Point3d(-10, -10, z),
+          ];
+          vp.viewToWorldArray(pts);
+          
+          const builder = IModelApp.renderSystem.createGraphic({
+            type: GraphicType.WorldDecoration,
+            pickable: { id },
+            computeChordTolerance: () => 0,
+          });
+          builder.addShape(pts);
+
+          this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
+          IModelApp.viewManager.addDecorator(this);
+        }
+
+        public decorate(context: DecorateContext): void {
+          context.addDecoration(GraphicType.WorldDecoration, this._graphic);
+        }
+      }
+
+      testBlankViewport((vp) => {
+        const a = new SquareDecorator(0, "0xa", vp);
+        const b = new SquareDecorator(10, "0xb", vp);
+
+        vp.renderFrame();
+
+        let pixels = readUniquePixelData(vp, undefined, undefined, undefined);
+        expect(pixels.length).to.equal(2);
+        
+
+        IModelApp.viewManager.dropDecorator(a);
+        IModelApp.viewManager.dropDecorator(b);
+    });
   });
 
   describe("Map layers", () => {

@@ -207,7 +207,7 @@ export class ColorSet extends SortedArray<Color> {
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
-export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
+export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): PixelDataSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const set = new PixelDataSet();
   vp.readPixels(rect, Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
@@ -223,7 +223,7 @@ export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNo
     for (let x = sRect.left; x < sRect.right; x++)
       for (let y = sRect.top; y < sRect.bottom; y++)
         set.insert(pixels.getPixel(x, y));
-  }, excludeNonLocatable);
+  }, excludeNonLocatable, excludedElements);
 
   return set;
 }
