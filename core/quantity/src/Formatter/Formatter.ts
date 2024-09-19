@@ -215,22 +215,25 @@ export class Formatter {
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
       let unitValue = 0.0;
-      try {
-        unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
-      } catch (e) {
-        // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
-        // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
-        if (spec.format.type === FormatType.Ratio && e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
-          return "1:0";
-        }
-      }
-
       if (spec.format.type === FormatType.Ratio){
         if (1 !== spec.format.units!.length)
           throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid unit specification, we require single presentation unit when using format type 'ratio'`);
+
+        try {
+          unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+        } catch (e) {
+          // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
+          // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
+          if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
+            return "1:0";
+          }
+        }
+
         compositeStrings.push(this.formatRatio(unitValue, spec));
         continue;
       }
+
+      unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
 
       if (0 === i) {
         const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
