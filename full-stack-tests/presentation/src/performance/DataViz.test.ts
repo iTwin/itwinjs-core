@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { assert, Guid, Id64String, OrderedId64Iterable, StopWatch } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes,
   ClassInfo,
@@ -33,6 +33,7 @@ import { Presentation } from "@itwin/presentation-frontend";
 import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
 import { collect, getFieldsByLabel } from "../Utils";
+import { TestIModelConnection } from "../IModelSetupUtils";
 
 /**
  * The below specifies what iModel to use and what Fields (properties) to use for simulating DataViz
@@ -56,7 +57,7 @@ describe("#performance DataViz requests", () => {
 
   before(async () => {
     await initialize();
-    iModel = await SnapshotConnection.openFile(PATH_TO_IMODEL);
+    iModel = TestIModelConnection.openFile(PATH_TO_IMODEL);
     classHierarchy = await ECClassHierarchy.create(iModel);
     descriptor = (await Presentation.presentation.getContentDescriptor({
       imodel: iModel,
