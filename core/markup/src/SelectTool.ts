@@ -6,7 +6,7 @@
  * @module MarkupTools
  */
 
-import { BeEvent } from "@itwin/core-bentley";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
@@ -252,7 +252,8 @@ class MoveHandle extends ModifyHandle {
   }
   public modify(ev: BeButtonEvent): void {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint);
-    const dist = evPt.minus(this._lastPos ?? ({ x: 0, y: 0, z: 0 }));
+    assert(this._lastPos !== undefined);
+    const dist = evPt.minus(this._lastPos);
     this._lastPos = evPt;
     this.handles.el.translate(dist.x, dist.y); // move the element
   }
