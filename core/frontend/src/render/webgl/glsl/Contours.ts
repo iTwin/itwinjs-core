@@ -21,15 +21,9 @@ const computeContourNdx = `
   uint byteSel = lutIndex & 0x3u;
   lutIndex /= 4u;
   ivec2 coords = ivec2(lutIndex % u_contourLUTWidth, lutIndex / u_contourLUTWidth);
-#if 1
-  vec4 contourNdx4 = texelFetch(u_contourLUT, coords, 0);
-  vec4 byteMask[4] = vec4[]( vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1) );
-  uint contourNdx = uint(dot(contourNdx4, byteMask[byteSel]) * 255.0 + 0.5);
-#else
   uvec4 contourNdx4 = uvec4(texelFetch(u_contourLUT, coords, 0) * 255.0 + 0.5);
   uvec2 contourNdx2 = bool(byteSel & 2u) ? contourNdx4.ba : contourNdx4.rg;
   uint contourNdx = bool(byteSel & 1u) ? contourNdx2.g : contourNdx2.r;
-#endif
   return float(odd ? contourNdx >> 4u : contourNdx & 0xFu);
 `;
 
@@ -51,8 +45,11 @@ vec4 unpackAndNormalize2BytesVec4(vec4 f, bool upper) {
 const applyContours = `
   int contourNdx = int(v_contourNdx + 0.5);
   if (contourNdx > 14) // 15 => no contours
+#if 1
     return baseColor;
-    // return vec4(0.0, 0.5, 1.0, 1.0); // debug for contourNdx map
+#else // debug for contourNdx map
+    return vec4(0.0, 0.5, 1.0, 1.0);
+#endif
 
   const int maxDefs = ${ContourUniforms.maxContourDefs}; // max number of contour definitions allowed, have to change index arrays if this changes
   int contourNdxC = clamp(contourNdx, 0, maxDefs - 1);
@@ -72,11 +69,11 @@ const applyContours = `
   // first * 0.5 is for fractional part of width, then have to add 1.0 for offset, then another 1.0 for actual width bias
   float lineRadius = (float(lineCodeWt & 0xf) * 0.5 + 2.0) * 0.5;
 
-  // abs(fract(coord - 0.5) - 0.5) will produce 0. at the contour line, and 0.5 at the mid-point between contour lines
+  // abs(fract(coord - 0.5) - 0.5) will produce 0.0 at the contour line, and 0.5 at the mid-point between contour lines
   // fwidth(coord) is sum of absolute diffs in coord in adjacent pixels
   float line = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
-  // If line is 0 (like at contour line), contourAlpha = lineRadius (so will use draw in contour color)
-	// If line >= lineRadius, contourAlpha = 0 (so won't show contour)
+  // If line is 0 (like at contour line), contourAlpha = lineRadius, so will use draw in contour color
+	// If line >= lineRadius, contourAlpha = 0, so won't show contour
   float contourAlpha = lineRadius - min(line, lineRadius);
 
   // figure out which direction line is going, to know which screen pattern offset to use
