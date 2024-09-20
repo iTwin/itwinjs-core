@@ -5,10 +5,10 @@
 
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Content, Descriptor, DisplayValue, Field, NestedContentField, Value } from "@itwin/presentation-common";
 import { ECClassHierarchyInfo } from "../../ECClasHierarchy";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 
 interface ContentTestSuiteParams {
   getDefaultSuiteIModel: () => Promise<IModelConnection>;
@@ -38,7 +38,7 @@ export function createContentTestSuite(): ContentTestSuiteFunction {
     };
 
     before(async () => {
-      await initialize();
+      await initialize({ localization: testLocalization });
     });
 
     after(async () => {
