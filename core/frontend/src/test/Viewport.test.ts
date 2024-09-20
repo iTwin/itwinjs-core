@@ -642,19 +642,19 @@ describe("Viewport", () => {
         const frontPts = [
           new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),
         ];
-        const backPts = frontPts.map((pt) => new Point3d(pt.x, pt.x, -10));
+        const backPts = frontPts.map((pt) => new Point3d(pt.x, pt.y, -10));
         
         vp.viewToWorldArray(frontPts);
         vp.viewToWorldArray(backPts);
 
         const builder = IModelApp.renderSystem.createGraphic({
           type: GraphicType.WorldDecoration,
-          pickable: { id: "0xa" },
+          pickable: { id: "0xc" },
           computeChordTolerance: () => 0,
         });
 
         builder.addShape(frontPts);
-        builder.activateFeature(new Feature("0xb"));
+        builder.activateFeature(new Feature("0xd"));
         builder.addShape(backPts);
 
         const graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
@@ -666,22 +666,22 @@ describe("Viewport", () => {
 
         let features = readUniqueFeatures(vp, undefined, undefined, undefined);
         expect(features.length).to.equal(1);
-        expect(features.contains(new Feature("0xa"))).to.be.true;
-
-        features = readUniqueFeatures(vp, undefined, undefined, ["0xa"]);
-        expect(features.length).to.equal(1);
-        expect(features.contains(new Feature("0xb"))).to.be.true;
+        expect(features.contains(new Feature("0xc"))).to.be.true;
 
         features = readUniqueFeatures(vp, undefined, undefined, undefined);
         expect(features.length).to.equal(1);
-        expect(features.contains(new Feature("0xa"))).to.be.true;
+        expect(features.contains(new Feature("0xc"))).to.be.true;
 
-        features = readUniqueFeatures(vp, undefined, undefined, ["0xb"]);
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xd"]);
         expect(features.length).to.equal(1);
-        expect(features.contains(new Feature("0xa"))).to.be.true;
+        expect(features.contains(new Feature("0xc"))).to.be.true;
         
-        features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xc", "0xd"]);
         expect(features.length).to.equal(0);
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xc"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xd"))).to.be.true;
       });
     });
   });
