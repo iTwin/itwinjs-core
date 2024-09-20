@@ -448,7 +448,7 @@ describe("ContextRealityModels", () => {
         [ "aa", "appearance" ],
         [ "b", "appearance" ],
         [ "c", "mask" ],
-        [ "c", "invisible" ],
+        [ "d", "invisible" ],
       ]);
     });
   });
