@@ -8974,6 +8974,15 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
     constructor(user?: TileUser);
 }
 
+// @public
+export interface ReadPixelsArgs {
+    excludedElements?: Iterable<Id64String>;
+    excludeNonLocatable?: boolean;
+    receiver: Pixel.Receiver;
+    rect?: ViewRect;
+    selector?: Pixel.Selector;
+}
+
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise<{
     graphic: RenderGraphic | undefined;
@@ -10225,7 +10234,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // @internal (undocumented)
     readImageToCanvas(): HTMLCanvasElement;
     // @internal (undocumented)
-    abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
+    abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
     // @internal (undocumented)
     abstract get renderSystem(): RenderSystem;
     // @internal (undocumented)
@@ -11579,6 +11588,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     performanceMetrics?: PerformanceMetrics;
     // (undocumented)
+    get pickExclusions(): Id64.Uint32Set;
+    // (undocumented)
+    readonly pickExclusionsSyncTarget: SyncTarget;
+    // (undocumented)
     plan: RenderPlan;
     // (undocumented)
     get planFraction(): number;
@@ -11608,7 +11621,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
     // (undocumented)
-    readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
+    readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
     // (undocumented)
     get readPixelsSelector(): Pixel.Selector;
     // (undocumented)
@@ -14580,6 +14593,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
     readImageToCanvas(): HTMLCanvasElement;
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
+    readPixels(args: ReadPixelsArgs): void;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     removeScreenSpaceEffects(): void;

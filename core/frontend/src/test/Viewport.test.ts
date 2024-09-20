@@ -561,7 +561,7 @@ describe("Viewport", () => {
       activeDecorators.length = 0;
     });
 
-    it("returns undefined if viewport is disposed", async () => {
+    it("returns undefined if viewport is disposed", () => {
       testBlankViewport((vp) => {
         vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).not.to.be.undefined);
 
@@ -577,14 +577,14 @@ describe("Viewport", () => {
       });
     });
     
-    it("returns undefined if specified area is invalid", async () => {
+    it("returns undefined if specified area is invalid", () => {
       testBlankViewport((vp) => {
         vp.readPixels(new ViewRect(10, 0, 50, 0), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
         vp.readPixels(new ViewRect(0, 10, 0, 50), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
       });
     });
 
-    it("can filter out specified elements", async () => {
+    it("can filter out specified elements", () => {
       class SquareDecorator {
         private readonly _graphic: RenderGraphic;
 
@@ -602,7 +602,6 @@ describe("Viewport", () => {
           builder.addShape(pts);
 
           this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
-          addDecorator(this);
         }
 
         public decorate(context: DecorateContext): void {
@@ -611,8 +610,8 @@ describe("Viewport", () => {
       }
 
       testBlankViewport((vp) => {
-        const a = new SquareDecorator(0, "0xa", vp);
-        const b = new SquareDecorator(-10, "0xb", vp);
+        addDecorator(new SquareDecorator(0, "0xa", vp));
+        addDecorator(new SquareDecorator(-10, "0xb", vp));
 
         vp.renderFrame();
 
@@ -637,7 +636,7 @@ describe("Viewport", () => {
       });
     });
 
-    it("can filter out specified elements within a single batch", async () => {
+    it("can filter out specified elements within a single batch", () => {
       testBlankViewport((vp) => {
         const frontPts = [
           new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),

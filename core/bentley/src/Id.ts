@@ -505,7 +505,12 @@ export namespace Id64 {
         this.addIds(ids);
     }
 
+    /** Return true if `this` and `other` contain the same set of Ids. */
     public equals(other: Uint32Set): boolean {
+      if (this === other) {
+        return true;
+      }
+
       if (this.size !== other.size) {
         return false;
       }

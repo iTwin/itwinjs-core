@@ -242,11 +242,23 @@ export interface MapLayerScaleRangeVisibility {
   visibility: MapTileTreeScaleRangeVisibility;
 }
 
+/** Arguments supplied to [[Viewport.readPixels]].
+ * @public
+ * @extensions
+ */
 export interface ReadPixelsArgs {
-  rect?: ViewRect;
-  selector?: Pixel.Selector;
+  /** The function that will be invoked to process the captured pixel data. */
   receiver: Pixel.Receiver;
+  /** The region of the viewport's contents to read. If the area is empty or not contained within the [[Viewport.viewRect]],
+   * no pixels will be read.
+   * If omitted, the viewport's entire contents will be read.
+   */
+  rect?: ViewRect;
+  /** Specifies which aspects of each pixel to read. By default, all aspects are read. */
+  selector?: Pixel.Selector;
+  /** If true, geometry with the "non-locatable" flag set will not be drawn, potentially revealing locatable geometry it would otherwise obscure. */
   excludeNonLocatable?: boolean;
+  /** An optional set of Ids of elements that should not be drawn, potentially revealing other geometry they would otherwise obscure. */
   excludedElements?: Iterable<Id64String>;
 }
 
@@ -2608,7 +2620,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   protected addDecorations(_decorations: Decorations): void { }
 
-  /** Read selected data about each pixel within a rectangular region of this Viewport.
+  /** Capture selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
    * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport has been disposed, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
@@ -2617,6 +2629,9 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
 
+  /** Capture selected data about each pixel within a rectangular region of this viewport.
+   * @note The [[Pixel.Buffer]] supplied to [[ReadPixelsArgs.receiver]] becomes invalid once that function exits. Do not store a reference to it.
+   */
   public readPixels(args: ReadPixelsArgs): void;
 
   /** @internal */
