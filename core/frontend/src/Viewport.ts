@@ -1217,7 +1217,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     const invalidateControllerAndDisplayStyleChanged = () => {
       this.invalidateController();
-      this._changeFlags.setViewedCategoriesPerModel();
+      this._changeFlags.setDisplayStyle();
     };
 
     const styleAndOverridesChanged = () => {
