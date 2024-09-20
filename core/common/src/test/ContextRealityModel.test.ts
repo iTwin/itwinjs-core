@@ -11,7 +11,7 @@ import { SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOut
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 import { FeatureAppearance } from "../FeatureSymbology";
 
-describe.only("ContextRealityModel", () => {
+describe("ContextRealityModel", () => {
   function makeModel(props: ContextRealityModelProps): ContextRealityModel {
     return new ContextRealityModel(props);
   }
