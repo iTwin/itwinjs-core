@@ -5,7 +5,6 @@ const dirAssets = ["./src/public", "./src/test/public"];
 export default defineConfig({
   test: {
     dir: "src",
-    setupFiles: ["./src/test/utils/setupTests.ts"],
     browser: {
       provider: "playwright",
       enabled: true,

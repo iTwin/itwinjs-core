@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { testBlankViewport } from "./openBlankViewport";
@@ -15,9 +15,9 @@ describe("FeatureSymbology.Overrides", () => {
   it("combines viewport's never-drawn elements with display style's excluded elements", () => {
     function expectNeverDrawn(view: Viewport | ViewState, ids: string[]): void {
       const ovrs = new FeatureSymbology.Overrides(view);
-      expect(ovrs.neverDrawn.size).to.equal(ids.length);
+      expect(ovrs.neverDrawn.size).toEqual(ids.length);
       for (const id of ids) {
-        expect(ovrs.neverDrawn.hasId(id)).to.be.true;
+        expect(ovrs.neverDrawn.hasId(id)).toBe(true);
       }
     }
 

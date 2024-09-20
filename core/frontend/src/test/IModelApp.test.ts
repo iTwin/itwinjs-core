@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { AccuDraw } from "../AccuDraw";
@@ -14,10 +14,10 @@ import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
 import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
-class TestAccuDraw extends AccuDraw { }
+class TestAccuDraw extends AccuDraw {}
 
 /** class to simulate overriding the Idle tool */
-class TestIdleTool extends IdleTool { }
+class TestIdleTool extends IdleTool {}
 
 let testVal1: string;
 let testVal2: string;
@@ -44,8 +44,8 @@ class FourthImmediate extends Tool {
   public static override toolId = "Test.FourthImmediate";
 }
 
-class TestRotateTool extends RotateViewTool { }
-class TestSelectTool extends SelectionTool { }
+class TestRotateTool extends RotateViewTool {}
+class TestSelectTool extends SelectionTool {}
 
 class TestApp extends MockRender.App {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
@@ -66,7 +66,8 @@ class TestApp extends MockRender.App {
 
     // register an anonymous class with the toolId "Null.Tool"
     const testNull = class extends Tool {
-      public static override toolId = "Null.Tool"; public override async run() {
+      public static override toolId = "Null.Tool";
+      public override async run() {
         testVal1 = "fromNullTool";
         return true;
       }
@@ -74,13 +75,15 @@ class TestApp extends MockRender.App {
     testNull.register(namespace);
   }
 
-  protected static supplyI18NOptions() { return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` }; }
+  protected static supplyI18NOptions() {
+    return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` };
+  }
 }
 
 describe("IModelApp", () => {
   beforeAll(async () => {
     await TestApp.startup();
-    await IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
+    await IModelApp.localization.registerNamespace("TestApp"); // we must wait for the localization read to finish.
   });
   afterAll(async () => TestApp.shutdown());
 
@@ -141,11 +144,10 @@ describe("IModelApp", () => {
     expect(IModelApp.translateStatus(101)).toBe("DbResult.BE_SQLITE_DONE");
     expect(IModelApp.translateStatus(11111)).toBe("Status: 11111");
     expect(IModelApp.translateStatus(undefined as any)).toBe("Illegal value");
-
   });
 
   it("Should support WebGL", () => {
-    expect(IModelApp.hasRenderSystem).to.be.true;
+    expect(IModelApp.hasRenderSystem).toBe(true);
     let canvas = document.getElementById("WebGLTestCanvas") as HTMLCanvasElement;
     if (null === canvas) {
       canvas = document.createElement("canvas");

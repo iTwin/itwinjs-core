@@ -2,12 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, use } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import { describe, expect, it } from "vitest";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "./test-worker";
-
-use(chaiAsPromised);
 
 describe("WorkerProxy", () => {
   const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");

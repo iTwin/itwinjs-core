@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization } from "@itwin/core-common";
 import { SpatialViewState } from "../SpatialViewState";
@@ -16,12 +16,12 @@ describe("SpatialViewState", () => {
   const projectExtents = new Range3d(-100, -50, -25, 25, 50, 100);
   let iModel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     iModel = createBlankConnection(undefined, undefined, projectExtents);
   });
 
-  after(async () => IModelApp.shutdown());
+  afterAll(async () => IModelApp.shutdown());
 
   class TreeRef extends TileTreeReference {
     public constructor(private readonly _range: Range3d) {
@@ -57,12 +57,12 @@ describe("SpatialViewState", () => {
 
   function expectFitRange(view: SpatialViewState, expected: Range3d, baseExtents?: Range3d): void {
     const actual = view.computeFitRange({ baseExtents });
-    expect(actual.low.x).to.equal(expected.low.x);
-    expect(actual.low.y).to.equal(expected.low.y);
-    expect(actual.low.z).to.equal(expected.low.z);
-    expect(actual.high.x).to.equal(expected.high.x);
-    expect(actual.high.y).to.equal(expected.high.y);
-    expect(actual.high.z).to.equal(expected.high.z);
+    expect(actual.low.x).toEqual(expected.low.x);
+    expect(actual.low.y).toEqual(expected.low.y);
+    expect(actual.low.z).toEqual(expected.low.z);
+    expect(actual.high.x).toEqual(expected.high.x);
+    expect(actual.high.y).toEqual(expected.high.y);
+    expect(actual.high.z).toEqual(expected.high.z);
   }
 
   describe("computeFitRange", () => {
@@ -89,12 +89,12 @@ describe("SpatialViewState", () => {
     it("does not modify input baseExtents", () => {
       const baseExtents = new Range3d(0, 1, 2, 3, 4, 5);
       expectFitRange(createView([new Range3d(-1, 2, 2, 2, 5, 7)]), new Range3d(-1, 1, 2, 3, 5, 7), baseExtents);
-      expect(baseExtents.low.x).to.equal(0);
-      expect(baseExtents.low.y).to.equal(1);
-      expect(baseExtents.low.z).to.equal(2);
-      expect(baseExtents.high.x).to.equal(3);
-      expect(baseExtents.high.y).to.equal(4);
-      expect(baseExtents.high.z).to.equal(5);
+      expect(baseExtents.low.x).toEqual(0);
+      expect(baseExtents.low.y).toEqual(1);
+      expect(baseExtents.low.z).toEqual(2);
+      expect(baseExtents.high.x).toEqual(3);
+      expect(baseExtents.high.y).toEqual(4);
+      expect(baseExtents.high.z).toEqual(5);
     });
   });
 });

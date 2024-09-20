@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { OnScreenTarget } from "../core-frontend";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -31,7 +31,7 @@ describe("ViewManager", () => {
     vp.vpDiv.style.width = vp.vpDiv.style.height = "3px";
     IModelApp.viewManager.dropViewport(vp, false);
     vp.renderFrame();
-    expect((vp.target as OnScreenTarget).checkFboDimensions()).to.be.true;
+    expect((vp.target as OnScreenTarget).checkFboDimensions()).toBe(true);
     vp.dispose();
   });
 
@@ -65,6 +65,6 @@ describe("ViewManager", () => {
     IModelApp.viewManager.addViewport(vp);
     await IModelApp.shutdown();
 
-    assert.isTrue(vp.isDisposed);
+    expect(vp.isDisposed).toBe(true);
   });
 });

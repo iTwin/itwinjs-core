@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { describe, expect, it } from "vitest";
 import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
 import { GeoServices, GeoServicesOptions } from "../GeoServices";
 
 describe("GeoServices", () => {
-  function makeGeoServices(opts: Partial<GeoServicesOptions> = { }): GeoServices {
+  function makeGeoServices(opts: Partial<GeoServicesOptions> = {}): GeoServices {
     return new GeoServices({
       isIModelClosed: opts.isIModelClosed ?? (() => false),
       toIModelCoords: opts.toIModelCoords ?? (async () => Promise.resolve([])),
@@ -19,19 +19,19 @@ describe("GeoServices", () => {
   it("caches GeoConverters by datum name", () => {
     const gs = makeGeoServices();
     const a = gs.getConverter("a");
-    expect(gs.getConverter("a")).to.equal(a);
+    expect(gs.getConverter("a")).toEqual(a);
 
     const b = gs.getConverter("b");
-    expect(b).not.to.equal(a);
-    expect(gs.getConverter("b")).to.equal(b);
+    expect(b).not.toEqual(a);
+    expect(gs.getConverter("b")).toEqual(b);
 
-    expect(gs.getConverter()).to.equal(gs.getConverter());
+    expect(gs.getConverter()).toEqual(gs.getConverter());
   });
 
   it("caches GeoConverters by coordinate system JSON", () => {
     const gs = makeGeoServices();
     const a = gs.getConverter({});
-    expect(gs.getConverter({})).to.equal(a);
+    expect(gs.getConverter({})).toEqual(a);
 
     const gcrs: GeographicCRSProps = {
       additionalTransform: {
@@ -46,27 +46,27 @@ describe("GeoServices", () => {
     };
 
     const b = gs.getConverter(gcrs);
-    expect(gs.getConverter(gcrs)).to.equal(b);
-    expect(b).not.to.equal(a);
+    expect(gs.getConverter(gcrs)).toEqual(b);
+    expect(b).not.toEqual(a);
 
     gcrs.additionalTransform!.helmert2DWithZOffset!.scale = 5;
     const c = gs.getConverter(gcrs);
-    expect(c).not.to.equal(b);
-    expect(gs.getConverter(gcrs)).to.equal(c);
+    expect(c).not.toEqual(b);
+    expect(gs.getConverter(gcrs)).toEqual(c);
   });
 
   it("removes converter from cache once all requests complete", async () => {
     const gs = makeGeoServices();
     const cv = gs.getConverter()!;
-    expect(gs.getConverter()).to.equal(cv);
+    expect(gs.getConverter()).toEqual(cv);
 
     await cv.convertToIModelCoords([[0, 1, 2]]);
     const cv2 = gs.getConverter()!;
-    expect(cv2).not.to.equal(cv);
-    expect(gs.getConverter()).to.equal(cv2);
+    expect(cv2).not.toEqual(cv);
+    expect(gs.getConverter()).toEqual(cv2);
 
     await cv2.convertFromIModelCoords([[2, 1, 0]]);
-    expect(gs.getConverter()).not.to.equal(cv2);
+    expect(gs.getConverter()).not.toEqual(cv2);
   });
 
   async function waitOneFrame(): Promise<void> {
@@ -96,18 +96,18 @@ describe("GeoServices", () => {
     const promises: Array<Promise<PointWithStatus[]>> = [];
     promises.push(cv.convertToIModelCoords([[0, 0, 0]]));
     await waitOneFrame();
-    expect(gs.getConverter()).to.equal(cv);
+    expect(gs.getConverter()).toEqual(cv);
     promises.push(cv.convertToIModelCoords([[1, 1, 1]]));
     await waitOneFrame();
-    expect(gs.getConverter()).to.equal(cv);
+    expect(gs.getConverter()).toEqual(cv);
     promises.push(cv.convertFromIModelCoords([[2, 2, 2]]));
     await waitOneFrame();
-    expect(gs.getConverter()).to.equal(cv);
+    expect(gs.getConverter()).toEqual(cv);
     promises.push(cv.convertFromIModelCoords([[3, 3, 3]]));
-    expect(gs.getConverter()).to.equal(cv);
+    expect(gs.getConverter()).toEqual(cv);
 
     await Promise.all(promises);
-    expect(gs.getConverter()).not.to.equal(cv);
+    expect(gs.getConverter()).not.toEqual(cv);
   });
 
   it("resolves all requests to the same result if a request arrives while another request for same point is in flight", async () => {
@@ -135,32 +135,34 @@ describe("GeoServices", () => {
 
     const p2 = cv.convertToIModelCoords([[0, 0, 0]]);
     const r1 = await p1;
-    expect(r1.length).to.equal(1);
+    expect(r1.length).toEqual(1);
     resolveEvent.raiseEvent();
     const r2 = await p2;
-    expect(r2.length).to.equal(1);
+    expect(r2.length).toEqual(1);
   });
 
   it("removes converter from cache even if requests produce an exception", async () => {
     const gs = makeGeoServices({
-      toIModelCoords: async () => { throw new Error("oh no!"); },
+      toIModelCoords: async () => {
+        throw new Error("oh no!");
+      },
     });
     const cv = gs.getConverter()!;
-    expect(gs.getConverter()).to.equal(cv);
+    expect(gs.getConverter()).toEqual(cv);
 
     await cv.convertToIModelCoords([[0, 1, 2]]);
     const cv2 = gs.getConverter();
-    expect(cv2).not.to.be.undefined;
-    expect(cv2).not.to.equal(cv);
+    expect(cv2).toBeDefined();
+    expect(cv2).not.toEqual(cv);
   });
 
   it("retains converter in cache if no requests are received", async () => {
     const gs = makeGeoServices();
     const cv = gs.getConverter()!;
     await BeDuration.wait(1);
-    expect(gs.getConverter()).to.equal(cv);
+    expect(gs.getConverter()).toEqual(cv);
 
     await cv.convertToIModelCoords([[0, 1, 2]]);
-    expect(gs.getConverter()).not.to.equal(cv);
+    expect(gs.getConverter()).not.toEqual(cv);
   });
 });

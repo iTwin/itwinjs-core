@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { EntityChanges, Metadata, TxnEntityChangeIterable, TxnEntityChangeType } from "../TxnEntityChanges";
 import { NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 
@@ -11,12 +11,12 @@ describe("TxnEntityMetadata", () => {
   describe("is", () => {
     it("returns false for unknown base class", () => {
       const a = new Metadata("a");
-      expect(a.is("b")).to.be.false;
+      expect(a.is("b")).toBe(false);
     });
 
     it("returns true for exact match", () => {
       const a = new Metadata("a");
-      expect(a.is("a")).to.be.true;
+      expect(a.is("a")).toBe(true);
     });
 
     it("returns true for direct base class", () => {
@@ -24,7 +24,7 @@ describe("TxnEntityMetadata", () => {
       const b = new Metadata("b");
       b.baseClasses.push(a);
 
-      expect(b.is("a")).to.be.true;
+      expect(b.is("a")).toBe(true);
     });
 
     it("returns true for indirect base class", () => {
@@ -34,7 +34,7 @@ describe("TxnEntityMetadata", () => {
       c.baseClasses.push(b);
       b.baseClasses.push(a);
 
-      expect(c.is("a")).to.be.true;
+      expect(c.is("a")).toBe(true);
     });
   });
 });
@@ -51,31 +51,31 @@ describe("TxnEntityChanges", () => {
       return changes.metadata;
     }
 
-    expect(populate([])).to.deep.equal([]);
+    expect(populate([])).toEqual([]);
 
-    expect(populate([{ name: "a", bases: [] }])).to.deep.equal([new Metadata("a")]);
+    expect(populate([{ name: "a", bases: [] }])).toEqual([new Metadata("a")]);
 
     let meta = populate([
       { name: "a", bases: [] },
       { name: "b", bases: [0] },
     ]);
 
-    expect(meta.length).to.equal(2);
-    expect(meta[0].classFullName).to.equal("a");
-    expect(meta[1].classFullName).to.equal("b");
-    expect(meta[1].is("a")).to.be.true;
-    expect(meta[0].is("b")).to.be.false;
+    expect(meta.length).toEqual(2);
+    expect(meta[0].classFullName).toEqual("a");
+    expect(meta[1].classFullName).toEqual("b");
+    expect(meta[1].is("a")).toBe(true);
+    expect(meta[0].is("b")).toBe(false);
 
     meta = populate([
       { name: "b", bases: [1] },
       { name: "a", bases: [] },
     ]);
 
-    expect(meta.length).to.equal(2);
-    expect(meta[1].classFullName).to.equal("a");
-    expect(meta[0].classFullName).to.equal("b");
-    expect(meta[0].is("a")).to.be.true;
-    expect(meta[1].is("b")).to.be.false;
+    expect(meta.length).toEqual(2);
+    expect(meta[1].classFullName).toEqual("a");
+    expect(meta[0].classFullName).toEqual("b");
+    expect(meta[0].is("a")).toBe(true);
+    expect(meta[1].is("b")).toBe(false);
 
     meta = populate([
       { name: "reptile", bases: [1] },
@@ -91,20 +91,21 @@ describe("TxnEntityChanges", () => {
       { name: "iguana", bases: [0, 8] },
     ]);
 
-    expect(meta.length).to.equal(11);
+    expect(meta.length).toEqual(11);
 
     function expectMeta(index: number, name: string, bases?: string[]): void {
       const entry = meta[index];
-      expect(entry.classFullName).to.equal(name);
+      expect(entry.classFullName).toEqual(name);
 
       bases = bases ?? [];
-      expect(entry.baseClasses.length).most(bases.length);
-      expect(entry.baseClasses.every((x) => bases!.includes(x.classFullName))).to.be.true;
+
+      expect(entry.baseClasses.length).toBeLessThanOrEqual(bases.length);
+      expect(entry.baseClasses.every((x) => bases!.includes(x.classFullName))).toBe(true);
 
       bases.push(name); // this.is(this) is always true.
 
       for (const test of meta) {
-        expect(entry.is(test.classFullName)).to.equal(bases.includes(test.classFullName));
+        expect(entry.is(test.classFullName)).toEqual(bases.includes(test.classFullName));
       }
     }
 
@@ -123,7 +124,7 @@ describe("TxnEntityChanges", () => {
 
   function expectEntities(iter: TxnEntityChangeIterable, expected: Array<[id: number, ecclass: string, type: TxnEntityChangeType]>): void {
     const actual = Array.from(iter).map((x) => [x.id, x.metadata.classFullName, x.type]);
-    expect(actual).to.deep.equal(expected.map((x) => [`0x${x[0]}`, x[1], x[2]]));
+    expect(actual).toEqual(expected.map((x) => [`0x${x[0]}`, x[1], x[2]]));
   }
 
   it("iterates", () => {

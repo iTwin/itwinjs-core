@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -14,7 +14,7 @@ describe("BlankConnection", async () => {
   it("preserves name", async () => {
     const name = "my-blank-connection";
     const imodel = createBlankConnection(name);
-    expect(imodel.name).to.equal(name);
+    expect(imodel.name).toEqual(name);
     await imodel.close();
   });
 });

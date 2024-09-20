@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
@@ -17,13 +17,13 @@ import { ViewStatus } from "../ViewStatus";
 describe("Look At", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection("look-at-test");
     imodel.ecefLocation = EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({ latitude: 39.144703, longitude: -75.703054 }));
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await IModelApp.shutdown();
   });
@@ -43,8 +43,8 @@ describe("Look At", () => {
 
       const oldCam = view3d.camera.clone();
       view3d.lookAtGlobalLocation(1000.0, Math.PI / 4.0, { center: Cartographic.fromDegrees({ latitude: 39.144703, longitude: -75.703054 }) });
-      expect(view3d.camera.focusDist).greaterThan(0);
-      expect(oldCam.equals(view3d.camera)).to.be.false;
+      expect(view3d.camera.focusDist).toBeGreaterThan(0);
+      expect(oldCam.equals(view3d.camera)).toBe(false);
     });
   });
 
@@ -52,7 +52,7 @@ describe("Look At", () => {
     function createTopView(): SpatialViewState {
       const view = SpatialViewState.createBlank(imodel, new Point3d(), new Point3d());
       view.setStandardRotation(StandardViewId.Top);
-      expect(view.isCameraOn).to.be.false;
+      expect(view.isCameraOn).toBe(false);
       return view;
     }
 
@@ -66,7 +66,7 @@ describe("Look At", () => {
 
       const delta = view.getExtents();
       const actual = [Math.round(view.origin.x), Math.round(view.origin.y), Math.round(delta.x), Math.round(delta.y)];
-      expect(actual).to.deep.equal(expected);
+      expect(actual).toEqual(expected);
     }
 
     it("applies default dilation of 1.04", () => {

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { FlashMode, FlashSettings, FlashSettingsOptions } from "../FlashSettings";
@@ -9,9 +9,9 @@ import { FlashMode, FlashSettings, FlashSettingsOptions } from "../FlashSettings
 type FlashProps = Pick<FlashSettings, "duration" | "maxIntensity" | "litMode">;
 
 function expectFlash(actual: FlashSettings, expected: FlashProps): void {
-  expect(actual.duration.milliseconds).to.equal(expected.duration.milliseconds);
-  expect(actual.maxIntensity).to.equal(expected.maxIntensity);
-  expect(actual.litMode).to.equal(expected.litMode);
+  expect(actual.duration.milliseconds).toEqual(expected.duration.milliseconds);
+  expect(actual.maxIntensity).toEqual(expected.maxIntensity);
+  expect(actual.litMode).toEqual(expected.litMode);
 }
 
 describe("FlashSettings", () => {
@@ -22,15 +22,9 @@ describe("FlashSettings", () => {
   });
 
   it("normalizes inputs", () => {
-    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(-100), litMode: -5 as FlashMode, maxIntensity: -1 }),
-      { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 },
-    );
-    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }),
-      { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 },
-    );
-    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(11), litMode: 42 as FlashMode, maxIntensity: 1.1 }),
-      { duration: BeDuration.fromSeconds(10), litMode: FlashMode.Brighten, maxIntensity: 1 },
-    );
+    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(-100), litMode: -5 as FlashMode, maxIntensity: -1 }), { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 });
+    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }), { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 });
+    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(11), litMode: 42 as FlashMode, maxIntensity: 1.1 }), { duration: BeDuration.fromSeconds(10), litMode: FlashMode.Brighten, maxIntensity: 1 });
   });
 
   it("clones", () => {
@@ -41,10 +35,10 @@ describe("FlashSettings", () => {
     }
 
     const defaults = new FlashSettings();
-    expect(defaults.clone()).to.equal(defaults);
+    expect(defaults.clone()).toEqual(defaults);
 
     let settings = clone(defaults, {}, defaults);
-    expect(settings).not.to.equal(defaults);
+    expect(settings).not.toEqual(defaults);
 
     settings = clone(settings,
       { duration: BeDuration.fromSeconds(1), litMode: FlashMode.Hilite },
