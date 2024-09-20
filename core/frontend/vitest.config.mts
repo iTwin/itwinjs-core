@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     dir: "src",
+    setupFiles: "./src/test/setupTests.ts",
     browser: {
       provider: "playwright",
       enabled: true,
@@ -14,7 +15,18 @@ export default defineConfig({
       ]
     }
   },
+  resolve: {
+    alias: {
+      "../../package.json": "../package.json",
+    }
+  },
+  // TODO: NAM INVESTIGATE THIS
   optimizeDeps: {
-    exclude: ['core-frontend']
+    include: ['@itwin/core-frontend', "@itwin/core-common", "@itwin/core-bentley"],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/@itwin\/core-frontend/, /@itwin\/core-common/, /@itwin\/core-bentley/, /node_modules/],
+    }
   }
 })
