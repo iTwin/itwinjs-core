@@ -7,14 +7,14 @@ import { expect } from "chai";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
+  AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
-import { openBlankViewport, readUniquePixelData, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
+import { openBlankViewport, readUniqueFeatures, readUniquePixelData, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
@@ -601,12 +601,28 @@ describe("Viewport", () => {
 
         vp.renderFrame();
 
-        let pixels = readUniquePixelData(vp, undefined, undefined, undefined);
-        expect(pixels.length).to.equal(2);
-        
+        let features = readUniqueFeatures(vp, undefined, undefined, undefined);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
 
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xa"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xb"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, undefined);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xb"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+        
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
+        expect(features.length).to.equal(0);
+        
         IModelApp.viewManager.dropDecorator(a);
         IModelApp.viewManager.dropDecorator(b);
+      });
     });
   });
 
