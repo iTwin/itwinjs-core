@@ -615,6 +615,11 @@ const computeFeatureOverrides = `
   vec4 value = getFirstFeatureRgba();
 
   float emphFlags = value.y * 256.0;
+  if (nthFeatureBitSet(emphFlags, kOvrBit_InvisibleDuringPick)) {
+    feature_invisible = true;
+    return;
+  }
+    
   v_feature_emphasis = kEmphFlag_Hilite * extractNthBit(emphFlags, kOvrBit_Hilited) + kEmphFlag_Emphasize * extractNthBit(emphFlags, kOvrBit_Emphasized);
 
   float flags = value.x * 256.0;
@@ -623,7 +628,7 @@ const computeFeatureOverrides = `
 
   bool nonLocatable = (u_shaderFlags[kShaderBit_IgnoreNonLocatable] ? nthFeatureBitSet(flags, kOvrBit_NonLocatable) : false);
   v_feature_emphasis += kEmphFlag_NonLocatable * float(nthFeatureBitSet(flags, kOvrBit_NonLocatable));
-  bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility) || nthFeatureBitSet(emphFlags, kOvrBit_InvisibleDuringPick);
+  bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility);
   feature_invisible = invisible || nonLocatable;
   if (feature_invisible)
     return;
