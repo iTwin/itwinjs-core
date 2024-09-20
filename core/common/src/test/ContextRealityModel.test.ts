@@ -404,7 +404,7 @@ describe("ContextRealityModels", () => {
       models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 2 });
       models.models[1].invisible = true;
       models.models[0].appearanceOverrides = undefined;
-      models.models[0].invisible = false;
+      models.models[0].invisible = true;
 
       expectEvents([
         [ "a", "mask" ],
