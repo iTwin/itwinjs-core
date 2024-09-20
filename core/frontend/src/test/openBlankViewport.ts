@@ -207,8 +207,12 @@ export class ColorSet extends SortedArray<Color> {
 export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>): void {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
 
-  vp.readPixels(rect, Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
-    if (undefined === pixels)
+  vp.readPixels({
+    rect,
+    excludeNonLocatable,
+    excludedElements,
+    receiver: (pixels) => {
+     if (undefined === pixels)
       return;
 
     const sRect = rect.clone();
@@ -220,7 +224,8 @@ export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => vo
     for (let x = sRect.left; x < sRect.right; x++)
       for (let y = sRect.top; y < sRect.bottom; y++)
         processor(pixels.getPixel(x, y));
-  }, excludeNonLocatable, excludedElements);
+    },
+  });
 }
 
 /** Read depth, geometry type, and feature for each pixel. Return only the unique ones.

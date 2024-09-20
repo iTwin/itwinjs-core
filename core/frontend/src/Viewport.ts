@@ -2615,14 +2615,15 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    */
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void;
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
 
   public readPixels(args: ReadPixelsArgs): void;
 
-  public readPixels(arg0: ViewRect | ReadPixelsArgs, selector?: Pixel.Selector, receiver?: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
+  /** @internal */
+  public readPixels(arg0: ViewRect | ReadPixelsArgs, selector?: Pixel.Selector, receiver?: Pixel.Receiver, excludeNonLocatable?: boolean): void {
     if (arg0 instanceof ViewRect) {
       assert(undefined !== selector && undefined !== receiver);
-      return this._readPixels(arg0, selector, receiver, excludeNonLocatable, excludedElements);
+      return this._readPixels(arg0, selector, receiver, excludeNonLocatable);
     }
 
     // { rect, receiver, selector, excludeNonLocatable, excludedElements } = arg0;
