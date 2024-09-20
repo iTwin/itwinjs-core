@@ -505,7 +505,7 @@ describe("MiscAngles", () => {
     const ck = new Checker();
     const emptySweepResult = 8675309;
 
-    // old implementation of AngleSweep.angleToSignedPeriodicFraction did not perform well on nearly empty sweeps
+    // old implementation of AngleSweep.angleToSignedPeriodicFraction was inaccurate on nearly empty sweeps
     const oldAngleToSignedPeriodicFraction = (ss: AngleSweep, aa: Angle, er: number = 0): number => {
       if (Angle.isAlmostEqualRadiansNoPeriodShift(0, ss.sweepRadians))
         return er;
