@@ -53,6 +53,7 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
   builder.addBitFlagConstant("kOvrBit_Hilited", 0);
   builder.addBitFlagConstant("kOvrBit_Emphasized", 1);
   builder.addBitFlagConstant("kOvrBit_ViewIndependentTransparency", 2);
+  builder.addBitFlagConstant("kOvrBit_InvisibleDuringPick", 3);
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
@@ -622,7 +623,7 @@ const computeFeatureOverrides = `
 
   bool nonLocatable = (u_shaderFlags[kShaderBit_IgnoreNonLocatable] ? nthFeatureBitSet(flags, kOvrBit_NonLocatable) : false);
   v_feature_emphasis += kEmphFlag_NonLocatable * float(nthFeatureBitSet(flags, kOvrBit_NonLocatable));
-  bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility);
+  bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility) || nthFeatureBitSet(emphFlags, kOvrBit_InvisibleDuringPick);
   feature_invisible = invisible || nonLocatable;
   if (feature_invisible)
     return;
