@@ -2622,25 +2622,26 @@ export abstract class Viewport implements IDisposable, TileUser {
   public readPixels(arg0: ViewRect | ReadPixelsArgs, selector?: Pixel.Selector, receiver?: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
     if (arg0 instanceof ViewRect) {
       assert(undefined !== selector && undefined !== receiver);
-      arg0 = {
-        rect: arg0,
-        selector,
-        receiver,
-        excludeNonLocatable,
-        excludedElements,
-      };
+      return this._readPixels(arg0, selector, receiver, excludeNonLocatable, excludedElements);
     }
 
-    return this._readPixels(arg0);
+    // { rect, receiver, selector, excludeNonLocatable, excludedElements } = arg0;
+    // this._readPixels(rect ?? this.viewRect, receiver, selector ?? Pixel.Selector.All, excludeNonLocatable, excludedElements);
+    this._readPixels(
+      arg0.rect ?? this.viewRect,
+      arg0.selector ?? Pixel.Selector.All,
+      arg0.receiver,
+      arg0.excludeNonLocatable,
+      arg0.excludedElements
+    );
   }
 
-  private _readPixels(args: ReadPixelsArgs): void {
-    const { rect, receiver, selector, excludeNonLocatable, excludedElements } = args;
-    if (this.isDisposed || (rect && (rect.isNull || !rect.isContained(this.viewRect)))) {
+  private _readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
+    if (this.isDisposed || (rect.isNull || !rect.isContained(this.viewRect))) {
       receiver(undefined);
     }
 
-    this.target.readPixels(rect ?? this.viewRect, selector ?? Pixel.Selector.All, receiver, excludeNonLocatable ?? false, excludedElements);
+    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, excludedElements);
   }
 
   /** @internal */
