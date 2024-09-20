@@ -3139,7 +3139,7 @@ export class ElementLocateManager {
 
 // @public (undocumented)
 export class ElementPicker {
-    doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number;
+    doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number;
     // (undocumented)
     empty(): void;
     getHit(i: number): HitDetail | undefined;
