@@ -18,6 +18,9 @@
               "$ref": "#/definitions/IdCategoryIdentifier"
             },
             {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
+            },
+            {
               "type": "string"
             }
           ],
@@ -26,6 +29,13 @@
         "editor": {
           "$ref": "#/definitions/PropertyEditorSpecification",
           "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
+        },
+        "extendedData": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "A map of ECExpressions whose\nevaluation results are used as extended data values.",
+          "type": "object"
         },
         "label": {
           "description": "Specifies label of the calculated property. Supports localization.",
@@ -38,6 +48,19 @@
         "renderer": {
           "$ref": "#/definitions/CustomRendererSpecification",
           "description": "Custom property renderer specification that allows assigning a\ncustom value renderer to be used in UI. The specification is used to set up `Field.renderer` for\nthis property and it's up to the UI component to make sure appropriate renderer is used to render the property."
+        },
+        "type": {
+          "description": "Specifies return type of the calculated property. If unsupported type is provided, calculated property won't appear in the property pane.\n\nType can have these values: `string`, `boolean`, `bool`, `dateTime`, `double`, `int`, `long`",
+          "enum": [
+            "bool",
+            "boolean",
+            "dateTime",
+            "double",
+            "int",
+            "long",
+            "string"
+          ],
+          "type": "string"
         },
         "value": {
           "description": "Defines an expression to calculate the value. The expression can use ECInstance\nand Ruleset Variables symbol contexts.",
@@ -1572,6 +1595,9 @@
               "$ref": "#/definitions/IdCategoryIdentifier"
             },
             {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
+            },
+            {
               "type": "string"
             }
           ],
@@ -1894,6 +1920,9 @@
             },
             {
               "$ref": "#/definitions/IdCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
             },
             {
               "type": "string"
@@ -2491,6 +2520,28 @@
       },
       "required": [
         "specType"
+      ],
+      "type": "object"
+    },
+    "SchemaCategoryIdentifier": {
+      "additionalProperties": false,
+      "description": "Identifier of a schema-based  category, referenced by its full name.",
+      "properties": {
+        "categoryName": {
+          "description": "Full name of the property category, e.g. `MySchema:MyPropertyCategory`.",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of the identifier",
+          "enum": [
+            "SchemaCategory"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "categoryName",
+        "type"
       ],
       "type": "object"
     },

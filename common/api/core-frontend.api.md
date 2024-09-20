@@ -697,23 +697,21 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
     // (undocumented)
     aboutCurrentZ: boolean;
     // (undocumented)
+    protected get allowShortcut(): boolean;
+    // (undocumented)
     doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    protected _immediateMode: boolean;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
-    onInstall(): Promise<boolean>;
-    // (undocumented)
-    onManipulationComplete(): AccuDrawFlags;
-    // (undocumented)
-    onPostInstall(): Promise<void>;
+    onManipulationStart(): void;
     // (undocumented)
     parseAndRun(...args: any[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
+    // (undocumented)
+    protected get wantActivateOnStart(): boolean;
+    // (undocumented)
+    protected get wantManipulationImmediate(): boolean;
 }
 
 // @internal (undocumented)
@@ -729,17 +727,17 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
     // (undocumented)
     doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
     // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    moveOrigin: boolean;
-    // (undocumented)
-    onInstall(): Promise<boolean>;
-    // (undocumented)
     onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    onManipulationStart(): void;
     // (undocumented)
     static toolId: string;
     // (undocumented)
-    updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
+    updateOrientation(snap: SnapDetail, viewport: ScreenViewport, _isMotion: boolean): boolean;
+    // (undocumented)
+    protected get wantActivateOnStart(): boolean;
+    // (undocumented)
+    protected get wantManipulationImmediate(): boolean;
 }
 
 // @internal (undocumented)
@@ -748,6 +746,23 @@ export class AccuDrawRotateFrontTool extends Tool {
     run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotatePerpendicularTool extends AccuDrawRotateElementTool {
+    // (undocumented)
+    protected _location?: {
+        point: Point3d;
+        viewport: ScreenViewport;
+    };
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateOrientation(snap: SnapDetail, viewport: ScreenViewport, isMotion: boolean): boolean;
+    // (undocumented)
+    protected get wantExitOnDataButtonUp(): boolean;
 }
 
 // @internal (undocumented)
@@ -899,6 +914,8 @@ export class AccuDrawShortcuts {
     static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean;
     // (undocumented)
     static rotateCycle(): void;
+    // (undocumented)
+    static rotatePerpendicular(): Promise<boolean>;
     // (undocumented)
     static rotateToACS(): void;
     // (undocumented)
@@ -2329,13 +2346,30 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
-export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined>;
+export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined;
 
 // @beta
 export interface CreateGraphicFromDescriptionArgs {
     context: GraphicDescriptionContext;
     description: GraphicDescription;
 }
+
+// @beta
+export interface CreateGraphicFromTemplateArgs {
+    instances?: RenderInstances;
+    template: GraphicTemplate;
+}
+
+// @internal
+export function createGraphicTemplate(args: {
+    nodes: GraphicTemplateNode[];
+    batch?: GraphicTemplateBatch;
+    noDispose: boolean;
+    branch?: GraphicTemplateBranch;
+}): GraphicTemplate;
+
+// @internal (undocumented)
+export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate;
 
 // @internal
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
@@ -2354,6 +2388,11 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
 
 // @internal (undocumented)
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference;
+
+// @beta
+export interface CreateRenderInstancesParamsBuilderArgs {
+    modelId?: Id64String;
+}
 
 // @public
 export interface CreateRenderMaterialArgs extends MaterialParams {
@@ -2620,15 +2659,11 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 // @internal (undocumented)
 export class DefineACSByElementTool extends AccuDrawShortcutsTool {
     // (undocumented)
-    activateAccuDrawOnStart(): boolean;
-    // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
     doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
     // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    onManipulationComplete(): AccuDrawFlags;
+    onManipulationStart(): void;
     // (undocumented)
     static toolId: string;
     // (undocumented)
@@ -2638,15 +2673,11 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
 // @internal (undocumented)
 export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     // (undocumented)
-    activateAccuDrawOnStart(): boolean;
-    // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
     doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
     // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    onManipulationComplete(): AccuDrawFlags;
+    onManipulationStart(): void;
     // (undocumented)
     static toolId: string;
 }
@@ -4114,6 +4145,8 @@ export class GltfGraphicsReader extends GltfReader {
     // (undocumented)
     read(): Promise<GltfReaderResult>;
     // (undocumented)
+    readTemplate(): Promise<GltfTemplateResult>;
+    // (undocumented)
     get sceneNodes(): GltfId[];
     // (undocumented)
     get scenes(): GltfDictionary<GltfScene>;
@@ -4256,6 +4289,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult;
     // (undocumented)
+    protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfTemplateResult;
+    // (undocumented)
     protected readIndices(json: {
         [k: string]: any;
     }, accessorName: string): number[] | undefined;
@@ -4337,6 +4372,13 @@ export interface GltfReaderResult extends TileContent {
     range?: AxisAlignedBox3d;
     // (undocumented)
     readStatus: TileReadStatus;
+}
+
+// @beta
+export interface GltfTemplate {
+    boundingBox: AxisAlignedBox3d;
+    localBoundingBox: ElementAlignedBox3d;
+    template: GraphicTemplate;
 }
 
 // @internal (undocumented)
@@ -4536,6 +4578,8 @@ export abstract class GraphicBuilder extends GraphicAssembler {
     // @internal (undocumented)
     protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
     abstract finish(): RenderGraphic;
+    // @beta
+    abstract finishTemplate(): GraphicTemplate;
     readonly iModel?: IModelConnection;
     // @deprecated
     get pickId(): Id64String | undefined;
@@ -4718,6 +4762,45 @@ export interface GraphicSolidPrimitive {
     solidPrimitive: SolidPrimitive;
     // (undocumented)
     type: "solidPrimitive";
+}
+
+// @beta
+export interface GraphicTemplate {
+    // @internal (undocumented)
+    readonly [_batch]?: GraphicTemplateBatch;
+    // @internal (undocumented)
+    readonly [_branch]?: GraphicTemplateBranch;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal (undocumented)
+    readonly [_nodes]: GraphicTemplateNode[];
+    readonly isInstanceable: boolean;
+}
+
+// @internal
+export interface GraphicTemplateBatch {
+    // (undocumented)
+    readonly featureTable: RenderFeatureTable;
+    // (undocumented)
+    readonly options?: BatchOptions;
+    // (undocumented)
+    readonly range: Range3d;
+}
+
+// @internal
+export interface GraphicTemplateBranch {
+    // (undocumented)
+    readonly transform?: Transform;
+    // (undocumented)
+    readonly viewFlagOverrides?: ViewFlagOverrides;
+}
+
+// @internal (undocumented)
+export interface GraphicTemplateNode {
+    // (undocumented)
+    geometry: RenderGeometry[];
+    instances?: InstancedGraphicParams;
+    transform?: Transform;
 }
 
 // @public
@@ -5734,6 +5817,13 @@ export enum InputSource {
     Unknown = 0
 }
 
+// @beta
+export interface Instance {
+    feature?: Feature | Id64String;
+    symbology?: InstanceSymbology;
+    transform: Transform;
+}
+
 // @public
 export interface InstancedGraphicParams {
     readonly count: number;
@@ -5742,6 +5832,30 @@ export interface InstancedGraphicParams {
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
+}
+
+// @public (undocumented)
+export namespace InstancedGraphicParams {
+    export function fromProps(props: InstancedGraphicProps): InstancedGraphicParams;
+    export function toProps(params: InstancedGraphicParams): InstancedGraphicProps;
+}
+
+// @public
+export type InstancedGraphicProps = Omit<InstancedGraphicParams, "transformCenter" | "range"> & {
+    transformCenter: XYAndZ;
+    range?: LowAndHighXYZ;
+};
+
+// @public (undocumented)
+export namespace InstancedGraphicProps {
+    export function collectTransferables(xfers: Set<Transferable>, props: InstancedGraphicProps): void;
+}
+
+// @beta
+export interface InstanceSymbology {
+    color?: RgbColorProps;
+    linePixels?: LinePixels;
+    weight?: number;
 }
 
 // @public
@@ -6945,7 +7059,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
-    get planarclipMaskPriority(): number;
+    get planarClipMaskPriority(): number;
     // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
@@ -7530,6 +7644,8 @@ export namespace MockRender {
     // (undocumented)
     export class AreaPattern implements RenderAreaPattern {
         // (undocumented)
+        readonly [_implementationProhibited] = "renderAreaPattern";
+        // (undocumented)
         collectStatistics(): void;
         // (undocumented)
         dispose(): void;
@@ -7564,10 +7680,21 @@ export namespace MockRender {
     }
     // (undocumented)
     export class Geometry implements RenderGeometry {
+        constructor(renderGeometryType: "mesh" | "polyline" | "point-string");
         // (undocumented)
         collectStatistics(): void;
         // (undocumented)
+        computeRange(): Range3d;
+        // (undocumented)
         dispose(): void;
+        // (undocumented)
+        isDisposed: boolean;
+        // (undocumented)
+        readonly isInstanceable = true;
+        // (undocumented)
+        noDispose: boolean;
+        // (undocumented)
+        readonly renderGeometryType: "mesh" | "polyline" | "point-string";
     }
     // (undocumented)
     export class Graphic extends RenderGraphic {
@@ -7614,6 +7741,8 @@ export namespace MockRender {
         createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
         // (undocumented)
         createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): Branch;
+        // (undocumented)
+        createGraphicFromTemplate(): Graphic;
         // (undocumented)
         createGraphicList(primitives: RenderGraphic[]): List;
         // (undocumented)
@@ -7919,6 +8048,8 @@ export class NullRenderSystem extends RenderSystem {
     createGraphic(): any;
     // (undocumented)
     createGraphicBranch(): any;
+    // (undocumented)
+    createGraphicFromTemplate(): any;
     // (undocumented)
     createGraphicList(): any;
     // (undocumented)
@@ -8517,9 +8648,9 @@ export class PlanarClipMaskState {
     // (undocumented)
     static fromJSON(props: PlanarClipMaskProps): PlanarClipMaskState;
     // (undocumented)
-    getPlanarClipMaskSymbologyOverrides(view: SpatialViewState, context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
+    getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
     // (undocumented)
-    getTileTrees(view: SpatialViewState, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
+    getTileTrees(context: SceneContext, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
     // (undocumented)
@@ -8815,6 +8946,9 @@ export interface ReadGltfGraphicsArgs {
     // @alpha (undocumented)
     transform?: Transform;
 }
+
+// @beta
+export function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<GltfTemplate | undefined>;
 
 // @public
 export interface ReadImageBufferArgs {
@@ -9442,7 +9576,10 @@ export interface RemoteExtensionProviderProps {
 }
 
 // @internal
-export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
+    // (undocumented)
+    readonly [_implementationProhibited]: "renderAreaPattern";
+}
 
 // @public
 export abstract class RenderClipVolume {
@@ -9478,9 +9615,6 @@ export enum RenderDiagnostics {
     WebGL = 4
 }
 
-// @internal
-export type RenderGeometry = IDisposable & RenderMemory.Consumer;
-
 // @public
 export abstract class RenderGraphic implements IDisposable {
     // @internal (undocumented)
@@ -9508,7 +9642,44 @@ export interface RenderGraphicTileTreeArgs {
     graphic: RenderGraphic;
     iModel: IModelConnection;
     modelId: Id64String;
+    planarClipMaskPriority?: number;
     viewFlags?: ViewFlagOverrides;
+}
+
+// @beta
+export interface RenderInstances {
+    // @internal (undocumented)
+    readonly [_featureTable]?: PackedFeatureTable;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: "renderInstances";
+    // @internal (undocumented)
+    readonly [_transformCenter]: XYAndZ;
+    // @internal (undocumented)
+    readonly [_transforms]: Float32Array;
+}
+
+// @beta
+export interface RenderInstancesParams {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: "renderInstancesParams";
+}
+
+// @beta (undocumented)
+export namespace RenderInstancesParams {
+    export function collectTransferables(xfers: Set<Transferable>, params: RenderInstancesParams): void;
+}
+
+// @beta
+export interface RenderInstancesParamsBuilder {
+    // @internal (undocumented)
+    [_implementationProhibited]: unknown;
+    add(instance: Instance): void;
+    finish(): RenderInstancesParams;
+}
+
+// @beta (undocumented)
+export namespace RenderInstancesParamsBuilder {
+    export function create(args: CreateRenderInstancesParamsBuilderArgs): RenderInstancesParamsBuilder;
 }
 
 // @internal
@@ -9833,11 +10004,15 @@ export abstract class RenderSystem implements IDisposable {
     abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
+    // @internal (undocumented)
+    createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined;
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     // @beta
-    createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): Promise<RenderGraphic | undefined>;
+    createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): RenderGraphic | undefined;
+    // @beta
+    abstract createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic;
     // @internal
     createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic;
     // @internal
@@ -9860,7 +10035,9 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPlanarGrid(_frustum: Frustum, _grid: PlanarGridProps): RenderGraphic | undefined;
     // @internal (undocumented)
-    createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
+    createPointCloud(args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createPointCloudGeometry(_args: PointCloudArgs): RenderGeometry | undefined;
     // @internal (undocumented)
     createPointString(params: PointStringParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -9870,17 +10047,23 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
-    createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
+    createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal?: boolean): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createRealityMeshGeometry(_params: RealityMeshParams, _disableTextureDisposal?: boolean): RenderGeometry | undefined;
     // @internal (undocumented)
     createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
+    // @beta
+    createRenderInstances(_params: RenderInstancesParams): RenderInstances | undefined;
     createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     // @internal
     createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
+    // @beta
+    createTemplateFromDescription(args: CreateGraphicFromDescriptionArgs): GraphicTemplate;
     // @internal (undocumented)
     createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal?: boolean): RenderTerrainGeometry | undefined;
     // (undocumented)
@@ -12523,8 +12706,8 @@ export abstract class TileTreeReference {
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;
     protected get _isLoadingComplete(): boolean;
-    // @alpha
-    get planarclipMaskPriority(): number;
+    // @beta
+    get planarClipMaskPriority(): number;
     // @internal
     resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;

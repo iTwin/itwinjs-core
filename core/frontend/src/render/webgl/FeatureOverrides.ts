@@ -13,13 +13,14 @@ import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
-import { EmphasisFlags, OvrFlags, TextureUnit } from "./RenderFlags";
+import { EmphasisFlags, TextureUnit } from "./RenderFlags";
 import { sync, SyncObserver } from "./Sync";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 import { BatchOptions } from "../../common/render/BatchOptions";
 import { DisplayParams } from "../../common/internal/render/DisplayParams";
+import { OvrFlags } from "../../common/internal/render/OvrFlags";
 
 function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
   const maxSize = System.instance.maxTextureSize;

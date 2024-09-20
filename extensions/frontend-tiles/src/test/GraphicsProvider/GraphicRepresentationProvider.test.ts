@@ -24,7 +24,7 @@ interface TestJsonResponse {
   };
 
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
-  _links: {
+  _links?: {
     mesh: {
       href: string;
     };
@@ -73,7 +73,7 @@ interface SourceProps {
 }
 
 function makeSource(props: SourceProps): TestJsonResponse {
-  return {
+  const source: TestJsonResponse = {
     id: props.id,
     displayName: props.id,
     status: props.status ?? "Complete",
@@ -84,13 +84,15 @@ function makeSource(props: SourceProps): TestJsonResponse {
       geometryOptions: { },
       viewDefinitionFilter: { },
     },
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    _links: {
-      mesh: {
-        href: props.href ?? "mesh.edu",
-      },
-    },
   };
+
+  // Ensure _links is only defined if a url is provided through props.
+  // We need to properly test cases where _links is undefined, because it may be undefined in the mesh export service response.
+  if (props.href) {
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    source._links = { mesh: { href: props.href } };
+  }
+  return source;
 }
 
 interface SourcesProps {
@@ -124,6 +126,8 @@ const testArgs = {
 };
 
 describe("queryGraphicRepresentations", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("returns no results upon error", async () => {
     await mockFetch(

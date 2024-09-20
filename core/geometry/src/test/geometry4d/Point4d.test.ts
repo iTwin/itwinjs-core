@@ -202,8 +202,8 @@ describe("Point4d", () => {
         const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal();  // cover both
         ck.testTrue((!!oldPlane && !!newPlane) || !oldPlane, "new plane successfully constructed at least as often as oldPlane");
         if (oldPlane && newPlane) {
-          ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), "plane implementations have same origins");
-          ck.testVector3d(oldPlane.getNormalRef(), newPlane.getNormalRef(), "plane implementations have same normals");
+          ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same origins`);
+          ck.testVector3d(oldPlane.getNormalRef(), newPlane.getNormalRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same normals`);
         } else if (!!oldPlane && !newPlane) {  // error case: recompute to debug
           const oldPlane1 = toPlane3dByOriginAndUnitNormalOrig(pt);
           const newPlane1 = pt.toPlane3dByOriginAndUnitNormal();
