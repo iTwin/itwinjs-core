@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { OvrFlags, Pass, RenderOrder, TextureUnit } from "../RenderFlags";
+import { Pass, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
@@ -19,6 +19,7 @@ import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fra
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
 import { addAlpha, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 
 /* eslint-disable no-restricted-syntax */
 

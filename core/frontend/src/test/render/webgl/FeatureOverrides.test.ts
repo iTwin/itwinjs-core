@@ -13,8 +13,8 @@ import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Target } from "../../../render/webgl/Target";
 import { Texture2DDataUpdater } from "../../../render/webgl/Texture";
 import { Batch, Branch } from "../../../render/webgl/Graphic";
-import { OvrFlags } from "../../../render/webgl/RenderFlags";
 import { testBlankViewport } from "../../openBlankViewport";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 
 describe("FeatureOverrides", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
