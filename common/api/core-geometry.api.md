@@ -129,7 +129,7 @@ export type AngleProps = {
 // @public
 export class AngleSweep implements BeJSONFunctions {
     angleToPositivePeriodicFraction(theta: Angle, zeroSweepDefault?: number): number;
-    angleToSignedFraction(theta: Angle, exteriorAngleToNegativeFraction?: boolean, zeroSweepDefault?: number): number;
+    angleToSignedFraction(theta: Angle, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
     angleToSignedPeriodicFraction(theta: Angle, zeroSweepDefault?: number): number;
     angleToUnboundedFraction(theta: Angle): number;
     capLatitudeInPlace(): void;
@@ -151,6 +151,8 @@ export class AngleSweep implements BeJSONFunctions {
     fractionPeriod(): number;
     fractionToAngle(fraction: number): Angle;
     fractionToRadians(fraction: number): number;
+    fractionToSignedPeriodicFraction(fraction: number, toNegativeFraction: boolean): number;
+    static fractionToSignedPeriodicFractionStartEnd(fraction: number, radians0: number, radians1: number, toNegativeFraction: boolean): number;
     static fromJSON(json?: AngleSweepProps): AngleSweep;
     interpolate(fraction: number, other: AngleSweep): AngleSweep;
     isAlmostEqual(other: AngleSweep): boolean;
@@ -166,8 +168,8 @@ export class AngleSweep implements BeJSONFunctions {
     radiansArrayToPositivePeriodicFractions(data: GrowableFloat64Array): void;
     radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;
     static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault?: number): number;
-    radiansToSignedFraction(radians: number, exteriorAngleToNegativeFraction?: boolean, zeroSweepDefault?: number): number;
-    static radiansToSignedFractionStartEnd(radians: number, radians0: number, radians1: number, exteriorAngleToNegativeFraction?: boolean, zeroSweepDefault?: number): number;
+    radiansToSignedFraction(radians: number, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
+    static radiansToSignedFractionStartEnd(radians: number, radians0: number, radians1: number, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
     radiansToSignedPeriodicFraction(radians: number, zeroSweepDefault?: number): number;
     static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault?: number): number;
     reverseInPlace(): void;
