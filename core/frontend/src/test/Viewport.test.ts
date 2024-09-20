@@ -21,6 +21,7 @@ import { Pixel } from "../render/Pixel";
 import * as sinon from "sinon";
 import { GraphicType } from "../common/render/GraphicType";
 import { RenderGraphic } from "../render/RenderGraphic";
+import { Decorator } from "../ViewManager";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -622,6 +623,58 @@ describe("Viewport", () => {
         
         IModelApp.viewManager.dropDecorator(a);
         IModelApp.viewManager.dropDecorator(b);
+      });
+    });
+
+    it.only("can filter out specified elements within a single batch", async () => {
+      testBlankViewport((vp) => {
+        const frontPts = [
+          new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),
+        ];
+        const backPts = frontPts.map((pt) => new Point3d(pt.x, pt.x, -10));
+        
+        vp.viewToWorldArray(frontPts);
+        vp.viewToWorldArray(backPts);
+
+        const builder = IModelApp.renderSystem.createGraphic({
+          type: GraphicType.WorldDecoration,
+          pickable: { id: "0xa" },
+          computeChordTolerance: () => 0,
+        });
+
+        builder.addShape(frontPts);
+        builder.activateFeature(new Feature("0xb"));
+        builder.addShape(backPts);
+
+        const graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
+        const decorator: Decorator = {
+          decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, graphic),
+        };
+
+        IModelApp.viewManager.addDecorator(decorator);
+
+        vp.renderFrame();
+
+        let features = readUniqueFeatures(vp, undefined, undefined, undefined);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xa"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xb"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, undefined);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xb"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+        
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
+        expect(features.length).to.equal(0);
+
+        IModelApp.viewManager.dropDecorator(decorator);
       });
     });
   });
