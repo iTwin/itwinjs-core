@@ -578,7 +578,6 @@ export namespace RealityModelTileTree {
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
-    protected _isInvisible?: () => boolean;
 
     public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -612,7 +611,6 @@ export namespace RealityModelTileTree {
       this._iModel = props.iModel;
       this._source = props.source;
       this._getDisplaySettings = () => props.getDisplaySettings();
-      this._isInvisible = props.isInvisible;
 
       if (props.planarClipMask)
         this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
@@ -639,10 +637,6 @@ export namespace RealityModelTileTree {
     }
 
     public override addToScene(context: SceneContext): void {
-      if (this._isInvisible && this._isInvisible() === true) {
-        return;
-      }
-
       // NB: The classifier must be added first, so we can find it when adding our own tiles.
       if (this._classifier && this._classifier.activeClassifier)
         this._classifier.addToScene(context);

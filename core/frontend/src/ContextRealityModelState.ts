@@ -51,7 +51,6 @@ export class ContextRealityModelState extends ContextRealityModel {
         classifiers: this.classifiers,
         planarClipMask: this.planarClipMaskSettings,
         getDisplaySettings: () => this.displaySettings,
-        isInvisible: ()=>this.invisible??false,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
@@ -61,7 +60,6 @@ export class ContextRealityModelState extends ContextRealityModel {
         classifiers: this.classifiers,
         source: displayStyle,
         getDisplaySettings: () => this.displaySettings,
-        isInvisible: ()=>this.invisible??false,
       });
 
     this.onPlanarClipMaskChanged.addListener((newSettings) => {
