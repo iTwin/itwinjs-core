@@ -669,7 +669,7 @@ export class Schema implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
     }
 
-    if (schemaProps.$schema.match(`https://dev\.bentley\.com/json_schemas/ec/([0-9]+)/ecschema`) == null && schemaProps.$schema.match(`http://www\.bentley\.com/schemas/Bentley\.ECXML\.([0-9]+)`) == null)
+    if (schemaProps.$schema.match(`https://dev\\.bentley\\.com/json_schemas/ec/([0-9]+)/ecschema`) == null && schemaProps.$schema.match(`http://www\\.bentley\\.com/schemas/Bentley\\.ECXML\\.([0-9]+)`) == null)
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema '${this.name}' has an unsupported namespace '${schemaProps.$schema}'.`);
 
     // The schema props have not been parsed. Parse the ECXml version from the $schema attribute

@@ -21,7 +21,7 @@ function isObject(x: unknown): x is UnknownObject {
   return typeof (x) === "object";
 }
 
-const SCHEMAURL_JSON = "https://dev\.bentley\.com/json_schemas/ec";
+const SCHEMAURL_JSON = "https://dev\\.bentley\\.com/json_schemas/ec";
 
 /** @internal */
 export class JsonParser extends AbstractParser<UnknownObject> {
