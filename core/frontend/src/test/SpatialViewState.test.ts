@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Range3d } from "@itwin/core-geometry";
-import { ContextRealityModelProps, EmptyLocalization } from "@itwin/core-common";
+import { EmptyLocalization } from "@itwin/core-common";
 import { SpatialViewState } from "../SpatialViewState";
 import type { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
