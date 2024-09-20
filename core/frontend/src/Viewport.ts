@@ -2653,8 +2653,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   private _readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
-    if (this.isDisposed || (rect.isNull || !rect.isContained(this.viewRect))) {
+    if (this.isDisposed || rect.isNull || !rect.isContained(this.viewRect)) {
       receiver(undefined);
+      return;
     }
 
     this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, excludedElements);
