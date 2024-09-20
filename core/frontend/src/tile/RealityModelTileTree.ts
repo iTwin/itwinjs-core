@@ -559,7 +559,6 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
-    isInvisible?: () => boolean;
   }
 
   export interface ReferenceProps extends ReferenceBaseProps {

@@ -258,6 +258,9 @@ export class ContextRealityModel {
    * @beta
    */
   public readonly onDisplaySettingsChanged = new BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>();
+  /** Event dispatched just before a model become invisible
+   * @beta
+   */
   public readonly onInvisibleChanged = new BeEvent<(invisible: boolean, model: ContextRealityModel) => void>();
 
   /** Construct a new context reality model.
@@ -338,7 +341,10 @@ export class ContextRealityModel {
     return this._invisible;
   }
   public set invisible(invisible: boolean) {
-    this.onInvisibleChanged.raiseEvent(invisible, this);
+    if (invisible !== this.invisible) {
+      this.onInvisibleChanged.raiseEvent(invisible, this);
+    }
+
     this._props.invisible = invisible;
     this._invisible = invisible;
   }
