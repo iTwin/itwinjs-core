@@ -242,6 +242,14 @@ export interface MapLayerScaleRangeVisibility {
   visibility: MapTileTreeScaleRangeVisibility;
 }
 
+export interface ReadPixelsArgs {
+  rect?: ViewRect;
+  selector?: Pixel.Selector;
+  receiver: Pixel.Receiver;
+  excludeNonLocatable?: boolean;
+  excludedElements?: Iterable<Id64String>;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -2607,12 +2615,32 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    */
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false, excludedElements?: Iterable<Id64String>): void {
-    const viewRect = this.viewRect;
-    if (this.isDisposed || rect.isNull || !rect.isContained(viewRect))
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void;
+
+  public readPixels(args: ReadPixelsArgs): void;
+
+  public readPixels(arg0: ViewRect | ReadPixelsArgs, selector?: Pixel.Selector, receiver?: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
+    if (arg0 instanceof ViewRect) {
+      assert(undefined !== selector && undefined !== receiver);
+      arg0 = {
+        rect: arg0,
+        selector,
+        receiver,
+        excludeNonLocatable,
+        excludedElements,
+      };
+    }
+
+    return this._readPixels(arg0);
+  }
+
+  private _readPixels(args: ReadPixelsArgs): void {
+    const { rect, receiver, selector, excludeNonLocatable, excludedElements } = args;
+    if (this.isDisposed || (rect && (rect.isNull || !rect.isContained(this.viewRect)))) {
       receiver(undefined);
-    else
-      this.target.readPixels(rect, selector, receiver, excludeNonLocatable, excludedElements);
+    }
+
+    this.target.readPixels(rect ?? this.viewRect, selector ?? Pixel.Selector.All, receiver, excludeNonLocatable ?? false, excludedElements);
   }
 
   /** @internal */
