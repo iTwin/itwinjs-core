@@ -3,10 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Range3d, Transform } from "@itwin/core-geometry";
+import { Angle, AxisIndex, Matrix3d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  DecorateContext, GraphicBranch, GraphicType, IModelApp, readGltfGraphics, RenderGraphic, Tool,
+  DecorateContext, GraphicBranch, GraphicType, IModelApp, IModelConnection, readGltfTemplate, RenderGraphic, RenderInstances, RenderInstancesParamsBuilder, Tool,
 } from "@itwin/core-frontend";
+import { parseArgs } from "@itwin/frontend-devtools";
+import { Id64String } from "@itwin/core-bentley";
+import { ColorByName, ColorDef, RgbColor } from "@itwin/core-common";
 
 class GltfDecoration {
   private readonly _graphic: RenderGraphic;
@@ -35,16 +38,90 @@ class GltfDecoration {
   }
 }
 
+function createTransform(maxExtent: number, wantScale: boolean, wantRotate: boolean): Transform {
+  function applyRandomOffset(pos: Point3d, coord: "x" | "y" | "z"): void {
+    const r = Math.random() * 2 * maxExtent - maxExtent;
+    pos[coord] += r;
+  }
+
+  function computeRandomPosition(): Point3d {
+    const pos = new Point3d(); // templateRange.center;
+    applyRandomOffset(pos, "x");
+    applyRandomOffset(pos, "y");
+    applyRandomOffset(pos, "z");
+    return pos;
+  }
+
+  const origin = computeRandomPosition();
+  const translation = Transform.createTranslation(origin);
+
+  const maxScale = 2.5;
+  const minScale = 0.25;
+  const scaleFactor = wantScale ? Math.random() * (maxScale - minScale) + minScale : 1;
+  const scale = Transform.createScaleAboutPoint(origin, scaleFactor);
+
+  const zAngle = wantRotate ? Math.random() * 360 : 0;
+  const rotation = Transform.createFixedPointAndMatrix(origin, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(zAngle)));
+
+  return translation.multiplyTransformTransform(scale).multiplyTransformTransform(rotation);
+}
+
+function createInstances(numInstances: number, iModel: IModelConnection, modelId: Id64String, wantScale: boolean, wantColor: boolean, wantRotate: boolean): RenderInstances | undefined {
+  if (numInstances <= 1) {
+    return undefined;
+  }
+
+  const diagonal = iModel.projectExtents.diagonal();
+  const maxExtent = Math.min(diagonal.x, Math.min(diagonal.y, diagonal.z));
+  const colors = [
+    ColorDef.green,
+    ColorDef.blue,
+    ColorDef.red,
+    ColorDef.white,
+    ColorDef.fromJSON(ColorByName.yellow),
+    ColorDef.fromJSON(ColorByName.orange),
+    ColorDef.fromJSON(ColorByName.black),
+  ];
+
+  const builder = RenderInstancesParamsBuilder.create({ modelId });
+  for (let i = 0; i < numInstances; i++) {
+    const symbology = wantColor ? { color: RgbColor.fromColorDef(colors[i % colors.length]) } : undefined;
+    builder.add({
+      transform: createTransform(maxExtent, wantScale, wantRotate),
+      feature: iModel.transientIds.getNext(),
+      symbology,
+    });
+  }
+
+  const params = builder.finish();
+  return IModelApp.renderSystem.createRenderInstances(params);
+}
+
 /** Opens a file picker from which the user can select a glTF or glb file. Creates a decoration graphic from the glTF and
  * installs a decorator to display it at the center of the active viewport's iModel's project extents.
  */
 export class GltfDecorationTool extends Tool {
   public static override toolId = "AddGltfDecoration";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get maxArgs() { return 6; }
 
-  public override async parseAndRun(...args: string[]) {
-    return this.run(args[0]);
+  private _url?: string;
+  private _numInstances = 1;
+  private _wantScale = false;
+  private _wantColor = false;
+  private _wantRotate = false;
+  private _forceUninstanced = false;
+
+  public override async parseAndRun(...inArgs: string[]) {
+    const args = parseArgs(inArgs);
+    this._url = args.get("u");
+    this._numInstances = args.getInteger("i") ?? 1;
+    this._wantScale = !!args.getBoolean("s");
+    this._wantColor = !!args.getBoolean("c");
+    this._wantRotate = !!args.getBoolean("r");
+    this._forceUninstanced = !!args.getBoolean("f");
+
+    return this.run();
   }
 
   private async queryAsset(url?: string): Promise<ArrayBuffer | undefined> {
@@ -67,11 +144,12 @@ export class GltfDecorationTool extends Tool {
     return file.arrayBuffer();
   }
 
-  public override async run(url?: string) {
+  public override async run() {
     const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
+    if (!vp || this._numInstances < 1)
       return false;
 
+    const url = this._url;
     const iModel = vp.iModel;
     try {
       const buffer = await this.queryAsset(url);
@@ -80,19 +158,38 @@ export class GltfDecorationTool extends Tool {
 
       // Convert the glTF into a RenderGraphic.
       const id = iModel.transientIds.getNext();
-      let graphic = await readGltfGraphics({
+      // The modelId must be different from the pickable Id for the decoration to be selectable and hilite-able.
+      const modelId = iModel.transientIds.getNext();
+      const gltfTemplate = await readGltfTemplate({
         gltf: new Uint8Array(buffer),
         iModel,
         baseUrl: url ? new URL(url) : undefined,
         pickableOptions: {
           id,
-          // The modelId must be different from the pickable Id for the decoration to be selectable and hilite-able.
-          modelId: iModel.transientIds.getNext(),
+          modelId,
         },
       });
 
-      if (!graphic)
+      if (!gltfTemplate?.template)
         return false;
+
+      let graphic;
+      if (!this._forceUninstanced) {
+        const instances = createInstances(this._numInstances, vp.iModel, modelId, this._wantScale, this._wantColor, this._wantRotate);
+        graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template: gltfTemplate.template, instances });
+      } else {
+        const diagonal = iModel.projectExtents.diagonal();
+        const maxExtent = Math.min(diagonal.x, Math.min(diagonal.y, diagonal.z));
+        const graphics: RenderGraphic[] = [];
+        for (let i = 0; i < this._numInstances; i++) {
+          const gf = IModelApp.renderSystem.createGraphicFromTemplate({ template: gltfTemplate.template });
+          const gfBranch = new GraphicBranch();
+          gfBranch.add(gf);
+          graphics.push(IModelApp.renderSystem.createGraphicBranch(gfBranch, createTransform(maxExtent, this._wantScale, this._wantRotate)));
+        }
+
+        graphic = IModelApp.renderSystem.createGraphicList(graphics);
+      }
 
       // Transform the graphic to the center of the project extents.
       const branch = new GraphicBranch();

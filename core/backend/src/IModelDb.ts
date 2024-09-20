@@ -17,7 +17,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
@@ -29,7 +29,7 @@ import {
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
+import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
 import { ChannelControl } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -175,6 +175,7 @@ export abstract class IModelDb extends IModel {
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
   private _workspace?: OwnedWorkspace;
+
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
   /** @internal */
@@ -1343,6 +1344,22 @@ export abstract class IModelDb extends IModel {
    */
   public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
     return this[_nativeDb].processGeometryStream(requestProps);
+  }
+
+  /** Request the creation of a backend geometry cache for the specified geometric element.
+   * @returns ElementGeometryCacheResponseProps
+   * @beta
+   */
+  public async updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps> {
+    return this[_nativeDb].updateElementGeometryCache(requestProps);
+  }
+
+  /** Request operation using the backend geometry cache populated by first calling elementGeometryRequest.
+ * @returns SUCCESS if requested operation could be applied.
+ * @beta
+ */
+  public elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus {
+    return this[_nativeDb].elementGeometryCacheOperation(requestProps);
   }
 
   /** Create brep geometry for inclusion in an element's geometry stream.
@@ -2579,6 +2596,11 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
+  private _skipSyncSchemasOnPullAndPush?: true;
+
+  /** @internal */
+  public get skipSyncSchemasOnPullAndPush() { return this._skipSyncSchemasOnPullAndPush ?? false; }
+
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -2774,12 +2796,12 @@ export class BriefcaseDb extends IModelDb {
                 throw e;
               }
             },
-            appParams:{
+            appParams: {
               author: { name: "unknown" },
               origin: { name: "unknown" },
             },
-            close: () => {},
-            initialize: async () => {},
+            close: () => { },
+            initialize: async () => { },
           };
         }
       }
@@ -2984,12 +3006,73 @@ export class BriefcaseDb extends IModelDb {
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
-      await SchemaSync.pull(this);
+      if (!this.skipSyncSchemasOnPullAndPush)
+        await SchemaSync.pull(this);
       this.initializeIModelDb();
     });
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
     this.txns.touchWatchFile();
+  }
+
+  /** Revert timeline changes and then push resulting changeset */
+  public async revertAndPushChanges(arg: RevertChangesArgs): Promise<void> {
+    const nativeDb = this[_nativeDb];
+    if (arg.toIndex === undefined) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot revert without a toIndex");
+    }
+    if (nativeDb.hasUnsavedChanges()) {
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot revert with unsaved changes");
+    }
+    if (nativeDb.hasPendingTxns()) {
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot revert with pending txns");
+    }
+
+    const skipSchemaSyncPull = async <T>(func: () => Promise<T>) => {
+      if (nativeDb.schemaSyncEnabled()) {
+        this._skipSyncSchemasOnPullAndPush = true;
+        try {
+          return await func();
+        } finally {
+          this._skipSyncSchemasOnPullAndPush = undefined;
+        }
+      } else {
+        return func();
+      }
+    };
+    this.clearCaches();
+    await skipSchemaSyncPull(async () => this.pullChanges({ ...arg, toIndex: undefined }));
+    await this.acquireSchemaLock();
+
+    if (nativeDb.schemaSyncEnabled()) {
+      arg.skipSchemaChanges = true;
+    }
+
+    try {
+      await BriefcaseManager.revertTimelineChanges(this, arg);
+      this.saveChanges("Revert changes");
+      if (!arg.description) {
+        arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+      }
+      const pushArgs = {
+        description: arg.description,
+        accessToken: arg.accessToken,
+        mergeRetryCount: arg.mergeRetryCount,
+        mergeRetryDelay: arg.mergeRetryDelay,
+        pushRetryCount: arg.pushRetryCount,
+        pushRetryDelay: arg.pushRetryDelay,
+        retainLocks: arg.retainLocks,
+      };
+      await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
+      this.clearCaches();
+    } catch (err) {
+      if (!arg.retainLocks) {
+        await this.locks.releaseAllLocks();
+        throw err;
+      }
+    } finally {
+      this.abandonChanges();
+    }
   }
 
   /** Push changes to iModelHub. */
