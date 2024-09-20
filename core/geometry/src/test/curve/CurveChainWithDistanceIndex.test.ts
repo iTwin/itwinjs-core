@@ -7,6 +7,7 @@ import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveExtendMode } from "../../curve/CurveExtendMode";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -21,7 +22,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { CurveExtendMode } from "../../core-geometry";
 
 // cspell:word XYAB, XYBA
 

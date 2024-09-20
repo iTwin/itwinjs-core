@@ -8,6 +8,7 @@ import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceI
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -22,7 +23,6 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { AnyCurve } from "../../core-geometry";
 
 /** Test number of intersections and coordinates of intersections. */
 function testIntersectionsXYZ(
