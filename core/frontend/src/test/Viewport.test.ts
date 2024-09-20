@@ -597,7 +597,7 @@ describe("Viewport", () => {
 
       testBlankViewport((vp) => {
         const a = new SquareDecorator(0, "0xa", vp);
-        const b = new SquareDecorator(10, "0xb", vp);
+        const b = new SquareDecorator(-10, "0xb", vp);
 
         vp.renderFrame();
 
