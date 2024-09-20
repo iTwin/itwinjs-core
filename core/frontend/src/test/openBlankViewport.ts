@@ -204,43 +204,48 @@ export class ColorSet extends SortedArray<Color> {
   public containsColorDef(color: ColorDef): boolean { return this.contains(Color.fromColorDef(color)); }
 }
 
-export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean): void {
+export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>): void {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
 
-  vp.readPixels(rect, Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
-    if (undefined === pixels)
-      return;
+  vp.readPixels({
+    rect,
+    excludeNonLocatable,
+    excludedElements,
+    receiver: (pixels) => {
+      if (undefined === pixels)
+        return;
 
-    const sRect = rect.clone();
-    sRect.left = vp.cssPixelsToDevicePixels(sRect.left);
-    sRect.right = vp.cssPixelsToDevicePixels(sRect.right);
-    sRect.bottom = vp.cssPixelsToDevicePixels(sRect.bottom);
-    sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
+      const sRect = rect.clone();
+      sRect.left = vp.cssPixelsToDevicePixels(sRect.left);
+      sRect.right = vp.cssPixelsToDevicePixels(sRect.right);
+      sRect.bottom = vp.cssPixelsToDevicePixels(sRect.bottom);
+      sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
 
-    for (let x = sRect.left; x < sRect.right; x++)
-      for (let y = sRect.top; y < sRect.bottom; y++)
-        processor(pixels.getPixel(x, y));
-  }, excludeNonLocatable);
+      for (let x = sRect.left; x < sRect.right; x++)
+        for (let y = sRect.top; y < sRect.bottom; y++)
+          processor(pixels.getPixel(x, y));
+    },
+  });
 }
 
 /** Read depth, geometry type, and feature for each pixel. Return only the unique ones.
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
-export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
+export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): PixelDataSet {
   const set = new PixelDataSet();
-  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable);
+  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements);
   return set;
 }
 
-export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): SortedArray<Feature> {
+export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): SortedArray<Feature> {
   const features = new SortedArray<Feature>((lhs, rhs) => lhs.compare(rhs));
   processPixels(vp, (pixel) => {
     if (pixel.feature) {
       features.insert(pixel.feature);
     }
   },
-  readRect, excludeNonLocatable);
+  readRect, excludeNonLocatable, excludedElements);
 
   return features;
 }
