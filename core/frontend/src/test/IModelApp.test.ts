@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
@@ -78,70 +78,69 @@ class TestApp extends MockRender.App {
 }
 
 describe("IModelApp", () => {
-  before(async () => {
+  beforeAll(async () => {
     await TestApp.startup();
     await IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
   });
-  after(async () => TestApp.shutdown());
+  afterAll(async () => TestApp.shutdown());
 
   it("TestApp should override correctly", async () => {
-    assert.instanceOf(IModelApp.accuDraw, TestAccuDraw, "accudraw override");
-    assert.instanceOf(IModelApp.toolAdmin.idleTool, TestIdleTool, "idle tool override");
-    assert.isTrue(await IModelApp.tools.run("Test.Immediate", "test1", "test2"), "immediate tool ran");
-    assert.equal(testVal1, "test1", "arg1 was correct");
-    assert.equal(testVal2, "test2", "arg2 was correct");
-    assert.isFalse(await IModelApp.tools.run("Not.Found"), "toolId is not registered");
-    assert.isTrue(await IModelApp.tools.run("View.Pan"), "run view pan");
-    assert.instanceOf(IModelApp.toolAdmin.viewTool, PanViewTool, "pan tool is active");
-
-    assert.isTrue(await IModelApp.tools.run("Null.Tool"), "run null");
-    assert.equal(testVal1, "fromNullTool");
+    expect(IModelApp.accuDraw).toBeInstanceOf(TestAccuDraw);
+    expect(IModelApp.toolAdmin.idleTool).toBeInstanceOf(TestIdleTool);
+    expect(await IModelApp.tools.run("Test.Immediate", "test1", "test2")).toBe(true);
+    expect(testVal1).toBe("test1");
+    expect(testVal2).toBe("test2");
+    expect(await IModelApp.tools.run("Not.Found")).toBe(false);
+    expect(await IModelApp.tools.run("View.Pan")).toBe(true);
+    expect(IModelApp.toolAdmin.viewTool).toBeInstanceOf(PanViewTool);
+    expect(await IModelApp.tools.run("Null.Tool")).toBe(true);
+    expect(testVal1).toBe("fromNullTool");
   });
 
   it("Should get localized keyin, flyover, and description for tools", async () => {
-    assert.equal(TestImmediate.keyin, "Localized TestImmediate Keyin");
-    assert.equal(TestImmediate.flyover, "Localized TestImmediate Flyover");
-    assert.equal(TestImmediate.description, "Test of an Immediate Command");
+    expect(TestImmediate.keyin).toBe("Localized TestImmediate Keyin");
+    expect(TestImmediate.flyover).toBe("Localized TestImmediate Flyover");
+    expect(TestImmediate.description).toBe("Test of an Immediate Command");
 
-    assert.equal(AnotherImmediate.keyin, "Localized AnotherImmediate keyin and flyover");
-    assert.equal(AnotherImmediate.flyover, "Localized AnotherImmediate keyin and flyover");
-    assert.equal(AnotherImmediate.description, "Another Immediate Command description");
+    expect(AnotherImmediate.keyin).toBe("Localized AnotherImmediate keyin and flyover");
+    expect(AnotherImmediate.flyover).toBe("Localized AnotherImmediate keyin and flyover");
+    expect(AnotherImmediate.description).toBe("Another Immediate Command description");
 
-    assert.equal(ThirdImmediate.keyin, "Localized ThirdImmediate Keyin");
-    assert.equal(ThirdImmediate.flyover, "ThirdImmediate flyover and description");
-    assert.equal(ThirdImmediate.description, "ThirdImmediate flyover and description");
+    expect(ThirdImmediate.keyin).toBe("Localized ThirdImmediate Keyin");
+    expect(ThirdImmediate.flyover).toBe("ThirdImmediate flyover and description");
+    expect(ThirdImmediate.description).toBe("ThirdImmediate flyover and description");
 
-    assert.equal(FourthImmediate.keyin, "Localized FourthImmediate keyin, flyover, and description");
-    assert.equal(FourthImmediate.flyover, "Localized FourthImmediate keyin, flyover, and description");
-    assert.equal(FourthImmediate.description, "Localized FourthImmediate keyin, flyover, and description");
+    expect(FourthImmediate.keyin).toBe("Localized FourthImmediate keyin, flyover, and description");
+    expect(FourthImmediate.flyover).toBe("Localized FourthImmediate keyin, flyover, and description");
+    expect(FourthImmediate.description).toBe("Localized FourthImmediate keyin, flyover, and description");
 
     // here we are testing to make sure we can override the Select command but the keyin comes from the superclass because the toolId is not overridden
     const selTool = IModelApp.tools.create("Select")!;
-    assert.instanceOf(selTool, TestSelectTool, "test select tool is active");
-    assert.equal(selTool.keyin, "select elements", "keyin comes from superclass");
+    expect(selTool).toBeInstanceOf(TestSelectTool);
+    expect(selTool.keyin).toBe("select elements");
   });
 
   it("Should do localizations", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
-    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
-    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
-    assert.equal(IModelApp.localization.getLocalizedString("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
+    expect(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test1")).toBe("Localized Trivial Test 1");
+    expect(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test2")).toBe("Localized Trivial Test 2");
+    expect(IModelApp.localization.getLocalizedString("LocateFailure.NoElements")).toBe("No Elements Found");
 
     // there is no key for TrivialTest.Test3
-    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
+    expect(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test3")).toBe("TrivialTests.Test3");
 
     // Should properly substitute the values in localized strings with interpolations
-    assert.equal(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
-    assert.equal(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+    expect(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" })).toBe("Substitute Variable1 and Variable2");
+    expect(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" })).toBe("Reverse substitute Variable2 and Variable1");
 
-    assert.equal(IModelApp.translateStatus(IModelStatus.AlreadyOpen), "Already open");
-    assert.equal(IModelApp.translateStatus(IModelStatus.DuplicateCode), "Duplicate code");
-    assert.equal(IModelApp.translateStatus(DbResult.BE_SQLITE_ERROR_AlreadyOpen), "Database already open");
-    assert.equal(IModelApp.translateStatus(BentleyStatus.ERROR), "Error");
-    assert.equal(IModelApp.translateStatus(BentleyStatus.SUCCESS), "Success");
-    assert.equal(IModelApp.translateStatus(101), "DbResult.BE_SQLITE_DONE");
-    assert.equal(IModelApp.translateStatus(11111), "Status: 11111");
-    assert.equal(IModelApp.translateStatus(undefined as any), "Illegal value");
+    expect(IModelApp.translateStatus(IModelStatus.AlreadyOpen)).toBe("Already open");
+    expect(IModelApp.translateStatus(IModelStatus.DuplicateCode)).toBe("Duplicate code");
+    expect(IModelApp.translateStatus(DbResult.BE_SQLITE_ERROR_AlreadyOpen)).toBe("Database already open");
+    expect(IModelApp.translateStatus(BentleyStatus.ERROR)).toBe("Error");
+    expect(IModelApp.translateStatus(BentleyStatus.SUCCESS)).toBe("Success");
+    expect(IModelApp.translateStatus(101)).toBe("DbResult.BE_SQLITE_DONE");
+    expect(IModelApp.translateStatus(11111)).toBe("Status: 11111");
+    expect(IModelApp.translateStatus(undefined as any)).toBe("Illegal value");
 
   });
 
@@ -158,16 +157,16 @@ describe("IModelApp", () => {
     }
     canvas.width = 300;
     canvas.height = 150;
-    expect(canvas).not.to.be.undefined;
-    if (undefined !== canvas) {
+    expect(canvas).not.toBeUndefined();
+    if (canvas !== undefined) {
       const context = canvas.getContext("webgl");
-      expect(context).not.to.be.null;
-      expect(context).not.to.be.undefined;
+      expect(context).not.toBeNull();
+      expect(context).not.toBeUndefined();
     }
   });
 
   it("Should create mock render system without WebGL", () => {
-    expect(IModelApp.hasRenderSystem).to.be.true;
-    expect(IModelApp.renderSystem).instanceof(MockRender.System);
+    expect(IModelApp.hasRenderSystem).toBe(true);
+    expect(IModelApp.renderSystem).toBeInstanceOf(MockRender.System);
   });
 });

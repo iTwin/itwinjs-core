@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
@@ -56,68 +56,75 @@ function logResult(..._args: any[]) {
 }
 
 describe("ToolRegistry", () => {
-  before(async () => setupToolRegistryTests());
-  after(async () => TestCommandApp.shutdown());
+  beforeAll(async () => {
+    await setupToolRegistryTests();
+  });
+  afterAll(async () => {
+    await TestCommandApp.shutdown();
+  });
 
   it("Should find Select tool", async () => {
     const command = IModelApp.tools.findExactMatch("Select Elements");
-    assert.isDefined(command, "Found Select Elements Command");
+    expect(command).toBeDefined();
     if (command) {
-      assert.isTrue(command.prototype instanceof Tool);
+      expect(command.prototype).toBeInstanceOf(Tool);
     }
   });
 
   it("Should execute the TestImmediate command", async () => {
     const command = IModelApp.tools.findExactMatch("Localized TestImmediate Keyin")!;
-    assert.equal(command, TestImmediate, "Found TestImmediate");
-    assert.equal(command.minArgs, 2);
-    assert.equal(command.maxArgs, 2);
+    expect(command).toEqual(TestImmediate);
+    expect(command.minArgs).toBe(2);
+    expect(command.maxArgs).toBe(2);
+
     let cmdReturn = await new command().run(4, 22);
-    assert.isTrue(cmdReturn);
-    assert.equal(testVal1, 4, "TestImmediate tool set values");
-    assert.equal(testVal2, 22);
+    expect(cmdReturn).toBe(true);
+    expect(testVal1).toBe(4);
+    expect(testVal2).toBe(22);
+
     cmdReturn = await new TestImmediate().parseAndRun("5", "33");
-    assert.isTrue(cmdReturn);
-    assert.equal(testVal1, 5, "From parseAndRun");
-    assert.equal(testVal2, 33);
+    expect(cmdReturn).toBe(true);
+    expect(testVal1).toBe(5);
+    expect(testVal2).toBe(33);
+
     cmdReturn = await new command().parseAndRun("125");
-    assert.isFalse(cmdReturn);
+    expect(cmdReturn).toBe(false);
   });
 
   function testKeyinArgs(keyin: string, args: string[], expectedToolKeyin?: string) {
     const result = IModelApp.tools.parseKeyin(keyin);
-    expect(result.ok).to.be.true;
+    expect(result.ok).toBe(true);
     if (result.ok) {
-      assert.equal(result.args.length, args.length);
-      args.forEach((parsedArg, index) => assert.equal(parsedArg, result.args[index]));
+      expect(result.args.length).toBe(args.length);
+      args.forEach((parsedArg, index) => expect(parsedArg).toBe(result.args[index]));
       if (undefined !== expectedToolKeyin)
-        expect(result.tool.keyin).to.equal(expectedToolKeyin);
+        expect(result.tool.keyin).toBe(expectedToolKeyin);
     }
   }
 
   function expectParseError(keyin: string, expectedError: KeyinParseError) {
     const result = IModelApp.tools.parseKeyin(keyin);
-    expect(result.ok).to.be.false;
+    expect(result.ok).toBe(false);
     if (!result.ok)
-      expect(result.error).to.equal(expectedError);
+      expect(result.error).toEqual(expectedError);
   }
 
-  it("Should parse command with quoted arguments", () => {
+  it("Should parse command with quoted arguments",  { timeout: 8000 }, () => {
     testKeyinArgs(`uccalc test args with "a quoted string" included`, ["test", "args", "with", "a quoted string", "included"]);
     testKeyinArgs(`uccalc "a quoted string"`, ["a quoted string"]);
     testKeyinArgs(`uccalc this has "a quoted string"`, ["this", "has", "a quoted string"]);
     testKeyinArgs(`uccalc "a quoted string" is before me`, ["a quoted string", "is", "before", "me"]);
     testKeyinArgs(`uccalc "my arg"`, ["my arg"]);
-  }).timeout(8000); // for whatever reason 2 seconds often isn't enough time for macOS to run this test...
+  }); // for whatever reason 2 seconds often isn't enough time for macOS to run this test...
 
-  it("Should parse quoted arguments with embedded quotes", () => {
+  it("Should parse quoted arguments with embedded quotes", { timeout: 8000 }, () => {
     testKeyinArgs(`uccalc "a single "" inside"`, [`a single " inside`]);
     testKeyinArgs(`uccalc """ is first"`, [`" is first`]);
     testKeyinArgs(`uccalc "trailing """`, [`trailing "`]);
     testKeyinArgs(`uccalc "double """" quotes"`, [`double "" quotes`]);
     testKeyinArgs(`uccalc "" """" """"""`, [``, `"`, `""`]);
     testKeyinArgs(`uccalc no "yes """ no """ yes" no "yes "" yes"`, [`no`, `yes "`, `no`, `" yes`, `no`, `yes " yes`]);
-  }).timeout(8000);
+  });
 
   it("Should parse command with mismatched quotes", () => {
     expectParseError(`uccalc "test`, KeyinParseError.MismatchedQuotes);
@@ -133,24 +140,27 @@ describe("ToolRegistry", () => {
     testKeyinArgs(`preprocessor "format" double`, ["format", "double"], "preprocessor");
 
     const result = IModelApp.tools.parseKeyin(`"preprocessor" format double`);
-    expect(result.ok).to.be.false;
+    expect(result.ok).toBe(false);
     if (!result.ok)
-      expect(result.error).to.equal(KeyinParseError.ToolNotFound);
+      expect(result.error).toEqual(KeyinParseError.ToolNotFound);
   });
 
-  it("Should parse whitespace", () => {
+  it("Should parse whitespace", { timeout: 8000 }, () => {
     // NB: A quoted argument must always be preceded by whitespace; otherwise it is just another character in an unquoted argument.
     testKeyinArgs(`uccalc abc xyz"`, [`abc`, `xyz"`]);
     testKeyinArgs(`  uccalc   one two  three   "four"     "five six" seven`, ["one", "two", "three", "four", "five six", "seven"]);
     testKeyinArgs(`uccalc one"two"three four""five"`, [`one"two"three`, `four""five"`]);
     testKeyinArgs("\tuccalc\none\t \ttwo \n three", ["one", "two", "three"]);
-  }).timeout(8000);
+  });
 
   it("Should find the MicroStation inputmanager training command", async () => {
     const command = IModelApp.tools.findExactMatch("inputmanager training");
-    assert.isDefined(command, "Found inputmanager training command");
-    assert.isTrue(await IModelApp.tools.run(command!.toolId));
-    assert.equal(lastCommand, "inputmanager training");
+    expect(command).toBeDefined();
+    if (command) {
+      const result = await IModelApp.tools.run(command.toolId);
+      expect(result).toBe(true);
+      expect(lastCommand).toBe("inputmanager training");
+    }
   });
 
   it("Should find some partial matches for 'plac'", async () => {
@@ -182,7 +192,7 @@ describe("ToolRegistry", () => {
 });
 
 function caretStringFromBoldMask(keyin: string, boldMask: boolean[]): string {
-  assert.isTrue(keyin.length === boldMask.length);
+  expect(keyin.length === boldMask.length).toBe(true);
   let boldString: string = boldMask[0] ? "^" : " ";
   for (let index = 1; index < boldMask.length; index++) {
     boldString = boldString.concat(boldMask[index] ? "^" : " ");
@@ -197,7 +207,7 @@ function showSearchResults(title: string, searchResults: FuzzySearchResults<type
   for (const thisResult of searchResults) {
     const keyin = thisResult.getMatchedValue();
     logResult(keyin);
-    assert.isTrue(keyin.length > 0);
+    expect(keyin.length > 0).toBe(true);
 
     const boldMask: boolean[] = thisResult.getBoldMask();
     logResult(caretStringFromBoldMask(keyin, boldMask));
@@ -205,7 +215,7 @@ function showSearchResults(title: string, searchResults: FuzzySearchResults<type
 }
 
 function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
-  assert.isDefined(searchResults);
+  expect(searchResults).toBeDefined();
   if (!searchResults)
     return;
   logResult(searchResults.length, title);
@@ -213,14 +223,14 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
     const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
-    assert.isDefined(thisResult);
+    expect(thisResult).toBeDefined();
 
     const keyin = thisResult!.getMatchedValue();
     logResult(keyin);
-    assert.isTrue(keyin && keyin.length > 0);
+    expect(keyin && keyin.length > 0).toBe(true);
 
     const boldMask: boolean[] = thisResult!.getBoldMask();
-    assert.isTrue(boldMask && boldMask.length > 0);
+    expect(boldMask && boldMask.length > 0).toBe(true);
     logResult(caretStringFromBoldMask(keyin, boldMask));
   }
 }

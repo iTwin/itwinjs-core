@@ -1,8 +1,11 @@
 import { defineConfig } from 'vitest/config';
+import { DynamicPublicDirectory } from "vite-multiple-assets";
+
+const dirAssets = ["./src/public", "./src/test/public"];
 export default defineConfig({
   test: {
     dir: "src",
-    setupFiles: "./src/test/setupTests.ts",
+    setupFiles: ["./src/test/utils/setupTests.ts"],
     browser: {
       provider: "playwright",
       enabled: true,
@@ -15,6 +18,9 @@ export default defineConfig({
       ]
     }
   },
+  plugins: [
+    DynamicPublicDirectory(dirAssets)
+  ],
   resolve: {
     alias: {
       "../../package.json": "../package.json",

@@ -582,6 +582,7 @@ importers:
       source-map-loader: ^4.0.0
       typemoq: ^2.1.0
       typescript: ~5.3.3
+      vite-multiple-assets: ^1.3.1
       vitest: ^2.1.1
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
@@ -626,6 +627,7 @@ importers:
       source-map-loader: 4.0.0_webpack@5.76.0
       typemoq: 2.1.0
       typescript: 5.3.3
+      vite-multiple-assets: 1.3.1
       vitest: 2.1.1_@vitest+browser@2.1.1
       webpack: 5.76.0
 
@@ -13834,6 +13836,13 @@ packages:
   /vhacd-js/0.0.1:
     resolution: {integrity: sha512-UfFbxWkl59mjtMX1z5AhWxGu91RdHK67JOHyfgIUA/gk+XD30djG6XJgEpVY65X4W/a04U9urWQnlLjsWwlgKA==}
     dev: false
+
+  /vite-multiple-assets/1.3.1:
+    resolution: {integrity: sha512-iV7lJiunCUyTq2hIsnnoZF2LBKLs9e1ezee0I3TOG9SgBrM2w5vrf4RXDJdVdYmCthujnz2aIx4wYax+0Gpcwg==}
+    peerDependencies:
+      mime-types: ^2.1.35
+      vite: '>=2.9.6'
+    dev: true
 
   /vite-node/2.1.1:
     resolution: {integrity: sha512-N/mGckI1suG/5wQI35XeR9rsMsPqKXzq1CdUndzVstBj/HvyxxGctwnK6WX43NGt5L3Z5tcRf83g4TITKJhPrA==}
