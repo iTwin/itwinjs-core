@@ -1,7 +1,4 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
-  "compilerOptions": {
-    "isolatedModules": true
-  },
-  "include": ["./src/**/*.ts", "./vitest.config.ts"]
+  "include": ["./src/**/*.ts"]
 }
