@@ -270,7 +270,7 @@ describe("Ids", () => {
       const rl = rhs.equals(lhs);
       expect(lr).to.equal(rl);
       expect(lr).to.equal(expectEqual);
-    }
+    };
 
     const inputs = [
       Id64.invalid,
@@ -292,7 +292,7 @@ describe("Ids", () => {
       }
 
       return set;
-    }
+    };
 
     expectComparison(true, new Id64.Uint32Set(), new Id64.Uint32Set());
 
@@ -311,7 +311,7 @@ describe("Ids", () => {
       expectComparison(false, a, makeSet());
     }
   });
-  
+
   it("should map IDs in a Id64.Uint32Map", () => {
     const ids: Uint64Id[] = [
       // (highBytes, lowBytes, localId, briefCaseId, Id64String)

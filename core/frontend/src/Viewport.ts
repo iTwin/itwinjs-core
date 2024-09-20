@@ -2648,7 +2648,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       arg0.selector ?? Pixel.Selector.All,
       arg0.receiver,
       arg0.excludeNonLocatable,
-      arg0.excludedElements
+      arg0.excludedElements,
     );
   }
 

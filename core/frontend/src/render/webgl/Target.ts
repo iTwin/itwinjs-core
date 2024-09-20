@@ -106,7 +106,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _worldDecorations?: WorldDecorations;
   private _currPickExclusions = new Id64.Uint32Set();
   private _swapPickExclusions = new Id64.Uint32Set();
-  public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER }
+  public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _hilites: Hilites = new EmptyHiliteSet();
   private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
@@ -194,7 +194,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
 
   public get pickExclusions(): Id64.Uint32Set { return this._currPickExclusions; }
-  
+
   public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
   public get flashedId(): Id64String { return this._flashedId; }
   public get flashIntensity(): number { return this._flashIntensity; }

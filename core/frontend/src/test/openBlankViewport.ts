@@ -212,18 +212,18 @@ export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => vo
     excludeNonLocatable,
     excludedElements,
     receiver: (pixels) => {
-     if (undefined === pixels)
-      return;
+      if (undefined === pixels)
+        return;
 
-    const sRect = rect.clone();
-    sRect.left = vp.cssPixelsToDevicePixels(sRect.left);
-    sRect.right = vp.cssPixelsToDevicePixels(sRect.right);
-    sRect.bottom = vp.cssPixelsToDevicePixels(sRect.bottom);
-    sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
+      const sRect = rect.clone();
+      sRect.left = vp.cssPixelsToDevicePixels(sRect.left);
+      sRect.right = vp.cssPixelsToDevicePixels(sRect.right);
+      sRect.bottom = vp.cssPixelsToDevicePixels(sRect.bottom);
+      sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
 
-    for (let x = sRect.left; x < sRect.right; x++)
-      for (let y = sRect.top; y < sRect.bottom; y++)
-        processor(pixels.getPixel(x, y));
+      for (let x = sRect.left; x < sRect.right; x++)
+        for (let y = sRect.top; y < sRect.bottom; y++)
+          processor(pixels.getPixel(x, y));
     },
   });
 }

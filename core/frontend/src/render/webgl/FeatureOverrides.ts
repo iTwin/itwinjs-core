@@ -430,7 +430,7 @@ export class FeatureOverrides implements WebGLDisposable {
           this._lut,
           undefined !== ovrs || pickExcludesUpdated ? this.target.pickExclusions : undefined,
           this.target.flashed,
-          undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs
+          undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs,
         );
       }
 

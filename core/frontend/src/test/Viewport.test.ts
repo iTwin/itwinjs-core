@@ -14,7 +14,7 @@ import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
-import { openBlankViewport, readUniqueFeatures, readUniquePixelData, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
+import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
@@ -255,7 +255,7 @@ describe("Viewport", () => {
       bgColor?: ColorDef;
     }
 
-    class Decorator {
+    class PointDecorator {
       public constructor(public readonly image: ColorDef[], public readonly width: number, public readonly height: number) {
         IModelApp.viewManager.addDecorator(this);
       }
@@ -291,7 +291,7 @@ describe("Viewport", () => {
           if (testCase.bgColor)
             viewport.displayStyle.backgroundColor = testCase.bgColor;
 
-          const decorator = new Decorator(testCase.image, testCase.width, decHeight);
+          const decorator = new PointDecorator(testCase.image, testCase.width, decHeight);
           try {
             viewport.renderFrame();
             func(viewport);
@@ -576,7 +576,7 @@ describe("Viewport", () => {
         vp.dispose = dispose;
       });
     });
-    
+
     it("returns undefined if specified area is invalid", () => {
       testBlankViewport((vp) => {
         vp.readPixels(new ViewRect(10, 0, 50, 0), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
@@ -593,7 +593,7 @@ describe("Viewport", () => {
             new Point3d(-10, -10, z), new Point3d(10, -10, z), new Point3d(10, 10, z), new Point3d(-10, 10, z), new Point3d(-10, -10, z),
           ];
           vp.viewToWorldArray(pts);
-          
+
           const builder = IModelApp.renderSystem.createGraphic({
             type: GraphicType.WorldDecoration,
             pickable: { id },
@@ -630,7 +630,7 @@ describe("Viewport", () => {
         features = readUniqueFeatures(vp, undefined, undefined, ["0xb"]);
         expect(features.length).to.equal(1);
         expect(features.contains(new Feature("0xa"))).to.be.true;
-        
+
         features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
         expect(features.length).to.equal(0);
       });
@@ -642,7 +642,7 @@ describe("Viewport", () => {
           new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),
         ];
         const backPts = frontPts.map((pt) => new Point3d(pt.x, pt.y, -10));
-        
+
         vp.viewToWorldArray(frontPts);
         vp.viewToWorldArray(backPts);
 
@@ -674,7 +674,7 @@ describe("Viewport", () => {
         features = readUniqueFeatures(vp, undefined, undefined, ["0xd"]);
         expect(features.length).to.equal(1);
         expect(features.contains(new Feature("0xc"))).to.be.true;
-        
+
         features = readUniqueFeatures(vp, undefined, undefined, ["0xc", "0xd"]);
         expect(features.length).to.equal(0);
 
