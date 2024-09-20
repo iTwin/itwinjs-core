@@ -547,6 +547,20 @@ describe("Viewport", () => {
   });
 
   describe("readPixels", () => {
+    const activeDecorators: Decorator[] = [];
+    function addDecorator(dec: Decorator) {
+      IModelApp.viewManager.addDecorator(dec);
+      activeDecorators.push(dec);
+    }
+
+    afterEach(() => {
+      for (const dec of activeDecorators) {
+        IModelApp.viewManager.dropDecorator(dec);
+      }
+
+      activeDecorators.length = 0;
+    });
+
     it("returns undefined if viewport is disposed", async () => {
       testBlankViewport((vp) => {
         vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).not.to.be.undefined);
@@ -588,7 +602,7 @@ describe("Viewport", () => {
           builder.addShape(pts);
 
           this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
-          IModelApp.viewManager.addDecorator(this);
+          addDecorator(this);
         }
 
         public decorate(context: DecorateContext): void {
@@ -620,9 +634,6 @@ describe("Viewport", () => {
         
         features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
         expect(features.length).to.equal(0);
-        
-        IModelApp.viewManager.dropDecorator(a);
-        IModelApp.viewManager.dropDecorator(b);
       });
     });
 
@@ -647,11 +658,9 @@ describe("Viewport", () => {
         builder.addShape(backPts);
 
         const graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
-        const decorator: Decorator = {
+        addDecorator({
           decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, graphic),
-        };
-
-        IModelApp.viewManager.addDecorator(decorator);
+        });
 
         vp.renderFrame();
 
@@ -673,8 +682,6 @@ describe("Viewport", () => {
         
         features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
         expect(features.length).to.equal(0);
-
-        IModelApp.viewManager.dropDecorator(decorator);
       });
     });
   });
