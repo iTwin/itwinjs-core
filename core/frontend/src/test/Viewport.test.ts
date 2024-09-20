@@ -584,7 +584,7 @@ describe("Viewport", () => {
       });
     });
 
-    it.only("can filter out specified elements", async () => {
+    it("can filter out specified elements", async () => {
       class SquareDecorator {
         private readonly _graphic: RenderGraphic;
 
@@ -637,7 +637,7 @@ describe("Viewport", () => {
       });
     });
 
-    it.only("can filter out specified elements within a single batch", async () => {
+    it("can filter out specified elements within a single batch", async () => {
       testBlankViewport((vp) => {
         const frontPts = [
           new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),
