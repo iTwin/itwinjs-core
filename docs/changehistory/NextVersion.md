@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 Table of contents:
@@ -13,6 +14,8 @@ Table of contents:
 - [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
   - [API Deprecations](#api-deprecations)
+- [Deprecations](#deprecations)
+  - [@itwin/core-frontend](#itwincore-frontend)
 
 ## Revert timeline changes
 
@@ -69,3 +72,9 @@ A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesS
 - `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
 
 - `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.
+
+## Deprecations
+
+### @itwin/core-frontend
+
+- [SnapshotConnection.openRemote]($frontend) is deprecated. To open iModel for web workflows use [CheckpointConnection.openRemote]($frontend) instead.
