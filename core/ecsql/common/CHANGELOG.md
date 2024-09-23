@@ -1,6 +1,14 @@
 # Change Log - @itwin/ecsql-common
 
-This log was last generated on Fri, 13 Sep 2024 15:12:41 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Sep 2024 13:44:01 GMT and should not be manually modified.
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+### Updates
+
+- Added support for CTE in subquery for the command "PRAGMA parseTree"
+- Added support for CTE without columns
 
 ## 4.8.7
 Fri, 13 Sep 2024 15:11:17 GMT
