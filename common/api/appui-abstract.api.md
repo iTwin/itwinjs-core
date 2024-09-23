@@ -173,13 +173,13 @@ export interface BackstageActionItem extends CommonBackstageItem {
 // @public @deprecated
 export type BackstageItem = BackstageActionItem | BackstageStageLauncher;
 
-// @internal
+// @internal @deprecated
 export interface BackstageItemsChangedArgs {
     // (undocumented)
     readonly items: ReadonlyArray<BackstageItem>;
 }
 
-// @internal
+// @internal @deprecated
 export class BackstageItemsManager {
     constructor(items?: ReadonlyArray<BackstageItem>);
     // (undocumented)
@@ -384,7 +384,7 @@ export class ConditionalStringValue {
     get value(): string;
 }
 
-// @public
+// @public @deprecated
 export interface ContentLayoutProps extends LayoutFragmentProps {
     description?: string;
     id: string;
@@ -730,13 +730,13 @@ export const isStageLauncher: (item: BackstageItem) => item is BackstageStageLau
 // @public
 export const isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams;
 
-// @public
+// @public @deprecated
 export interface LayoutFragmentProps {
     horizontalSplit?: LayoutHorizontalSplitProps;
     verticalSplit?: LayoutVerticalSplitProps;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     bottom: LayoutFragmentProps | number;
     minSizeBottom?: number;
@@ -744,14 +744,14 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     top: LayoutFragmentProps | number;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutSplitPropsBase {
     id: string;
     lock?: boolean;
     percentage: number;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
     left: LayoutFragmentProps | number;
     minSizeLeft?: number;
@@ -1166,7 +1166,7 @@ export enum StageUsage {
     ViewOnly = "ViewOnly"
 }
 
-// @public
+// @public @deprecated
 export class StandardContentLayouts {
     // (undocumented)
     static readonly availableLayouts: ContentLayoutProps[];
