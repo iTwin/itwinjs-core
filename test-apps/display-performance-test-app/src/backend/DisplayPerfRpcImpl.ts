@@ -6,8 +6,8 @@ import { app } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { IModelHost, IModelJsFs } from "@itwin/core-backend";
-import { RpcManager } from "@itwin/core-common";
+import { IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
+import { IModelConnectionProps, RpcManager } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
@@ -16,6 +16,15 @@ import { DptaEnvConfig, getConfig } from "../common/DisplayPerfEnvConfig";
 /** The backend implementation of DisplayPerfRpcImpl. */
 export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   private _reporter = new Reporter();
+
+  public override async openSnapshot(filePath: string): Promise<IModelConnectionProps> {
+    return SnapshotDb.openFile(filePath).getConnectionProps();
+  }
+
+  public override async closeIModel(iModelKey: string): Promise<void> {
+    IModelDb.findByKey(iModelKey).close();
+  }
+
   public override async getDefaultConfigs(): Promise<string> {
     let jsonStr = "";
     let defaultJsonFile;
