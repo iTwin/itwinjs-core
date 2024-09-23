@@ -18,6 +18,9 @@
               "$ref": "#/definitions/IdCategoryIdentifier"
             },
             {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
+            },
+            {
               "type": "string"
             }
           ],
@@ -26,6 +29,13 @@
         "editor": {
           "$ref": "#/definitions/PropertyEditorSpecification",
           "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
+        },
+        "extendedData": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "A map of ECExpressions whose\nevaluation results are used as extended data values.",
+          "type": "object"
         },
         "label": {
           "description": "Specifies label of the calculated property. Supports localization.",
@@ -1585,6 +1595,9 @@
               "$ref": "#/definitions/IdCategoryIdentifier"
             },
             {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
+            },
+            {
               "type": "string"
             }
           ],
@@ -1907,6 +1920,9 @@
             },
             {
               "$ref": "#/definitions/IdCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/SchemaCategoryIdentifier"
             },
             {
               "type": "string"
@@ -2504,6 +2520,28 @@
       },
       "required": [
         "specType"
+      ],
+      "type": "object"
+    },
+    "SchemaCategoryIdentifier": {
+      "additionalProperties": false,
+      "description": "Identifier of a schema-based  category, referenced by its full name.",
+      "properties": {
+        "categoryName": {
+          "description": "Full name of the property category, e.g. `MySchema:MyPropertyCategory`.",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of the identifier",
+          "enum": [
+            "SchemaCategory"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "categoryName",
+        "type"
       ],
       "type": "object"
     },

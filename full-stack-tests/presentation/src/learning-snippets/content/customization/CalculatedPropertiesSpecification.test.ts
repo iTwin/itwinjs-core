@@ -160,6 +160,56 @@ describe("Learning Snippets", () => {
         ]);
       });
 
+      it("uses `extendedData` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Ruleset
+        // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
+        // additionally have a calculated "My Calculated Property" property that has extended data assigned.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  calculatedProperties: [
+                    {
+                      label: "My Calculated Property",
+                      value: "123",
+                      extendedData: {
+                        extendedDataInt: "2*2",
+                        extendedDataStr: "\"xxx\""
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Result
+        // Ensure that the calculated property field has `extendedData` items assigned to it.
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        });
+        expect(content!.descriptor.fields).to.containSubset([
+          {
+            label: "My Calculated Property",
+            extendedData: {
+              extendedDataInt: 4,
+              extendedDataStr: "xxx"
+            },
+          },
+        ]);
+        // __PUBLISH_EXTRACT_END__
+      });
+
       it("uses `type` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Type.Ruleset
         // There's a content rule for returning content of given `bis.GeometricElement3d` instance. The produced content is customized to

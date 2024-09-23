@@ -2,47 +2,40 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import type { SchemaMergeContext } from "./SchemaMerger";
+import type { SchemaReferenceDifference } from "../Differencing/SchemaDifference";
+import type { SchemaContextEditor } from "../Editing/Editor";
 import { ECVersion, Schema, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { type SchemaMergeContext } from "./SchemaMerger";
-import { type SchemaReferenceDifference } from "../Differencing/SchemaDifference";
-import { type SchemaContextEditor } from "../Editing/Editor";
 
 /**
- * Merges the schema references of two schemas.
- * @param context  current merge context
- * @param change       schema changes.
+ * Merges a new reference to an external schema into the target schema.
  * @internal
  */
-export async function mergeSchemaReferences(context: SchemaMergeContext, change: SchemaReferenceDifference) {
-  // If the target schema does not have a reference to a schema yet, it can be added
-  // but should be checked if it's schema references have collisions with existing references.
-  if(change.changeType === "add") {
-    const referencedSchema = await locateSchema(context.editor, change.difference.name, change.difference.version);
-    await context.editor.addSchemaReference(context.targetSchemaKey, referencedSchema);
+export async function addSchemaReferences(context: SchemaMergeContext, change: SchemaReferenceDifference) {
+  const referencedSchema = await locateSchema(context.editor, change.difference.name, change.difference.version);
+  await context.editor.addSchemaReference(context.targetSchemaKey, referencedSchema);
+}
+
+/**
+ * Merges differences to an existing schema references in the target schema.
+ * @internal
+ */
+export async function modifySchemaReferences(context: SchemaMergeContext, change: SchemaReferenceDifference) {
+  const existingSchema  = await context.targetSchema.getReference(change.difference.name) as Schema;
+  const [older, latest] = sortSchemas(existingSchema.schemaKey, new SchemaKey(change.difference.name, ECVersion.fromString(change.difference.version)));
+  if(latest === existingSchema.schemaKey) {
+    return;
   }
 
-  // If the source schema referenced a schema that is also referenced by the target
-  // schema but in a different version, it is marked as delta. Here we need to check if
-  // the source schema is compatible to the existing one. This is not be checked by the
-  // schema instance when added.
-  if(change.changeType === "modify") {
-    const referencedSchema = await locateSchema(context.editor, change.difference.name, change.difference.version);
-    const existingSchema  = (await context.targetSchema.getReference(referencedSchema.name))!;
-
-    const [older, latest] = compareSchemas(existingSchema, referencedSchema);
-    if(!latest.schemaKey.matches(older.schemaKey, SchemaMatchType.LatestWriteCompatible)) {
-      throw new Error(`Schemas references of ${referencedSchema.name} have incompatible versions: ${older.schemaKey.version} and ${latest.schemaKey.version}`);
-    }
-
-    if(latest === existingSchema) {
-      return;
-    }
-
-    const index = context.targetSchema.references.findIndex((reference) => reference === existingSchema);
-    context.targetSchema.references.splice(index, 1);
-
-    await context.editor.addSchemaReference(context.targetSchema.schemaKey, referencedSchema);
+  if(!latest.matches(older, SchemaMatchType.LatestWriteCompatible)) {
+    throw new Error(`Schemas references of ${change.difference.name} have incompatible versions: ${older.version} and ${latest.version}`);
   }
+
+  const index = context.targetSchema.references.findIndex((reference) => reference === existingSchema);
+  context.targetSchema.references.splice(index, 1);
+
+  const referencedSchema = await locateSchema(context.editor, change.difference.name, change.difference.version);
+  await context.editor.addSchemaReference(context.targetSchema.schemaKey, referencedSchema);
 }
 
 /**
@@ -66,13 +59,13 @@ async function locateSchema(editor: SchemaContextEditor, schemaName?: string, ve
 }
 
 /**
- * Compares the schemas and return them in order of their versions [older, latest].
- * @param left    The first schema to be added.
- * @param right   The second schema to be added.
+ * Sorts the schemas and return them in order of their versions [older, latest].
+ * @param left    The first schema key to be added.
+ * @param right   The second schema key to be added.
  * @returns       The schemas in order.
  */
-function compareSchemas(left: Schema, right: Schema): [Schema, Schema] {
-  return left.schemaKey.compareByVersion(right.schemaKey) < 0
+function sortSchemas(left: SchemaKey, right: SchemaKey): [SchemaKey, SchemaKey] {
+  return left.compareByVersion(right) < 0
     ? [left, right]
     : [right, left];
 }

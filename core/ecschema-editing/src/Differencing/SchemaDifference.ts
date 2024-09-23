@@ -115,7 +115,7 @@ export interface SchemaReferenceDifference {
  * @alpha
  */
 export type AnySchemaItemDifference =
-  ClassItemDifference |
+  AnyClassItemDifference |
   ConstantDifference |
   EnumerationDifference |
   EntityClassMixinDifference |
@@ -131,7 +131,7 @@ export type AnySchemaItemDifference =
  * Union for supported class Schema Items.
  * @alpha
  */
-export type ClassItemDifference =
+export type AnyClassItemDifference =
   EntityClassDifference |
   MixinClassDifference |
   StructClassDifference |
