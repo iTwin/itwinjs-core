@@ -2187,7 +2187,7 @@ describe("CurveCurveIntersectXY", () => {
   it("ChainArcBSpline", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const bezier = BSplineCurve3d.createUniformKnots([Point3d.createZero(), Point3d.create(1,1), Point3d.create(2), Point3d.create(3,1)], 4);
+    const bezier = BSplineCurve3d.createUniformKnots([Point3d.createZero(), Point3d.create(1, 1), Point3d.create(2), Point3d.create(3, 1)], 4);
     if (ck.testDefined(bezier)) {
       const arc = Arc3d.createStartMiddleEnd(bezier.endPoint(), Point3d.create(4.5, 0.5), Point3d.create(5, -1), AngleSweep.createStartEndDegrees(0, 60));
       if (ck.testDefined(arc)) {
