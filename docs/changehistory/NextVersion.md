@@ -8,6 +8,8 @@ Table of contents:
 - [Revert timeline changes](#revert-timeline-changes)
 - [Display](#display)
   - [Instancing](#instancing)
+- [Interactive Tools](#interactive-tools)
+  - [Element Locate](#element-locate)
 - [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
   - [API Deprecations](#api-deprecations)
@@ -45,6 +47,14 @@ For the stop sign example described above, you might have a [glTF model](https:/
 ```ts
 [[include:Gltf_Instancing]]
 ```
+
+## Interactive Tools
+
+### Element Locate
+
+After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used to accept some elements that were obscured by another element. Previously Reset would only choose between visible elements within the locate aperture.
+
+![locate example](./element-locate.png "Example of using reset to accept obscured element")
 
 ## Presentation
 
