@@ -56,8 +56,9 @@ import {
   UsingRelationshipJoinExpr,
   WhereClauseExp,
 } from "@itwin/ecsql-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ECSql Abstract Syntax Tree", () => {
   let conn: IModelConnection;
@@ -82,7 +83,7 @@ describe("ECSql Abstract Syntax Tree", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    conn = await SnapshotConnection.openFile("test.bim");
+    conn = await TestSnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {

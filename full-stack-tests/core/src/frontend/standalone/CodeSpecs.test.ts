@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("CodeSpecs", async () => {
   let iModel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    iModel = await SnapshotConnection.openFile("test.bim");
+    iModel = await TestSnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {

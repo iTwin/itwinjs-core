@@ -10,11 +10,12 @@ import {
   TileMetadata, TileProps, TileTreeMetadata,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
+  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, Tile, TileTreeLoadStatus,
 } from "@itwin/core-frontend";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 import { fakeViewState } from "./TileIO.test";
+import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 describe("Tile tolerance", () => {
   let imodel: IModelConnection;
@@ -24,7 +25,7 @@ describe("Tile tolerance", () => {
 
   before(async () => {
     await TestUtility.startFrontend({ tileAdmin: { expandProjectExtents: false, minimumSpatialTolerance, useLargerTiles: false } });
-    imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
+    imodel = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
   after(async () => {

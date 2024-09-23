@@ -6,10 +6,11 @@ import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, SubCategoryOverride } from "@itwin/core-common";
 import {
-  FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId,
   Viewport,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(vp: Viewport) {
@@ -58,7 +59,7 @@ class Overrides extends FeatureSymbology.Overrides {
 }
 
 describe("Per-model category visibility overrides", () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
   let spatialView: SpatialViewState;
   let vp: ScreenViewport;
 
@@ -72,7 +73,7 @@ describe("Per-model category visibility overrides", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 
@@ -260,7 +261,7 @@ describe("Per-model category visibility overrides", () => {
   });
 });
 describe("Per-model category visibility overrides with setOverrides function", () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
   let spatialView: SpatialViewState;
   let vp: ScreenViewport;
 
@@ -274,7 +275,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 

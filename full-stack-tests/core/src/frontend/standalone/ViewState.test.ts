@@ -9,12 +9,13 @@ import {
 } from "@itwin/core-common";
 import {
   AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
-  ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
+  ModelSelectorState, SheetModelState, SheetViewState, SpatialModelState, SpatialViewState, StandardView,
   StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { Mutable } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
@@ -26,13 +27,13 @@ describe("ViewState", () => {
   before(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend(TestUtility.iModelAppOptions, true);
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 
-    imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel3 = await SnapshotConnection.openFile("ReadWriteTest.bim");
+    imodel2 = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await TestSnapshotConnection.openFile("ReadWriteTest.bim");
 
     unitTestRpcImp = TestRpcInterface.getClient();
   });
@@ -571,7 +572,7 @@ describe("ViewState2d", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("ReadWriteTest.bim");
+    imodel = await TestSnapshotConnection.openFile("ReadWriteTest.bim");
   });
 
   after(async () => {

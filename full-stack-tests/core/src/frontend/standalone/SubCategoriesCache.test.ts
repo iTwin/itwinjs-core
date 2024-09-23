@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
+import { IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("SubCategoriesCache", () => {
   // test.bim:
@@ -24,7 +25,7 @@ describe("SubCategoriesCache", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

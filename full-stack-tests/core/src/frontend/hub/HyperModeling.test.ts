@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { SectionType } from "@itwin/core-common";
-import { CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
@@ -13,6 +13,7 @@ import {
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations
@@ -24,7 +25,7 @@ describe("HyperModeling (#integration)", () => {
     await TestUtility.initialize(TestUsers.regular);
 
     await HyperModeling.initialize();
-    imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
+    imodel = await TestSnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
 
     const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, TestUtility.testIModelNames.sectionDrawingLocations);

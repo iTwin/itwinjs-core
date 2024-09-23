@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import {
   CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport,
-  SnapshotConnection,
 } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
 import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Cached decorations", () => {
   let imodel: IModelConnection;
@@ -18,7 +18,7 @@ describe("Cached decorations", () => {
   before(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

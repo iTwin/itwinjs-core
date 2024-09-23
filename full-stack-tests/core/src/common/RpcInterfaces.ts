@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
-  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
+  DevToolsRpcInterface, IModelConnectionProps, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager,
   WipRpcInterface,
 } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
@@ -21,6 +21,12 @@ export abstract class TestRpcInterface extends RpcInterface {
 
   public static getClient(): TestRpcInterface {
     return RpcManager.getClientForInterface(TestRpcInterface);
+  }
+  public async openSnapshot(_filePath: string): Promise<IModelConnectionProps> {
+    return this.forward(arguments);
+  }
+  public async closeIModel(_iModelKey: string): Promise<void> {
+    return this.forward(arguments);
   }
   public async restartIModelHost(): Promise<void> {
     return this.forward(arguments);
@@ -63,7 +69,6 @@ export abstract class EventsTestRpcInterface extends RpcInterface {
 export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
-  SnapshotIModelRpcInterface,
   TestRpcInterface,
   WipRpcInterface,
   DevToolsRpcInterface,
