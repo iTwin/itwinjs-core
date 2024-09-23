@@ -47,6 +47,8 @@ For the stop sign example described above, you might have a [glTF model](https:/
 ```ts
 [[include:Gltf_Instancing]]
 ```
+### Context Reality model visibility
+Context reality models that have been attached using `DisplayStyleState.attachRealityModel`, can now be hidden by turning ON the `ContextRealityModel.invisible` flag.  Previous implementation requiered context reality models to be detached in order to hide it from the scene.
 
 ## Interactive Tools
 
