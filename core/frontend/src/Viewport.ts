@@ -1215,6 +1215,11 @@ export abstract class Viewport implements IDisposable, TileUser {
       this._changeFlags.setDisplayStyle();
     };
 
+    const invalidateControllerAndDisplayStyleChanged = () => {
+      this.invalidateController();
+      this._changeFlags.setDisplayStyle();
+    };
+
     const styleAndOverridesChanged = () => {
       displayStyleChanged();
       this.setFeatureOverrideProviderChanged();
@@ -1231,6 +1236,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
     removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
