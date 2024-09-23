@@ -160,6 +160,11 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
+    const currentKoq = await property.kindOfQuantity;
+    if(currentKoq && !currentKoq.persistenceUnit!.matchesFullName(koq.persistenceUnit!.fullName)) {
+      throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), undefined, undefined, "KindOfQuantity can only be changed if it has the same persistence unit as the property.");
+    }
+
     property.setKindOfQuantity(new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(kindOfQuantityKey, async () => koq));
   }
 
