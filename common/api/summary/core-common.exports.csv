@@ -775,6 +775,7 @@ public;interface;SkySphereImageProps
 internal;interface;SnapRequestProps
 internal;interface;SnapResponseProps
 internal;class;SnapshotIModelRpcInterface
+deprecated;class;SnapshotIModelRpcInterface
 public;interface;SnapshotOpenOptions
 public;class;SolarLight
 public;interface;SolarLightProps
