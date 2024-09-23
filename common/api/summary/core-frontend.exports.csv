@@ -580,6 +580,7 @@ public;interface;ReadImageBufferArgs
 internal;function;readImdlContent
 public;interface;ReadMeshArgs
 internal;class;ReadonlyTileUserSet
+public;interface;ReadPixelsArgs
 internal;function;readPointCloudTileContent
 alpha;class;RealityDataError
 beta;interface;RealityDataSource
