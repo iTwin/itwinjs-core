@@ -712,12 +712,12 @@ describe("CurveCurveIntersectXYZChains", () => {
     for (const xyzPair of intersectionDetailsXyz) {
       const xyzPointA = xyzPair.detailA.point;
       const xyzPointB = xyzPair.detailB.point;
+      ck.testPoint3d(xyzPointA, xyzPointB, "both paired XYZ intersections are the same point");
       let found = false;
       for (const xyPair of intersectionDetailsXy) {
         const xyPointA = xyPair.detailA.point;
         const xyPointB = xyPair.detailB.point;
-        if (xyzPointA.isAlmostEqual(xyPointA) || xyzPointA.isAlmostEqual(xyPointB) ||
-          xyzPointB.isAlmostEqual(xyPointA) || xyzPointB.isAlmostEqual(xyPointB)) {
+        if (xyzPointA.isAlmostEqual(xyPointA) || xyzPointA.isAlmostEqual(xyPointB)) {
           found = true;
           break;
         }
