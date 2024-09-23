@@ -852,14 +852,19 @@ export class Matrix3d implements BeJSONFunctions {
         result,
       );
   }
-  /** Create a matrix with each column's _x,y_ parts given `XAndY` and separate numeric z values.
+  /**
+   * Create a matrix with each column's _x,y_ parts given `XAndY` and separate numeric z values.
    * ```
    * equation
    * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ u & v & w \end{bmatrix}
    * ```
    */
-  public static createColumnsXYW(vectorU: XAndY, u: number, vectorV: XAndY, v: number,
-    vectorW: XAndY, w: number, result?: Matrix3d): Matrix3d {
+  public static createColumnsXYW(
+    vectorU: XAndY, u: number,
+    vectorV: XAndY, v: number,
+    vectorW: XAndY, w: number,
+    result?: Matrix3d,
+  ): Matrix3d {
     return Matrix3d.createRowValues
       (
         vectorU.x, vectorV.x, vectorW.x,

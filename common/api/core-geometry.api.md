@@ -4885,7 +4885,7 @@ export class PolylineOps {
 
 // @internal
 export class PowerPolynomial {
-    static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number;
+    static accumulate(coffP: Float64Array, coffQ: Float64Array, scale: number): number;
     static degreeKnownEvaluate(coff: Float64Array, degree: number, x: number): number;
     static evaluate(coff: Float64Array, x: number): number;
     static zero(coff: Float64Array): void;
@@ -6150,7 +6150,7 @@ export class TrigPolynomial {
     static solveAngles(coff: Float64Array, nominalDegree: number, referenceCoefficient: number, radians: number[]): boolean;
     static solveUnitCircleEllipseIntersection(cx: number, cy: number, ux: number, uy: number, vx: number, vy: number, ellipseRadians: number[], circleRadians: number[]): boolean;
     static solveUnitCircleHomogeneousEllipseIntersection(cx: number, cy: number, cw: number, ux: number, uy: number, uw: number, vx: number, vy: number, vw: number, ellipseRadians: number[], circleRadians: number[]): boolean;
-    static solveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number, ax: number, ay: number, a1: number, radians: number[]): boolean;
+    static solveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number, ax: number, ay: number, a: number, radians: number[]): boolean;
     static readonly SS: Float64Array;
     static readonly SW: Float64Array;
     static readonly W: Float64Array;

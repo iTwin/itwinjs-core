@@ -662,9 +662,10 @@ export class AnalyticRoots {
     }
     return undefined;
   }
-  private static improveRoots(coffs: Float64Array | number[], degree: number, roots: GrowableFloat64Array, restrictOrderChanges: boolean) {
+  private static improveRoots(
+    coffs: Float64Array | number[], degree: number, roots: GrowableFloat64Array, restrictOrderChanges: boolean,
+  ) {
     const relTol = 1.0e-10;
-
     // Loop through each root
     for (let i = 0; i < roots.length; i++) {
       let dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
@@ -672,7 +673,6 @@ export class AnalyticRoots {
       const originalValue = roots.atUncheckedIndex(i);
       let counter = 0;
       let convergenceCounter = 0;
-
       // Loop through applying changes to found root until dx is diminished or counter is hit
       while (dx !== undefined && dx !== 0.0 && (counter < 12)) {
         // consider it converged if two successive iterations satisfy the (not too demanding) tolerance.
@@ -682,17 +682,14 @@ export class AnalyticRoots {
         } else {
           convergenceCounter = 0;
         }
-
         const rootDX = roots.atUncheckedIndex(i) - dx;
         roots.reassign(i, rootDX);
-
         // If root is thrown past one of its neighboring roots, unstable condition is assumed.. revert
         // to originally found root
         if (restrictOrderChanges && !this.checkRootProximity(roots, i)) {
           roots.reassign(i, originalValue);
           break;
         }
-
         dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
         counter++;
       }
@@ -924,59 +921,46 @@ export class AnalyticRoots {
     // this.appendCubicRootsUnsorted(c, results);
     results.sort();
   }
-  /** Compute roots of quartic 'c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 + c[4] * x^4 */
+  /** Compute roots of quartic `c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 + c[4] * x^4` */
   public static appendQuarticRoots(c: Float64Array | number[], results: GrowableFloat64Array) {
-    const coffs = new Float64Array(4); // at various times .. coefficients of quadratic an cubic intermediates.
+    const coffs = new Float64Array(4);
     let u: number;
     let v: number;
-
-    // normal form: x^4 + Ax^3 + Bx^2 + Cx + D = 0
-
     const coffScale = new Float64Array(1);
     if (!this.safeDivide(coffScale, 1.0, c[4], 0.0, 0)) {
       this.appendCubicRoots(c, results);
       return;
     }
+    // normal form: x^4 + Ax^3 + Bx^2 + Cx + D = 0
     const A: number = c[3] * coffScale[0];
     const B: number = c[2] * coffScale[0];
     const C: number = c[1] * coffScale[0];
     const D: number = c[0] * coffScale[0];
     const origin = -0.25 * A;
-    /*  substitute x = y - A/4 to eliminate cubic term:
-        x^4 + px^2 + qx + r = 0 */
+    // substitute x = y - A/4 to eliminate cubic term: y^4 + py^2 + qy + r = 0
     const sq_A: number = A * A;
-    const p: number = -3.0 / 8 * sq_A + B;
+    const p: number = -0.375 * sq_A + B;
     const q: number = 0.125 * sq_A * A - 0.5 * A * B + C;
-    const r: number = -3.0 / 256 * sq_A * sq_A + 1.0 / 16 * sq_A * B - 1.0 / 4 * A * C + D;
-
-    const tempStack = new GrowableFloat64Array();
-
-    if (this.isZero(r)) {
-
-      // no absolute term: y(y^3 + py + q) = 0
+    const r: number = -0.01171875 * sq_A * sq_A + 0.0625 * sq_A * B - 0.25 * A * C + D;
+    const cubicSolutions = new GrowableFloat64Array();
+    if (this.isZero(r)) { // no absolute term: y(y^3 + py + q) = 0
       coffs[0] = q;
       coffs[1] = p;
       coffs[2] = 0;
       coffs[3] = 1;
       this.appendCubicRoots(coffs, results);
-      results.push(0); // APPLY ORIGIN ....
-      this.addConstant(origin, results);
+      results.push(0);
+      this.addConstant(origin, results); // apply origin
       return;
-    } else {
-
-      // Solve the resolvent cubic
-      coffs[0] = 1.0 / 2 * r * p - 1.0 / 8 * q * q;
-      coffs[1] = - r;
-      coffs[2] = - 1.0 / 2 * p;
+    } else { // solve the resolvent cubic; more info: https://en.wikipedia.org/wiki/Resolvent_cubic#Second_definition
+      coffs[0] = 0.5 * r * p - 0.125 * q * q;
+      coffs[1] = -r;
+      coffs[2] = -0.5 * p;
       coffs[3] = 1;
-
-      this.appendCubicRoots(coffs, tempStack);
-      const z = this.mostDistantFromMean(tempStack);
-
-      // ... to build two quadric equations
+      this.appendCubicRoots(coffs, cubicSolutions);
+      const z = this.mostDistantFromMean(cubicSolutions);
       u = z * z - r;
       v = 2 * z - p;
-
       if (this.isSmallRatio(u, r)) {
         u = 0;
       } else if (u > 0) {
@@ -984,37 +968,27 @@ export class AnalyticRoots {
       } else {
         return;
       }
-
       if (this.isSmallRatio(v, p)) {
         v = 0;
       } else if (v > 0) {
         v = Math.sqrt(v);
       } else {
-        for (let i = 0; i < tempStack.length; i++) {
-          results.push(tempStack.atUncheckedIndex(i));
-        }
         return;
       }
-
+      // the two quadratic equations
       coffs[0] = z - u;
       coffs[1] = ((q < 0) ? (-v) : (v));
       coffs[2] = 1;
-
       this.appendQuadraticRoots(coffs, results);
-
       coffs[0] = z + u;
       coffs[1] = ((q < 0) ? (v) : (-v));
       coffs[2] = 1;
-
       this.appendQuadraticRoots(coffs, results);
     }
-
     // substitute
-    this.addConstant(origin, results);
-
+    this.addConstant(origin, results); // apply origin
     results.sort();
     this.improveRoots(c, 4, results, true);
-
     return;
   }
 
@@ -1118,21 +1092,17 @@ export class PowerPolynomial {
     return this.degreeKnownEvaluate(coff, degree, x);
   }
   /**
-   * * Accumulate Q*scale into P. Both are treated as full degree.
-   * * (Expect Address exceptions if P is smaller than Q)
-   * * Returns degree of result as determined by comparing trailing coefficients to zero
+   * Accumulate `coffQ*scale` into `coffP`.
+   * * Both are treated as full degree (the length of `coffP` must be at least length of `coffQ`).
+   * * Returns degree of result as determined by comparing trailing coefficients to zero.
    */
-  public static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number {
+  public static accumulate(coffP: Float64Array, coffQ: Float64Array, scale: number): number {
     let degreeP = coffP.length - 1;
     const degreeQ = coffQ.length - 1;
-
-    for (let i = 0; i <= degreeQ; i++) {
-      coffP[i] += scaleQ * coffQ[i];
-    }
-
-    while (degreeP >= 0 && coffP[degreeP] === 0.0) {
+    for (let i = 0; i <= degreeQ; i++)
+      coffP[i] += scale * coffQ[i];
+    while (degreeP >= 0 && coffP[degreeP] === 0.0)
       degreeP--;
-    }
     return degreeP;
   }
   /** Zero all coefficients */
@@ -1150,70 +1120,68 @@ export class TrigPolynomial {
   // tolerance for small angle decision.
   private static readonly _smallAngle: number = 1.0e-11;
 
+  // see itwinjs-core\core\geometry\internaldocs\unitCircleEllipseIntersection.md
+  // on how below variables are derived.
   /** Standard Basis coefficients for rational sine numerator. */
   public static readonly S = Float64Array.from([0.0, 2.0, -2.0]);
   /** Standard Basis coefficients for rational cosine numerator. */
   public static readonly C = Float64Array.from([1.0, -2.0]);
-  /** Standard Basis coefficients for rational denominator. */
+  /** Standard Basis coefficients for rational weight denominator. */
   public static readonly W = Float64Array.from([1.0, -2.0, 2.0]);
-  /** Standard Basis coefficients for cosine*weight numerator */
+  /** Standard Basis coefficients for cosine*weight numerator. */
   public static readonly CW = Float64Array.from([1.0, -4.0, 6.0, -4.0]);
-  /** Standard Basis coefficients for sine*weight numerator */
+  /** Standard Basis coefficients for sine*weight numerator. */
   public static readonly SW = Float64Array.from([0.0, 2.0, -6.0, 8.0, -4.0]);
-  /** Standard Basis coefficients for sine*cosine numerator */
+  /** Standard Basis coefficients for sine*cosine numerator. */
   public static readonly SC = Float64Array.from([0.0, 2.0, -6.0, 4.0]);
-  /** Standard Basis coefficients for sine^2 numerator */
+  /** Standard Basis coefficients for sine^2 numerator. */
   public static readonly SS = Float64Array.from([0.0, 0.0, 4.0, -8.0, 4.0]);
-  /** Standard Basis coefficients for cosine^2 numerator */
+  /** Standard Basis coefficients for cosine^2 numerator. */
   public static readonly CC = Float64Array.from([1.0, -4.0, 4.0]);
-  /** Standard Basis coefficients for weight^2 */
+  /** Standard Basis coefficients for weight^2 denominator. */
   public static readonly WW = Float64Array.from([1.0, -4.0, 8.0, -8.0, 4.0]);
-  /** Standard Basis coefficients for (Math.Cos^2 - sine^2) numerator */
+  /** Standard Basis coefficients for cosine^2 - sine^2 numerator. */
   public static readonly CCminusSS = Float64Array.from([1.0, -4.0, 0.0, 8.0, -4.0]);
 
   /**
-   *  Solve a polynomial created from trigonometric condition using
-   * Trig.S, Trig.C, Trig.W.  Solution logic includes inferring angular roots
-   * corresponding zero leading coefficients (roots at infinity)
-   * @param coff Coefficients
-   * @param nominalDegree degree of the polynomial under most complex
-   *     root case.  If there are any zero coefficients up to this degree, a single root
-   *     "at infinity" is recorded as its corresponding angular parameter at negative pi/2
-   * @param referenceCoefficient A number which represents the size of coefficients
-   *     at various stages of computation.  A small fraction of this will be used as a zero
-   *     tolerance
-   * @param radians Roots are placed here
+   * Solve a polynomial created from trigonometric condition using Trig.S, Trig.C, Trig.W.
+   * * Polynomial is of degree 4:
+   * `coff[0] + coff[1] * t + coff[2] * t^2 + coff[3] * t^3 + coff[4] * t^4`
+   * * Solution logic includes inferring angular roots corresponding zero leading coefficients
+   * (roots at infinity).
+   * @param coff coefficients.
+   * @param nominalDegree degree of the polynomial under most complex root case. If there are
+   * any zero coefficients up to this degree, a single root "at infinity" is recorded as its
+   * corresponding angular parameter at negative pi/2.
+   * @param referenceCoefficient a number which represents the size of coefficients at various
+   * stages of computation. A small fraction of this will be used as a zero tolerance
+   * @param radians roots are placed here.
    * @return false if equation is all zeros. This usually means any angle is a solution.
    */
-  public static solveAngles(coff: Float64Array, nominalDegree: number, referenceCoefficient: number,
-    radians: number[]): boolean {
+  public static solveAngles(
+    coff: Float64Array, nominalDegree: number, referenceCoefficient: number, radians: number[],
+  ): boolean {
     let maxCoff = Math.abs(referenceCoefficient);
     let a;
     radians.length = 0;
     const relTol = this._smallAngle;
-
     for (let i = 0; i <= nominalDegree; i++) {
       a = Math.abs(coff[i]);
-      if (a > maxCoff) {
+      if (a > maxCoff)
         maxCoff = a;
-      }
     }
     const coffTol = relTol * maxCoff;
     let degree = nominalDegree;
-    while (degree > 0 && (Math.abs(coff[degree]) <= coffTol)) {
+    while (degree > 0 && (Math.abs(coff[degree]) <= coffTol))
       degree--;
-    }
-    // let status = false;
     const roots = new GrowableFloat64Array();
     if (degree === -1) {
-      // Umm.   Dunno.   Nothing there.
-      // status = false;
+      // Umm. Dunno. Nothing there.
     } else {
       // status = true;
       if (degree === 0) {
         // p(t) is a nonzero constant
         // No roots, but not degenerate.
-        // status = true;
       } else if (degree === 1) {
         // p(t) = coff[1] * t + coff[0]
         roots.push(- coff[0] / coff[1]);
@@ -1224,25 +1192,22 @@ export class TrigPolynomial {
       } else if (degree === 4) {
         AnalyticRoots.appendQuarticRoots(coff, roots);
       } else {
-        // TODO: WILL WORK WITH BEZIER SOLVER
-        // status = false;
+        // TODO: WORK WITH BEZIER SOLVER
       }
       if (roots.length > 0) {
         // Each solution t represents an angle with
-        //  Math.Cos(theta)=C(t)/W(t),  ,sin(theta)=S(t)/W(t)
-        // Division by W has no effect on Atan2 calculations, so we just compute S(t),C(t)
+        // Math.Cos(theta) = C(t)/W(t) and sin(theta) = S(t)/W(t)
+        // Division by W has no effect on atan2 calculations, so we just compute S(t),C(t)
         for (let i = 0; i < roots.length; i++) {
           const ss = PowerPolynomial.evaluate(this.S, roots.atUncheckedIndex(i));
           const cc = PowerPolynomial.evaluate(this.C, roots.atUncheckedIndex(i));
           radians.push(Math.atan2(ss, cc));
         }
-
         // Each leading zero at the front of the coefficients corresponds to a root at -PI/2.
         // Only make one entry....
         // for (int i = degree; i < nominalDegree; i++)
-        if (degree < nominalDegree) {
+        if (degree < nominalDegree)
           radians.push(-0.5 * Math.PI);
-        }
       }
     }
     return radians.length > 0;
@@ -1250,55 +1215,51 @@ export class TrigPolynomial {
   private static readonly _coefficientRelTol = 1.0e-12;
   /**
    * Compute intersections of unit circle `x^2 + y^2 = 1` with general quadric
-   * `axx * x^2 + axy * x * y + ayy * y^2 + ax * x + ay * y + a1 = 0`
+   * `axx * x^2 + axy * x * y + ayy * y^2 + ax * x + ay * y + a = 0`
    * Solutions are returned as angles. Sine and Cosine of the angles are the x, y results.
-   * @param axx  Coefficient of x^2
-   * @param axy  Coefficient of xy
-   * @param ayy  Coefficient of y^2
-   * @param ax  Coefficient of x
-   * @param ay  Coefficient of y
-   * @param a1  Constant coefficient
-   * @param radians  solution angles
+   * @param axx coefficient of x^2
+   * @param axy coefficient of xy
+   * @param ayy coefficient of y^2
+   * @param ax coefficient of x
+   * @param ay coefficient of y
+   * @param a constant coefficient
+   * @param radians solution angles
    */
-  public static solveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number,
-    ax: number, ay: number, a1: number, radians: number[]): boolean {
-    const Coffs = new Float64Array(5);
-    PowerPolynomial.zero(Coffs);
+  public static solveUnitCircleImplicitQuadricIntersection(
+    axx: number, axy: number, ayy: number, ax: number, ay: number, a: number, radians: number[],
+  ): boolean {
+    const coffs = new Float64Array(5);
+    PowerPolynomial.zero(coffs);
     let degree;
-    if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a1)) {
-      PowerPolynomial.accumulate(Coffs, this.CW, ax);
-      PowerPolynomial.accumulate(Coffs, this.SW, ay);
-      PowerPolynomial.accumulate(Coffs, this.WW, a1);
-      PowerPolynomial.accumulate(Coffs, this.SS, ayy);
-      PowerPolynomial.accumulate(Coffs, this.CC, axx);
-      PowerPolynomial.accumulate(Coffs, this.SC, axy);
+    // see itwinjs-core\core\geometry\internaldocs\unitCircleEllipseIntersection.md
+    // on how coffs (coefficient array) is built.
+    if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a)) {
+      PowerPolynomial.accumulate(coffs, this.CW, ax);
+      PowerPolynomial.accumulate(coffs, this.SW, ay);
+      PowerPolynomial.accumulate(coffs, this.WW, a);
+      PowerPolynomial.accumulate(coffs, this.SS, ayy);
+      PowerPolynomial.accumulate(coffs, this.CC, axx);
+      PowerPolynomial.accumulate(coffs, this.SC, axy);
       degree = 4;
     } else {
-      PowerPolynomial.accumulate(Coffs, this.C, ax);
-      PowerPolynomial.accumulate(Coffs, this.S, ay);
-      PowerPolynomial.accumulate(Coffs, this.W, a1);
+      PowerPolynomial.accumulate(coffs, this.C, ax);
+      PowerPolynomial.accumulate(coffs, this.S, ay);
+      PowerPolynomial.accumulate(coffs, this.W, a);
       degree = 2;
     }
-
-    let maxCoff = 0.0;
-    maxCoff = Math.max(maxCoff,
-      Math.abs(axx),
-      Math.abs(ayy),
-      Math.abs(axy),
-      Math.abs(ax),
-      Math.abs(ay),
-      Math.abs(a1));
-
-    const b = this.solveAngles(Coffs, degree, maxCoff, radians);
+    const maxCoff = Math.max(
+      Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a),
+    );
+    const b = this.solveAngles(coffs, degree, maxCoff, radians);
     /*
     for (const theta of angles) {
       const c = theta.cos();
       const s = theta.sin();
       GeometryCoreTestIO.consoleLog({
         angle: theta, co: c, si: s,
-        f: axx * c * c + axy * c * s + ayy * s * s + ax * c + ay * s + a1});
-  } */
-
+        f: axx * c * c + axy * c * s + ayy * s * s + ax * c + ay * s + a,
+      });
+    } */
     return b;
   }
   /**
@@ -1334,7 +1295,7 @@ export class TrigPolynomial {
     return status;
   }
   /**
-   * Compute intersections of unit circle `x^2 + y^2 = w^2` with the ellipse
+   * Compute intersections of unit circle `x^2 + y^2 = w^2` (in homogenous coordinates) with the ellipse
    * `F(t) = (cx + ux cos(t) + vx sin(t), cy + uy cos(t) + vy sin(t)) / (cw + uw cos(t) + vw sin(t))`.
    * @param cx center x
    * @param cy center y
@@ -1355,13 +1316,17 @@ export class TrigPolynomial {
     ellipseRadians: number[], circleRadians: number[],
   ): boolean {
     circleRadians.length = 0;
+    // see itwinjs-core\core\geometry\internaldocs\unitCircleEllipseIntersection.md
+    // on how below variables are derived.
     const acc = ux * ux + uy * uy - uw * uw;
     const acs = 2.0 * (ux * vx + uy * vy - uw * vw);
     const ass = vx * vx + vy * vy - vw * vw;
     const ac = 2.0 * (ux * cx + uy * cy - uw * cw);
-    const asi = 2.0 * (vx * cx + vy * cy - vw * cw);
+    const as = 2.0 * (vx * cx + vy * cy - vw * cw);
     const a = cx * cx + cy * cy - cw * cw;
-    const status = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
+    const status = this.solveUnitCircleImplicitQuadricIntersection(
+      acc, acs, ass, ac, as, a, ellipseRadians,
+    );
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
       const ss = Math.sin(radians);

@@ -1589,6 +1589,57 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionCurveChainVsCurveChain");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("intersectionArcVsArc1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const arc1 = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    const arc2 = Arc3d.create(
+      Point3d.create(0, 10), Vector3d.create(5, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    captureAndTestIntersection(allGeometry, ck, 0, 0, arc1, arc2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionArcVsArc1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("intersectionArcVsArc2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const arc1 = Arc3d.create(
+      Point3d.create(97, 5), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(90, -90),
+    );
+    const arc2 = Arc3d.create(
+      Point3d.create(97, 15), Vector3d.create(4, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    captureAndTestIntersection(allGeometry, ck, 0, 0, arc1, arc2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionArcVsArc2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("intersectionArcVsArc3", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const arc1 = Arc3d.create(
+      Point3d.create(539965.1282729112, 101215.56042805065),
+      Vector3d.create(1.3462994039129226, -1.4790124796713886),
+      Vector3d.create(-1.4790124796713886, -1.346299403912922),
+      AngleSweep.createStartEndDegrees(-43.31588330628889, 43.31588330628889),
+    );
+    const arc2 = Arc3d.create(
+      Point3d.create(540142.5176908899, 101091.35101865641),
+      Vector3d.create(-0.862104587620478, 0.8621045876247996),
+      Vector3d.create(0.8621045876247995, 0.862104587620478),
+      AngleSweep.createStartEndDegrees(-44.99999999980853, 44.99999999980853),
+    );
+    captureAndTestIntersection(allGeometry, ck, 0, 0, arc1, arc2, false, false, 0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionArcVsArc3");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("intersectionSingleChild", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

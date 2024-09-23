@@ -740,7 +740,7 @@ describe("RegionBoolean", () => {
   it("SelfIntersectingPolygon", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const bowTie = Loop.createPolygon([Point3d.create(0,0), Point3d.create(10,0), Point3d.create(0,10), Point3d.create(10,10)]);
+    const bowTie = Loop.createPolygon([Point3d.create(0, 0), Point3d.create(10, 0), Point3d.create(0, 10), Point3d.create(10, 10)]);
     const signedLoops = RegionOps.constructAllXYRegionLoops(bowTie);
     ck.testExactNumber(1, signedLoops.length, "only one connected component");
     if (ck.testExactNumber(2, signedLoops[0].positiveAreaLoops.length, "two constituent ccw loops from intersections"))
