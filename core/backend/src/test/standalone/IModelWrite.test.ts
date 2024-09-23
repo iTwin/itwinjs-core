@@ -6,7 +6,7 @@
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   ChangesetIdWithIndex, Code, ColorDef,
-  GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  GeometricElement2dProps, GeometryStreamProps, IModel, IModelVersion, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -24,7 +24,7 @@ import {
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
-  CodeService, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
+  CodeService, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SnapshotDb, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
@@ -837,6 +837,40 @@ describe("IModelWriteTest", () => {
     }
     rwIModel.close();
     rwIModel2.close();
+  });
+
+  it("pulling a changeset with extents changes should update the extents of the opened imodel", async () => {
+    const accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
+    const version0 = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
+    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "projectExtentsTest", version0 });
+    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
+    const changesetIdBeforeExtentsChange = iModel.changeset.id;
+    const extents = iModel.projectExtents;
+    const newExtents = extents.clone();
+    newExtents.low.x += 100;
+    newExtents.low.y += 100;
+    newExtents.high.x += 100;
+    newExtents.high.y += 100;
+    iModel.updateProjectExtents(newExtents);
+    iModel.saveChanges("update project extents");
+    await iModel.pushChanges({ description: "update project extents" });
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
+    const iModelBeforeExtentsChange = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(changesetIdBeforeExtentsChange).toJSON() });
+    const extentsBeforePull = iModelBeforeExtentsChange.projectExtents;
+    // Read the extents fileProperty.
+    const extentsStrBeforePull = iModelBeforeExtentsChange.queryFilePropertyString({name: "Extents", namespace: "dgn_Db"});
+    const ecefLocationBeforeExtentsChange = iModelBeforeExtentsChange.ecefLocation;
+    await iModelBeforeExtentsChange.pullChanges(); // Pulls the extents change.
+    const extentsAfterPull = iModelBeforeExtentsChange.projectExtents;
+    const extentsStrAfterPull = iModelBeforeExtentsChange.queryFilePropertyString({name: "Extents", namespace: "dgn_Db"});
+    const ecefLocationAfterExtentsChange = iModelBeforeExtentsChange.ecefLocation;
+
+    expect(ecefLocationBeforeExtentsChange).to.not.be.undefined;
+    expect(ecefLocationAfterExtentsChange).to.not.be.undefined;
+    expect(ecefLocationBeforeExtentsChange?.isAlmostEqual(ecefLocationAfterExtentsChange!)).to.be.false;
+    expect(extentsStrAfterPull).to.not.equal(extentsStrBeforePull);
+    expect(extentsAfterPull.isAlmostEqual(extentsBeforePull)).to.be.false;
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModelBeforeExtentsChange);
   });
 
   it("parent lock should suffice when inserting into deeply nested sub-model", async () => {

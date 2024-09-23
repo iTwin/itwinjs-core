@@ -305,6 +305,13 @@ export abstract class IModelDb extends IModel {
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
 
     this.initializeIModelDb();
+    this.onChangesetApplied.addListener(() => {
+      const extents = this.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
+      // TODO: What if extents is undefined? And was previously defined? Is this a possibility?
+      // Note: updateProjectExtents will return early if the extents are the same as the current extents.
+      if (extents)
+        this[_nativeDb].updateProjectExtents(extents, true);
+    });
     IModelDb._openDbs.set(this._fileKey, this);
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
