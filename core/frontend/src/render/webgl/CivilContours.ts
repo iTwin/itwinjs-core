@@ -59,6 +59,7 @@ export class CivilContours implements WebGLDisposable {
   public readonly target: Target;
   private readonly _options: BatchOptions;
   private _lut?: Texture2DHandle;
+  private _width = 0;
   private _lutWidth = 0;
   private _cleanup?: CivilContoursCleanup;
 
@@ -72,20 +73,16 @@ export class CivilContours implements WebGLDisposable {
   private _initialize(map: RenderFeatureTable, contours: CivilContourDisplay | undefined): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims = computeWidthAndHeight(nFeatures, 1/8);
-    const width = dims.width;
+    this._width = dims.width;
     const height = dims.height;
-    assert(width * height * 8 >= nFeatures);
+    assert(this._width * height * 8 >= nFeatures);
 
-    this._lutWidth = width;
-
-    if (contours && contours.terrains.length > 0) {
-      const data = new Uint8Array(width * height * 4);
-      const creator = new Texture2DDataUpdater(data);
-      if (this.buildLookupTable(creator, map, contours))
-        return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
-    }
-    this._lutWidth = 0; // flag to indicate no contours
-    return undefined;
+    this._lutWidth = this._width;
+    const data = new Uint8Array(this._width * height * 4);
+    const creator = new Texture2DDataUpdater(data);
+    if (contours && contours.terrains.length > 0 && !this.buildLookupTable(creator, map, contours))
+      this._lutWidth = 0; // flag to indicate no contours
+    return TextureHandle.createForData(this._width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
   private _update(map: RenderFeatureTable, lut: Texture2DHandle, contours: CivilContourDisplay) {
@@ -167,6 +164,7 @@ export class CivilContours implements WebGLDisposable {
     // _lut can be undefined if context was lost, (gl.createTexture returns null)
     if (this._lut) {
       const contours: CivilContourDisplay | undefined = this.target.plan.contours;
+      this._lutWidth = this._width;
       if (contours && contours.terrains.length > 0)
         this._update(features, this._lut, contours);
       else
