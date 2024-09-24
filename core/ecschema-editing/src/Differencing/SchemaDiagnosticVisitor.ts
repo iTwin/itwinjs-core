@@ -284,7 +284,7 @@ export class SchemaDiagnosticVisitor {
       this.schemaItemPathDifferences.push(modifyEntry);
     }
 
-    if (propertyName !== "name" && sourceValue !== undefined) {
+    if (propertyName !== "name") {
       modifyEntry.difference[propertyName] = sourceValue;
     }
   }
