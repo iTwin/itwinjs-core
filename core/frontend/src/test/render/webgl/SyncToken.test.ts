@@ -1,38 +1,38 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { describe, expect, it } from "vitest";
 import { desync, isSynchronized, sync, SyncObserver } from "../../../render/webgl/Sync";
 
 describe("SyncObserver", () => {
   it("should synchronize with Sync", () => {
     const target = { syncKey: 0 };
-    const observer: SyncObserver = { };
+    const observer: SyncObserver = {};
 
-    expect(isSynchronized(target, observer)).to.be.false;
-    expect(sync(target, observer)).to.be.false;
-    expect(observer.syncToken).not.to.be.undefined;
-    expect(observer.syncToken!.target).to.equal(target);
-    expect(observer.syncToken!.syncKey).to.equal(0);
-    expect(isSynchronized(target, observer)).to.be.true;
+    expect(isSynchronized(target, observer)).toBe(false);
+    expect(sync(target, observer)).toBe(false);
+    expect(observer.syncToken).toBeDefined();
+    expect(observer.syncToken!.target).toEqual(target);
+    expect(observer.syncToken!.syncKey).toEqual(0);
+    expect(isSynchronized(target, observer)).toBe(true);
 
-    expect(isSynchronized(target, observer)).to.be.true;
-    expect(sync(target, observer)).to.be.true;
-    expect(observer.syncToken!.target).to.equal(target);
-    expect(observer.syncToken!.syncKey).to.equal(0);
+    expect(isSynchronized(target, observer)).toBe(true);
+    expect(sync(target, observer)).toBe(true);
+    expect(observer.syncToken!.target).toEqual(target);
+    expect(observer.syncToken!.syncKey).toEqual(0);
 
     desync(target);
-    expect(target.syncKey).to.equal(1);
-    expect(sync(target, observer)).to.be.false;
-    expect(observer.syncToken!.target).to.equal(target);
-    expect(observer.syncToken!.syncKey).to.equal(1);
-    expect(sync(target, observer)).to.be.true;
+    expect(target.syncKey).toEqual(1);
+    expect(sync(target, observer)).toBe(false);
+    expect(observer.syncToken!.target).toEqual(target);
+    expect(observer.syncToken!.syncKey).toEqual(1);
+    expect(sync(target, observer)).toBe(true);
 
     const target2 = { syncKey: 111 };
-    expect(sync(target2, observer)).to.be.false;
-    expect(observer.syncToken!.target).to.equal(target2);
-    expect(observer.syncToken!.syncKey).to.equal(111);
+    expect(sync(target2, observer)).toBe(false);
+    expect(observer.syncToken!.target).toEqual(target2);
+    expect(observer.syncToken!.syncKey).toEqual(111);
   });
 });
 
@@ -41,10 +41,10 @@ describe("SyncTarget", () => {
     const target = { syncKey: Number.MAX_SAFE_INTEGER - 1 };
 
     desync(target);
-    expect(target.syncKey).to.equal(Number.MAX_SAFE_INTEGER);
+    expect(target.syncKey).toEqual(Number.MAX_SAFE_INTEGER);
     desync(target);
-    expect(target.syncKey).to.equal(Number.MIN_SAFE_INTEGER);
+    expect(target.syncKey).toEqual(Number.MIN_SAFE_INTEGER);
     desync(target);
-    expect(target.syncKey).to.equal(Number.MIN_SAFE_INTEGER + 1);
+    expect(target.syncKey).toEqual(Number.MIN_SAFE_INTEGER + 1);
   });
 });

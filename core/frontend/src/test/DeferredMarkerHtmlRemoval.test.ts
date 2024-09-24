@@ -16,7 +16,8 @@ describe("ScreenViewport", () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
   afterEach(async () => {
-    if (IModelApp.initialized) await IModelApp.shutdown();
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
   });
 
   function makeMarker(vp: ScreenViewport) {
@@ -56,7 +57,7 @@ describe("ScreenViewport", () => {
     }
   }
 
-  it("should not delete markers that are readded by registered decorators", () => {
+  it("should not delete markers that are readded by registered decorators", { timeout: 20000 }, () => {
     const vp = openBlankViewport();
     const decorator = new AddMarkersAlwaysDecorator(vp);
     IModelApp.viewManager.addDecorator(decorator);
@@ -79,7 +80,7 @@ describe("ScreenViewport", () => {
     }
 
     IModelApp.viewManager.dropDecorator(decorator);
-  }).timeout(20000);
+  });
 
   it("should delete markers that aren't readded by registered decorators", () => {
     const vp = openBlankViewport();

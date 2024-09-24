@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList } from "@itwin/core-common";
@@ -27,7 +27,11 @@ function createMeshArgs(opts?: { is2d?: boolean }): MeshArgs {
   edges.edges.edges = [new MeshEdge(0, 1), new MeshEdge(1, 3), new MeshEdge(3, 4)];
   edges.silhouettes.edges = [new MeshEdge(1, 2), new MeshEdge(2, 3)];
   edges.silhouettes.normals = [makeNormalPair(0, 0xffff), makeNormalPair(0x1234, 0xfedc)];
-  edges.polylines.lines = [[0, 2, 4], [2, 4, 3, 1], [1, 0]];
+  edges.polylines.lines = [
+    [0, 2, 4],
+    [2, 4, 3, 1],
+    [1, 0],
+  ];
 
   return {
     points: QPoint3dList.fromPoints([new Point3d(0, 0, 0), new Point3d(1, 1, 0), new Point3d(2, 0, 0), new Point3d(3, 1, 0), new Point3d(4, 0, 0)]),
@@ -41,10 +45,10 @@ function createMeshArgs(opts?: { is2d?: boolean }): MeshArgs {
 }
 
 function expectIndices(indices: VertexIndices, expected: number[]): void {
-  expect(indices.data.length).to.equal(expected.length * 3);
+  expect(indices.data.length).toEqual(expected.length * 3);
   const stream = ByteStream.fromUint8Array(indices.data);
   for (const expectedIndex of expected)
-    expect(stream.readUint24()).to.equal(expectedIndex);
+    expect(stream.readUint24()).toEqual(expectedIndex);
 }
 
 function makeEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
@@ -58,9 +62,9 @@ function makeEdgeParams(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | und
 // expectedSegments = 2 indices per segment edge.
 // expectedSilhouettes = 2 indices and 2 oct-encoded normals per silhouette edge.
 function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedSilhouettes: number[], expectedPaddingBytes = 0): void {
-  expect(expectedSegments.length % 2).to.equal(0);
-  expect(edges.numSegments).to.equal(expectedSegments.length / 2);
-  expect(edges.silhouettePadding).to.equal(expectedPaddingBytes);
+  expect(expectedSegments.length % 2).toEqual(0);
+  expect(edges.numSegments).toEqual(expectedSegments.length / 2);
+  expect(edges.silhouettePadding).toEqual(expectedPaddingBytes);
 
   const stream = ByteStream.fromUint8Array(edges.data);
   const actualSegments: number[] = [];
@@ -69,11 +73,11 @@ function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedS
     actualSegments.push(stream.readUint24());
   }
 
-  expect(expectedSilhouettes.length % 4).to.equal(0);
+  expect(expectedSilhouettes.length % 4).toEqual(0);
   const actualSilhouettes: number[] = [];
 
   for (let i = 0; i < expectedPaddingBytes; i++)
-    expect(stream.readUint8()).to.equal(0);
+    expect(stream.readUint8()).toEqual(0);
 
   for (let i = 0; i < expectedSilhouettes.length; i += 4) {
     actualSilhouettes.push(stream.readUint24());
@@ -82,8 +86,8 @@ function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedS
     actualSilhouettes.push(stream.readUint16());
   }
 
-  expect(actualSegments).to.deep.equal(expectedSegments);
-  expect(actualSilhouettes).to.deep.equal(expectedSilhouettes);
+  expect(actualSegments).toEqual(expectedSegments);
+  expect(actualSilhouettes).toEqual(expectedSilhouettes);
 }
 
 describe("IndexedEdgeParams", () => {
@@ -97,126 +101,114 @@ describe("IndexedEdgeParams", () => {
         tileAdmin: { enableIndexedEdges: false },
         localization: new EmptyLocalization(),
       });
-      expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("non-indexed");
+      expect(IModelApp.tileAdmin.edgeOptions.type).toEqual("non-indexed");
 
       const args = createMeshArgs();
       const edges = makeEdgeParams(args)!;
-      expect(edges).not.to.be.undefined;
-      expect(edges.segments).not.to.be.undefined;
-      expect(edges.silhouettes).not.to.be.undefined;
-      expect(edges.polylines).to.be.undefined; // converted to segments
-      expect(edges.indexed).to.be.undefined;
+      expect(edges).toBeDefined();
+      expect(edges.segments).toBeDefined();
+      expect(edges.silhouettes).toBeDefined();
+      expect(edges.polylines).toBeUndefined(); // converted to segments
+      expect(edges.indexed).toBeUndefined();
     });
   });
 
   describe("when enabled", () => {
-    before(async () => {
+    beforeAll(async () => {
       await IModelApp.startup({ localization: new EmptyLocalization() });
-      expect(IModelApp.tileAdmin.edgeOptions.type).to.equal("compact");
+      expect(IModelApp.tileAdmin.edgeOptions.type).toEqual("compact");
     });
 
-    after(async () => {
+    afterAll(async () => {
       await IModelApp.shutdown();
     });
 
     it("are not produced if MeshArgs supplies no edges", () => {
       const args = createMeshArgs();
       args.edges?.clear();
-      expect(makeEdgeParams(args)).to.be.undefined;
+      expect(makeEdgeParams(args)).toBeUndefined();
     });
 
     it("are not produced for polylines in 2d", () => {
       const args = createMeshArgs({ is2d: true });
 
       const edges = makeEdgeParams(args)!;
-      expect(edges).not.to.be.undefined;
-      expect(edges.polylines).not.to.be.undefined;
-      expect(edges.indexed).not.to.be.undefined;
-      expect(edges.silhouettes).to.be.undefined;
-      expect(edges.segments).to.be.undefined;
+      expect(edges).toBeDefined();
+      expect(edges.polylines).toBeDefined();
+      expect(edges.indexed).toBeDefined();
+      expect(edges.silhouettes).toBeUndefined();
+      expect(edges.segments).toBeUndefined();
     });
 
     it("are not produced for polylines if width > 3", () => {
       const args = createMeshArgs();
-      expect(args.edges).not.to.be.undefined;
+      expect(args.edges).toBeDefined();
       args.edges!.width = 4;
 
       const edges = makeEdgeParams(args)!;
-      expect(edges).not.to.be.undefined;
-      expect(edges.polylines).not.to.be.undefined;
-      expect(edges.indexed).not.to.be.undefined;
-      expect(edges.silhouettes).to.be.undefined;
-      expect(edges.segments).to.be.undefined;
+      expect(edges).toBeDefined();
+      expect(edges.polylines).toBeDefined();
+      expect(edges.indexed).toBeDefined();
+      expect(edges.silhouettes).toBeUndefined();
+      expect(edges.segments).toBeUndefined();
     });
 
     it("are created from MeshArgs", () => {
       const args = createMeshArgs();
       const edges = makeEdgeParams(args)!;
-      expect(edges).not.to.be.undefined;
-      expect(edges.indexed).not.to.be.undefined;
-      expect(edges.polylines).to.be.undefined;
-      expect(edges.silhouettes).to.be.undefined;
-      expect(edges.segments).to.be.undefined;
+      expect(edges).toBeDefined();
+      expect(edges.indexed).toBeDefined();
+      expect(edges.polylines).toBeUndefined();
+      expect(edges.silhouettes).toBeUndefined();
+      expect(edges.segments).toBeUndefined();
 
-      expectIndices(edges.indexed!.indices, [
-        0, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1,
-        2, 2, 2, 2, 2, 2,
-        3, 3, 3, 3, 3, 3,
-        4, 4, 4, 4, 4, 4,
-        5, 5, 5, 5, 5, 5,
-        6, 6, 6, 6, 6, 6,
-        7, 7, 7, 7, 7, 7,
-        8, 8, 8, 8, 8, 8,
-        9, 9, 9, 9, 9, 9,
-        10, 10, 10, 10, 10, 10,
-      ]);
-      expectEdgeTable(edges.indexed!.edges, [
-        // visible
-        0, 1, 1, 3, 3, 4,
-        // polylines
-        0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
-      ], [
-        // silhouettes
-        1, 2, 0, 0xffff,
-        2, 3, 0x1234, 0xfedc,
-      ]);
+      expectIndices(
+        edges.indexed!.indices,
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10],
+      );
+      expectEdgeTable(
+        edges.indexed!.edges,
+        [
+          // visible
+          0, 1, 1, 3, 3, 4,
+          // polylines
+          0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
+        ],
+        [
+          // silhouettes
+          1, 2, 0, 0xffff, 2, 3, 0x1234, 0xfedc,
+        ],
+      );
     });
 
     it("inserts padding between segments and silhouettes when required", () => {
       const args = createMeshArgs();
       const edges = makeEdgeParams(args, 15)!;
-      expect(edges).not.to.be.undefined;
-      expect(edges.indexed).not.to.be.undefined;
-      expectIndices(edges.indexed!.indices, [
-        0, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1,
-        2, 2, 2, 2, 2, 2,
-        3, 3, 3, 3, 3, 3,
-        4, 4, 4, 4, 4, 4,
-        5, 5, 5, 5, 5, 5,
-        6, 6, 6, 6, 6, 6,
-        7, 7, 7, 7, 7, 7,
-        8, 8, 8, 8, 8, 8,
-        9, 9, 9, 9, 9, 9,
-        10, 10, 10, 10, 10, 10,
-      ]);
-      expectEdgeTable(edges.indexed!.edges, [
-        // visible
-        0, 1, 1, 3, 3, 4,
-        // polylines
-        0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
-      ], [
-        // silhouettes
-        1, 2, 0, 0xffff,
-        2, 3, 0x1234, 0xfedc,
-      ],
-      6);
+      expect(edges).toBeDefined();
+      expect(edges.indexed).toBeDefined();
+      expectIndices(
+        edges.indexed!.indices,
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10],
+      );
+      expectEdgeTable(
+        edges.indexed!.edges,
+        [
+          // visible
+          0, 1, 1, 3, 3, 4,
+          // polylines
+          0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
+        ],
+        [
+          // silhouettes
+          1, 2, 0, 0xffff, 2, 3, 0x1234, 0xfedc,
+        ],
+        6,
+      );
 
       function makeEdgeTable(nSegs: number, nSils: number): EdgeTable {
         const meshargs = createMeshArgs();
         const edgs = meshargs.edges!;
-        expect(edgs).not.to.be.undefined;
+        expect(edgs).toBeDefined();
         edgs.polylines.clear();
         edgs.silhouettes.clear();
 
@@ -232,8 +224,8 @@ describe("IndexedEdgeParams", () => {
         }
 
         const edgeParams = makeEdgeParams(meshargs, 15)!;
-        expect(edgeParams).not.to.be.undefined;
-        expect(edgeParams.indexed).not.to.be.undefined;
+        expect(edgeParams).toBeDefined();
+        expect(edgeParams.indexed).toBeDefined();
         return edgeParams.indexed!.edges;
       }
 
@@ -255,24 +247,24 @@ describe("IndexedEdgeParams", () => {
       for (const test of testCases) {
         const table = makeEdgeTable(test[0], test[1]);
         // console.log(JSON.stringify({ index: curIndex++, segs: test[0], sils: test[1], pad: test[2] }));
-        expect(table.numSegments).to.equal(test[0]);
-        expect(table.silhouettePadding).to.equal(test[2]);
-        expect(table.width).to.equal(test[3]);
-        expect(table.height).to.equal(test[4]);
+        expect(table.numSegments).toEqual(test[0]);
+        expect(table.silhouettePadding).toEqual(test[2]);
+        expect(table.width).toEqual(test[3]);
+        expect(table.height).toEqual(test[4]);
 
         const bytes = Array.from(table.data);
         for (let i = table.numSegments; i < test[1]; i++) {
           const texelIndex = table.numSegments * 1.5 + test[2] * 0.25 + (i - table.numSegments) * 2.5;
           const byteIndex = texelIndex * 4;
-          expect(byteIndex).to.equal(Math.floor(byteIndex));
-          expect(bytes[byteIndex]).to.equal(2 + i);
+          expect(byteIndex).toEqual(Math.floor(byteIndex));
+          expect(bytes[byteIndex]).toEqual(2 + i);
 
           let isEven = 0 === (i & 1);
           if (0 !== test[2] % 4)
             isEven = !isEven;
 
           const byteIndex2 = Math.floor(texelIndex) * 4 + (isEven ? 0 : 2);
-          expect(byteIndex2).to.equal(byteIndex);
+          expect(byteIndex2).toEqual(byteIndex);
         }
 
         // for (let i = 0; i < table.height * byteWidth; i += byteWidth)

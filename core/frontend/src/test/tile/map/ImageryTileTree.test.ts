@@ -1,11 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
-import { expect } from "chai";
-import * as sinon from "sinon";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { MockRender } from "../../../render/MockRender";
 import { createBlankConnection } from "../../createBlankConnection";
 import { ImageryMapLayerTreeReference } from "../../../tile/map/ImageryTileTree";
@@ -15,8 +14,12 @@ import { MapLayerImageryProvider } from "../../../tile/map/MapLayerImageryProvid
 import { IModelApp } from "../../../IModelApp";
 
 class CustomProvider extends MapLayerImageryProvider {
-  public override async constructUrl(_row: number, _column: number, _zoomLevel: number) { return this._settings.url;}
-  public override async  initialize(): Promise<void> {return;}
+  public override async constructUrl(_row: number, _column: number, _zoomLevel: number) {
+    return this._settings.url;
+  }
+  public override async initialize(): Promise<void> {
+    return;
+  }
 }
 
 class BaseCustomFormat extends ImageryMapLayerFormat {
@@ -46,48 +49,47 @@ interface DatasetEntry {
 }
 
 describe("ImageryTileTree", () => {
-
   let imodel: IModelConnection;
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  beforeAll(async () => {
+    // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     imodel = createBlankConnection();
     IModelApp.mapLayerFormatRegistry.register(CustomFormat1);
     IModelApp.mapLayerFormatRegistry.register(CustomFormat2);
   });
 
-  const sandbox = sinon.createSandbox();
   afterEach(async () => {
-    sandbox.restore();
+    vi.restoreAllMocks();
   });
 
   it("tree supplier", async () => {
-    const baseProps: ImageMapLayerProps = { formatId: "Custom1", url: "https://dummy.com", name: "CustomLayer", subLayers: [{name: "sub0", visible: true}]};
+    const baseProps: ImageMapLayerProps = { formatId: "Custom1", url: "https://dummy.com", name: "CustomLayer", subLayers: [{ name: "sub0", visible: true }] };
     const dataset: DatasetEntry[] = [
-      {lhs: {...baseProps}, rhs: {...baseProps}, expectSameTileTree:true},
-      {lhs: {...baseProps, name: "someName"}, rhs: {...baseProps}, expectSameTileTree:true},
-      {lhs: {...baseProps, url: "https://someUrl.com"}, rhs: {...baseProps}, expectSameTileTree:false},
-      {lhs: {...baseProps, formatId:"Custom2"}, rhs: {...baseProps}, expectSameTileTree:false},
-      {lhs: {...baseProps, subLayers: [{name: "sub0", visible: false}]}, rhs: {...baseProps}, expectSameTileTree:false},
-      {lhs: {...baseProps, subLayers: [{name: "sub1", visible: true}]}, rhs: {...baseProps}, expectSameTileTree:false},
+      { lhs: { ...baseProps }, rhs: { ...baseProps }, expectSameTileTree: true },
+      { lhs: { ...baseProps, name: "someName" }, rhs: { ...baseProps }, expectSameTileTree: true },
+      { lhs: { ...baseProps, url: "https://someUrl.com" }, rhs: { ...baseProps }, expectSameTileTree: false },
+      { lhs: { ...baseProps, formatId: "Custom2" }, rhs: { ...baseProps }, expectSameTileTree: false },
+      { lhs: { ...baseProps, subLayers: [{ name: "sub0", visible: false }] }, rhs: { ...baseProps }, expectSameTileTree: false },
+      { lhs: { ...baseProps, subLayers: [{ name: "sub1", visible: true }] }, rhs: { ...baseProps }, expectSameTileTree: false },
     ];
     for (const entry of dataset) {
       const settingsLhs = ImageMapLayerSettings.fromJSON(entry.lhs);
       const treeRefLhs = new ImageryMapLayerTreeReference({ layerSettings: settingsLhs, layerIndex: 0, iModel: imodel });
       const treeOwnerLhs = treeRefLhs.treeOwner;
       const tileTreeLhs = await treeOwnerLhs.loadTree();
-      expect(tileTreeLhs).to.not.undefined;
+      expect(tileTreeLhs).toBeDefined();
 
       const settingsRhs = ImageMapLayerSettings.fromJSON(entry.rhs);
       const treeRefRhs = new ImageryMapLayerTreeReference({ layerSettings: settingsRhs, layerIndex: 0, iModel: imodel });
       const treeOwnerRhs = treeRefRhs.treeOwner;
       const tileTreeRhs = await treeOwnerRhs.loadTree();
-      expect(tileTreeRhs).to.not.undefined;
+      expect(tileTreeRhs).toBeDefined();
 
       if (entry.expectSameTileTree)
-        expect(tileTreeLhs!.modelId).to.equals(tileTreeRhs!.modelId);
+        expect(tileTreeLhs!.modelId).toEqual(tileTreeRhs!.modelId);
       else
-        expect(tileTreeLhs!.modelId).to.not.equals(tileTreeRhs!.modelId);
+        expect(tileTreeLhs!.modelId).not.toEqual(tileTreeRhs!.modelId);
     }
   });
 });

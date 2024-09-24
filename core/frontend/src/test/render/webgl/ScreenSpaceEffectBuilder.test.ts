@@ -1,22 +1,20 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { EmptyLocalization } from "@itwin/core-common";
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType,
-} from "../../../render/ScreenSpaceEffectBuilder";
+import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType } from "../../../render/ScreenSpaceEffectBuilder";
 import { System } from "../../../render/webgl/System";
 
 describe("ScreenSpaceEffectBuilder", () => {
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
-  after(async () => {
+  afterAll(async () => {
     await IModelApp.shutdown();
   });
 
@@ -54,7 +52,7 @@ describe("ScreenSpaceEffectBuilder", () => {
 
   function makeBuilder(name: string): ScreenSpaceEffectBuilder {
     const builder = IModelApp.renderSystem.createScreenSpaceEffectBuilder(makeBuilderParams(name))!;
-    expect(builder).not.to.be.undefined;
+    expect(builder).toBeDefined();
     addUniform(builder);
     addVarying(builder);
     return builder;
@@ -66,8 +64,8 @@ describe("ScreenSpaceEffectBuilder", () => {
     const builder = makeBuilder("Test");
     builder.finish();
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques + 1);
-    expect(System.instance.techniques.getDynamicTechniqueId("Test")).not.to.be.undefined;
+    expect(System.instance.techniques.numTechniques).toEqual(numTechniques + 1);
+    expect(System.instance.techniques.getDynamicTechniqueId("Test")).toBeDefined();
   });
 
   it("creates an effect that flips the image horizontally", () => {
@@ -111,8 +109,8 @@ describe("ScreenSpaceEffectBuilder", () => {
     builder.addVarying("v_uv", VaryingType.Vec2);
     builder.finish();
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques + 1);
-    expect(System.instance.techniques.getDynamicTechniqueId("Flip Image")).not.to.be.undefined;
+    expect(System.instance.techniques.numTechniques).toEqual(numTechniques + 1);
+    expect(System.instance.techniques.getDynamicTechniqueId("Flip Image")).toBeDefined();
   });
 
   it("throws if shader fails to compile", () => {
@@ -123,8 +121,8 @@ describe("ScreenSpaceEffectBuilder", () => {
     addVarying(builder);
     expect(() => builder.finish()).to.throw(/u_color/);
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques);
-    expect(System.instance.techniques.getDynamicTechniqueId(params.name)).to.be.undefined;
+    expect(System.instance.techniques.numTechniques).toEqual(numTechniques);
+    expect(System.instance.techniques.getDynamicTechniqueId(params.name)).toBeUndefined();
   });
 
   it("throws if an effect already exists by the same name", () => {
@@ -133,13 +131,13 @@ describe("ScreenSpaceEffectBuilder", () => {
     let builder = makeBuilder("Test 4");
     builder.finish();
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques + 1);
-    expect(System.instance.techniques.getDynamicTechniqueId("Test 4")).not.to.be.undefined;
+    expect(System.instance.techniques.numTechniques).toEqual(numTechniques + 1);
+    expect(System.instance.techniques.getDynamicTechniqueId("Test 4")).toBeDefined();
 
     builder = makeBuilder("Test 4");
     expect(() => builder.finish()).to.throw(`Screen-space effect "Test 4" is already registered.`);
 
-    expect(System.instance.techniques.numTechniques).to.equal(numTechniques + 1);
-    expect(System.instance.techniques.getDynamicTechniqueId("Test 4")).not.to.be.undefined;
+    expect(System.instance.techniques.numTechniques).toEqual(numTechniques + 1);
+    expect(System.instance.techniques.getDynamicTechniqueId("Test 4")).toBeDefined();
   });
 });

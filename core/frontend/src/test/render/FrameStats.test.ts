@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
@@ -14,12 +14,12 @@ import { EmptyLocalization } from "@itwin/core-common";
 describe("FrameStats", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection("frame-stats");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await IModelApp.shutdown();
   });
@@ -51,7 +51,7 @@ describe("FrameStats", () => {
         vp.invalidateScene();
         vp.renderFrame();
       }
-      expect(numFrameStats).to.equal(numFramesToDraw);
+      expect(numFrameStats).toEqual(numFramesToDraw);
 
       // make sure we do not receive frame stats for any rendered frames when disabled
       vp.onFrameStats.clear();
@@ -60,7 +60,7 @@ describe("FrameStats", () => {
         vp.invalidateScene();
         vp.renderFrame();
       }
-      expect(numFrameStats).to.equal(0);
+      expect(numFrameStats).toEqual(0);
     });
   });
 });

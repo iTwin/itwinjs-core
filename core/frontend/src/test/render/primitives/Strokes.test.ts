@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { describe, expect, it } from "vitest";
 import { Point3d } from "@itwin/core-geometry";
 import { StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
 
 describe("StrokesPrimitivePointList", () => {
   it("StrokesPrimitivePointList works as expected", () => {
     const b = new StrokesPrimitivePointList();
-    assert.isTrue(b.points.length === 0, "points set correctly when constructor with no arguments");
+    expect(b.points.length).toBe(0);
 
     const points = [new Point3d(1, 2, 3), new Point3d(2, 4, 5), new Point3d(6, 7, 8)];
     const c = new StrokesPrimitivePointList(points);
-    expect(c.points).to.deep.equal(points);
+    expect(c.points).toEqual(points);
   });
 });
 
@@ -26,6 +26,6 @@ describe("StrokesPrimitivePointLists", () => {
 
     const list = [a, b];
     const strokesLists = new StrokesPrimitivePointLists(a, b);
-    expect(strokesLists).to.deep.equal(list);
+    expect(strokesLists).toEqual(list);
   });
 });

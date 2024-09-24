@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, RenderMode } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
@@ -23,7 +23,7 @@ describe("Pickable graphic", () => {
   div.style.width = div.style.height = "20px";
   document.body.appendChild(div);
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection();
   });
@@ -45,7 +45,7 @@ describe("Pickable graphic", () => {
     TestDecorator.dropAll();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await IModelApp.shutdown();
     document.body.removeChild(div);
@@ -60,27 +60,27 @@ describe("Pickable graphic", () => {
         actual.add(feature.elementId);
     });
 
-    expect(actual.size).to.equal(expected.length);
+    expect(actual.size).toEqual(expected.length);
     for (const id of expected)
-      expect(actual.has(id)).to.be.true;
+      expect(actual.has(id)).toBe(true);
   }
 
-  it("is pickable", () => {
+  it("is pickable", { timeout: 20000 }, () => { // macOS is slow.
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, pickable: { id: "0x123", locateOnly: false } });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
-    expect(dec.pickable).to.not.be.undefined;
+    expect(dec.pickable).toBeDefined();
     expectIds([dec.pickable!.id]);
-  }).timeout(20000); // macOS is slow.
+  });
 
-  it("optionally draws only for pick", () => {
+  it("optionally draws only for pick", { timeout: 20000 }, () => { // macOS is slow.
     const dec = new BoxDecorator({ viewport, color: ColorDef.blue, pickable: { id: "0x456", locateOnly: true } });
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor]);
-    expect(dec.pickable).to.not.be.undefined;
+    expect(dec.pickable).toBeDefined();
     expectIds([dec.pickable!.id]);
-  }).timeout(20000); // macOS is slow.
+  });
 
-  it("can contain multiple features", () => {
-    expect(viewport.viewFlags.constructions).to.be.false;
+  it("can contain multiple features", { timeout: 20000 }, () => { // macOS is slow.
+    expect(viewport.viewFlags.constructions).toBe(false);
     const bgColor = viewport.view.displayStyle.backgroundColor;
 
     const leftId = "0x1";
@@ -118,5 +118,5 @@ describe("Pickable graphic", () => {
     viewport.setNeverDrawn(new Set<string>([leftId]));
     expectColors(viewport, [rightColor, bgColor]);
     expectIds([rightId]);
-  }).timeout(20000); // macOS is slow.
+  });
 });

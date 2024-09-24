@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
@@ -17,9 +17,9 @@ import { createBlankConnection } from "../../createBlankConnection";
 import { InstancedGraphicParams, MeshArgs } from "../../../core-frontend";
 
 function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
-  expect(consumer.totalBytes).to.equal(total);
-  expect(consumer.maxBytes).to.equal(max);
-  expect(consumer.count).to.equal(count);
+  expect(consumer.totalBytes).toEqual(total);
+  expect(consumer.maxBytes).toEqual(max);
+  expect(consumer.count).toEqual(count);
 }
 
 function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boolean }): RenderGeometry {
@@ -30,11 +30,11 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
   if (opts?.texture) {
     textureMapping = {
       texture: opts.texture,
-      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ],
+      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)],
     };
   }
 
-  const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
+  const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0)];
   const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
   for (const point of points)
     qpoints.add(point);
@@ -43,7 +43,12 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
   if (opts?.includeEdges) {
     edges = new MeshArgsEdges();
     edges.edges.edges = [];
-    for (const indexPair of [[0, 1], [1, 3], [3, 2], [2, 0]])
+    for (const indexPair of [
+      [0, 1],
+      [1, 3],
+      [3, 2],
+      [2, 0],
+    ])
       edges.edges.edges.push(new MeshEdge(indexPair[0], indexPair[1]));
   }
 
@@ -60,13 +65,13 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
 
   const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
   const geom = IModelApp.renderSystem.createMeshGeometry(params);
-  expect(geom).not.to.be.undefined;
+  expect(geom).toBeDefined();
   return geom!;
 }
 
 function createGraphic(geom: RenderGeometry, instances?: InstancedGraphicParams): RenderGraphic {
   const graphic = IModelApp.renderSystem.createRenderGraphic(geom, instances);
-  expect(graphic).not.to.be.undefined;
+  expect(graphic).toBeDefined();
   return graphic!;
 }
 
@@ -78,7 +83,7 @@ function createTexture(iModel: IModelConnection, persistent: boolean): RenderTex
     image: { source, transparency: TextureTransparency.Translucent },
   });
 
-  expect(tex).not.to.be.undefined;
+  expect(tex).toBeDefined();
   return tex!;
 }
 
@@ -108,18 +113,18 @@ function getBytesUsed(consumer: RenderMemory.Consumer | RenderTexture): number {
 }
 
 function expectBytesUsed(expected: number, consumer: RenderMemory.Consumer | RenderTexture): void {
-  expect(getBytesUsed(consumer)).to.equal(expected);
+  expect(getBytesUsed(consumer)).toEqual(expected);
 }
 
 describe("RenderMemory", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await IModelApp.shutdown();
   });
@@ -129,12 +134,12 @@ describe("RenderMemory", () => {
 
     stats.addTexture(20);
     stats.addTexture(10);
-    expect(stats.totalBytes).to.equal(30);
+    expect(stats.totalBytes).toEqual(30);
     expectMemory(stats.textures, 30, 20, 2);
 
     stats.addVertexTable(10);
     stats.addVertexTable(20);
-    expect(stats.totalBytes).to.equal(60);
+    expect(stats.totalBytes).toEqual(60);
     expectMemory(stats.vertexTables, 30, 20, 2);
 
     expectMemory(stats.buffers, 0, 0, 0);
@@ -142,14 +147,14 @@ describe("RenderMemory", () => {
     stats.addSurface(20);
     stats.addPolyline(30);
     stats.addPolyline(10);
-    expect(stats.totalBytes).to.equal(120);
+    expect(stats.totalBytes).toEqual(120);
     expectMemory(stats.buffers, 60, 30, 3);
     expectMemory(stats.buffers.surfaces, 20, 20, 1);
     expectMemory(stats.buffers.polylines, 40, 30, 2);
     expectMemory(stats.buffers.pointStrings, 0, 0, 0);
 
     stats.clear();
-    expect(stats.totalBytes).to.equal(0);
+    expect(stats.totalBytes).toEqual(0);
     expectMemory(stats.textures, 0, 0, 0);
     expectMemory(stats.vertexTables, 0, 0, 0);
     expectMemory(stats.buffers, 0, 0, 0);

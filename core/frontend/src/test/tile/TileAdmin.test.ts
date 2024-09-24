@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -11,17 +11,14 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import {
-  GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner, TileTreeReference, TileTreeSupplier,
-} from "../../tile/internal";
+import { GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
     function expectLimits(admin: TileAdmin, limit: GpuMemoryLimit, maxBytes: number | undefined): void {
-      expect(admin.gpuMemoryLimit).to.equal(limit);
-      expect(admin.maxTotalTileContentBytes).to.equal(maxBytes);
+      expect(admin.gpuMemoryLimit).toEqual(limit);
+      expect(admin.maxTotalTileContentBytes).toEqual(maxBytes);
     }
 
     function expectAdmin(isMobile: boolean, limits: GpuMemoryLimit | GpuMemoryLimits | undefined, expectedLimit: GpuMemoryLimit, expectedMaxBytes: number | undefined): TileAdmin {
@@ -106,7 +103,7 @@ describe("TileAdmin", () => {
           stats.addTexture(this._size);
       }
 
-      public unionRange() { }
+      public unionRange() {}
     }
 
     class TestTile extends Tile {
@@ -115,11 +112,14 @@ describe("TileAdmin", () => {
       public visible = true;
 
       public constructor(tileTree: TileTree, contentSize: number, retainMemory = false) {
-        super({
-          contentId: contentSize.toString(),
-          range: new Range3d(0, 0, 0, 1, 1, 1),
-          maximumSize: 42,
-        }, tileTree);
+        super(
+          {
+            contentId: contentSize.toString(),
+            range: new Range3d(0, 0, 0, 1, 1, 1),
+            maximumSize: 42,
+          },
+          tileTree,
+        );
 
         this._contentSize = contentSize;
         this.retainMemory = retainMemory;
@@ -176,10 +176,18 @@ describe("TileAdmin", () => {
         this._rootTile = new TestTile(this, contentSize, retainMemory);
       }
 
-      public get rootTile(): TestTile { return this._rootTile; }
-      public get is3d() { return true; }
-      public get maxDepth() { return undefined; }
-      public get viewFlagOverrides() { return { }; }
+      public get rootTile(): TestTile {
+        return this._rootTile;
+      }
+      public get is3d() {
+        return true;
+      }
+      public get maxDepth() {
+        return undefined;
+      }
+      public get viewFlagOverrides() {
+        return {};
+      }
 
       protected _selectTiles(args: TileDrawArgs): Tile[] {
         const tiles = [];
@@ -202,7 +210,7 @@ describe("TileAdmin", () => {
         args.drawGraphics();
       }
 
-      public prune() { }
+      public prune() {}
     }
 
     class Supplier implements TileTreeSupplier {
@@ -225,7 +233,9 @@ describe("TileAdmin", () => {
         this._owner = tree.iModel.tiles.getTileTreeOwner(tree, supplier);
       }
 
-      public get treeOwner() { return this._owner; }
+      public get treeOwner() {
+        return this._owner;
+      }
     }
 
     class Provider implements TiledGraphicsProvider {
@@ -313,9 +323,9 @@ describe("TileAdmin", () => {
       const selected = IModelApp.tileAdmin.getTilesForUser(viewport)?.selected;
       if (selected) {
         for (const tile of tiles)
-          expect(selected.has(tile)).to.be.true;
+          expect(selected.has(tile)).toBe(true);
       } else {
-        expect(tiles.length).to.equal(0);
+        expect(tiles.length).toEqual(0);
       }
     }
 
@@ -343,9 +353,9 @@ describe("TileAdmin", () => {
 
       const tiles = trees.map((x) => x.rootTile);
       for (const tile of tiles) {
-        expect(tile.isReady).to.equal((tile.tree as TestTree).contentSize === 0);
-        expect(tile.hasGraphics).to.be.false;
-        expect(isLinked(tile)).to.be.false;
+        expect(tile.isReady).toEqual((tile.tree as TestTree).contentSize === 0);
+        expect(tile.hasGraphics).toBe(false);
+        expect(isLinked(tile)).toBe(false);
       }
 
       const viewport = createViewport(imodel1);
@@ -354,35 +364,35 @@ describe("TileAdmin", () => {
 
       expectSelectedTiles(viewport, tiles);
       const admin = IModelApp.tileAdmin;
-      expect(admin.totalTileContentBytes).to.equal(1 + 2 + 3 + 4);
+      expect(admin.totalTileContentBytes).toEqual(1 + 2 + 3 + 4);
 
       for (let i = 0; i < 5; i++) {
         const tile = tiles[i];
         const expectGraphics = 0 !== i;
-        expect(tile.isReady).to.be.true;
-        expect(tile.hasGraphics).to.equal(expectGraphics);
-        expect(isLinked(tile)).to.equal(expectGraphics);
+        expect(tile.isReady).toBe(true);
+        expect(tile.hasGraphics).toEqual(expectGraphics);
+        expect(isLinked(tile)).toEqual(expectGraphics);
       }
 
       tiles[1].visible = tiles[4].visible = false;
       await render(viewport);
 
       expectSelectedTiles(viewport, [tiles[0], tiles[2], tiles[3]]);
-      expect(admin.totalTileContentBytes).to.equal(1 + 2 + 3 + 4);
+      expect(admin.totalTileContentBytes).toEqual(1 + 2 + 3 + 4);
       admin.freeMemory();
-      expect(admin.totalTileContentBytes).to.equal(1 + 2 + 3 + 4);
+      expect(admin.totalTileContentBytes).toEqual(1 + 2 + 3 + 4);
 
       admin.gpuMemoryLimit = 0;
       admin.freeMemory();
-      expect(admin.totalTileContentBytes).to.equal(2 + 3);
+      expect(admin.totalTileContentBytes).toEqual(2 + 3);
 
       tiles[2].freeMemory();
-      expect(isLinked(tiles[2])).to.be.false;
-      expect(admin.totalTileContentBytes).to.equal(3);
+      expect(isLinked(tiles[2])).toBe(false);
+      expect(admin.totalTileContentBytes).toEqual(3);
 
       trees[3].dispose();
-      expect(isLinked(tiles[3])).to.be.false;
-      expect(admin.totalTileContentBytes).to.equal(0);
+      expect(isLinked(tiles[3])).toBe(false);
+      expect(admin.totalTileContentBytes).toEqual(0);
     });
 
     it("disposes of non-selected tiles' contents to satisfy memory limit", async () => {
@@ -395,26 +405,26 @@ describe("TileAdmin", () => {
       await render(viewport);
 
       expectSelectedTiles(viewport, tiles);
-      expect(admin.totalTileContentBytes).to.equal(11111);
+      expect(admin.totalTileContentBytes).toEqual(11111);
       admin.freeMemory();
-      expect(admin.totalTileContentBytes).to.equal(11111);
+      expect(admin.totalTileContentBytes).toEqual(11111);
 
       tiles[0].visible = tiles[4].visible = false;
       await render(viewport);
       expectSelectedTiles(viewport, [tiles[1], tiles[2], tiles[3]]);
-      expect(admin.totalTileContentBytes).to.equal(1110);
+      expect(admin.totalTileContentBytes).toEqual(1110);
 
       tiles[2].visible = tiles[3].visible = false;
       await render(viewport);
       expectSelectedTiles(viewport, [tiles[1]]);
-      expect(admin.totalTileContentBytes).to.equal(10);
+      expect(admin.totalTileContentBytes).toEqual(10);
 
       tiles[1].visible = false;
       await render(viewport);
       expectSelectedTiles(viewport, []);
-      expect(admin.totalTileContentBytes).to.equal(0);
+      expect(admin.totalTileContentBytes).toEqual(0);
 
-      expect(tiles.some((x) => x.computeBytesUsed() > 0)).to.be.false;
+      expect(tiles.some((x) => x.computeBytesUsed() > 0)).toBe(false);
     });
 
     it("frees only enough memory to satisfy memory limit", async () => {
@@ -426,22 +436,22 @@ describe("TileAdmin", () => {
       await render(viewport);
 
       expectSelectedTiles(viewport, tiles);
-      expect(admin.totalTileContentBytes).to.equal(99 * 3);
+      expect(admin.totalTileContentBytes).toEqual(99 * 3);
 
       for (const tile of tiles)
         tile.visible = false;
 
       await render(viewport);
       expectSelectedTiles(viewport, []);
-      expect(admin.totalTileContentBytes).to.equal(99 * 2);
+      expect(admin.totalTileContentBytes).toEqual(99 * 2);
 
       admin.gpuMemoryLimit = 100;
       await render(viewport);
-      expect(admin.totalTileContentBytes).to.equal(99);
+      expect(admin.totalTileContentBytes).toEqual(99);
 
       admin.gpuMemoryLimit = 98;
       await render(viewport);
-      expect(admin.totalTileContentBytes).to.equal(0);
+      expect(admin.totalTileContentBytes).toEqual(0);
     });
 
     it("does not free selected tiles to satisfy memory limit", async () => {
@@ -453,10 +463,10 @@ describe("TileAdmin", () => {
 
       await render(viewport);
       expectSelectedTiles(viewport, tiles);
-      expect(admin.totalTileContentBytes).to.equal(1 + 2 + 3);
+      expect(admin.totalTileContentBytes).toEqual(1 + 2 + 3);
       admin.freeMemory();
-      expect(admin.totalTileContentBytes).to.equal(1 + 2 + 3);
-      expect(tiles.some((x) => x.computeBytesUsed() <= 0)).to.be.false;
+      expect(admin.totalTileContentBytes).toEqual(1 + 2 + 3);
+      expect(tiles.some((x) => x.computeBytesUsed() <= 0)).toBe(false);
     });
 
     it("retains tiles that decline to dispose their content", async () => {
@@ -469,29 +479,29 @@ describe("TileAdmin", () => {
 
       await render(viewport);
       expectSelectedTiles(viewport, tiles);
-      expect(admin.totalTileContentBytes).to.equal(111);
+      expect(admin.totalTileContentBytes).toEqual(111);
 
       for (const tile of tiles)
         tile.visible = false;
 
       await render(viewport);
       expectSelectedTiles(viewport, []);
-      expect(admin.totalTileContentBytes).to.equal(111);
-      expect(tiles.some((x) => !isLinked(x))).to.be.false;
+      expect(admin.totalTileContentBytes).toEqual(111);
+      expect(tiles.some((x) => !isLinked(x))).toBe(false);
 
       tiles[0].retainMemory = tiles[2].retainMemory = false;
       await render(viewport);
-      expect(admin.totalTileContentBytes).to.equal(10);
-      expect(isLinked(tiles[0])).to.be.false;
-      expect(tiles[0].computeBytesUsed()).to.equal(0);
-      expect(isLinked(tiles[2])).to.be.false;
-      expect(tiles[2].computeBytesUsed()).to.equal(0);
-      expect(isLinked(tiles[1])).to.be.true;
-      expect(tiles[1].computeBytesUsed()).to.equal(10);
+      expect(admin.totalTileContentBytes).toEqual(10);
+      expect(isLinked(tiles[0])).toBe(false);
+      expect(tiles[0].computeBytesUsed()).toEqual(0);
+      expect(isLinked(tiles[2])).toBe(false);
+      expect(tiles[2].computeBytesUsed()).toEqual(0);
+      expect(isLinked(tiles[1])).toBe(true);
+      expect(tiles[1].computeBytesUsed()).toEqual(10);
 
       tiles[1].retainMemory = false;
       await render(viewport);
-      expect(admin.totalTileContentBytes).to.equal(0);
+      expect(admin.totalTileContentBytes).toEqual(0);
     });
 
     it("manages memory across multiple viewports", async () => {
@@ -517,7 +527,7 @@ describe("TileAdmin", () => {
 
       expectSelectedTiles(vp1, [tiles[0], tiles[1]]);
       expectSelectedTiles(vp2, [tiles[1], tiles[2]]);
-      expect(admin.totalTileContentBytes).to.equal(111);
+      expect(admin.totalTileContentBytes).toEqual(111);
 
       for (const tile of tiles)
         tile.visible = false;
@@ -525,16 +535,16 @@ describe("TileAdmin", () => {
       await render(vp1);
       expectSelectedTiles(vp1, []);
       expectSelectedTiles(vp2, [tiles[1], tiles[2]]);
-      expect(admin.totalTileContentBytes).to.equal(110);
-      expect(isLinked(tiles[0])).to.be.false;
-      expect(isLinked(tiles[1])).to.be.true;
-      expect(isLinked(tiles[2])).to.be.true;
+      expect(admin.totalTileContentBytes).toEqual(110);
+      expect(isLinked(tiles[0])).toBe(false);
+      expect(isLinked(tiles[1])).toBe(true);
+      expect(isLinked(tiles[2])).toBe(true);
 
       await render(vp2);
       expectSelectedTiles(vp2, []);
-      expect(admin.totalTileContentBytes).to.equal(0);
-      expect(isLinked(tiles[1])).to.be.false;
-      expect(isLinked(tiles[2])).to.be.false;
+      expect(admin.totalTileContentBytes).toEqual(0);
+      expect(isLinked(tiles[1])).toBe(false);
+      expect(isLinked(tiles[2])).toBe(false);
     });
 
     it("removes tiles when viewport is disposed of", async () => {
@@ -547,26 +557,26 @@ describe("TileAdmin", () => {
       await render(vp1);
       await render(vp2);
 
-      expect(isLinked(tile1)).to.be.true;
-      expect(isLinked(tile2)).to.be.true;
-      expect(admin.totalTileContentBytes).to.equal(11);
+      expect(isLinked(tile1)).toBe(true);
+      expect(isLinked(tile2)).toBe(true);
+      expect(admin.totalTileContentBytes).toEqual(11);
 
       // Disposing the viewport marks all previously-selected tiles as no longer selected by it - but they remain in the LRU list.
       vp1.dispose();
-      expect(isLinked(tile1)).to.be.true;
-      expect(isLinked(tile2)).to.be.true;
-      expect(admin.totalTileContentBytes).to.equal(11);
+      expect(isLinked(tile1)).toBe(true);
+      expect(isLinked(tile2)).toBe(true);
+      expect(admin.totalTileContentBytes).toEqual(11);
       admin.process();
-      expect(isLinked(tile1)).to.be.false;
-      expect(isLinked(tile2)).to.be.true;
-      expect(admin.totalTileContentBytes).to.equal(10);
+      expect(isLinked(tile1)).toBe(false);
+      expect(isLinked(tile2)).toBe(true);
+      expect(admin.totalTileContentBytes).toEqual(10);
 
       vp2.dispose();
-      expect(isLinked(tile2)).to.be.true;
-      expect(admin.totalTileContentBytes).to.equal(10);
+      expect(isLinked(tile2)).toBe(true);
+      expect(admin.totalTileContentBytes).toEqual(10);
       admin.process();
-      expect(isLinked(tile2)).to.be.false;
-      expect(admin.totalTileContentBytes).to.equal(0);
+      expect(isLinked(tile2)).toBe(false);
+      expect(admin.totalTileContentBytes).toEqual(0);
     });
 
     it("removes all tiles when iModel is closed", async () => {
@@ -577,30 +587,30 @@ describe("TileAdmin", () => {
       await render(vp1);
       await render(vp2);
 
-      expect(isLinked(tile1)).to.be.true;
-      expect(isLinked(tile2)).to.be.true;
-      expect(IModelApp.tileAdmin.totalTileContentBytes).to.equal(11);
+      expect(isLinked(tile1)).toBe(true);
+      expect(isLinked(tile2)).toBe(true);
+      expect(IModelApp.tileAdmin.totalTileContentBytes).toEqual(11);
 
       await imodel1.close();
-      expect(isLinked(tile1)).to.be.false;
-      expect(isLinked(tile2)).to.be.true;
-      expect(IModelApp.tileAdmin.totalTileContentBytes).to.equal(10);
+      expect(isLinked(tile1)).toBe(false);
+      expect(isLinked(tile2)).toBe(true);
+      expect(IModelApp.tileAdmin.totalTileContentBytes).toEqual(10);
 
       await imodel2.close();
-      expect(isLinked(tile2)).to.be.false;
-      expect(IModelApp.tileAdmin.totalTileContentBytes).to.equal(0);
+      expect(isLinked(tile2)).toBe(false);
+      expect(IModelApp.tileAdmin.totalTileContentBytes).toEqual(0);
     });
 
     it("removes all tiles when IModelApp is shut down", async () => {
       const viewport = createViewport(imodel1);
       const tile = addTilesToViewport(viewport, 100)[0];
       await render(viewport);
-      expect(IModelApp.tileAdmin.totalTileContentBytes).to.equal(100);
-      expect(isLinked(tile)).to.be.true;
+      expect(IModelApp.tileAdmin.totalTileContentBytes).toEqual(100);
+      expect(isLinked(tile)).toBe(true);
 
       await MockRender.App.shutdown();
-      expect(IModelApp.tileAdmin.totalTileContentBytes).to.equal(0);
-      expect(isLinked(tile)).to.be.false;
+      expect(IModelApp.tileAdmin.totalTileContentBytes).toEqual(0);
+      expect(isLinked(tile)).toBe(false);
     });
   });
 });

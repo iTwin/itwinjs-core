@@ -1,15 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import {
-  ImageryMapLayerTreeReference,
-  MapLayerFormat,
-  MapLayerFormatRegistry,
-  MapLayerImageryProvider,
-} from "../../../tile/internal";
+import { describe, expect, it } from "vitest";
+import { ImageryMapLayerTreeReference, MapLayerFormat, MapLayerFormatRegistry, MapLayerImageryProvider } from "../../../tile/internal";
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 
@@ -31,7 +26,7 @@ class TestMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 }
 
-class TestMapLayerSettings extends ImageMapLayerSettings { }
+class TestMapLayerSettings extends ImageMapLayerSettings {}
 
 const testMapLayer = {
   name: "TestName",
@@ -48,24 +43,24 @@ describe("MapLayerFormat", () => {
     const settings = TestMapLayerSettings.fromJSON(input);
     const provider = TestMapLayerFormat.createImageryProvider(settings);
 
-    expect(provider).to.not.undefined;
+    expect(provider).toBeDefined();
     expect(provider instanceof TestMapLayerImageryProvider);
 
     const url = await provider?.constructUrl(1, 2, 3);
-    expect(url).to.eq("test.com/tile/3/1/2");
+    expect(url).toEqual("test.com/tile/3/1/2");
   });
 
   it("should be registered correctly", () => {
     const registry = new MapLayerFormatRegistry({});
     registry.register(TestMapLayerFormat);
     const isRegistered = registry.isRegistered("TestMapLayerFormat");
-    expect(isRegistered).to.true;
+    expect(isRegistered).toBe(true);
   });
 
   it("should create proper map layer tree", () => {
     const input = JSON.parse(JSON.stringify(testMapLayer)) as ImageMapLayerProps;
     const settings = TestMapLayerSettings.fromJSON(input);
     const mapLayerTree = TestMapLayerFormat.createMapLayerTree(settings, 0, imodel);
-    expect(mapLayerTree).to.not.undefined;
+    expect(mapLayerTree).toBeDefined();
   });
 });

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterAll, afterEach, beforeAll, describe, it } from "vitest";
 import { ColorDef, EmptyLocalization, RenderMode } from "@itwin/core-common";
 import { GraphicType, IModelApp, ScreenViewport } from "../../../core-frontend";
 import { expectColors } from "../../ExpectColors";
@@ -10,9 +10,9 @@ import { testBlankViewport } from "../../openBlankViewport";
 import { BoxDecorator, TestDecorator } from "../../TestDecorators";
 
 describe("Decorations containing Features", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterEach(() => TestDecorator.dropAll());
-  after(async () => IModelApp.shutdown());
+  afterAll(async () => IModelApp.shutdown());
 
   function test(graphicType: GraphicType, subCategoryId: "0x456" | "0" | undefined, expectIgnoreSubCategory: boolean): void {
     testBlankViewport((vp: ScreenViewport) => {

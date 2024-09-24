@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point3d } from "@itwin/core-geometry";
 import { GraphicType, IModelApp, RenderGraphic } from "../../../core-frontend";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
@@ -10,8 +10,8 @@ import { Batch, Branch, GraphicsArray, MeshGraphic } from "../../../webgl";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("PrimitiveBuilder", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   function makeShape(chordTolerance: number, pickableId?: string): RenderGraphic {
     const pickable = pickableId ? { id: pickableId } : undefined;
@@ -27,23 +27,23 @@ describe("PrimitiveBuilder", () => {
 
   it("omits degenerate facets", () => {
     const branch = makeShape(0.0001) as Branch;
-    expect(branch).instanceof(Branch);
-    expect(branch.branch.entries.length).to.equal(1);
-    expect(branch.branch.entries[0]).instanceof(MeshGraphic);
+    expect(branch).toBeInstanceOf(Branch);
+    expect(branch.branch.entries.length).toEqual(1);
+    expect(branch.branch.entries[0]).toBeInstanceOf(MeshGraphic);
 
     const array = makeShape(10000.0) as GraphicsArray;
-    expect(array).instanceof(GraphicsArray);
-    expect(array.graphics.length).to.equal(0);
+    expect(array).toBeInstanceOf(GraphicsArray);
+    expect(array.graphics.length).toEqual(0);
   });
 
   it("omits empty feature table", () => {
     const batch = makeShape(0.0001, "0x123") as Batch;
-    expect(batch).instanceof(Batch);
-    expect(batch.featureTable.numFeatures).to.equal(1);
+    expect(batch).toBeInstanceOf(Batch);
+    expect(batch.featureTable.numFeatures).toEqual(1);
 
     // Previously this would have produced a Batch with an empty FeatureTable, which induced an assertion in PackedFeatureTable.initFromMap.
     const array = makeShape(10000.0, "0x123") as GraphicsArray;
-    expect(array).instanceof(GraphicsArray);
-    expect(array.graphics.length).to.equal(0);
+    expect(array).toBeInstanceOf(GraphicsArray);
+    expect(array.graphics.length).toEqual(0);
   });
 });

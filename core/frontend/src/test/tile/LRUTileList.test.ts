@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { describe, expect, it } from "vitest";
 import { RenderMemory } from "../../render/RenderMemory";
 import { LRUTileList, LRUTileListNode, Tile } from "../../tile/internal";
 
@@ -14,48 +14,62 @@ function mockTile(bytesUsed: number): Tile {
 }
 
 class List extends LRUTileList {
-  public get sentinel() { return this._sentinel; }
-  public get head() { return this._head; }
-  public get tail() { return this._tail; }
-  public override get totalBytesUsed() { return this._totalBytesUsed; }
+  public get sentinel() {
+    return this._sentinel;
+  }
+  public get head() {
+    return this._head;
+  }
+  public get tail() {
+    return this._tail;
+  }
+  public override get totalBytesUsed() {
+    return this._totalBytesUsed;
+  }
 
   public expectOrder(...expected: LRUTileListNode[]): void {
-    expect(this.head.previous).to.be.undefined;
-    expect(this.tail.next).to.be.undefined;
+    expect(this.head.previous).toBeUndefined();
+    expect(this.tail.next).toBeUndefined();
     const actual = [];
     for (let node: LRUTileListNode | undefined = this.head; node !== undefined; node = node.next)
       actual.push(node);
 
-    expect(actual.length).to.equal(expected.length);
+    expect(actual.length).toEqual(expected.length);
     for (let i = 0; i < actual.length; i++)
-      expect(actual[i]).to.equal(expected[i]);
+      expect(actual[i]).toEqual(expected[i]);
 
     let j = actual.length;
     for (let node: LRUTileListNode | undefined = this.tail; node !== undefined; node = node.previous) {
       expect(j).greaterThan(0);
-      expect(actual[--j]).to.equal(node);
+      expect(actual[--j]).toEqual(node);
     }
 
-    expect(j).to.equal(0);
+    expect(j).toEqual(0);
   }
 
-  public moveTileToEnd(tile: Tile) { this.moveToEnd(tile); }
-  public moveTileBeforeSentinel(tile: Tile) { this.moveBeforeSentinel(tile); }
-  public moveTileAfterSentinel(tile: Tile) { this.moveAfterSentinel(tile); }
+  public moveTileToEnd(tile: Tile) {
+    this.moveToEnd(tile);
+  }
+  public moveTileBeforeSentinel(tile: Tile) {
+    this.moveBeforeSentinel(tile);
+  }
+  public moveTileAfterSentinel(tile: Tile) {
+    this.moveAfterSentinel(tile);
+  }
 }
 
 function expectUnlinked(node: LRUTileListNode): void {
-  expect(node.previous).to.be.undefined;
-  expect(node.next).to.be.undefined;
+  expect(node.previous).toBeUndefined();
+  expect(node.next).toBeUndefined();
 }
 
 describe("LRUTileList", () => {
   it("adds and removes nodes", () => {
     const list = new List();
-    expect(list.head).to.equal(list.sentinel);
-    expect(list.tail).to.equal(list.sentinel);
-    expect(list.sentinel.previous).to.be.undefined;
-    expect(list.sentinel.next).to.be.undefined;
+    expect(list.head).toEqual(list.sentinel);
+    expect(list.tail).toEqual(list.sentinel);
+    expect(list.sentinel.previous).toBeUndefined();
+    expect(list.sentinel.next).toBeUndefined();
 
     const tiles: Tile[] = [];
     for (let i = 0; i < 5; i++) {
@@ -63,30 +77,30 @@ describe("LRUTileList", () => {
       tiles.push(tile);
       list.add(tile);
 
-      expect(list.head).to.equal(list.sentinel);
-      expect(list.tail).to.equal(tiles[0]);
-      expect(tile.previous).to.equal(list.sentinel);
-      expect(tile.next).to.equal(i > 0 ? tiles[i - 1] : undefined);
+      expect(list.head).toEqual(list.sentinel);
+      expect(list.tail).toEqual(tiles[0]);
+      expect(tile.previous).toEqual(list.sentinel);
+      expect(tile.next).toEqual(i > 0 ? tiles[i - 1] : undefined);
       if (tile.next)
-        expect(tile.next.previous).to.equal(tile);
+        expect(tile.next.previous).toEqual(tile);
     }
 
     list.expectOrder(list.sentinel, tiles[4], tiles[3], tiles[2], tiles[1], tiles[0]);
 
     list.drop(tiles[3]);
     expectUnlinked(tiles[3]);
-    expect(tiles[2].previous).to.equal(tiles[4]);
-    expect(tiles[4].next).to.equal(tiles[2]);
+    expect(tiles[2].previous).toEqual(tiles[4]);
+    expect(tiles[4].next).toEqual(tiles[2]);
     list.expectOrder(list.sentinel, tiles[4], tiles[2], tiles[1], tiles[0]);
 
     list.drop(tiles[4]);
     expectUnlinked(tiles[4]);
     list.expectOrder(list.sentinel, tiles[2], tiles[1], tiles[0]);
 
-    expect(list.tail).to.equal(tiles[0]);
+    expect(list.tail).toEqual(tiles[0]);
     list.drop(tiles[0]);
     expectUnlinked(tiles[0]);
-    expect(list.tail).to.equal(tiles[1]);
+    expect(list.tail).toEqual(tiles[1]);
     list.expectOrder(list.sentinel, tiles[2], tiles[1]);
   });
 
@@ -94,8 +108,8 @@ describe("LRUTileList", () => {
     const list = new List();
     const tile = mockTile(0);
     list.add(tile);
-    expect(list.tail).to.equal(list.sentinel);
-    expect(list.head).to.equal(list.sentinel);
+    expect(list.tail).toEqual(list.sentinel);
+    expect(list.head).toEqual(list.sentinel);
     expectUnlinked(tile);
   });
 
@@ -172,45 +186,45 @@ describe("LRUTileList", () => {
 
     list.markUsed(vp1, [t1, t2]);
     list.expectOrder(t3, t4, s, t1, t2);
-    expect(t1.tileUserIds).not.to.be.undefined;
-    expect(t2.tileUserIds).not.to.be.undefined;
-    expect(t3.tileUserIds).to.be.undefined;
-    expect(t4.tileUserIds).to.be.undefined;
+    expect(t1.tileUserIds).toBeDefined();
+    expect(t2.tileUserIds).toBeDefined();
+    expect(t3.tileUserIds).toBeUndefined();
+    expect(t4.tileUserIds).toBeUndefined();
 
     list.markUsed(vp2, [t1, t4]);
     list.expectOrder(t3, s, t2, t1, t4);
-    expect(t1.tileUserIds).not.to.be.undefined;
-    expect(t2.tileUserIds).not.to.be.undefined;
-    expect(t3.tileUserIds).to.be.undefined;
-    expect(t4.tileUserIds).not.to.be.undefined;
+    expect(t1.tileUserIds).toBeDefined();
+    expect(t2.tileUserIds).toBeDefined();
+    expect(t3.tileUserIds).toBeUndefined();
+    expect(t4.tileUserIds).toBeDefined();
 
     list.clearUsed(vp1);
     list.expectOrder(t3, t2, s, t1, t4);
-    expect(t1.tileUserIds).not.to.be.undefined;
-    expect(t2.tileUserIds).to.be.undefined;
-    expect(t3.tileUserIds).to.be.undefined;
-    expect(t4.tileUserIds).not.to.be.undefined;
+    expect(t1.tileUserIds).toBeDefined();
+    expect(t2.tileUserIds).toBeUndefined();
+    expect(t3.tileUserIds).toBeUndefined();
+    expect(t4.tileUserIds).toBeDefined();
 
     list.markUsed(vp1, [t3, t4, t2]);
     list.expectOrder(s, t1, t3, t4, t2);
-    expect(t1.tileUserIds).not.to.be.undefined;
-    expect(t2.tileUserIds).not.to.be.undefined;
-    expect(t3.tileUserIds).not.to.be.undefined;
-    expect(t4.tileUserIds).not.to.be.undefined;
+    expect(t1.tileUserIds).toBeDefined();
+    expect(t2.tileUserIds).toBeDefined();
+    expect(t3.tileUserIds).toBeDefined();
+    expect(t4.tileUserIds).toBeDefined();
 
     list.clearUsed(vp2);
     list.expectOrder(t1, s, t3, t4, t2);
-    expect(t1.tileUserIds).to.be.undefined;
-    expect(t2.tileUserIds).not.to.be.undefined;
-    expect(t3.tileUserIds).not.to.be.undefined;
-    expect(t4.tileUserIds).not.to.be.undefined;
+    expect(t1.tileUserIds).toBeUndefined();
+    expect(t2.tileUserIds).toBeDefined();
+    expect(t3.tileUserIds).toBeDefined();
+    expect(t4.tileUserIds).toBeDefined();
 
     list.clearUsed(vp1);
     list.expectOrder(t1, t3, t4, t2, s);
-    expect(t1.tileUserIds).to.be.undefined;
-    expect(t2.tileUserIds).to.be.undefined;
-    expect(t3.tileUserIds).to.be.undefined;
-    expect(t4.tileUserIds).to.be.undefined;
+    expect(t1.tileUserIds).toBeUndefined();
+    expect(t2.tileUserIds).toBeUndefined();
+    expect(t3.tileUserIds).toBeUndefined();
+    expect(t4.tileUserIds).toBeUndefined();
   });
 
   it("iterates over partitions", () => {
@@ -218,9 +232,9 @@ describe("LRUTileList", () => {
 
     function expectPartition(which: "selected" | "unselected", ...expected: LRUTileListNode[]): void {
       const actual = Array.from("selected" === which ? list.selectedTiles : list.unselectedTiles);
-      expect(actual.length).to.equal(expected.length);
+      expect(actual.length).toEqual(expected.length);
       for (let i = 0; i < actual.length; i++)
-        expect(actual[i]).to.equal(expected[i]);
+        expect(actual[i]).toEqual(expected[i]);
     }
 
     function expectSelected(...expected: LRUTileListNode[]) {
@@ -272,7 +286,7 @@ describe("LRUTileList", () => {
 
   it("accumulates total memory used", () => {
     const list = new List();
-    expect(list.totalBytesUsed).to.equal(0);
+    expect(list.totalBytesUsed).toEqual(0);
 
     const t1 = mockTile(1);
     const t10 = mockTile(10);
@@ -280,22 +294,22 @@ describe("LRUTileList", () => {
     list.add(t1);
     list.add(t10);
     list.add(t100);
-    expect(list.totalBytesUsed).to.equal(111);
+    expect(list.totalBytesUsed).toEqual(111);
 
     list.drop(t10);
-    expect(list.totalBytesUsed).to.equal(101);
+    expect(list.totalBytesUsed).toEqual(101);
 
     list.drop(t1);
-    expect(list.totalBytesUsed).to.equal(100);
+    expect(list.totalBytesUsed).toEqual(100);
 
     list.add(t10);
-    expect(list.totalBytesUsed).to.equal(110);
+    expect(list.totalBytesUsed).toEqual(110);
 
     list.drop(t100);
-    expect(list.totalBytesUsed).to.equal(10);
+    expect(list.totalBytesUsed).toEqual(10);
 
     list.drop(t10);
-    expect(list.totalBytesUsed).to.equal(0);
+    expect(list.totalBytesUsed).toEqual(0);
   });
 
   it("disposes", () => {
@@ -307,26 +321,26 @@ describe("LRUTileList", () => {
       list.moveTileBeforeSentinel(tiles[i]);
     }
 
-    expect(list.head).not.to.equal(list.tail);
-    expect(list.tail).to.equal(list.sentinel);
+    expect(list.head).not.toEqual(list.tail);
+    expect(list.tail).toEqual(list.sentinel);
     expect(list.totalBytesUsed).greaterThan(0);
 
     list.markUsed(1, tiles);
-    expect(list.head).to.equal(list.sentinel);
+    expect(list.head).toEqual(list.sentinel);
     for (const tile of tiles) {
-      expect(tile.previous !== undefined || tile.next !== undefined).to.be.true;
+      expect(tile.previous !== undefined || tile.next !== undefined).toBe(true);
       expect(tile.bytesUsed).greaterThan(0);
-      expect(tile.tileUserIds).not.to.be.undefined;
+      expect(tile.tileUserIds).toBeDefined();
     }
 
     list.dispose();
-    expect(list.head).to.equal(list.sentinel);
-    expect(list.tail).to.equal(list.sentinel);
-    expect(list.totalBytesUsed).to.equal(0);
+    expect(list.head).toEqual(list.sentinel);
+    expect(list.tail).toEqual(list.sentinel);
+    expect(list.totalBytesUsed).toEqual(0);
     for (const tile of tiles) {
       expectUnlinked(tile);
-      expect(tile.tileUserIds).to.be.undefined;
-      expect(tile.bytesUsed).to.equal(0);
+      expect(tile.tileUserIds).toBeUndefined();
+      expect(tile.bytesUsed).toEqual(0);
     }
   });
 });

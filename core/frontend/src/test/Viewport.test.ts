@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import {
@@ -18,7 +18,6 @@ import { openBlankViewport, testBlankViewport, testBlankViewportAsync } from "./
 import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
 import { Pixel } from "../render/Pixel";
-import * as sinon from "sinon";
 import { GraphicType } from "../common/render/GraphicType";
 
 describe("Viewport", () => {
@@ -595,12 +594,12 @@ describe("Viewport", () => {
   describe("Pixel selection", () => {
     it("isPixelSelectable should return false when no map-layers ids", () => {
       testBlankViewport((vp) => {
-        const stub = sinon.stub(Viewport.prototype, "mapLayerFromIds").callsFake(function _(_mapTreeId: Id64String, _layerTreeId: Id64String) {
+        const stub = vi.spyOn(Viewport.prototype, "mapLayerFromIds").mockImplementation(function (_mapTreeId: Id64String, _layerTreeId: Id64String) {
           return [];
         });
         const fakePixelData = {modelId: "123", elementId: "456"};
         expect(vp.isPixelSelectable(fakePixelData as any)).toBe(true);
-        stub.restore();
+        stub.mockRestore();
       });
     });
   });

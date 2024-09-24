@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
 import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
 import { testBlankViewportAsync } from "../../openBlankViewport";
@@ -11,8 +11,8 @@ import { Feature } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 
 describe("TileTreeReference.createFromRenderGraphic", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup());
+  afterAll(async () => IModelApp.shutdown());
 
   it("loads asynchronously", async () => {
     await testBlankViewportAsync(async (vp) => {
@@ -29,15 +29,15 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
         modelId: vp.iModel.transientIds.getNext(),
       });
 
-      expect(ref.isLoadingComplete).to.be.false;
-      expect(ref.treeOwner.tileTree).to.be.undefined;
+      expect(ref.isLoadingComplete).toBe(false);
+      expect(ref.treeOwner.tileTree).toBeUndefined();
 
       const tree = await ref.treeOwner.loadTree();
-      expect(tree).not.to.be.undefined;
+      expect(tree).toBeDefined();
 
-      expect(ref.isLoadingComplete).to.be.true;
-      expect(ref.treeOwner.tileTree).to.equal(tree);
-      expect(ref.treeOwner.tileTree!.rootTile.hasGraphics).to.be.true;
+      expect(ref.isLoadingComplete).toBe(true);
+      expect(ref.treeOwner.tileTree).toEqual(tree);
+      expect(ref.treeOwner.tileTree!.rootTile.hasGraphics).toBe(true);
     });
   });
 
@@ -78,14 +78,14 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
       };
 
       let tooltip = await vp.getToolTip(new HitDetail(hitProps));
-      expect(tooltip).to.equal(`hi, ${elemId}!`);
+      expect(tooltip).toEqual(`hi, ${elemId}!`);
 
       // getToolTip is not invoked if the hit's modelId is not equal to the tile tree's model Id.
       tooltip = await vp.getToolTip(new HitDetail({ ...hitProps, modelId: vp.iModel.transientIds.getNext() }));
-      expect(tooltip).to.equal("");
+      expect(tooltip).toEqual("");
 
       tooltip = await vp.getToolTip(new HitDetail({ ...hitProps, modelId: undefined }));
-      expect(tooltip).to.equal("");
+      expect(tooltip).toEqual("");
     });
   });
 });

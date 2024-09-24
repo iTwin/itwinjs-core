@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
@@ -16,249 +16,252 @@ let lastCommand: string;
 
 /** class to test immediate tool */
 class TestImmediate extends Tool {
-  public static override toolId = "Test.Immediate";
-  public override async run(v1: number, v2: number): Promise<boolean> {
-    testVal1 = v1;
-    testVal2 = v2;
-    return true;
-  }
-  public static override get minArgs() { return 2; }
-  public static override get maxArgs() { return 2; }
-  public override async parseAndRun(v1: string, v2: string): Promise<boolean> {
-    if (arguments.length !== 2)
-      return false;
-    return this.run(parseInt(v1, 10), parseInt(v2, 10));
-  }
+	public static override toolId = "Test.Immediate";
+	public override async run(v1: number, v2: number): Promise<boolean> {
+		testVal1 = v1;
+		testVal2 = v2;
+		return true;
+	}
+	public static override get minArgs() {
+		return 2;
+	}
+	public static override get maxArgs() {
+		return 2;
+	}
+	public override async parseAndRun(v1: string, v2: string): Promise<boolean> {
+		if (arguments.length !== 2) return false;
+		return this.run(parseInt(v1, 10), parseInt(v2, 10));
+	}
 }
 
 // spell-checker: disable
 class TestCommandApp extends MockRender.App {
-  public static testNamespace?: string;
+	public static testNamespace?: string;
 
-  public static override async startup(): Promise<void> {
-    await IModelApp.startup({ localization: new ITwinLocalization(this.supplyI18NOptions()) });
-    this.testNamespace = "TestApp";
-    await IModelApp.localization.registerNamespace(this.testNamespace);
-    TestImmediate.register(this.testNamespace);
-  }
+	public static override async startup(): Promise<void> {
+		await IModelApp.startup({ localization: new ITwinLocalization(this.supplyI18NOptions()) });
+		this.testNamespace = "TestApp";
+		await IModelApp.localization.registerNamespace(this.testNamespace);
+		TestImmediate.register(this.testNamespace);
+	}
 
-  protected static supplyI18NOptions() { return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` }; }
+	protected static supplyI18NOptions() {
+		return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` };
+	}
 }
 
 async function setupToolRegistryTests() {
-  await TestCommandApp.startup();
-  createTestTools();
+	await TestCommandApp.startup();
+	createTestTools();
 }
 
 function logResult(..._args: any[]) {
-  // eslint-disable-next-line no-console
-  // console.log(..._args);
+	// eslint-disable-next-line no-console
+	// console.log(..._args);
 }
 
 describe("ToolRegistry", () => {
-  beforeAll(async () => {
-    await setupToolRegistryTests();
-  });
-  afterAll(async () => {
-    await TestCommandApp.shutdown();
-  });
+	beforeAll(async () => {
+		await setupToolRegistryTests();
+	});
+	afterAll(async () => {
+		await TestCommandApp.shutdown();
+	});
 
-  it("Should find Select tool", async () => {
-    const command = IModelApp.tools.findExactMatch("Select Elements");
-    expect(command).toBeDefined();
-    if (command) {
-      expect(command.prototype).toBeInstanceOf(Tool);
-    }
-  });
+	it("Should find Select tool", async () => {
+		const command = IModelApp.tools.findExactMatch("Select Elements");
+		expect(command).toBeDefined();
+		if (command) {
+			expect(command.prototype).toBeInstanceOf(Tool);
+		}
+	});
 
-  it("Should execute the TestImmediate command", async () => {
-    const command = IModelApp.tools.findExactMatch("Localized TestImmediate Keyin")!;
-    expect(command).toEqual(TestImmediate);
-    expect(command.minArgs).toBe(2);
-    expect(command.maxArgs).toBe(2);
+	it("Should execute the TestImmediate command", async () => {
+		const command = IModelApp.tools.findExactMatch("Localized TestImmediate Keyin")!;
+		expect(command).toEqual(TestImmediate);
+		expect(command.minArgs).toBe(2);
+		expect(command.maxArgs).toBe(2);
 
-    let cmdReturn = await new command().run(4, 22);
-    expect(cmdReturn).toBe(true);
-    expect(testVal1).toBe(4);
-    expect(testVal2).toBe(22);
+		let cmdReturn = await new command().run(4, 22);
+		expect(cmdReturn).toBe(true);
+		expect(testVal1).toBe(4);
+		expect(testVal2).toBe(22);
 
-    cmdReturn = await new TestImmediate().parseAndRun("5", "33");
-    expect(cmdReturn).toBe(true);
-    expect(testVal1).toBe(5);
-    expect(testVal2).toBe(33);
+		cmdReturn = await new TestImmediate().parseAndRun("5", "33");
+		expect(cmdReturn).toBe(true);
+		expect(testVal1).toBe(5);
+		expect(testVal2).toBe(33);
 
-    cmdReturn = await new command().parseAndRun("125");
-    expect(cmdReturn).toBe(false);
-  });
+		cmdReturn = await new command().parseAndRun("125");
+		expect(cmdReturn).toBe(false);
+	});
 
-  function testKeyinArgs(keyin: string, args: string[], expectedToolKeyin?: string) {
-    const result = IModelApp.tools.parseKeyin(keyin);
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.args.length).toBe(args.length);
-      args.forEach((parsedArg, index) => expect(parsedArg).toBe(result.args[index]));
-      if (undefined !== expectedToolKeyin)
-        expect(result.tool.keyin).toBe(expectedToolKeyin);
-    }
-  }
+	function testKeyinArgs(keyin: string, args: string[], expectedToolKeyin?: string) {
+		const result = IModelApp.tools.parseKeyin(keyin);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.args.length).toBe(args.length);
+			args.forEach((parsedArg, index) => expect(parsedArg).toBe(result.args[index]));
+			if (undefined !== expectedToolKeyin) expect(result.tool.keyin).toBe(expectedToolKeyin);
+		}
+	}
 
-  function expectParseError(keyin: string, expectedError: KeyinParseError) {
-    const result = IModelApp.tools.parseKeyin(keyin);
-    expect(result.ok).toBe(false);
-    if (!result.ok)
-      expect(result.error).toEqual(expectedError);
-  }
+	function expectParseError(keyin: string, expectedError: KeyinParseError) {
+		const result = IModelApp.tools.parseKeyin(keyin);
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.error).toEqual(expectedError);
+	}
 
-  it("Should parse command with quoted arguments",  { timeout: 8000 }, () => {
-    testKeyinArgs(`uccalc test args with "a quoted string" included`, ["test", "args", "with", "a quoted string", "included"]);
-    testKeyinArgs(`uccalc "a quoted string"`, ["a quoted string"]);
-    testKeyinArgs(`uccalc this has "a quoted string"`, ["this", "has", "a quoted string"]);
-    testKeyinArgs(`uccalc "a quoted string" is before me`, ["a quoted string", "is", "before", "me"]);
-    testKeyinArgs(`uccalc "my arg"`, ["my arg"]);
-  }); // for whatever reason 2 seconds often isn't enough time for macOS to run this test...
+	it("Should parse command with quoted arguments", { timeout: 8000 }, () => {
+		testKeyinArgs(`uccalc test args with "a quoted string" included`, ["test", "args", "with", "a quoted string", "included"]);
+		testKeyinArgs(`uccalc "a quoted string"`, ["a quoted string"]);
+		testKeyinArgs(`uccalc this has "a quoted string"`, ["this", "has", "a quoted string"]);
+		testKeyinArgs(`uccalc "a quoted string" is before me`, ["a quoted string", "is", "before", "me"]);
+		testKeyinArgs(`uccalc "my arg"`, ["my arg"]);
+	}); // for whatever reason 2 seconds often isn't enough time for macOS to run this test...
 
-  it("Should parse quoted arguments with embedded quotes", { timeout: 8000 }, () => {
-    testKeyinArgs(`uccalc "a single "" inside"`, [`a single " inside`]);
-    testKeyinArgs(`uccalc """ is first"`, [`" is first`]);
-    testKeyinArgs(`uccalc "trailing """`, [`trailing "`]);
-    testKeyinArgs(`uccalc "double """" quotes"`, [`double "" quotes`]);
-    testKeyinArgs(`uccalc "" """" """"""`, [``, `"`, `""`]);
-    testKeyinArgs(`uccalc no "yes """ no """ yes" no "yes "" yes"`, [`no`, `yes "`, `no`, `" yes`, `no`, `yes " yes`]);
-  });
+	it("Should parse quoted arguments with embedded quotes", { timeout: 8000 }, () => {
+		testKeyinArgs(`uccalc "a single "" inside"`, [`a single " inside`]);
+		testKeyinArgs(`uccalc """ is first"`, [`" is first`]);
+		testKeyinArgs(`uccalc "trailing """`, [`trailing "`]);
+		testKeyinArgs(`uccalc "double """" quotes"`, [`double "" quotes`]);
+		testKeyinArgs(`uccalc "" """" """"""`, [``, `"`, `""`]);
+		testKeyinArgs(`uccalc no "yes """ no """ yes" no "yes "" yes"`, [`no`, `yes "`, `no`, `" yes`, `no`, `yes " yes`]);
+	});
 
-  it("Should parse command with mismatched quotes", () => {
-    expectParseError(`uccalc "test`, KeyinParseError.MismatchedQuotes);
-    expectParseError(`uccalc abc "xyz`, KeyinParseError.MismatchedQuotes);
-    expectParseError(`uccalc abc "x "" y "" z`, KeyinParseError.MismatchedQuotes);
-  });
+	it("Should parse command with mismatched quotes", () => {
+		expectParseError(`uccalc "test`, KeyinParseError.MismatchedQuotes);
+		expectParseError(`uccalc abc "xyz`, KeyinParseError.MismatchedQuotes);
+		expectParseError(`uccalc abc "x "" y "" z`, KeyinParseError.MismatchedQuotes);
+	});
 
-  it("Should not consider quoted tokens as part of tool keyin", () => {
-    testKeyinArgs(`preprocessor format double`, [], "preprocessor format double");
-    testKeyinArgs(`preprocessor format double abc "d e f"`, ["abc", "d e f"], "preprocessor format double");
-    testKeyinArgs(`preprocessor format "double"`, ["double"], "preprocessor format");
-    testKeyinArgs(`preprocessor format "double" abc "d e f"`, ["double", "abc", "d e f"], "preprocessor format");
-    testKeyinArgs(`preprocessor "format" double`, ["format", "double"], "preprocessor");
+	it("Should not consider quoted tokens as part of tool keyin", () => {
+		testKeyinArgs(`preprocessor format double`, [], "preprocessor format double");
+		testKeyinArgs(`preprocessor format double abc "d e f"`, ["abc", "d e f"], "preprocessor format double");
+		testKeyinArgs(`preprocessor format "double"`, ["double"], "preprocessor format");
+		testKeyinArgs(`preprocessor format "double" abc "d e f"`, ["double", "abc", "d e f"], "preprocessor format");
+		testKeyinArgs(`preprocessor "format" double`, ["format", "double"], "preprocessor");
 
-    const result = IModelApp.tools.parseKeyin(`"preprocessor" format double`);
-    expect(result.ok).toBe(false);
-    if (!result.ok)
-      expect(result.error).toEqual(KeyinParseError.ToolNotFound);
-  });
+		const result = IModelApp.tools.parseKeyin(`"preprocessor" format double`);
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.error).toEqual(KeyinParseError.ToolNotFound);
+	});
 
-  it("Should parse whitespace", { timeout: 8000 }, () => {
-    // NB: A quoted argument must always be preceded by whitespace; otherwise it is just another character in an unquoted argument.
-    testKeyinArgs(`uccalc abc xyz"`, [`abc`, `xyz"`]);
-    testKeyinArgs(`  uccalc   one two  three   "four"     "five six" seven`, ["one", "two", "three", "four", "five six", "seven"]);
-    testKeyinArgs(`uccalc one"two"three four""five"`, [`one"two"three`, `four""five"`]);
-    testKeyinArgs("\tuccalc\none\t \ttwo \n three", ["one", "two", "three"]);
-  });
+	it("Should parse whitespace", { timeout: 8000 }, () => {
+		// NB: A quoted argument must always be preceded by whitespace; otherwise it is just another character in an unquoted argument.
+		testKeyinArgs(`uccalc abc xyz"`, [`abc`, `xyz"`]);
+		testKeyinArgs(`  uccalc   one two  three   "four"     "five six" seven`, ["one", "two", "three", "four", "five six", "seven"]);
+		testKeyinArgs(`uccalc one"two"three four""five"`, [`one"two"three`, `four""five"`]);
+		testKeyinArgs("\tuccalc\none\t \ttwo \n three", ["one", "two", "three"]);
+	});
 
-  it("Should find the MicroStation inputmanager training command", async () => {
-    const command = IModelApp.tools.findExactMatch("inputmanager training");
-    expect(command).toBeDefined();
-    if (command) {
-      const result = await IModelApp.tools.run(command.toolId);
-      expect(result).toBe(true);
-      expect(lastCommand).toBe("inputmanager training");
-    }
-  });
+	it("Should find the MicroStation inputmanager training command", async () => {
+		const command = IModelApp.tools.findExactMatch("inputmanager training");
+		expect(command).toBeDefined();
+		if (command) {
+			const result = await IModelApp.tools.run(command.toolId);
+			expect(result).toBe(true);
+			expect(lastCommand).toBe("inputmanager training");
+		}
+	});
 
-  it("Should find some partial matches for 'plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("plac");
-    showSearchResults("Matches for 'plac':", searchResults);
-  });
+	it("Should find some partial matches for 'plac'", async () => {
+		const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("plac");
+		showSearchResults("Matches for 'plac':", searchResults);
+	});
 
-  it("Should find some partial matches for 'plce'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("plce");
-    showSearchResults("Matches for 'plce':", searchResults);
-  });
+	it("Should find some partial matches for 'plce'", async () => {
+		const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("plce");
+		showSearchResults("Matches for 'plce':", searchResults);
+	});
 
-  it("Should find some partial matches for 'cone plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("cone plac");
-    showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
-  });
-  it("Should find some partial matches for 'vie'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("vie");
-    showSearchResultsUsingIndexApi("Matches for 'vie':", searchResults);
-  });
-  it("Should find some partial matches for 'place '", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("place ");
-    showSearchResults("Matches for 'place ':", searchResults);
-  });
-  it("Should find some nomatch results 'fjt'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("fjt");
-    showSearchResults("Matches for 'place ':", searchResults);
-  });
+	it("Should find some partial matches for 'cone plac'", async () => {
+		const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("cone plac");
+		showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
+	});
+	it("Should find some partial matches for 'vie'", async () => {
+		const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("vie");
+		showSearchResultsUsingIndexApi("Matches for 'vie':", searchResults);
+	});
+	it("Should find some partial matches for 'place '", async () => {
+		const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("place ");
+		showSearchResults("Matches for 'place ':", searchResults);
+	});
+	it("Should find some nomatch results 'fjt'", async () => {
+		const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("fjt");
+		showSearchResults("Matches for 'place ':", searchResults);
+	});
 });
 
 function caretStringFromBoldMask(keyin: string, boldMask: boolean[]): string {
-  expect(keyin.length === boldMask.length).toBe(true);
-  let boldString: string = boldMask[0] ? "^" : " ";
-  for (let index = 1; index < boldMask.length; index++) {
-    boldString = boldString.concat(boldMask[index] ? "^" : " ");
-  }
-  return boldString;
+	expect(keyin.length === boldMask.length).toBe(true);
+	let boldString: string = boldMask[0] ? "^" : " ";
+	for (let index = 1; index < boldMask.length; index++) {
+		boldString = boldString.concat(boldMask[index] ? "^" : " ");
+	}
+	return boldString;
 }
 
 function showSearchResults(title: string, searchResults: FuzzySearchResults<typeof Tool>) {
-  expect(searchResults.length).to.be.greaterThan(0);
-  logResult(searchResults.length, title);
+	expect(searchResults.length).toBeGreaterThan(0);
+	logResult(searchResults.length, title);
 
-  for (const thisResult of searchResults) {
-    const keyin = thisResult.getMatchedValue();
-    logResult(keyin);
-    expect(keyin.length > 0).toBe(true);
+	for (const thisResult of searchResults) {
+		const keyin = thisResult.getMatchedValue();
+		logResult(keyin);
+		expect(keyin.length > 0).toBe(true);
 
-    const boldMask: boolean[] = thisResult.getBoldMask();
-    logResult(caretStringFromBoldMask(keyin, boldMask));
-  }
+		const boldMask: boolean[] = thisResult.getBoldMask();
+		logResult(caretStringFromBoldMask(keyin, boldMask));
+	}
 }
 
 function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
-  expect(searchResults).toBeDefined();
-  if (!searchResults)
-    return;
-  logResult(searchResults.length, title);
+	expect(searchResults).toBeDefined();
+	if (!searchResults) return;
+	logResult(searchResults.length, title);
 
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
-    const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
-    expect(thisResult).toBeDefined();
+	// eslint-disable-next-line @typescript-eslint/prefer-for-of
+	for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
+		const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
+		expect(thisResult).toBeDefined();
 
-    const keyin = thisResult!.getMatchedValue();
-    logResult(keyin);
-    expect(keyin && keyin.length > 0).toBe(true);
+		const keyin = thisResult!.getMatchedValue();
+		logResult(keyin);
+		expect(keyin && keyin.length > 0).toBe(true);
 
-    const boldMask: boolean[] = thisResult!.getBoldMask();
-    expect(boldMask && boldMask.length > 0).toBe(true);
-    logResult(caretStringFromBoldMask(keyin, boldMask));
-  }
+		const boldMask: boolean[] = thisResult!.getBoldMask();
+		expect(boldMask && boldMask.length > 0).toBe(true);
+		logResult(caretStringFromBoldMask(keyin, boldMask));
+	}
 }
 
 function registerTestClass(id: string, keyin: string, ns: string) {
-  (class extends Tool {
-    public static override toolId = id;
-    public override async run(): Promise<boolean> {
-      lastCommand = keyin;
-      return true;
-    }
+	(class extends Tool {
+		public static override toolId = id;
+		public override async run(): Promise<boolean> {
+			lastCommand = keyin;
+			return true;
+		}
 
-    public static override get keyin(): string { return keyin; }
-
-  }).register(ns);
+		public static override get keyin(): string {
+			return keyin;
+		}
+	}).register(ns);
 }
 
 function createTestTools(): void {
-  const testCommandEntries: any = JSON.parse(testCommandsString);
-  const ns: string = TestCommandApp.testNamespace!;
-  for (const thisEntry of testCommandEntries) {
-    // create a tool id by concatenating the words of the keyin.
-    const toolId: string = thisEntry.commandString.replace(/ /g, ".");
-    registerTestClass(toolId, thisEntry.commandString, ns);
-  }
+	const testCommandEntries: any = JSON.parse(testCommandsString);
+	const ns: string = TestCommandApp.testNamespace!;
+	for (const thisEntry of testCommandEntries) {
+		// create a tool id by concatenating the words of the keyin.
+		const toolId: string = thisEntry.commandString.replace(/ /g, ".");
+		registerTestClass(toolId, thisEntry.commandString, ns);
+	}
 }
 
-const testCommandsString: string = '[\
+const testCommandsString: string =
+	'[\
     {\
       "commandString": "update"\
     },\

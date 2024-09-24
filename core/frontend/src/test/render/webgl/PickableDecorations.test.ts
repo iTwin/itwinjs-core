@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
 import { DecorateContext } from "../../../ViewContext";
@@ -27,7 +27,7 @@ describe("Pickable decorations", () => {
       vp.invalidateDecorations();
       vp.renderFrame();
       const pixels = readUniquePixelData(vp);
-      expect(pixels.containsElement(this._curId)).to.equal(expectPickable);
+      expect(pixels.containsElement(this._curId)).toEqual(expectPickable);
     }
 
     public decorate(context: DecorateContext): void {
@@ -43,12 +43,12 @@ describe("Pickable decorations", () => {
   }
 
   const decorator = new Decorator();
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup();
     IModelApp.viewManager.addDecorator(decorator);
   });
 
-  after(async () => {
+  afterAll(async () => {
     IModelApp.viewManager.dropDecorator(decorator);
     await IModelApp.shutdown();
   });

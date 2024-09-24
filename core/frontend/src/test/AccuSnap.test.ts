@@ -86,7 +86,7 @@ describe("AccuSnap", () => {
 		}
 
 		function expectSnapDetail(response: SnapResponse, expected: SnapDetailProps): SnapDetail {
-		  expect(response).instanceOf(SnapDetail);
+		  expect(response).toBeInstanceOf(SnapDetail);
 		  const detail = response as SnapDetail;
 
 		  expectPoint(detail.snapPoint, expected.point);
@@ -95,7 +95,7 @@ describe("AccuSnap", () => {
 		  expectPoint(detail.normal!, expected.normal);
 
 		  const segment = detail.primitive as LineSegment3d;
-		  expect(segment).instanceOf(LineSegment3d);
+		  expect(segment).toBeInstanceOf(LineSegment3d);
 		  expectPoint(segment.point0Ref, expected.curve[0]);
 		  expectPoint(segment.point1Ref, expected.curve[1]);
 

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { dispose } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
@@ -17,9 +17,9 @@ import { EmptyLocalization } from "@itwin/core-common";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();
-  expect(vec.appendShape([Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0)])).to.be.true;
+  expect(vec.appendShape([Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0)])).toBe(true);
   const vol = ClipVolume.create(vec)!;
-  expect(vol).not.to.be.undefined;
+  expect(vol).toBeDefined();
   return vol;
 }
 
@@ -34,7 +34,7 @@ function makeBranch(info: ClipInfo): Branch {
     branch.viewFlagOverrides.clipVolume = !info.noViewClip;
 
   const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip });
-  expect(graphic instanceof Branch).to.be.true;
+  expect(graphic instanceof Branch).toBe(true);
   return graphic as Branch;
 }
 
@@ -45,18 +45,18 @@ function makeTarget(): Target {
 
 function expectClipStack(target: Target, expected: Array<{ numRows: number }>): void {
   const actual = target.uniforms.branch.clipStack.clips;
-  expect(actual.length).to.equal(expected.length);
-  expect(actual.length).least(1);
+  expect(actual.length).toEqual(expected.length);
+  expect(actual.length).toBeGreaterThanOrEqual(1);
 
   const actualView = actual[0];
   const expectedView = expected[0];
-  expect(actualView.numRows).to.equal(expectedView.numRows);
-  expect(actualView instanceof ClipVolume).to.equal(expectedView instanceof ClipVolume);
+  expect(actualView.numRows).toEqual(expectedView.numRows);
+  expect(actualView instanceof ClipVolume).toEqual(expectedView instanceof ClipVolume);
   if (actualView instanceof ClipVolume && expectedView instanceof ClipVolume)
-    expect(actualView.clipVector).to.equal(expectedView.clipVector);
+    expect(actualView.clipVector).toEqual(expectedView.clipVector);
 
   for (let i = 1; i < actual.length; i++)
-    expect(actual[i]).to.equal(expected[i]);
+    expect(actual[i]).toEqual(expected[i]);
 }
 
 /** Inputs:
@@ -74,7 +74,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   target.pushViewClip();
 
   const uniforms = target.uniforms.branch;
-  expect(uniforms.length).to.equal(1);
+  expect(uniforms.length).toEqual(1);
   const prevClips = [...uniforms.clipStack.clips];
   const hadClip = uniforms.clipStack.hasClip;
   const hadViewClip = uniforms.clipStack.hasViewClip;
@@ -82,26 +82,26 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   for (const branch of branches)
     target.pushBranch(makeBranch(branch));
 
-  expect(uniforms.clipStack.hasViewClip).to.equal(expectViewClip);
-  expect(uniforms.clipStack.hasClip).to.equal(expectViewClip || expectedClips.length > 1);
+  expect(uniforms.clipStack.hasViewClip).toEqual(expectViewClip);
+  expect(uniforms.clipStack.hasClip).toEqual(expectViewClip || expectedClips.length > 1);
   expectClipStack(target, expectedClips);
 
   for (const _branch of branches)
     target.popBranch();
 
-  expect(uniforms.clipStack.hasViewClip).to.equal(hadViewClip);
-  expect(uniforms.clipStack.hasClip).to.equal(hadClip);
+  expect(uniforms.clipStack.hasViewClip).toEqual(hadViewClip);
+  expect(uniforms.clipStack.hasClip).toEqual(hadClip);
   expectClipStack(target, prevClips);
 
   dispose(target);
 }
 
 describe("BranchUniforms", async () => {
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
-  after(async () => {
+  afterAll(async () => {
     await IModelApp.shutdown();
   });
 

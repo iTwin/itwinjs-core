@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { QPoint3dBuffer } from "@itwin/core-common";
 import { RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
@@ -22,24 +22,24 @@ describe("RealityMeshParamsBuilder", () => {
       builder.addIndices([lastIndex]);
 
       const params = builder.finish();
-      expect(params.indices).instanceof(expectedType);
-      expect(params.indices.length).to.equal(numIndices);
-      expect(params.positions.points.length).to.equal(numIndices * 3);
+      expect(params.indices).toBeInstanceOf(expectedType);
+      expect(params.indices.length).toEqual(numIndices);
+      expect(params.positions.points.length).toEqual(numIndices * 3);
 
       const pt = new Point3d();
       for (let i = 0; i < lastIndex; i++) {
-        expect(params.indices[i]).to.equal(i);
+        expect(params.indices[i]).toEqual(i);
         QPoint3dBuffer.unquantizePoint(params.positions, i, pt);
-        expect(pt.x).to.equal(-1);
-        expect(pt.y).to.equal(-2);
-        expect(pt.z).to.equal(-3);
+        expect(pt.x).toEqual(-1);
+        expect(pt.y).toEqual(-2);
+        expect(pt.z).toEqual(-3);
       }
 
-      expect(params.indices[lastIndex]).to.equal(lastIndex);
+      expect(params.indices[lastIndex]).toEqual(lastIndex);
       QPoint3dBuffer.unquantizePoint(params.positions, lastIndex, pt);
-      expect(pt.x).to.equal(1);
-      expect(pt.y).to.equal(2);
-      expect(pt.z).to.equal(3);
+      expect(pt.x).toEqual(1);
+      expect(pt.y).toEqual(2);
+      expect(pt.z).toEqual(3);
     }
 
     test(3, Uint8Array);
@@ -62,7 +62,7 @@ describe("RealityMeshParamsBuilder", () => {
       builder.addQuantizedVertex({ x: 100, y: 200, z: 0 }, uv);
       builder.addIndices([0, 1, 2]);
 
-      expect(builder.finish().indices).instanceof(expectedType);
+      expect(builder.finish().indices).toBeInstanceOf(expectedType);
     }
 
     expectIndices(0, Uint8Array);
@@ -87,9 +87,9 @@ describe("RealityMeshParamsBuilder", () => {
         builder.addIndices([0, 1, 2]);
 
       if (!addVerts || !addIndices)
-        expect(() => builder.finish()).to.throw("Logic Error");
+        expect(() => builder.finish()).toThrow("Logic Error");
       else
-        expect(builder.finish()).not.to.throw;
+        expect(() => builder.finish()).not.toThrow();
     }
 
     test(true, true);
@@ -105,11 +105,11 @@ describe("RealityMeshParamsBuilder", () => {
         wantNormals,
       });
 
-      const addVertex = () => builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0}, supplyNormals ? 100 : undefined);
+      const addVertex = () => builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0 }, supplyNormals ? 100 : undefined);
       if (expectThrow)
-        expect(addVertex).to.throw("Logic Error");
+        expect(addVertex).toThrow("Logic Error");
       else
-        expect(addVertex).not.to.throw;
+        expect(addVertex).not.toThrow();
     }
 
     test(false, false, false);

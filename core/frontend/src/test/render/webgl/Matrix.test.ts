@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { fromNormalizedCrossProduct, Matrix3, Matrix4, normalizedDifference } from "../../../render/webgl/Matrix";
 
@@ -11,88 +11,105 @@ describe("Matrix3", () => {
   it("constructor works as expected", () => {
     // ensure correct conversion from 64 bit number to 32 bit number
     const mat = Matrix3.fromValues(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
-    mat.data.forEach((v) => assert.isTrue(v === 9007199254740992));
+    mat.data.forEach((v) => expect(v).toBe(9007199254740992));
   });
   it("toMatrix3d works as expected", () => {
     const mat = Matrix3.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
     const rotMat = mat.toMatrix3d();
-    assert.isTrue(rotMat instanceof Matrix3d, "is an instance of Matrix3d");
-    assert.isTrue(mat.data[0] === rotMat.coffs[0], "(0,0) is equivalent");
-    assert.isTrue(mat.data[3] === rotMat.coffs[1], "(0,1) is equivalent");
-    assert.isTrue(mat.data[6] === rotMat.coffs[2], "(0,2) is equivalent");
-    assert.isTrue(mat.data[1] === rotMat.coffs[3], "(1,0) is equivalent");
-    assert.isTrue(mat.data[4] === rotMat.coffs[4], "(1,1) is equivalent");
-    assert.isTrue(mat.data[7] === rotMat.coffs[5], "(1,2) is equivalent");
-    assert.isTrue(mat.data[2] === rotMat.coffs[6], "(2,0) is equivalent");
-    assert.isTrue(mat.data[5] === rotMat.coffs[7], "(2,1) is equivalent");
-    assert.isTrue(mat.data[8] === rotMat.coffs[8], "(2,2) is equivalent");
+    expect(rotMat).toBeInstanceOf(Matrix3d);
+    expect(mat.data[0]).toEqual(rotMat.coffs[0]);
+    expect(mat.data[3]).toEqual(rotMat.coffs[1]);
+    expect(mat.data[6]).toEqual(rotMat.coffs[2]);
+    expect(mat.data[1]).toEqual(rotMat.coffs[3]);
+    expect(mat.data[4]).toEqual(rotMat.coffs[4]);
+    expect(mat.data[7]).toEqual(rotMat.coffs[5]);
+    expect(mat.data[2]).toEqual(rotMat.coffs[6]);
+    expect(mat.data[5]).toEqual(rotMat.coffs[7]);
+    expect(mat.data[8]).toEqual(rotMat.coffs[8]);
   });
   it("fromMatrix3d works as expected", () => {
     const rotMat = Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
     const mat = Matrix3.fromMatrix3d(rotMat);
-    assert.isTrue(mat instanceof Matrix3, "is an instance of Matrix3");
-    assert.isTrue(mat.data[0] === rotMat.coffs[0], "(0,0) is equivalent");
-    assert.isTrue(mat.data[3] === rotMat.coffs[1], "(0,1) is equivalent");
-    assert.isTrue(mat.data[6] === rotMat.coffs[2], "(0,2) is equivalent");
-    assert.isTrue(mat.data[1] === rotMat.coffs[3], "(1,0) is equivalent");
-    assert.isTrue(mat.data[4] === rotMat.coffs[4], "(1,1) is equivalent");
-    assert.isTrue(mat.data[7] === rotMat.coffs[5], "(1,2) is equivalent");
-    assert.isTrue(mat.data[2] === rotMat.coffs[6], "(2,0) is equivalent");
-    assert.isTrue(mat.data[5] === rotMat.coffs[7], "(2,1) is equivalent");
-    assert.isTrue(mat.data[8] === rotMat.coffs[8], "(2,2) is equivalent");
+    expect(mat).toBeInstanceOf(Matrix3);
+    expect(mat.data[0]).toEqual(rotMat.coffs[0]);
+    expect(mat.data[3]).toEqual(rotMat.coffs[1]);
+    expect(mat.data[6]).toEqual(rotMat.coffs[2]);
+    expect(mat.data[1]).toEqual(rotMat.coffs[3]);
+    expect(mat.data[4]).toEqual(rotMat.coffs[4]);
+    expect(mat.data[7]).toEqual(rotMat.coffs[5]);
+    expect(mat.data[2]).toEqual(rotMat.coffs[6]);
+    expect(mat.data[5]).toEqual(rotMat.coffs[7]);
+    expect(mat.data[8]).toEqual(rotMat.coffs[8]);
   });
   it("transpose works as expected", () => {
     const mat = Matrix3.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
     const transposedMat = Matrix3.fromTranspose(mat);
-    expect(mat.data[0]).to.equal(transposedMat.data[0]);
-    expect(mat.data[3]).to.equal(transposedMat.data[1]);
-    expect(mat.data[6]).to.equal(transposedMat.data[2]);
-    expect(mat.data[1]).to.equal(transposedMat.data[3]);
-    expect(mat.data[4]).to.equal(transposedMat.data[4]);
-    expect(mat.data[7]).to.equal(transposedMat.data[5]);
-    expect(mat.data[2]).to.equal(transposedMat.data[6]);
-    expect(mat.data[5]).to.equal(transposedMat.data[7]);
-    expect(mat.data[8]).to.equal(transposedMat.data[8]);
+    expect(mat.data[0]).toEqual(transposedMat.data[0]);
+    expect(mat.data[3]).toEqual(transposedMat.data[1]);
+    expect(mat.data[6]).toEqual(transposedMat.data[2]);
+    expect(mat.data[1]).toEqual(transposedMat.data[3]);
+    expect(mat.data[4]).toEqual(transposedMat.data[4]);
+    expect(mat.data[7]).toEqual(transposedMat.data[5]);
+    expect(mat.data[2]).toEqual(transposedMat.data[6]);
+    expect(mat.data[5]).toEqual(transposedMat.data[7]);
+    expect(mat.data[8]).toEqual(transposedMat.data[8]);
   });
 });
 
 describe("Matrix4", () => {
   it("constructor works as expected", () => {
     // ensure correct conversion from 64 bit number to 32 bit number
-    const mat = Matrix4.fromValues(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
-    mat.data.forEach((v) => assert.isTrue(v === 9007199254740992));
+    const mat = Matrix4.fromValues(
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+    );
+    mat.data.forEach((v) => expect(v).toBe(9007199254740992));
   });
   it("identity works as expected", () => {
     const mat = Matrix4.fromIdentity();
-    assert.isTrue(mat.data[0] === 1, "(0,0) --> 1");
-    assert.isTrue(mat.data[4] === 0, "(0,1) --> 0");
-    assert.isTrue(mat.data[8] === 0, "(0,2) --> 0");
-    assert.isTrue(mat.data[12] === 0, "(0,3) --> 0");
-    assert.isTrue(mat.data[1] === 0, "(1,0) --> 0");
-    assert.isTrue(mat.data[5] === 1, "(1,1) --> 1");
-    assert.isTrue(mat.data[9] === 0, "(1,2) --> 0");
-    assert.isTrue(mat.data[13] === 0, "(1,3) --> 0");
-    assert.isTrue(mat.data[2] === 0, "(2,0) --> 0");
-    assert.isTrue(mat.data[6] === 0, "(2,1) --> 0");
-    assert.isTrue(mat.data[10] === 1, "(2,2) --> 1");
-    assert.isTrue(mat.data[14] === 0, "(2,3) --> 0");
-    assert.isTrue(mat.data[3] === 0, "(3,0) --> 0");
-    assert.isTrue(mat.data[7] === 0, "(3,1) --> 0");
-    assert.isTrue(mat.data[11] === 0, "(3,2) --> 0");
-    assert.isTrue(mat.data[15] === 1, "(3,3) --> 1");
+    expect(mat.data[0]).toBe(1);
+    expect(mat.data[4]).toBe(0);
+    expect(mat.data[8]).toBe(0);
+    expect(mat.data[12]).toBe(0);
+    expect(mat.data[1]).toBe(0);
+    expect(mat.data[5]).toBe(1);
+    expect(mat.data[9]).toBe(0);
+    expect(mat.data[13]).toBe(0);
+    expect(mat.data[2]).toBe(0);
+    expect(mat.data[6]).toBe(0);
+    expect(mat.data[10]).toBe(1);
+    expect(mat.data[14]).toBe(0);
+    expect(mat.data[3]).toBe(0);
+    expect(mat.data[7]).toBe(0);
+    expect(mat.data[11]).toBe(0);
+    expect(mat.data[15]).toBe(1);
   });
   it("getRotation works as expected", () => {
     const mat4 = Matrix4.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     const mat3 = mat4.getRotation();
-    assert.isTrue(mat3.data[0] === mat4.data[0], "(0,0) is equivalent");
-    assert.isTrue(mat3.data[3] === mat4.data[4], "(0,1) is equivalent");
-    assert.isTrue(mat3.data[6] === mat4.data[8], "(0,2) is equivalent");
-    assert.isTrue(mat3.data[1] === mat4.data[1], "(1,0) is equivalent");
-    assert.isTrue(mat3.data[4] === mat4.data[5], "(1,1) is equivalent");
-    assert.isTrue(mat3.data[7] === mat4.data[9], "(1,2) is equivalent");
-    assert.isTrue(mat3.data[2] === mat4.data[2], "(2,0) is equivalent");
-    assert.isTrue(mat3.data[5] === mat4.data[6], "(2,1) is equivalent");
-    assert.isTrue(mat3.data[8] === mat4.data[10], "(2,2) is equivalent");
+    expect(mat3.data[0]).toBe(mat4.data[0]);
+    expect(mat3.data[3]).toBe(mat4.data[4]);
+    expect(mat3.data[6]).toBe(mat4.data[8]);
+    expect(mat3.data[1]).toBe(mat4.data[1]);
+    expect(mat3.data[4]).toBe(mat4.data[5]);
+    expect(mat3.data[7]).toBe(mat4.data[9]);
+    expect(mat3.data[2]).toBe(mat4.data[2]);
+    expect(mat3.data[5]).toBe(mat4.data[6]);
+    expect(mat3.data[8]).toBe(mat4.data[10]);
   });
   it("initFromTransform works as expected", () => {
     const origin = new Vector3d(10, 11, 12);
@@ -100,80 +117,80 @@ describe("Matrix4", () => {
     const tran = Transform.createOriginAndMatrix(origin, rotMat);
     const mat4 = Matrix4.fromIdentity();
     mat4.initFromTransform(tran);
-    assert.isTrue(mat4.data[0] === 1, "(0,0) --> 1");
-    assert.isTrue(mat4.data[4] === 2, "(0,1) --> 2");
-    assert.isTrue(mat4.data[8] === 3, "(0,2) --> 3");
-    assert.isTrue(mat4.data[12] === 10, "(0,3) --> 10");
-    assert.isTrue(mat4.data[1] === 4, "(1,0) --> 4");
-    assert.isTrue(mat4.data[5] === 5, "(1,1) --> 5");
-    assert.isTrue(mat4.data[9] === 6, "(1,2) --> 6");
-    assert.isTrue(mat4.data[13] === 11, "(1,3) --> 11");
-    assert.isTrue(mat4.data[2] === 7, "(2,0) --> 7");
-    assert.isTrue(mat4.data[6] === 8, "(2,1) --> 8");
-    assert.isTrue(mat4.data[10] === 9, "(2,2) --> 9");
-    assert.isTrue(mat4.data[14] === 12, "(2,3) --> 12");
-    assert.isTrue(mat4.data[3] === 0, "(3,0) --> 0");
-    assert.isTrue(mat4.data[7] === 0, "(3,1) --> 0");
-    assert.isTrue(mat4.data[11] === 0, "(3,2) --> 0");
-    assert.isTrue(mat4.data[15] === 1, "(3,3) --> 1");
+    expect(mat4.data[0]).toBe(1);
+    expect(mat4.data[4]).toBe(2);
+    expect(mat4.data[8]).toBe(3);
+    expect(mat4.data[12]).toBe(10);
+    expect(mat4.data[1]).toBe(4);
+    expect(mat4.data[5]).toBe(5);
+    expect(mat4.data[9]).toBe(6);
+    expect(mat4.data[13]).toBe(11);
+    expect(mat4.data[2]).toBe(7);
+    expect(mat4.data[6]).toBe(8);
+    expect(mat4.data[10]).toBe(9);
+    expect(mat4.data[14]).toBe(12);
+    expect(mat4.data[3]).toBe(0);
+    expect(mat4.data[7]).toBe(0);
+    expect(mat4.data[11]).toBe(0);
+    expect(mat4.data[15]).toBe(1);
   });
   it("toTransform works as expected", () => {
     const validMat = Matrix4.fromValues(1, 2, 3, 10, 4, 5, 6, 11, 7, 8, 9, 12, 0, 0, 0, 1);
     const tran = validMat.toTransform();
     const mat = tran.matrix;
     const origin = tran.origin;
-    assert.isTrue(mat.at(0, 0) === 1, "(0,0) --> 1");
-    assert.isTrue(mat.at(0, 1) === 2, "(0,1) --> 2");
-    assert.isTrue(mat.at(0, 2) === 3, "(0,2) --> 3");
-    assert.isTrue(origin.x === 10, "(0,3) --> 10");
-    assert.isTrue(mat.at(1, 0) === 4, "(1,0) --> 4");
-    assert.isTrue(mat.at(1, 1) === 5, "(1,1) --> 5");
-    assert.isTrue(mat.at(1, 2) === 6, "(1,2) --> 6");
-    assert.isTrue(origin.y === 11, "(1,3) --> 11");
-    assert.isTrue(mat.at(2, 0) === 7, "(2,0) --> 7");
-    assert.isTrue(mat.at(2, 1) === 8, "(2,1) --> 8");
-    assert.isTrue(mat.at(2, 2) === 9, "(2,2) --> 9");
-    assert.isTrue(origin.z === 12, "(2,3) --> 12");
+    expect(mat.at(0, 0)).toBe(1);
+    expect(mat.at(0, 1)).toBe(2);
+    expect(mat.at(0, 2)).toBe(3);
+    expect(origin.x).toBe(10);
+    expect(mat.at(1, 0)).toBe(4);
+    expect(mat.at(1, 1)).toBe(5);
+    expect(mat.at(1, 2)).toBe(6);
+    expect(origin.y).toBe(11);
+    expect(mat.at(2, 0)).toBe(7);
+    expect(mat.at(2, 1)).toBe(8);
+    expect(mat.at(2, 2)).toBe(9);
+    expect(origin.z).toBe(12);
   });
   it("fromMatrix4d works as expected", () => {
     const mat4d = Matrix4d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     const mat4 = Matrix4.fromMatrix4d(mat4d);
-    assert.isTrue(mat4.data[0] === mat4d.atIJ(0, 0), "(0,0) is equivalent");
-    assert.isTrue(mat4.data[4] === mat4d.atIJ(0, 1), "(0,1) is equivalent");
-    assert.isTrue(mat4.data[8] === mat4d.atIJ(0, 2), "(0,2) is equivalent");
-    assert.isTrue(mat4.data[12] === mat4d.atIJ(0, 3), "(0,3) is equivalent");
-    assert.isTrue(mat4.data[1] === mat4d.atIJ(1, 0), "(1,0) is equivalent");
-    assert.isTrue(mat4.data[5] === mat4d.atIJ(1, 1), "(1,1) is equivalent");
-    assert.isTrue(mat4.data[9] === mat4d.atIJ(1, 2), "(1,2) is equivalent");
-    assert.isTrue(mat4.data[13] === mat4d.atIJ(1, 3), "(1,3) is equivalent");
-    assert.isTrue(mat4.data[2] === mat4d.atIJ(2, 0), "(2,0) is equivalent");
-    assert.isTrue(mat4.data[6] === mat4d.atIJ(2, 1), "(2,1) is equivalent");
-    assert.isTrue(mat4.data[10] === mat4d.atIJ(2, 2), "(2,2) is equivalent");
-    assert.isTrue(mat4.data[14] === mat4d.atIJ(2, 3), "(2,3) is equivalent");
-    assert.isTrue(mat4.data[3] === mat4d.atIJ(3, 0), "(3,0) is equivalent");
-    assert.isTrue(mat4.data[7] === mat4d.atIJ(3, 1), "(3,1) is equivalent");
-    assert.isTrue(mat4.data[11] === mat4d.atIJ(3, 2), "(3,2) is equivalent");
-    assert.isTrue(mat4.data[15] === mat4d.atIJ(3, 3), "(3,3) is equivalent");
+    expect(mat4.data[0]).toBe(mat4d.atIJ(0, 0));
+    expect(mat4.data[4]).toBe(mat4d.atIJ(0, 1));
+    expect(mat4.data[8]).toBe(mat4d.atIJ(0, 2));
+    expect(mat4.data[12]).toBe(mat4d.atIJ(0, 3));
+    expect(mat4.data[1]).toBe(mat4d.atIJ(1, 0));
+    expect(mat4.data[5]).toBe(mat4d.atIJ(1, 1));
+    expect(mat4.data[9]).toBe(mat4d.atIJ(1, 2));
+    expect(mat4.data[13]).toBe(mat4d.atIJ(1, 3));
+    expect(mat4.data[2]).toBe(mat4d.atIJ(2, 0));
+    expect(mat4.data[6]).toBe(mat4d.atIJ(2, 1));
+    expect(mat4.data[10]).toBe(mat4d.atIJ(2, 2));
+    expect(mat4.data[14]).toBe(mat4d.atIJ(2, 3));
+    expect(mat4.data[3]).toBe(mat4d.atIJ(3, 0));
+    expect(mat4.data[7]).toBe(mat4d.atIJ(3, 1));
+    expect(mat4.data[11]).toBe(mat4d.atIJ(3, 2));
+    expect(mat4.data[15]).toBe(mat4d.atIJ(3, 3));
   });
   it("toMatrix4d works as expected", () => {
     const mat4 = Matrix4.fromValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
     const mat4d = mat4.toMatrix4d();
-    assert.isTrue(mat4.data[0] === mat4d.atIJ(0, 0), "(0,0) is equivalent");
-    assert.isTrue(mat4.data[4] === mat4d.atIJ(0, 1), "(0,1) is equivalent");
-    assert.isTrue(mat4.data[8] === mat4d.atIJ(0, 2), "(0,2) is equivalent");
-    assert.isTrue(mat4.data[12] === mat4d.atIJ(0, 3), "(0,3) is equivalent");
-    assert.isTrue(mat4.data[1] === mat4d.atIJ(1, 0), "(1,0) is equivalent");
-    assert.isTrue(mat4.data[5] === mat4d.atIJ(1, 1), "(1,1) is equivalent");
-    assert.isTrue(mat4.data[9] === mat4d.atIJ(1, 2), "(1,2) is equivalent");
-    assert.isTrue(mat4.data[13] === mat4d.atIJ(1, 3), "(1,3) is equivalent");
-    assert.isTrue(mat4.data[2] === mat4d.atIJ(2, 0), "(2,0) is equivalent");
-    assert.isTrue(mat4.data[6] === mat4d.atIJ(2, 1), "(2,1) is equivalent");
-    assert.isTrue(mat4.data[10] === mat4d.atIJ(2, 2), "(2,2) is equivalent");
-    assert.isTrue(mat4.data[14] === mat4d.atIJ(2, 3), "(2,3) is equivalent");
-    assert.isTrue(mat4.data[3] === mat4d.atIJ(3, 0), "(3,0) is equivalent");
-    assert.isTrue(mat4.data[7] === mat4d.atIJ(3, 1), "(3,1) is equivalent");
-    assert.isTrue(mat4.data[11] === mat4d.atIJ(3, 2), "(3,2) is equivalent");
-    assert.isTrue(mat4.data[15] === mat4d.atIJ(3, 3), "(3,3) is equivalent");
+    expect(mat4.data[0]).toBe(mat4d.atIJ(0, 0));
+    expect(mat4.data[4]).toBe(mat4d.atIJ(0, 1));
+    expect(mat4.data[8]).toBe(mat4d.atIJ(0, 2));
+    expect(mat4.data[12]).toBe(mat4d.atIJ(0, 3));
+    expect(mat4.data[1]).toBe(mat4d.atIJ(1, 0));
+    expect(mat4.data[5]).toBe(mat4d.atIJ(1, 1));
+    expect(mat4.data[9]).toBe(mat4d.atIJ(1, 2));
+    expect(mat4.data[13]).toBe(mat4d.atIJ(1, 3));
+    expect(mat4.data[2]).toBe(mat4d.atIJ(2, 0));
+    expect(mat4.data[6]).toBe(mat4d.atIJ(2, 1));
+    expect(mat4.data[10]).toBe(mat4d.atIJ(2, 2));
+    expect(mat4.data[14]).toBe(mat4d.atIJ(2, 3));
+    expect(mat4.data[3]).toBe(mat4d.atIJ(3, 0));
+    expect(mat4.data[7]).toBe(mat4d.atIJ(3, 1));
+    expect(mat4.data[11]).toBe(mat4d.atIJ(3, 2));
+    expect(mat4.data[15]).toBe(mat4d.atIJ(3, 3));
   });
 });
 describe("Vector3d functions", () => {
@@ -181,18 +198,18 @@ describe("Vector3d functions", () => {
     const vec0 = new Vector3d(-1, 7, 4);
     const vec1 = new Vector3d(-5, 8, 4);
     const vec = Vector3d.createCrossProduct(vec0.x, vec0.y, vec0.z, vec1.x, vec1.y, vec1.z);
-    assert.isTrue(vec.isExactEqual(new Vector3d(-4, -16, 27)), "cross product is correct");
+    expect(vec.isExactEqual(new Vector3d(-4, -16, 27))).toBe(true); // cross product is correct
     const nVec = vec.normalize();
     // (-0.126428, -0.505712, 0.853388)
     const expectedResult = new Vector3d(-0.126428, -0.505712, 0.853388);
-    assert.isTrue(nVec!.isAlmostEqual(expectedResult), "normalized is correct");
-    assert.isTrue(fromNormalizedCrossProduct(vec0, vec1)!.isAlmostEqual(expectedResult), "fromNormalizedCrossProduct works as expected");
+    expect(nVec!.isAlmostEqual(expectedResult)).toBe(true); // normalized is correct
+    expect(fromNormalizedCrossProduct(vec0, vec1)!.isAlmostEqual(expectedResult)).toBe(true); // fromNormalizedCrossProduct works as expected
   });
   it("normalizedDifference", () => {
     const target = new Point3d(5, 6, 7);
     const origin = new Point3d(1, 2, 3);
     // expected result (0.57735, 0.57735, 0.57735)
     const expectedResult = new Point3d(0.57735, 0.57735, 0.57735);
-    assert.isTrue(normalizedDifference(target, origin)!.isAlmostEqual(expectedResult), "normalizedDifference works as expected");
+    expect(normalizedDifference(target, origin)!.isAlmostEqual(expectedResult)).toBe(true);
   });
 });

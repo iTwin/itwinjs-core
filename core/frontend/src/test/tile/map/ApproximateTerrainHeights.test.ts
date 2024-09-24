@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { Range1d } from "@itwin/core-geometry";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { ApproximateTerrainHeights } from "../../../ApproximateTerrainHeights";
 import { GeographicTilingScheme, QuadId } from "../../../core-frontend";
 
@@ -24,7 +24,7 @@ describe("ApproximateTerrainHeights", () => {
       const quadId = pair.id;
       const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
       const heightRange = terrainHeights.getMinimumMaximumHeights(rectangle);
-      expect(heightRange.isAlmostEqual(pair.range)).to.be.true;
+      expect(heightRange.isAlmostEqual(pair.range)).toBe(true);
     });
   });
 });

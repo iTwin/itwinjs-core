@@ -38,7 +38,7 @@ describe("FlashSettings", () => {
     expect(defaults.clone()).toEqual(defaults);
 
     let settings = clone(defaults, {}, defaults);
-    expect(settings).not.toEqual(defaults);
+    expect(settings).not.toBe(defaults);
 
     settings = clone(settings,
       { duration: BeDuration.fromSeconds(1), litMode: FlashMode.Hilite },

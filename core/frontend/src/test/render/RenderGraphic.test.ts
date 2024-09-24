@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import { describe, expect, it } from "vitest";
@@ -67,7 +67,7 @@ class System extends MockRender.System {
 }
 
 function isDisposed(disposable: any): boolean {
-  expect(disposable.isDisposed).not.to.be.undefined;
+  expect(disposable.isDisposed).toBeDefined();
   return disposable.isDisposed;
 }
 
@@ -81,12 +81,12 @@ describe("RenderGraphic", () => {
     unowned.dispose();
     owner.dispose();
 
-    expect(isDisposed(unowned)).to.be.true;
-    expect(isDisposed(owner)).to.be.true;
-    expect(isDisposed(owned)).to.be.false;
+    expect(isDisposed(unowned)).toBe(true);
+    expect(isDisposed(owner)).toBe(true);
+    expect(isDisposed(owned)).toBe(false);
 
     owner.disposeGraphic();
-    expect(isDisposed(owned)).to.be.true;
+    expect(isDisposed(owned)).toBe(true);
   });
 });
 

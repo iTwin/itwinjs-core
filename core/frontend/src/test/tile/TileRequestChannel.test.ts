@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ServerTimeoutError } from "@itwin/core-common";
@@ -11,9 +11,7 @@ import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { createBlankConnection } from "../createBlankConnection";
-import {
-  Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
-} from "../../tile/internal";
+import { Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree } from "../../tile/internal";
 
 async function runMicroTasks(): Promise<void> {
   return BeDuration.wait(1);
@@ -32,18 +30,21 @@ class TestTile extends Tile {
   public displayable?: boolean;
 
   public constructor(tree: TestTree, channel: LoggingChannel, priority = 0) {
-    super({
-      contentId: priority.toString(),
-      range: new Range3d(0, 0, 0, 1, 1, 1),
-      maximumSize: 42,
-    }, tree);
+    super(
+      {
+        contentId: priority.toString(),
+        range: new Range3d(0, 0, 0, 1, 1, 1),
+        maximumSize: 42,
+      },
+      tree,
+    );
 
     this.requestChannel = channel;
     this.priority = priority;
   }
 
   public expectStatus(expected: TileLoadStatus) {
-    expect(this.loadStatus).to.equal(expected);
+    expect(this.loadStatus).toEqual(expected);
   }
 
   public get awaitingRequest() {
@@ -80,8 +81,8 @@ class TestTile extends Tile {
 
   public async requestContent(): Promise<TileRequest.Response> {
     this.requestContentCalled = true;
-    expect(this._resolveRequest).to.be.undefined;
-    expect(this._rejectRequest).to.be.undefined;
+    expect(this._resolveRequest).toBeUndefined();
+    expect(this._rejectRequest).toBeUndefined();
     return new Promise((resolve, reject) => {
       this._resolveRequest = resolve;
       this._rejectRequest = reject;
@@ -90,8 +91,8 @@ class TestTile extends Tile {
 
   public async readContent(): Promise<TileContent> {
     this.readContentCalled = true;
-    expect(this._resolveRead).to.be.undefined;
-    expect(this._rejectRead).to.be.undefined;
+    expect(this._resolveRead).toBeUndefined();
+    expect(this._rejectRead).toBeUndefined();
     return new Promise((resolve, reject) => {
       this._resolveRead = resolve;
       this._rejectRead = reject;
@@ -103,19 +104,19 @@ class TestTile extends Tile {
     if ("undefined" === response)
       response = undefined; // passing `undefined` to resolveRequest uses the default arg instead...
 
-    expect(this._resolveRequest).not.to.be.undefined;
+    expect(this._resolveRequest).toBeDefined();
     this._resolveRequest!(response);
     this.clearPromises();
   }
 
   public rejectRequest(error: Error = new Error("requestContent")): void {
-    expect(this._rejectRequest).not.to.be.undefined;
+    expect(this._rejectRequest).toBeDefined();
     this._rejectRequest!(error);
     this.clearPromises();
   }
 
   public resolveRead(content: TileContent = {}): void {
-    expect(this._resolveRead).not.to.be.undefined;
+    expect(this._resolveRead).toBeDefined();
     this._resolveRead!(content);
     this.clearPromises();
   }
@@ -128,7 +129,7 @@ class TestTile extends Tile {
   }
 
   public rejectRead(error: Error = new Error("readContent")): void {
-    expect(this._rejectRead).not.to.be.undefined;
+    expect(this._rejectRead).toBeDefined();
     this._rejectRead!(error);
     this.clearPromises();
   }
@@ -156,20 +157,30 @@ class TestTree extends TileTree {
     this._rootTile = new TestTile(this, channel);
   }
 
-  public get rootTile(): TestTile { return this._rootTile; }
-  public get is3d() { return true; }
-  public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return {}; }
-  protected _selectTiles(): Tile[] { return []; }
-  public draw() { }
-  public prune() { }
+  public get rootTile(): TestTile {
+    return this._rootTile;
+  }
+  public get is3d() {
+    return true;
+  }
+  public get maxDepth() {
+    return undefined;
+  }
+  public get viewFlagOverrides() {
+    return {};
+  }
+  protected _selectTiles(): Tile[] {
+    return [];
+  }
+  public draw() {}
+  public prune() {}
 }
 
 function mockViewport(iModel: IModelConnection, viewportId = 1): Viewport {
   return {
     viewportId,
     iModel,
-    invalidateScene: () => { },
+    invalidateScene: () => {},
   } as Viewport;
 }
 
@@ -201,12 +212,12 @@ class LoggingChannel extends TileRequestChannel {
   }
 
   public expect(functionNames: string[]) {
-    expect(this.calledFunctions).to.deep.equal(functionNames);
+    expect(this.calledFunctions).toEqual(functionNames);
   }
 
   public expectRequests(active: number, pending: number) {
-    expect(this.numActive).to.equal(active);
-    expect(this.numPending).to.equal(pending);
+    expect(this.numActive).toEqual(active);
+    expect(this.numPending).toEqual(pending);
   }
 
   public get active(): Set<TileRequest> {
@@ -411,8 +422,8 @@ describe("TileRequestChannel", () => {
 
     async function waitFor(tile: TestTile) {
       await processOnce();
-      expect(channel.numActive).to.equal(1);
-      expect(tile.isActive).to.be.true;
+      expect(channel.numActive).toEqual(1);
+      expect(tile.isActive).toBe(true);
       tile.expectStatus(TileLoadStatus.Queued);
       tile.resolveRequest();
       await processOnce();
@@ -432,7 +443,7 @@ describe("TileRequestChannel", () => {
 
     // t14 is now the actively-loading tile. Enqueue some additional ones. The priorities only apply to the queue, not the active set.
     channel.expectRequests(1, 0);
-    expect(t14.isActive).to.be.true;
+    expect(t14.isActive).toBe(true);
 
     const t15 = new TestTile(tr1, channel, 5);
     const t03 = new TestTile(tr0, channel, 3);
@@ -460,7 +471,7 @@ describe("TileRequestChannel", () => {
     requestTiles(vp, tiles);
     IModelApp.tileAdmin.process();
     channel.expectRequests(1, 3);
-    expect(tiles[0].awaitingRequest).to.be.true;
+    expect(tiles[0].awaitingRequest).toBe(true);
 
     // Cancel all of the requests
     requestTiles(vp, []);
@@ -468,12 +479,12 @@ describe("TileRequestChannel", () => {
 
     // Canceled active requests are not removed until the promise resolves or rejects.
     channel.expectRequests(1, 0);
-    expect(tiles[0].awaitingRequest).to.be.true;
-    expect(tiles[0].isActive).to.be.true;
+    expect(tiles[0].awaitingRequest).toBe(true);
+    expect(tiles[0].isActive).toBe(true);
 
     tiles[0].rejectRequest();
     await processOnce();
-    expect(tiles[0].awaitingRead).to.be.false;
+    expect(tiles[0].awaitingRead).toBe(false);
     tiles[0].expectStatus(TileLoadStatus.NotFound);
     tiles[0] = new TestTile(tree, channel, 0); // reset to an unloaded tile
     channel.expectRequests(0, 0);
@@ -481,7 +492,7 @@ describe("TileRequestChannel", () => {
 
     requestTiles(vp, tiles);
     await processOnce();
-    expect(tiles[0].isActive).to.be.true;
+    expect(tiles[0].isActive).toBe(true);
 
     requestTiles(vp, tiles.slice(1, 3));
     tiles[0].rejectRequest();
@@ -490,21 +501,21 @@ describe("TileRequestChannel", () => {
     tiles[0].expectStatus(TileLoadStatus.NotFound);
     await processOnce();
     channel.expectRequests(1, 1);
-    expect(tiles[1].isActive).to.be.true;
+    expect(tiles[1].isActive).toBe(true);
 
     // Cancel all requests.
     requestTiles(vp, []);
     IModelApp.tileAdmin.process();
     channel.expectRequests(1, 0);
-    expect(tiles[1].isActive).to.be.true;
-    expect(tiles[1].awaitingRequest).to.be.true;
+    expect(tiles[1].isActive).toBe(true);
+    expect(tiles[1].awaitingRequest).toBe(true);
 
     tiles[1].resolveRequest();
     await processOnce();
     channel.expectRequests(0, 0);
-    expect(tiles[1].awaitingRequest).to.be.false;
+    expect(tiles[1].awaitingRequest).toBe(false);
     // If we've already received a response, we process it even if request was canceled.
-    expect(tiles[1].awaitingRead).to.be.true;
+    expect(tiles[1].awaitingRead).toBe(true);
 
     tiles[1].resolveRead();
     await processOnce();
@@ -589,25 +600,25 @@ describe("TileRequestChannel", () => {
 
     requestTiles(vp, tiles);
     IModelApp.tileAdmin.process();
-    expect(tile.isActive).to.be.true;
-    expect(channel.numActiveCanceled).to.equal(0);
-    expect(channel.numProcessed).to.equal(0);
-    expect(channel.statistics.numCanceled).to.equal(0);
+    expect(tile.isActive).toBe(true);
+    expect(channel.numActiveCanceled).toEqual(0);
+    expect(channel.numProcessed).toEqual(0);
+    expect(channel.statistics.numCanceled).toEqual(0);
 
     for (let i = 1; i < 4; i++) {
       requestTiles(vp, []);
       IModelApp.tileAdmin.process();
-      expect(tile.isActive).to.be.true;
-      expect(channel.numActiveCanceled).to.equal(1);
-      expect(channel.statistics.numCanceled).to.equal(1);
-      expect(channel.numProcessed).to.equal(i);
+      expect(tile.isActive).toBe(true);
+      expect(channel.numActiveCanceled).toEqual(1);
+      expect(channel.statistics.numCanceled).toEqual(1);
+      expect(channel.numProcessed).toEqual(i);
     }
 
     await tile.resolveBoth();
     IModelApp.tileAdmin.process();
-    expect(tile.isActive).to.be.false;
-    expect(channel.numActiveCanceled).to.equal(1);
-    expect(channel.statistics.numCanceled).to.equal(0);
+    expect(tile.isActive).toBe(false);
+    expect(channel.numActiveCanceled).toEqual(1);
+    expect(channel.statistics.numCanceled).toEqual(0);
     tile.expectStatus(TileLoadStatus.Ready);
   });
 
@@ -632,12 +643,12 @@ describe("TileRequestChannel", () => {
     requestTiles(vp, [t1, t2]);
     IModelApp.tileAdmin.process();
     channel.expectRequests(1, 0);
-    expect(t1.isActive).to.be.false;
-    expect(t2.isActive).to.be.true;
+    expect(t1.isActive).toBe(false);
+    expect(t2.isActive).toBe(true);
 
     await t2.resolveBoth();
     channel.expectRequests(0, 0);
-    expect(t2.isActive).to.be.false;
+    expect(t2.isActive).toBe(false);
     t2.expectStatus(TileLoadStatus.Ready);
   });
 
@@ -646,9 +657,11 @@ describe("TileRequestChannel", () => {
 
     function expectStats(expected: Partial<TileRequestChannelStatistics>) {
       const stats = channel.statistics;
-      for (const propName in expected) { // eslint-disable-line guard-for-in
+      // eslint-disable-next-line guard-for-in
+      for (const propName in expected) {
+        // eslint-disable-line guard-for-in
         const key = propName as keyof TileRequestChannelStatistics;
-        expect(stats[key]).to.equal(expected[key]);
+        expect(stats[key]).toEqual(expected[key]);
       }
     }
 
@@ -722,7 +735,7 @@ describe("TileRequestChannel", () => {
       }
 
       public override onNoContent(req: TileRequest): boolean {
-        expect(req.channel).to.equal(this);
+        expect(req.channel).toEqual(this);
         (req.tile as TestTile).requestChannel = channel2;
         return true;
       }
@@ -737,15 +750,15 @@ describe("TileRequestChannel", () => {
     IModelApp.tileAdmin.process();
     channel1.expectRequests(4, 0);
     channel2.expectRequests(0, 0);
-    tiles.forEach((x) => expect(x.channel).to.equal(channel1));
+    tiles.forEach((x) => expect(x.channel).toEqual(channel1));
 
     tiles[0].rejectRequest();
     tiles[1].resolveRequest();
     tiles[2].resolveRequest("undefined");
     tiles[3].resolveRequest("undefined");
     await processOnce();
-    tiles.slice(0, 2).forEach((x) => expect(x.channel).to.equal(channel1));
-    tiles.slice(2).forEach((x) => expect(x.channel).to.equal(channel2));
+    tiles.slice(0, 2).forEach((x) => expect(x.channel).toEqual(channel1));
+    tiles.slice(2).forEach((x) => expect(x.channel).toEqual(channel2));
     channel1.expectRequests(0, 0);
     channel2.expectRequests(0, 0);
 
@@ -753,14 +766,14 @@ describe("TileRequestChannel", () => {
     IModelApp.tileAdmin.process();
     channel1.expectRequests(0, 0);
     channel2.expectRequests(2, 0);
-    expect(tiles[1].awaitingRead).to.be.true;
-    expect(tiles[2].awaitingRequest).to.be.true;
-    expect(tiles[3].awaitingRequest).to.be.true;
+    expect(tiles[1].awaitingRead).toBe(true);
+    expect(tiles[2].awaitingRequest).toBe(true);
+    expect(tiles[3].awaitingRequest).toBe(true);
 
     tiles[2].resolveRequest();
     tiles[3].resolveRequest();
     await processOnce();
-    tiles.slice(1).forEach((x) => expect(x.awaitingRead).to.be.true);
+    tiles.slice(1).forEach((x) => expect(x.awaitingRead).toBe(true));
 
     tiles[1].resolveRead();
     tiles[2].resolveRead();
@@ -768,20 +781,20 @@ describe("TileRequestChannel", () => {
     await processOnce();
     channel1.expectRequests(0, 0);
     channel2.expectRequests(0, 0);
-    expect(tiles.map((x) => x.loadStatus)).to.deep.equal([TileLoadStatus.NotFound, TileLoadStatus.Ready, TileLoadStatus.Ready, TileLoadStatus.NotFound]);
+    expect(tiles.map((x) => x.loadStatus)).toEqual([TileLoadStatus.NotFound, TileLoadStatus.Ready, TileLoadStatus.Ready, TileLoadStatus.NotFound]);
   });
 
   it("records decoding time statistics", () => {
     const channel = new TileRequestChannel("test", 100);
     const tile = { isEmpty: false, isUndisplayable: false } as unknown as Tile;
-    const content = { };
+    const content = {};
 
     const expectStats = (expected: TileContentDecodingStatistics) => {
       const actual = channel.statistics.decoding;
-      expect(actual.total).to.equal(expected.total);
-      expect(actual.mean).to.equal(expected.mean);
-      expect(actual.min).to.equal(expected.min);
-      expect(actual.max).to.equal(expected.max);
+      expect(actual.total).toEqual(expected.total);
+      expect(actual.mean).toEqual(expected.mean);
+      expect(actual.min).toEqual(expected.min);
+      expect(actual.max).toEqual(expected.max);
     };
 
     expectStats({ total: 0, mean: 0, min: Number.MAX_SAFE_INTEGER, max: Number.MIN_SAFE_INTEGER });

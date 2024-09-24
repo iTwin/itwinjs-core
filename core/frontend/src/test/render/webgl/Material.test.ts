@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
 import { Material } from "../../../render/webgl/Material";
 
@@ -107,22 +107,22 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
   expectEqualFloats(actual.specularExponent, expected.specularExponent); // 64-bit => 32-bit
 
   if (undefined === expected.diffuseColor) {
-    expect(actual.diffuseColor).to.be.undefined;
+    expect(actual.diffuseColor).toBeUndefined();
   } else {
-    expect(actual.diffuseColor).not.to.be.undefined;
-    expect(actual.diffuseColor!.tbgr).to.equal(expected.diffuseColor.tbgr);
+    expect(actual.diffuseColor).toBeDefined();
+    expect(actual.diffuseColor!.tbgr).toEqual(expected.diffuseColor.tbgr);
   }
 
-  expect(actual.specularColor).not.to.be.undefined;
+  expect(actual.specularColor).toBeDefined();
   if (undefined === expected.specularColor)
-    expect(actual.specularColor!.tbgr).to.equal(0xffffff);
+    expect(actual.specularColor!.tbgr).toEqual(0xffffff);
   else
-    expect(actual.specularColor!.tbgr).to.equal(expected.specularColor.tbgr);
+    expect(actual.specularColor!.tbgr).toEqual(expected.specularColor.tbgr);
 
-  expect(actual.rgbOverridden).to.equal(undefined !== expected.diffuseColor);
-  expect(actual.alphaOverridden).to.equal(undefined !== expected.alpha);
+  expect(actual.rgbOverridden).toEqual(undefined !== expected.diffuseColor);
+  expect(actual.alphaOverridden).toEqual(undefined !== expected.alpha);
 
-  expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
+  expect(actual.textureWeight).toEqual(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
   expectEqualFloats(expected.specular, actual.specular);
   if (undefined !== expected.alpha)
     expectEqualFloats(1.0 - expected.alpha, actual.transparency);
@@ -141,32 +141,38 @@ function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
 
 describe("Material", () => {
   it("should pack and unpack parameters", () => {
-    expectMaterialParams(makeMaterialParams({
-      diffuseColor: ColorDef.black,
-      diffuse: 0.0,
-      transparency: 0.0,
-      specular: 0.0,
-      specularExponent: 0.0,
-      specularColor: ColorDef.black,
-    }));
+    expectMaterialParams(
+      makeMaterialParams({
+        diffuseColor: ColorDef.black,
+        diffuse: 0.0,
+        transparency: 0.0,
+        specular: 0.0,
+        specularExponent: 0.0,
+        specularColor: ColorDef.black,
+      }),
+    );
 
-    expectMaterialParams(makeMaterialParams({
-      diffuseColor: ColorDef.white,
-      diffuse: 1.0,
-      transparency: 1.0,
-      specular: 1.0,
-      specularExponent: 1234.5,
-      specularColor: ColorDef.white,
-    }));
+    expectMaterialParams(
+      makeMaterialParams({
+        diffuseColor: ColorDef.white,
+        diffuse: 1.0,
+        transparency: 1.0,
+        specular: 1.0,
+        specularExponent: 1234.5,
+        specularColor: ColorDef.white,
+      }),
+    );
 
-    expectMaterialParams(makeMaterialParams({
-      diffuseColor: ColorDef.red,
-      diffuse: 0.95,
-      transparency: 0.12,
-      specular: 0.7,
-      specularExponent: -5.4321,
-      specularColor: ColorDef.blue,
-    }));
+    expectMaterialParams(
+      makeMaterialParams({
+        diffuseColor: ColorDef.red,
+        diffuse: 0.95,
+        transparency: 0.12,
+        specular: 0.7,
+        specularExponent: -5.4321,
+        specularColor: ColorDef.blue,
+      }),
+    );
 
     // eslint-disable-next-line deprecation/deprecation
     expectMaterialParams(RenderMaterial.Params.defaults);
