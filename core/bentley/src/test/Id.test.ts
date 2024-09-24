@@ -264,6 +264,54 @@ describe("Ids", () => {
     expect(iterated.size).to.equal(set.size);
   });
 
+  it("compares Id64.Uint32Sets", () => {
+    const expectComparison = (expectEqual: boolean, lhs: Id64.Uint32Set, rhs: Id64.Uint32Set) => {
+      const lr = lhs.equals(rhs);
+      const rl = rhs.equals(lhs);
+      expect(lr).to.equal(rl);
+      expect(lr).to.equal(expectEqual);
+    };
+
+    const inputs = [
+      Id64.invalid,
+      "0xabcdef",
+      "0xfeadcb0123456789",
+      "0x1",
+      "0x120055669920",
+      "0x234",
+      "0x10000000001",
+      "0x10000000002",
+      "0x1fedcba9876",
+      "0x234",
+    ];
+
+    const makeSet = () => {
+      const set = new Id64.Uint32Set();
+      for (const input of inputs) {
+        set.addId(input);
+      }
+
+      return set;
+    };
+
+    expectComparison(true, new Id64.Uint32Set(), new Id64.Uint32Set());
+
+    const a = makeSet();
+    expectComparison(true, a, a);
+    expectComparison(false, a, new Id64.Uint32Set());
+
+    inputs.reverse();
+    expectComparison(true, a, makeSet());
+
+    inputs.sort();
+    expectComparison(true, a, makeSet());
+
+    while (inputs.length > 1) {
+      inputs.pop();
+      expectComparison(false, a, makeSet());
+    }
+  });
+
   it("should map IDs in a Id64.Uint32Map", () => {
     const ids: Uint64Id[] = [
       // (highBytes, lowBytes, localId, briefCaseId, Id64String)
