@@ -588,11 +588,12 @@ export enum QuantityStatus {
 
 // @beta
 export enum RatioType {
-    NToOne = 1,
-    OneToN = 0,
-    UseGreatestCommonDivisor = 3,
-    ValueBased = 2
+    NToOne = "NToOne",
+    OneToN = "OneToN",
+    UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
+    ValueBased = "ValueBased"
 }
+
 
 // @beta (undocumented)
 export function ratioTypeToString(ratioType: RatioType): string;
