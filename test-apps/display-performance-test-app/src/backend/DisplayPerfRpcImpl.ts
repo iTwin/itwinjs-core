@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -12,6 +13,41 @@ import { Reporter } from "@itwin/perf-tools";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
 import { DptaEnvConfig, getConfig } from "../common/DisplayPerfEnvConfig";
+import * as child_process from "child_process";
+
+function killProcess(processId: number) {
+  try {
+    console.log(`Killing process ${processId}`);
+    if (process.platform === "win32") {
+      try {
+        child_process.execSync(`taskkill /pid ${processId} /T /F`);
+      } catch (error) {
+        console.error(error);
+        console.error(`Killing ${processId} using taskkill failed`, error);
+        // taskkill can fail to kill the process e.g. due to missing permissions.
+        // Let's kill the process via Node API. This delays killing of all child
+        // processes of `this.proc` until the main Node.js process dies.
+        process.kill(processId);
+      }
+    } else {
+      try {
+        // on linux the process group can be killed with the group id prefixed with
+        // a minus sign. The process group id is the group leader's pid.
+        process.kill(-processId, "SIGKILL");
+      } catch (error) {
+        console.error(error);
+        console.error(`Killing ${processId} using process.kill failed.`);
+        // Killing the process group can fail due e.g. to missing permissions.
+        // Let's kill the process via Node API. This delays killing of all child
+        // processes of `this.proc` until the main Node.js process dies.
+        process.kill(processId, "SIGKILL");
+      }
+    }
+  } catch (error) {
+    console.error(`DPTA was unable to kill the process.`);
+    console.error(error);
+  }
+}
 
 /** The backend implementation of DisplayPerfRpcImpl. */
 export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
@@ -167,8 +203,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
 
   public override async terminate() {
 
-    // eslint-disable-next-line no-console
-    console.log("terminating DPTA");
+    console.log("backlog: terminating");
 
     await IModelHost.shutdown();
 
@@ -185,6 +220,9 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
 
     if (DisplayPerfRpcInterface.chrome)
       DisplayPerfRpcInterface.chrome.kill();
+
+    console.log("backlog: terminated");
+    killProcess(process.pid);
   }
 
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {

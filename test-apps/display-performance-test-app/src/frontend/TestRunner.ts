@@ -209,11 +209,13 @@ export class TestRunner {
     await this.logToConsole(msg);
     await this.logToFile(msg, { noAppend: true });
 
-    const logConsole = (level: string) => async (category: string, message: string, metaData: LoggingMetaData) =>
-      this.logToConsole(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`);
+    // eslint-disable-next-line no-console
+    console.log("Running tests...");
+    // const logConsole = (level: string) => async (category: string, message: string, metaData: LoggingMetaData) =>
+    //   this.logToConsole(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`);
 
-    Logger.initialize(logConsole("Error"), logConsole("Warning"), logConsole("Info"), logConsole("Trace"));
-    Logger.setLevelDefault(LogLevel.Info);
+    // Logger.initialize(logConsole("Error"), logConsole("Warning"), logConsole("Info"), logConsole("Trace"));
+    // Logger.setLevelDefault(LogLevel.Info);
 
     let needRestart = this.curConfig.requiresRestart(new TestConfig({})); // If current config differs from default, restart
     const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
