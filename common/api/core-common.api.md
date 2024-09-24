@@ -1703,11 +1703,16 @@ export class ContextRealityModel {
     set displaySettings(settings: RealityModelDisplaySettings);
     // @beta (undocumented)
     protected _displaySettings: RealityModelDisplaySettings;
+    // @beta
+    get invisible(): boolean;
+    set invisible(invisible: boolean);
     matchesNameAndUrl(name: string, url: string): boolean;
     readonly name: string;
     readonly onAppearanceOverridesChanged: BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(invisible: boolean, model: ContextRealityModel) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>;
     // @alpha (undocumented)
     readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -1731,6 +1736,8 @@ export interface ContextRealityModelProps {
     description?: string;
     // @beta
     displaySettings?: RealityModelDisplayProps;
+    // @beta
+    invisible?: boolean;
     name?: string;
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
@@ -1758,6 +1765,8 @@ export class ContextRealityModels {
     readonly onChanged: BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(model: ContextRealityModel, invisible: boolean) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
     populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
