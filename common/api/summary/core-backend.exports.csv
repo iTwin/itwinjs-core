@@ -335,6 +335,7 @@ public;class;RenderTimeline
 public;class;RepositoryLink
 public;class;RepositoryModel
 public;interface;RequestNewBriefcaseArg
+public;type;RevertChangesArgs
 public;class;RoleElement
 public;class;RoleModel
 public;class;RpcTrace

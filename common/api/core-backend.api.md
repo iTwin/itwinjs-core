@@ -18,6 +18,7 @@ import { BaselineShift } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
+import { BentleyStatus } from '@itwin/core-bentley';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -71,6 +72,9 @@ import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
+import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
+import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
+import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
 import { ElementGeometryRequest } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
@@ -490,6 +494,9 @@ export class BriefcaseDb extends IModelDb {
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
     pullChanges(arg?: PullChangesArgs): Promise<void>;
     pushChanges(arg: PushChangesArgs): Promise<void>;
+    revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
+    // @internal (undocumented)
+    get skipSyncSchemasOnPullAndPush(): boolean;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
@@ -554,6 +561,8 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps[]>;
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
+    // @internal (undocumented)
+    static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
 }
 
 // @public
@@ -3077,6 +3086,8 @@ export abstract class IModelDb extends IModel {
     // @beta
     deleteSettingDictionary(name: string): void;
     // @beta
+    elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
+    // @beta
     elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus;
     // (undocumented)
     readonly elements: IModelDb.Elements;
@@ -3181,6 +3192,8 @@ export abstract class IModelDb extends IModel {
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
+    // @beta
+    updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps>;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
@@ -4682,6 +4695,13 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
 }
 
 // @public
+export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
+    onProgress?: ProgressFunction;
+    toIndex: ChangesetIndex;
+    skipSchemaChanges?: true;
+};
+
+// @public
 export abstract class RoleElement extends Element_2 {
     // (undocumented)
     static get className(): string;
@@ -4753,6 +4773,8 @@ export namespace SchemaSync {
     withReadonlyAccess: (iModel: IModelDb | {
         readonly fileName: LocalFileName;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    isEnabled: (iModel: IModelDb) => boolean;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
