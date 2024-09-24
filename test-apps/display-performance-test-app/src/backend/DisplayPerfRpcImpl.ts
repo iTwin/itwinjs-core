@@ -222,7 +222,6 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       DisplayPerfRpcInterface.chrome.kill();
 
     console.log("backlog: terminated");
-    killProcess(process.pid);
   }
 
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {
