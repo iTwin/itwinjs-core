@@ -214,6 +214,8 @@ export enum ConflictCode {
     // (undocumented)
     ConflictingPropertyKindOfQuantity = "C-1301",
     // (undocumented)
+    ConflictingPropertyKindOfQuantityUnit = "C-1302",
+    // (undocumented)
     ConflictingPropertyName = "C-1300",
     // (undocumented)
     ConflictingReferenceAlias = "C-002",
