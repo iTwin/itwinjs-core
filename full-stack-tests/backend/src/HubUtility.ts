@@ -59,7 +59,9 @@ export class HubUtility {
   public static async getTestITwinId(accessToken: AccessToken): Promise<GuidString> {
     if (undefined !== HubUtility.iTwinId)
       return HubUtility.iTwinId;
-    return HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
+
+    HubUtility.iTwinId = await HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
+    return HubUtility.iTwinId;
   }
 
   private static imodelCache = new Map<string, GuidString>();

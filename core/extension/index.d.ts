@@ -276,6 +276,7 @@ export type {
 	ParticleProps,
 	PickableGraphicOptions,
 	ReadGltfGraphicsArgs,
+	ReadPixelsArgs,
 	ScreenSpaceEffectBuilder,
 	ScreenSpaceEffectBuilderParams,
 	ScreenSpaceEffectContext,
