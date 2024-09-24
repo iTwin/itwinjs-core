@@ -116,10 +116,10 @@ class BearingParserSpec extends ParserSpec {
 
     const isCCW = this.format.customProps?.angleDirection === "counter-clockwise";
 
-    // const parsedRadians = Parser.parseToQuantityValue(inString, this.format, this.unitConversions);
-    const parsedRadians = Parser.parseToQuantityValue(adjustedString, this.format, this.unitConversions);
+    const parsedRadians = Parser.parseQuantityString(adjustedString, this);
     if (Parser.isParsedQuantity(parsedRadians)) {
       if (prefix === "N" && suffix === "E") {
+
         if (isCCW)
           parsedRadians.value = (2 * Math.PI) - parsedRadians.value;
       } else if (prefix === "N" && suffix === "W") {
