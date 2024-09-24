@@ -106,7 +106,7 @@ export class CivilContour {
   }
 
   public static fromJSON(json?: CivilContourProps) {
-    return json ? new CivilContour(json) : this.defaults;
+    return json ? new CivilContour(json) : new CivilContour({});
   }
 
   public toJSON(): CivilContourProps {
@@ -116,7 +116,7 @@ export class CivilContour {
       props.majorColor = this.majorColor.toJSON();
 
     if (!this.minorColor.equals(ColorDef.black))
-      props.minorColor = this.majorColor.toJSON();
+      props.minorColor = this.minorColor.toJSON();
 
     if (4 !== this.majorPixelWidth)
       props.majorPixelWidth = this.majorPixelWidth;
@@ -153,8 +153,6 @@ export class CivilTerrain {
   /** List of subcategory IDs to which this terrain styling will be applied. */
   public readonly subCategories: Id64String[];
 
-  public static readonly defaults = new CivilTerrain({});
-
   public equals(other: CivilTerrain | undefined): boolean {
     if (this === undefined && other === undefined)
       return true;
@@ -183,7 +181,7 @@ export class CivilTerrain {
   }
 
   public static fromJSON(json?: CivilTerrainProps) {
-    return json ? new CivilTerrain(json) : this.defaults;
+    return json ? new CivilTerrain(json) : new CivilTerrain({});
   }
 
   public toJSON(): CivilTerrainProps {
@@ -201,14 +199,12 @@ export class CivilTerrain {
 
 export interface CivilContourDisplayProps {
   /** See [[CivilContourDisplay.terrains]]. */
-  terrains?: CivilTerrainProps[];
+  terrains?: (CivilTerrainProps | undefined)[];
 }
 
 export class CivilContourDisplay {
   /** A list of the terrains. */
-  public readonly terrains: CivilTerrain[] = [];
-
-  public static readonly defaults = new CivilContourDisplay({});
+  public readonly terrains: (CivilTerrain | undefined)[] = [];
 
   public equals(other: CivilContourDisplay): boolean {
     if (this.terrains.length !== other.terrains.length)
@@ -222,19 +218,15 @@ export class CivilContourDisplay {
   }
 
   private constructor(json?: CivilContourDisplayProps) {
-    if (undefined === json) {
-      this.terrains = [];
-    } else {
-      this.terrains = [];
-      if (undefined !== json.terrains) {
-        for (const terrainProp of json.terrains)
-          this.terrains.push(CivilTerrain.fromJSON(terrainProp));
+    if (undefined !== json && undefined !== json.terrains) {
+      for (let n = 0; n < json.terrains.length; n++) {
+        this.terrains[n] = (json.terrains[n] === undefined) ? undefined : CivilTerrain.fromJSON(json.terrains[n]);
       }
     }
   }
 
   public static fromJSON(json?: CivilContourDisplayProps) {
-    return json ? new CivilContourDisplay(json) : this.defaults;
+    return json ? new CivilContourDisplay(json) : new CivilContourDisplay({});
   }
 
   public toJSON(): CivilContourDisplayProps {
@@ -242,8 +234,7 @@ export class CivilContourDisplay {
 
     props.terrains = [];
     for (let n = 0; n < this.terrains.length; n++) {
-      if (this.terrains[n] !== undefined)
-        props.terrains[n] = this.terrains[n].toJSON();
+      props.terrains[n] = this.terrains[n]?.toJSON();
     }
 
     return props;

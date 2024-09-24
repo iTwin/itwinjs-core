@@ -87,6 +87,7 @@ const applyContours = `
   offset = mod(offset, patLength);
   uint msk = 1u << uint(offset);
   contourAlpha *= (patterns[lineCodeWt / 16] & msk) > 0u ? 1.0 : 0.0;
+  contourAlpha = min(contourAlpha, 1.0);
   return vec4(mix(baseColor.rgb, rgbf.rgb, contourAlpha), baseColor.a);
 `;
 

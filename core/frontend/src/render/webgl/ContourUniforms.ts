@@ -15,7 +15,7 @@ import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
 
-/** Maintains state for uniforms related to thematic display.
+/** Maintains state for uniforms related to contour display.
  * @internal
  */
 export class ContourUniforms {
@@ -30,14 +30,6 @@ export class ContourUniforms {
   public get contourDisplay(): CivilContourDisplay | undefined {
     return this._contourDisplay;
   }
-
-  public get wantContourLines(): boolean {
-    if (undefined !== this.contourDisplay)
-      return true;  // TODO:
-    return false;
-  }
-
-  // private _scratchVector = new Vector3d();
 
   private packColor(startNdx: number, majorColor: ColorDef, minorColor: ColorDef) {
     // pack 2 bytes major (upper) minor (lower) into each float
@@ -68,14 +60,13 @@ export class ContourUniforms {
   public update(target: Target): void {
     const plan = target.plan;
 
-    // TODO: equals compares equal here all the time (after first), need to figure out why
-    // if (this.contourDisplay && plan.contours && this.contourDisplay.equals(plan.contours)) {
-    //   return;
-    // }
+    if (this.contourDisplay && plan.contours && this.contourDisplay.equals(plan.contours)) {
+      return;
+    }
 
     desync(this);
 
-    this._contourDisplay = plan.contours;
+    this._contourDisplay = CivilContourDisplay.fromJSON(plan.contours?.toJSON());
     if (!this.contourDisplay)
       return;
 

@@ -6,14 +6,14 @@
 import { assert, dispose, IDisposable } from "@itwin/core-bentley";
 import {
   ColorInput,
-  ColorInputProps, ComboBox, ComboBoxEntry, ComboBoxProps, convertHexToRgb, createButton, createColorInput, createComboBox, createLabeledNumericInput, createNumericInput,
+  ColorInputProps, ComboBox, ComboBoxEntry, ComboBoxProps, createButton, createColorInput, createComboBox, createLabeledNumericInput,
   createSlider, createTextBox, LabeledNumericInput, Slider,
   SliderProps,
   TextBox,
   TextBoxProps,
   updateSliderValue,
 } from "@itwin/frontend-devtools";
-import { CivilContour, CivilContourDisplay, CivilContourDisplayProps, CivilTerrainProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { CivilContour, CivilContourDisplay, CivilContourDisplayProps, CivilTerrainProps, ColorDef, LinePixels } from "@itwin/core-common";
 import { Viewport, ViewState } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -157,8 +157,30 @@ export class CivilContoursSettings implements IDisposable {
     return contours.toJSON();
   }
 
+  private tryParseFloat(value: string): number | undefined {
+    const n = Number.parseFloat(value);
+    return Number.isNaN(n) ? undefined : n;
+  }
+
+  private getTerrainProps(): CivilTerrainProps {
+    return {
+      subCategories: this._subCatTextBox.textbox.value.split(","),
+      contourDef:{
+        majorColor: ColorDef.tryComputeTbgrFromString(this._majorColor.input.value),
+        minorColor: ColorDef.tryComputeTbgrFromString(this._minorColor.input.value),
+        majorPixelWidth: this.tryParseFloat(this._majorWidth.slider.value),
+        minorPixelWidth: this.tryParseFloat(this._minorWidth.slider.value),
+        majorPattern: this.tryParseFloat(this._majorLineStyle.select.value),
+        minorPattern: this.tryParseFloat(this._minorLineStyle.select.value),
+        majorIntervalCount: this.tryParseFloat(this._majorIntervalCount.input.value),
+        minorInterval: this.tryParseFloat(this._minorInterval.input.value),
+      },
+    };
+  }
+
   private loadContourDef(index: number) {
     this._currentContourIndex = index;
+    assert(this._vp.view.is3d());
     this._subCatTextBox.textbox.value = this._vp.view.displayStyle.settings.contours.terrains[index]?.subCategories?.join(",") ?? "";
     const curContourDef =  this._vp.view.displayStyle.settings.contours.terrains[index]?.contourDef ?? CivilContour.fromJSON({});
     this._majorColor.input.value = curContourDef.majorColor.toHexString();
@@ -176,8 +198,7 @@ export class CivilContoursSettings implements IDisposable {
     assert(view.is3d());
 
     const contoursJson = this.getContourDisplayProps(view);
-    this.updateSubCategories(this._subCatTextBox.textbox.value);
-    contoursJson.terrains![this._currentContourIndex] = this._currentTerrainProps;
+    contoursJson.terrains![this._currentContourIndex] = this.getTerrainProps();
     view.displayStyle.settings.contours.terrains[this._currentContourIndex] = CivilContourDisplay.fromJSON(contoursJson).terrains[this._currentContourIndex];
     this.sync();
   }
@@ -185,50 +206,11 @@ export class CivilContoursSettings implements IDisposable {
   private clearContourDef() {
     const view = this._vp.view;
     assert(view.is3d());
-    view.displayStyle.settings.contours = CivilContourDisplay.fromJSON({});
-
-    const contoursJson = this.getContourDisplayProps(view);
-    if (undefined !== contoursJson.terrains)
-      delete contoursJson.terrains[this._currentContourIndex];
     if (undefined !== view.displayStyle.settings.contours.terrains)
-      delete view.displayStyle.settings.contours.terrains[this._currentContourIndex];
+      view.displayStyle.settings.contours.terrains[this._currentContourIndex] = undefined;
     this.loadContourDef(this._currentContourIndex);
 
     this.sync();
-  }
-
-  private updateSubCategories(subCategories: string) {
-    const subCatList = subCategories.split(",");
-    this._currentTerrainProps.subCategories = subCatList;
-  }
-
-  private updateInterval(interval: number | undefined, major: boolean): void {
-    if (major)
-      this._currentTerrainProps.contourDef!.majorIntervalCount = interval;
-    else // minor
-      this._currentTerrainProps.contourDef!.minorInterval = interval;
-  }
-
-  private updateColor(rgb: RgbColor | undefined, major: boolean): void {
-    if (major)
-      this._currentTerrainProps.contourDef!.majorColor = rgb?.toColorDef().toJSON();
-    else // minor
-      this._currentTerrainProps.contourDef!.minorColor = rgb?.toColorDef().toJSON();
-  }
-
-  private updateWidth(width: number | undefined, major: boolean): void {
-    if (major)
-      this._currentTerrainProps.contourDef!.majorPixelWidth = width;
-    else // minor
-      this._currentTerrainProps.contourDef!.minorPixelWidth = width;
-  }
-
-  private updateStyle(style: number, major: boolean): void {
-    const linePixels = LinePixels.Invalid !== style ? style : undefined;
-    if (major)
-      this._currentTerrainProps.contourDef!.majorPattern = linePixels;
-    else // minor
-      this._currentTerrainProps.contourDef!.minorPattern = linePixels;
   }
 
   private addInterval(parent: HTMLElement, major: boolean): LabeledNumericInput {
@@ -237,9 +219,8 @@ export class CivilContoursSettings implements IDisposable {
       id: major ? "major_interval" : "minor_interval",
       parent: div,
       value: major ? 5 : 1,
-      handler: (value) => this.updateInterval(value, major),
+      handler: () => {},
       min: major ? 1 : 0,
-      // max: 65536,
       parseAsFloat: true,
       step: 1,
       name: major ? "Major Count " : "Minor Interval ",
@@ -260,7 +241,7 @@ export class CivilContoursSettings implements IDisposable {
       value: "#000000",
       display: "inline",
       disabled: false,
-      handler: (value: string) => this.updateColor(convertHexToRgb(value), major),
+      handler: () => {},
     };
     const colorIn = createColorInput(props);
 
@@ -277,11 +258,7 @@ export class CivilContoursSettings implements IDisposable {
       min: "1.0", max: "8.5", step: "0.5",
       value: "1.5",
       readout: "right", verticalAlign: false, textAlign: false,
-      handler: (slider) => {
-        const wt = Number.parseFloat(slider.value);
-        if (!Number.isNaN(wt))
-          this.updateWidth(wt, major);
-      },
+      handler: () => {},
     };
     const widthSlider = createSlider(props);
     parent1.appendChild(widthSlider.div);
@@ -316,12 +293,10 @@ export class CivilContoursSettings implements IDisposable {
       id: major ? "major_style" : "minor_style",
       name: "Style ",
       value,
-      handler: (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10), major),
+      handler: () => {},
     };
     const cb = createComboBox(props);
     cb.div.style.marginLeft = indent1;
-
-    this.updateStyle(value, major);
 
     return cb;
   }
