@@ -28,6 +28,7 @@ import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 const scratchOverlapRange = Range2d.createNull();
 const scratchBytes = new Uint8Array(4);
@@ -227,7 +228,10 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 }
 
 /** @internal */
-export class RealityMeshGeometry extends IndexedGeometry implements IDisposable, RenderMemory.Consumer {
+export class RealityMeshGeometry extends IndexedGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "reality-mesh" = "reality-mesh" as const;
+  public readonly isInstanceable = false;
+  public noDispose = false;
   public readonly hasTextures: boolean;
   public override get asRealityMesh(): RealityMeshGeometry | undefined { return this; }
   public override get isDisposed(): boolean { return this._realityMeshParams.isDisposed; }
@@ -270,6 +274,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   }
 
   public override dispose() {
+    if (this.noDispose) {
+      return;
+    }
+
     super.dispose();
     dispose(this._realityMeshParams);
     if (true !== this._disableTextureDisposal)

@@ -1021,7 +1021,7 @@ export class Geometry {
    * Return `numerator` divided by `denominator` (with a given `largestResult`).
    * @param numerator the numerator
    * @param denominator the denominator
-   * @param largestResult the ratio threshold
+   * @param largestResult the ratio threshold, defaults to [[largeCoordinateResult]]
    * @returns return `numerator/denominator` but if the ratio exceeds `largestResult`, return `undefined`.
    */
   public static conditionalDivideCoordinate(
@@ -1165,7 +1165,7 @@ export class Geometry {
    * Test if `x` is in the interval [0,1] (but skip the test if `apply01 = false`).
    * * This odd behavior is very convenient for code that sometimes does not do the filtering.
    * @param x value to test.
-   * @param apply01 if false, return `true` for all values of `x`.
+   * @param apply01 if false, return `true` for all values of `x`. Default is true.
    */
   public static isIn01(x: number, apply01: boolean = true): boolean {
     return apply01 ? x >= 0.0 && x <= 1.0 : true;

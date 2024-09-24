@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for instancing to GraphicBuilder, GraphicDescriptionBuilder, and glTF.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
