@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -498,6 +497,92 @@ describe("MiscAngles", () => {
     ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepD));
     const sweepZ = AngleSweep.fromJSON(undefined);
     ck.testTrue(sweepZ.isFullCircle);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("FractionalSweep", () => {
+    const ck = new Checker();
+    const emptySweepResult = 8675309;
+
+    // old implementation of AngleSweep.angleToSignedPeriodicFraction was inaccurate on nearly empty sweeps
+    const oldAngleToSignedPeriodicFraction = (ss: AngleSweep, aa: Angle, er: number = 0): number => {
+      if (Angle.isAlmostEqualRadiansNoPeriodShift(0, ss.sweepRadians))
+        return er;
+      if (Angle.isAlmostEqualRadiansAllowPeriodShift(ss.startRadians, ss.endRadians)) {
+        if (Angle.isAlmostEqualRadiansNoPeriodShift(aa.radians, ss.startRadians))
+          return 0.0;
+        if (Angle.isAlmostEqualRadiansNoPeriodShift(aa.radians, ss.endRadians))
+          return 1.0;
+      } else {
+        if (Angle.isAlmostEqualRadiansAllowPeriodShift(aa.radians, ss.startRadians))
+          return 0.0;
+        if (Angle.isAlmostEqualRadiansAllowPeriodShift(aa.radians, ss.endRadians))
+          return 1.0;
+      }
+      const delta = aa.radians - ss.startRadians - 0.5 * ss.sweepRadians; // measure from middle of interval
+      if (ss.sweepRadians > 0) {
+        const delta1 = Angle.adjustRadiansMinusPiPlusPi(delta);
+        return 0.5 + Geometry.safeDivideFraction(delta1, ss.sweepRadians, emptySweepResult);
+      }
+      const delta2 = Angle.adjustRadiansMinusPiPlusPi(-delta);
+      return 0.5 + Geometry.safeDivideFraction(delta2, -ss.sweepRadians, emptySweepResult);
+    };
+
+    const sweepTest = (sweep: AngleSweep) => {
+      const r0 = sweep.startRadians;
+      const r1 = sweep.endRadians;
+      if (sweep.isEmpty) {
+        const a = Angle.createRadians(0);
+        const fPos = sweep.angleToSignedFraction(a, false, emptySweepResult);
+        const fNeg = sweep.angleToSignedFraction(a, true, emptySweepResult);
+        ck.testTrue(sweep.isEmpty, "empty sweep and zero denom are ALMOST equivalent");
+        ck.testExactNumber(emptySweepResult, fPos, "expect empty sweep result for fPos");
+        ck.testExactNumber(emptySweepResult, fNeg, "expect empty sweep result for fNeg");
+        ck.testExactNumber(5, sweep.fractionToSignedPeriodicFraction(5, true), "empty sweep has no effect on converted fraction");
+      } else {
+        const period = sweep.fractionPeriod();
+        for (let f0 of [-7, -3.1, -0.75, 0, 0.3, 1, 1.4, 5]) {
+          const r = Geometry.interpolate(r0, f0, r1);
+          if (f0 < -period || period < f0)
+            f0 %= period;
+          const a = Angle.createRadians(r);
+          const fPos = sweep.angleToSignedFraction(a, false, emptySweepResult);
+          ck.testFraction(fPos, sweep.angleToPositivePeriodicFraction(a, emptySweepResult), "!exteriorAngleToNegativeFraction reproduces angleToPositivePeriodicFraction");
+          const oldCode = oldAngleToSignedPeriodicFraction(sweep, a, emptySweepResult);
+          const newCode = sweep.angleToSignedPeriodicFraction(a, emptySweepResult);
+          ck.testCoordinate(oldCode, newCode, "old and new code for signed periodic sweep fraction is equivalent");
+          const fNeg = sweep.angleToSignedFraction(a, true, emptySweepResult);
+          if (sweep.isAngleInSweep(a)) {
+            ck.testFraction(fPos, fNeg, "interior angle unchanged by exteriorAngleToNegativeFraction value");
+            ck.testFraction(fPos, sweep.fractionToSignedPeriodicFraction(fPos, true), "interior fraction unchanged by fractionToSignedPeriodicFraction");
+          } else { // exterior angle
+            ck.testFraction(fPos - fNeg, period, Geometry.smallFraction, "sum of pos + neg exterior fractions equals period");
+            // extremely tiny non-empty intervals suffer from subtractive cancellation. Be generous: tol = 1.0e-5 fails.
+            const fractionTol = Geometry.isSmallRelative(sweep.sweepRadians) ? 1.0e-3 : Geometry.smallFraction;
+            if (f0 < 0)
+              ck.testNearNumber(f0, fNeg, fractionTol, "negative fraction roundtrip");
+            else
+              ck.testNearNumber(f0, fPos, fractionTol, "positive fraction roundtrip");
+            const fPosToNeg = sweep.fractionToSignedPeriodicFraction(fPos, true);
+            ck.testNearNumber(fNeg, fPosToNeg, fractionTol, "convert exterior fraction > 1 to negative fraction");
+            const fNegToPos = sweep.fractionToSignedPeriodicFraction(fNeg, false);
+            ck.testNearNumber(fPos, fNegToPos, fractionTol, "convert exterior negative fraction to fraction > 1");
+          }
+        }
+      }
+    };
+
+    sweepTest(AngleSweep.createStartEndRadians(0, 2));
+    sweepTest(AngleSweep.createStartEndRadians(2, 0));
+    let emptySweep = AngleSweep.createStartEndRadians(1, 1);
+    if (ck.testTrue(emptySweep.isEmpty, "trivial sweep is empty"))
+      sweepTest(emptySweep);
+    emptySweep = AngleSweep.createStartEndRadians(1, 1 + 0.5 * Geometry.smallAngleRadians);
+    if (ck.testTrue(emptySweep.isEmpty, "non-trivial sweep less than smallAngleRadians is empty"))
+      sweepTest(emptySweep);
+    const nearlyEmptySweep = AngleSweep.createStartEndRadians(1, 1 + 1.5 * Geometry.smallAngleRadians);
+    if (ck.testFalse(nearlyEmptySweep.isEmpty, "sweep barely greater than smallAngleRadians is non-empty"))
+      sweepTest(nearlyEmptySweep);
     expect(ck.getNumErrors()).equals(0);
   });
 });
