@@ -166,6 +166,10 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
   }
 
   public override async terminate() {
+
+    // eslint-disable-next-line no-console
+    console.log("terminating DPTA");
+
     await IModelHost.shutdown();
 
     // Electron only
