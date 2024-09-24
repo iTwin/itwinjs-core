@@ -59,9 +59,9 @@ export interface UnitConversionSpec {
  * @beta
  */
 export enum UnitConversionInvert {
-  /** Invert value before conversion */
+  /** Invert value before applying the other conversion steps (the from-unit is the inverted unit) */
   InvertPreConversion = "InvertPreConversion",
-  /** Invert value after conversion */
+  /** Invert value after applying the other conversion steps (the to-unit is the inverted unit) */
   InvertPostConversion = "InvertPostConversion"
 }
 
