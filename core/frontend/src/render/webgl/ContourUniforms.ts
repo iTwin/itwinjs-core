@@ -66,7 +66,7 @@ export class ContourUniforms {
 
     desync(this);
 
-    this._contourDisplay = CivilContourDisplay.fromJSON(plan.contours?.toJSON());
+    this._contourDisplay = plan.contours;
     if (!this.contourDisplay)
       return;
 

@@ -14,7 +14,7 @@ import {
   updateSliderValue,
 } from "@itwin/frontend-devtools";
 import { CivilContour, CivilContourDisplay, CivilContourDisplayProps, CivilTerrainProps, ColorDef, LinePixels } from "@itwin/core-common";
-import { Viewport, ViewState } from "@itwin/core-frontend";
+import { Viewport, ViewState3d } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 // size of widget or panel
@@ -151,8 +151,7 @@ export class CivilContoursSettings implements IDisposable {
     this._parent.removeChild(this._element);
   }
 
-  private getContourDisplayProps(view: ViewState): CivilContourDisplayProps {
-    assert(view.is3d());
+  private getContourDisplayProps(view: ViewState3d): CivilContourDisplayProps {
     const contours =  view.displayStyle.settings.contours;
     return contours.toJSON();
   }
@@ -196,18 +195,23 @@ export class CivilContoursSettings implements IDisposable {
   private applyContourDef() {
     const view = this._vp.view;
     assert(view.is3d());
-
     const contoursJson = this.getContourDisplayProps(view);
-    contoursJson.terrains![this._currentContourIndex] = this.getTerrainProps();
-    view.displayStyle.settings.contours.terrains[this._currentContourIndex] = CivilContourDisplay.fromJSON(contoursJson).terrains[this._currentContourIndex];
+    if (undefined === contoursJson.terrains)
+      contoursJson.terrains = [];
+    contoursJson.terrains[this._currentContourIndex] = this.getTerrainProps();
+    view.displayStyle.settings.contours = CivilContourDisplay.fromJSON(contoursJson);
+
     this.sync();
   }
 
   private clearContourDef() {
     const view = this._vp.view;
     assert(view.is3d());
-    if (undefined !== view.displayStyle.settings.contours.terrains)
-      view.displayStyle.settings.contours.terrains[this._currentContourIndex] = undefined;
+    const contoursJson = this.getContourDisplayProps(view);
+    if (undefined === contoursJson.terrains)
+      contoursJson.terrains = [];
+    contoursJson.terrains[this._currentContourIndex] = undefined;
+    view.displayStyle.settings.contours = CivilContourDisplay.fromJSON(contoursJson);
     this.loadContourDef(this._currentContourIndex);
 
     this.sync();
