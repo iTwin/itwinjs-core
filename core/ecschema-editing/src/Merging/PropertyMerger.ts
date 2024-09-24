@@ -91,9 +91,6 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
   if (propertyProps.type !== undefined) {
     throw new Error(`Changing the property '${property.fullName}' type is not supported.`);
   }
-  if (propertyProps.kindOfQuantity !== undefined) {
-    throw new Error(`Changing the property '${property.fullName}' kind of quantity is not supported.`);
-  }
 
   const classEditor = await getClassEditor(context, ecClass);
 
@@ -108,6 +105,9 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
   }
   if (propertyProps.priority !== undefined) {
     await classEditor.properties.setPriority(itemKey, propertyProps.name, propertyProps.priority);
+  }
+  if (propertyProps.kindOfQuantity !== undefined) {
+    await classEditor.properties.setKindOfQuantity(itemKey, propertyProps.name, await updateSchemaItemKey(context, propertyProps.kindOfQuantity));
   }
 
   if (property.isArray()) {
