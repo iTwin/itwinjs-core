@@ -20,7 +20,9 @@ import { Target } from "./Target";
  */
 export class ContourUniforms {
   // max number of concurrent contour definitions supported
+  //   uses 1.5x this number of indexable vec4 uniforms, also limited to 14 by the feature lookup texture packing scheme
   public static readonly maxContourDefs = 5;
+
   private readonly _contourDefsSize = Math.ceil(ContourUniforms.maxContourDefs * 1.5);
   private readonly _contourDefs = new Float32Array(this._contourDefsSize * 4);
   private _contourDisplay?: CivilContourDisplay;

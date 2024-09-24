@@ -61,8 +61,8 @@ const applyContours = `
   vec2 intervals = even ? intervalsPair.rg : intervalsPair.ba;
 
   float coord = v_height / intervals.r;
-  // determine if this is in the vicinity of a major contour line
-  bool maj = (fract((abs(coord) + 0.15) / intervals.g) < (0.3 / intervals.g));
+  // determine if this is in the vicinity of a major contour line (1/2 an interval either way, which is one limit of drawing width)
+  bool maj = (fract((abs(coord) + 0.5) / intervals.g) < (1.0 / intervals.g));
   rgbf = unpackAndNormalize2BytesVec4(rgbf, maj);
   // rgba.a => (4-bit linecode / 4-bit weight) maj/min, where the 4-bit weight is a 3-bit weight value with one fraction bit and a 1.5 offset.   This gives a weight range of 1.5 to 9 in 0.5 increments.
   int lineCodeWt = int((rgbf.a * 255.0) + 0.5);
