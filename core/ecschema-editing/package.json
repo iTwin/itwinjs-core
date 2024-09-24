@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-editing",
-  "version": "4.10.0-dev.2",
+  "version": "4.10.0-dev.5",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
   "main": "lib/cjs/ecschema-editing.js",
@@ -61,9 +61,9 @@
     "typescript": "~5.3.3"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.2",
-    "@itwin/core-quantity": "workspace:^4.10.0-dev.2",
-    "@itwin/ecschema-metadata": "workspace:^4.10.0-dev.2"
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.5",
+    "@itwin/core-quantity": "workspace:^4.10.0-dev.5",
+    "@itwin/ecschema-metadata": "workspace:^4.10.0-dev.5"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

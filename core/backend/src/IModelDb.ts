@@ -17,7 +17,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
@@ -1344,6 +1344,22 @@ export abstract class IModelDb extends IModel {
    */
   public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
     return this[_nativeDb].processGeometryStream(requestProps);
+  }
+
+  /** Request the creation of a backend geometry cache for the specified geometric element.
+   * @returns ElementGeometryCacheResponseProps
+   * @beta
+   */
+  public async updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps> {
+    return this[_nativeDb].updateElementGeometryCache(requestProps);
+  }
+
+  /** Request operation using the backend geometry cache populated by first calling elementGeometryRequest.
+ * @returns SUCCESS if requested operation could be applied.
+ * @beta
+ */
+  public elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus {
+    return this[_nativeDb].elementGeometryCacheOperation(requestProps);
   }
 
   /** Create brep geometry for inclusion in an element's geometry stream.

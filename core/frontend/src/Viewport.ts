@@ -242,6 +242,26 @@ export interface MapLayerScaleRangeVisibility {
   visibility: MapTileTreeScaleRangeVisibility;
 }
 
+/** Arguments supplied to [[Viewport.readPixels]].
+ * @public
+ * @extensions
+ */
+export interface ReadPixelsArgs {
+  /** The function that will be invoked to process the captured pixel data. */
+  receiver: Pixel.Receiver;
+  /** The region of the viewport's contents to read. If the area is empty or not contained within the [[Viewport.viewRect]],
+   * no pixels will be read.
+   * If omitted, the viewport's entire contents will be read.
+   */
+  rect?: ViewRect;
+  /** Specifies which aspects of each pixel to read. By default, all aspects are read. */
+  selector?: Pixel.Selector;
+  /** If true, geometry with the "non-locatable" flag set will not be drawn, potentially revealing locatable geometry it would otherwise obscure. */
+  excludeNonLocatable?: boolean;
+  /** An optional set of Ids of elements that should not be drawn, potentially revealing other geometry they would otherwise obscure. */
+  excludedElements?: Iterable<Id64String>;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -1215,6 +1235,11 @@ export abstract class Viewport implements IDisposable, TileUser {
       this._changeFlags.setDisplayStyle();
     };
 
+    const invalidateControllerAndDisplayStyleChanged = () => {
+      this.invalidateController();
+      this._changeFlags.setDisplayStyle();
+    };
+
     const styleAndOverridesChanged = () => {
       displayStyleChanged();
       this.setFeatureOverrideProviderChanged();
@@ -1231,6 +1256,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
     removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
@@ -2600,19 +2626,45 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   protected addDecorations(_decorations: Decorations): void { }
 
-  /** Read selected data about each pixel within a rectangular region of this Viewport.
+  /** Capture selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
    * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport has been disposed, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    */
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false): void {
-    const viewRect = this.viewRect;
-    if (this.isDisposed || rect.isNull || !rect.isContained(viewRect))
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
+
+  /** Capture selected data about each pixel within a rectangular region of this viewport.
+   * @note The [[Pixel.Buffer]] supplied to [[ReadPixelsArgs.receiver]] becomes invalid once that function exits. Do not store a reference to it.
+   */
+  public readPixels(args: ReadPixelsArgs): void;
+
+  /** @internal */
+  public readPixels(arg0: ViewRect | ReadPixelsArgs, selector?: Pixel.Selector, receiver?: Pixel.Receiver, excludeNonLocatable?: boolean): void {
+    if (arg0 instanceof ViewRect) {
+      assert(undefined !== selector && undefined !== receiver);
+      return this._readPixels(arg0, selector, receiver, excludeNonLocatable);
+    }
+
+    // { rect, receiver, selector, excludeNonLocatable, excludedElements } = arg0;
+    // this._readPixels(rect ?? this.viewRect, receiver, selector ?? Pixel.Selector.All, excludeNonLocatable, excludedElements);
+    this._readPixels(
+      arg0.rect ?? this.viewRect,
+      arg0.selector ?? Pixel.Selector.All,
+      arg0.receiver,
+      arg0.excludeNonLocatable,
+      arg0.excludedElements,
+    );
+  }
+
+  private _readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
+    if (this.isDisposed || rect.isNull || !rect.isContained(this.viewRect)) {
       receiver(undefined);
-    else
-      this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
+      return;
+    }
+
+    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, excludedElements);
   }
 
   /** @internal */

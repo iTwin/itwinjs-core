@@ -1646,24 +1646,29 @@ export class Matrix3d implements BeJSONFunctions {
     return Matrix3d.createUniformScale(scale);
   }
   /**
-   * Create a matrix which sweeps a vector along `sweepVector` until it hits the plane through the origin with the given normal.
-   * * To sweep an arbitrary vector U0 along direction W to the vector U1 in the plane through the origin with normal N:
-   *   *   `U1 = U0 + W * alpha`
-   *   *   `U1 DOT N = (U0 + W * alpha) DOT N = 0`
-   *   *   `U0 DOT N = - alpha * W DOT N`
-   *   *   `alpha = - U0 DOT N / W DOT N`
-   * * Insert the alpha definition in U1:
-   *   *   `U1 = U0 -  W * N DOT U0 / W DOT N`
-   * * Write vector dot expression N DOT U0 as a matrix product (^T indicates transpose):
-   *   *   `U1 = U0 -  W * N^T * U0 / W DOT N`
-   * * Note W * N^T is an outer product, i.e. a 3x3 matrix. By associativity of matrix multiplication:
-   *   *   `U1 = (I - W * N^T / W DOT N) * U0`
-   * * and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
-   * @param sweepVector sweep direction
+   * Create a matrix which sweeps a vector along `sweepVector` until it hits the plane through the origin with the
+   * given normal.
+   * * Geometrically, the returned matrix `M` acts on a vector `u` by rotating and scaling it to lie in the plane.
+   * Specifically, `Mu = u + sw` is perpendicular to `n` for some scalar `s`, where `w` is the sweep direction, and
+   * `n` is the plane normal.
+   * * Symbolically, `M = I - w⊗n / w.n`, where `I` is the identity, and ⊗ is the vector outer product.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix flattens to the plane.
    * @param planeNormal normal to the target plane
    */
   public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined {
-    const result = Matrix3d.createIdentity();
+    // To sweep an arbitrary vector U0 along direction W to the vector U1 in the plane through the origin with normal N:
+    //   `U1 = U0 + W * alpha`
+    //   `U1 DOT N = (U0 + W * alpha) DOT N = 0`
+    //   `U0 DOT N = - alpha * W DOT N`
+    //   `alpha = - U0 DOT N / W DOT N`
+    // Insert the alpha definition in U1:
+    //   `U1 = U0 -  W * N DOT U0 / W DOT N`
+    // Write W * N DOT U0 in terms of a vector outer product (^T indicates transpose):
+    //   `U1 = U0 -  W * N^T * U0 / W DOT N`
+    // Note W * N^T is a 3x3 matrix. By associativity of matrix multiplication:
+    //   `U1 = (I - W * N^T / W DOT N) * U0`
+    // and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
+     const result = Matrix3d.createIdentity();
     const dot = sweepVector.dotProduct(planeNormal);
     const inverse = Geometry.conditionalDivideCoordinate(1.0, -dot);
     if (inverse !== undefined) {
