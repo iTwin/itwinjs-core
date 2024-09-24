@@ -64,6 +64,14 @@ const insertSheet = async (iModel: IModelDb, sheetName: string): Promise<Id64Str
   return sheetModelId;
 };
 
+const insertCodeSpec = async (iModel: IModelDb) => {
+  const indexSpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndex, CodeScopeSpec.Type.Model);
+  iModel.codeSpecs.insert(indexSpec);
+
+  const entrySpec = CodeSpec.create(iModel, BisCodeSpec.sheetIndexEntry, CodeScopeSpec.Type.ParentElement);
+  iModel.codeSpecs.insert(entrySpec);
+};
+
 describe("SheetIndex", () => {
   let iModel: SnapshotDb;
 
