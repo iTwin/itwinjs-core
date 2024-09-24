@@ -554,7 +554,7 @@ export class QuantityFormatter implements UnitsProvider {
     try {
       // force all cached data to be reinitialized
       await IModelApp.quantityFormatter.onInitialized();
-    } catch(err) {
+    } catch (err) {
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
       // If there is a problem initializing with the given provider, default back to the internal provider
@@ -807,7 +807,6 @@ export class QuantityFormatter implements UnitsProvider {
     return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
-  
   /**
    * Get a UnitSystemKey from a string that may have been entered via a key-in. Supports different variation of
    * unit system names that have been used in the past.
