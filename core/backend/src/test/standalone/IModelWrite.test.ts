@@ -24,7 +24,7 @@ import {
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
-  CodeService, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SnapshotDb, SpatialCategory, Subject,
+  CodeService, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
