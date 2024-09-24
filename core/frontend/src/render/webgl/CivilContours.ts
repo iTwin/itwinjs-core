@@ -92,6 +92,8 @@ export class CivilContours implements WebGLDisposable {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
     if (this.buildLookupTable(updater, map, contours))
       lut.update(updater);
+    else
+      this._lutWidth = 0; // flag to indicate no contours
   }
 
   private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: CivilContourDisplay): boolean {
