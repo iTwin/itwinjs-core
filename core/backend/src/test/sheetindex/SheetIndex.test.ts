@@ -74,6 +74,8 @@ describe("SheetIndex", () => {
     await ExtensiveTestScenario.prepareDb(iModelDb);
     ExtensiveTestScenario.populateDb(iModelDb);
     iModel = iModelDb;
+
+    await insertCodeSpec(iModel);
   });
 
   afterEach(() => {
