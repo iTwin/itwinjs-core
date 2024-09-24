@@ -224,7 +224,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
   }
-  public async openSnapshot(filePath: string, opts?: SnapshotOpenOptions | undefined): Promise<IModelConnectionProps> {
+  public async openSnapshot(filePath: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
     let resolvedFileName: string | undefined = filePath;
     if (IModelHost.snapshotFileNameResolver) {
       resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath);
