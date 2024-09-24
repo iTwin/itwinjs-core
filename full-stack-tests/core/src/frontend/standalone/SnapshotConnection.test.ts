@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Guid } from "@itwin/core-bentley";
+import { Guid, ProcessDetector } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
-import { IpcApp, SnapshotConnection } from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-if (IpcApp.isValid) {
+if (ProcessDetector.isElectronAppFrontend) {
+
   describe("SnapshotConnection", () => {
     before(async () => {
       await TestUtility.startFrontend();
