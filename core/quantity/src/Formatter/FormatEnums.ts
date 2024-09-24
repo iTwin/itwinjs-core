@@ -129,13 +129,13 @@ export enum ScientificType {
  * @beta */
 export enum RatioType {
   /** One to N ratio (ie 1:N) */
-  OneToN,
+  OneToN = "OneToN",
   /** N to One ratio (ie N:1) */
-  NToOne,
+  NToOne = "NToOne",
   /**  the lesser value scales to 1. e.g. input 0.5 turns into 2:1 | input 2 turns into 1:2 */
-  ValueBased,
+  ValueBased = "ValueBased",
   /**  scales the input ratio to its simplest integer form using the greatest common divisor (GCD) of the values. e.g. 0.3 turns into 3:10 */
-  UseGreatestCommonDivisor ,
+  UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
 }
 
 /** Determines how the sign of values are displayed
@@ -171,24 +171,21 @@ export function scientificTypeToString(scientificType: ScientificType): string {
 
 /**  @beta   */
 export function parseRatioType(ratioType: string, formatName: string): RatioType {
-  switch (ratioType.toLowerCase()) {
-    case "oneton": return RatioType.OneToN;
-    case "ntoone": return RatioType.NToOne;
-    case "valuebased": return RatioType.ValueBased;
-    case "usegreatestcommondivisor": return RatioType.UseGreatestCommonDivisor;
-    default:
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioType' attribute.`);
+  const normalizedValue = ratioType.toLowerCase();
+  for (const key in RatioType) {
+    if (RatioType.hasOwnProperty(key)) {
+      const enumValue = RatioType[key as keyof typeof RatioType];
+      if (enumValue.toLowerCase() === normalizedValue) {
+        return enumValue as RatioType;
+      }
+    }
   }
+  throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioType' attribute.`);
 }
 
 /**  @beta   */
 export function ratioTypeToString(ratioType: RatioType): string {
-  switch (ratioType) {
-    case RatioType.OneToN: return "OneToN";
-    case RatioType.NToOne: return "NToOne";
-    case RatioType.ValueBased: return "ValueBased";
-    case RatioType.UseGreatestCommonDivisor: return "UseGreatestCommonDivisor";
-  }
+  return ratioType;
 }
 
 /** @beta    */
