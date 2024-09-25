@@ -741,15 +741,13 @@ export class Parser {
     // we have to turn the value into an east base and counter clockwise (NW and SE are already counter clockwise)
     if (matchedPrefix === DirectionLabel.North) {
       if (matchedSuffix === DirectionLabel.West) {
-        magnitude = quarterRevolution + magnitude;
-      } else if (matchedSuffix === DirectionLabel.East) {
-        magnitude = quarterRevolution - magnitude;
+        magnitude = revolution - magnitude;
       }
     } else if (matchedPrefix === DirectionLabel.South) {
       if (matchedSuffix === DirectionLabel.West) {
-        magnitude = (3 * quarterRevolution) - magnitude;
+        magnitude = (2 * quarterRevolution) + magnitude;
       } else if (matchedSuffix === DirectionLabel.East) {
-        magnitude = (3 * quarterRevolution) + magnitude;
+        magnitude = (2 * quarterRevolution) - magnitude;
       }
     }
 
@@ -766,8 +764,7 @@ export class Parser {
 
     const revolution = this.getRevolution(spec);
     magnitude = this.normalizeAngle(magnitude, revolution);
-    const quarterRevolution = revolution / 4;
-    let azimuthBase = quarterRevolution;
+    let azimuthBase = 0.0;
     if (spec.format.azimuthBase !== undefined) {
       if (spec.azimuthBaseConversion === undefined) {
         throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.format.name}'s azimuth base.`);
@@ -779,14 +776,14 @@ export class Parser {
       }
       azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
     }
-    const azimuthCounterClockwise = spec.format.azimuthCounterClockwiseOrDefault;
+    const inputIsClockwise = spec.format.azimuthClockwiseOrDefault;
 
-    if(azimuthCounterClockwise && azimuthBase === 0) {
+    if(inputIsClockwise && azimuthBase === 0) {
       // parsed result already has the same base and orientation as our desired output
       return parsedResult;
     }
 
-    if (azimuthCounterClockwise)
+    if (inputIsClockwise)
       magnitude = azimuthBase + magnitude;
     else
       magnitude = azimuthBase - magnitude;

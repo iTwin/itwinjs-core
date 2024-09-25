@@ -458,35 +458,35 @@ export class Formatter {
       let prefix, suffix: string;
 
       // Quadrants are
-      // 1 0
-      // 2 3
-      // For quadrants 0 and 2 we have to subtract the angle from quarterRevolution degrees because they go clockwise
-      if (quadrant === 0 || quadrant === 2)
+      // 3 0
+      // 2 1
+      // For quadrants 1 and 3 we have to subtract the angle from quarterRevolution degrees because they go counter-clockwise
+      if (quadrant === 1 || quadrant === 3)
         magnitude = quarterRevolution - magnitude;
 
       // TODO: at some point we will want to open this for localization, in the first release it's going to be hard coded
-      if (quadrant === 0 || quadrant === 1)
+      if (quadrant === 0 || quadrant === 3)
         prefix = "N";
 
-      if (quadrant === 2 || quadrant === 3)
+      if (quadrant === 2 || quadrant === 1)
         prefix = "S";
 
-      if (quadrant === 0 || quadrant === 3)
+      if (quadrant === 0 || quadrant === 1)
         suffix = "E";
 
-      if (quadrant === 1 || quadrant === 2)
+      if (quadrant === 3 || quadrant === 2)
         suffix = "W";
 
-      // special case, if in quadrant 2 and value is very small, turn suffix to E because S00:00:00E is preferred over S00:00:00W
+      // special case, if in quadrant 2 and value is very close to quarter revolution (90°), turn prefix to N because N90:00:00W is preferred over S90:00:00W
       if (quadrant === 2 && spec.unitConversions.length > 0) {
         // To determine if value is small, we need to convert it to the smallest unit presented and use the provided precision on it
         const unitConversion = spec.unitConversions[spec.unitConversions.length - 1].conversion;
-        const smallestFormattedValue = (magnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD;
+        const smallestFormattedDelta = ((quarterRevolution - magnitude) * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD;
 
         const precisionScale = Math.pow(10.0, spec.format.precision);
-        const floor = Math.floor((smallestFormattedValue) * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+        const floor = Math.floor((smallestFormattedDelta) * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
         if(floor === 0) {
-          suffix = "E";
+          prefix = "N";
         }
       }
 
@@ -494,7 +494,7 @@ export class Formatter {
     }
 
     if (type === FormatType.Azimuth) {
-      let azimuthBase = quarterRevolution; // default base is North
+      let azimuthBase = 0; // default base is North
       if (spec.format.azimuthBase !== undefined) {
         if (spec.azimuthBaseConversion === undefined) {
           throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.name}'s azimuth base.`);
@@ -507,15 +507,15 @@ export class Formatter {
         azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
       }
 
-      if (azimuthBase === quarterRevolution && spec.format.azimuthCounterClockwiseOrDefault)
-        return {magnitude}; // no conversion necessary, the input is already using the result parameters (east base and counter clockwise)
+      if (azimuthBase === 0.0 && spec.format.azimuthClockwiseOrDefault)
+        return {magnitude}; // no conversion necessary, the input is already using the result parameters (north base and clockwise)
 
       // subtract the base from the actual value
       magnitude -= azimuthBase;
-      if (spec.format.azimuthCounterClockwiseOrDefault)
+      if (spec.format.azimuthClockwiseOrDefault)
         return {magnitude: this.normalizeAngle(magnitude, revolution)};
 
-      // turn it into a clockwise angle
+      // turn it into a counter-clockwise angle
       magnitude = revolution - magnitude;
       // normalize the result as it may have become negative or exceed the revolution
       magnitude = this.normalizeAngle(magnitude, revolution);

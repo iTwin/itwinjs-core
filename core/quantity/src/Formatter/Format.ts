@@ -105,7 +105,7 @@ export class BaseFormat {
 
   public get azimuthCounterClockwise(): boolean | undefined { return this._azimuthCounterClockwise; }
   public set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined) { this._azimuthCounterClockwise = azimuthCounterClockwise; }
-  public get azimuthCounterClockwiseOrDefault(): boolean { return this._azimuthCounterClockwise ?? false; }
+  public get azimuthClockwiseOrDefault(): boolean { return !this._azimuthCounterClockwise; }
 
   public get revolutionUnit(): UnitProps | undefined { return this._revolutionUnit; }
   public set revolutionUnit(revolutionUnit: UnitProps | undefined) { this._revolutionUnit = revolutionUnit; }

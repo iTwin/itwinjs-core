@@ -92,7 +92,7 @@ Supported scientific type:
 
 **stationSeparator** the character used to separate the station and off set portions of a `station` formatted value.
 
-**azimuthBase** A numeric value indicating the base when type is set to azimuth. If set, the `azimuthBaseUnit` has to also be set to indicate which unit this value is in. Defaults to north (quarter rotation). The value is indicated from east counter-clockwise.
+**azimuthBase** A numeric value indicating the base when type is set to azimuth. If set, the `azimuthBaseUnit` has to also be set to indicate which unit this value is in. Defaults to north. A value provided is interpreted from north clockwise.
 
 **azimuthBaseUnit** Required if `azimuthBase` is set. A unit name which the base value is in. The unit has to match the phenomenon used on the presentation and persistence units.
 
