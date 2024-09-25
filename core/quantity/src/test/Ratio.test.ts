@@ -259,7 +259,7 @@ describe("Ratio format tests", () => {
 
   describe("specific parse ratio string tests", () => {
     async function testRatioParser(
-      testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName
+      testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName,
     ) {
 
       const ratioJson: FormatProps = {
