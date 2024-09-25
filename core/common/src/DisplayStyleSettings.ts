@@ -37,7 +37,7 @@ import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
 import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
-import { CivilContourDisplay, CivilContourDisplayProps } from "./CivilContourDisplay";
+import { ContourDisplay } from "./ContourDisplay";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -162,7 +162,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   /** See [[DisplayStyle3dSettings.thematic]]. */
   thematic?: ThematicDisplayProps;
   /** See [[DisplayStyle3dSettings.contours]]. */
-  contours?: CivilContourDisplayProps;
+  contours?: ContourDisplay.SettingsProps;
   /** See [[DisplayStyle3dSettings.hiddenLineSettings]]. */
   hline?: HiddenLine.SettingsProps;
   /** See [[DisplayStyle3dSettings.ambientOcclusionSettings]]. */
@@ -506,7 +506,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.contours]] property. */
-  public readonly onContoursChanged = new BeEvent<(newContours: CivilContourDisplay) => void>();
+  public readonly onContoursChanged = new BeEvent<(newContours: ContourDisplay.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
@@ -1075,7 +1075,7 @@ export class DisplayStyleSettings {
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _thematic: ThematicDisplay;
-  private _contours: CivilContourDisplay;
+  private _contours: ContourDisplay.Settings;
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
   private _solarShadows: SolarShadowSettings;
@@ -1092,7 +1092,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }, options?: DisplayStyleSettingsOptions) {
     super(jsonProperties, options);
     this._thematic = ThematicDisplay.fromJSON(this._json3d.thematic);
-    this._contours = CivilContourDisplay.fromJSON(this._json3d.contours);
+    this._contours = ContourDisplay.Settings.fromJSON(this._json3d.contours);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
     this._solarShadows = SolarShadowSettings.fromJSON(this._json3d.solarShadows);
@@ -1203,7 +1203,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this.thematic = ThematicDisplay.fromJSON(overrides.thematic);
 
     if (overrides.contours)
-      this.contours = CivilContourDisplay.fromJSON(overrides.contours);
+      this.contours = ContourDisplay.Settings.fromJSON(overrides.contours);
 
     this.onOverridesApplied.raiseEvent(overrides);
   }
@@ -1220,8 +1220,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** The settings that control contour display. */
-  public get contours(): CivilContourDisplay { return this._contours; }
-  public set contours(contours: CivilContourDisplay) {
+  public get contours(): ContourDisplay.Settings { return this._contours; }
+  public set contours(contours: ContourDisplay.Settings) {
     if (contours.equals(this.contours))
       return;
 

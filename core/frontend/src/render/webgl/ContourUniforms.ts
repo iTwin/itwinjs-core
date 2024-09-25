@@ -6,11 +6,7 @@
  * @module WebGL
  */
 
-import {
-  CivilContour,
-  CivilContourDisplay,
-  ColorDef,
-} from "@itwin/core-common";
+import { ColorDef, ContourDisplay } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
@@ -25,11 +21,11 @@ export class ContourUniforms {
 
   private readonly _contourDefsSize = Math.ceil(ContourUniforms.maxContourDefs * 1.5);
   private readonly _contourDefs = new Float32Array(this._contourDefsSize * 4);
-  private _contourDisplay?: CivilContourDisplay;
+  private _contourDisplay?: ContourDisplay.Settings;
 
   public syncKey = 0;
 
-  public get contourDisplay(): CivilContourDisplay | undefined {
+  public get contourDisplay(): ContourDisplay.Settings | undefined {
     return this._contourDisplay;
   }
 
@@ -95,7 +91,7 @@ export class ContourUniforms {
     */
 
     for (let index = 0, len = this.contourDisplay.terrains.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
-      const contourDef = this.contourDisplay.terrains[index]?.contourDef ?? CivilContour.fromJSON({});;
+      const contourDef = this.contourDisplay.terrains[index]?.contourDef ?? ContourDisplay.Contour.fromJSON({});;
       const even = (index & 1) === 0;
       const colorDefsNdx = (even ? index * 1.5 : (index - 1) * 1.5 + 2) * 4;
       this.packColor (colorDefsNdx, contourDef.majorColor, contourDef.minorColor);

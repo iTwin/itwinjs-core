@@ -29,7 +29,7 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
-import { CivilContoursPanel } from "./CivilContours";
+import { ContoursPanel } from "./Contours";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -410,7 +410,7 @@ export class Viewer extends Window {
     this.toolBar.addDropDown({
       iconUnicode: "\ue90a",
       createDropDown: async (container: HTMLElement) => {
-        const panel = new CivilContoursPanel(this.viewport, container);
+        const panel = new ContoursPanel(this.viewport, container);
         return panel;
       },
       tooltip: "Civil contours",

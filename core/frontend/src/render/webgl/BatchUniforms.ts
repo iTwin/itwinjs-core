@@ -15,7 +15,7 @@ import { Target } from "./Target";
 import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
 import { OvrFlags } from "./RenderFlags";
-import { CivilContours } from "./CivilContours";
+import { Contours } from "./Contours";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
@@ -31,7 +31,7 @@ export class BatchUniforms {
 
   private _overrides?: FeatureOverrides;
   private _sensors?: ThematicSensors;
-  private _civilContours?: CivilContours;
+  private _contours?: Contours;
   private _batchId = new Float32Array(4);
 
   private _scratchBytes = new Uint8Array(4);
@@ -75,9 +75,9 @@ export class BatchUniforms {
     else
       this._featureMode = FeatureMode.None;
 
-    const civilContours = undefined !== batch ? batch.getCivilContours(this._target) : undefined;
-    // this._civilContours = (undefined !== civilContours && civilContours.anyOverridden) ? civilContours : undefined;  // TODO:
-    this._civilContours = civilContours;
+    const contours = undefined !== batch ? batch.getContours(this._target) : undefined;
+    // this._contours = (undefined !== contours && contours.anyOverridden) ? contours : undefined;  // TODO:
+    this._contours = contours;
   }
 
   public resetBatchState(): void {
@@ -97,18 +97,18 @@ export class BatchUniforms {
   }
 
   public get wantContourLines(): boolean {
-    return this._civilContours?.wantContourLines ?? false;
+    return this._contours?.wantContourLines ?? false;
   }
 
   public bindContourLUT(uniform: UniformHandle): void {
     // Note we can't use sync() here because a different texture may have been assigned to the desired texture unit
-    if (undefined !== this._civilContours)
-      this._civilContours.bindContourLUT(uniform);
+    if (undefined !== this._contours)
+      this._contours.bindContourLUT(uniform);
   }
 
   public bindContourLUTWidth(uniform: UniformHandle): void {
-    if (undefined !== this._civilContours && !sync(this, uniform))
-      this._civilContours.bindContourLUTWidth(uniform);
+    if (undefined !== this._contours && !sync(this, uniform))
+      this._contours.bindContourLUTWidth(uniform);
   }
 
   public bindLUT(uniform: UniformHandle): void {
