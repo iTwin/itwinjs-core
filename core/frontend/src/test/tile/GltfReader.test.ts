@@ -11,7 +11,7 @@ import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../..
 import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../core-frontend";
-import { afterAll, beforeAll, describe, expect } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
 const minimalJson = { asset: { version: "02.00" }, meshes: [] };
