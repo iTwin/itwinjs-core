@@ -75,7 +75,7 @@
     "@itwin/object-storage-core": "^2.2.5",
     "@itwin/reality-data-client": "^1.2.1",
     "@itwin/webgl-compatibility": "workspace:*",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "vhacd-js": "^0.0.1"
   },
   "devDependencies": {
@@ -95,7 +95,7 @@
     "dotenv-expand": "^5.1.0",
     "electron": "^32.0.0",
     "eslint": "^8.56.0",
-    "express": "^4.18.2",
+    "express": "^4.20.0",
     "express-ws": "^5.0.2",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
@@ -111,7 +111,7 @@
     "rollup-plugin-external-globals": "0.11.0",
     "ts-node": "^10.8.2",
     "typescript": "~5.3.3",
-    "vite": "^5.3.3",
+    "vite": "^5.4.6",
     "vite-plugin-env-compatible": "^2.0.1",
     "vite-plugin-inspect": "^0.8.4",
     "webpack": "^5.76.0"

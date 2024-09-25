@@ -285,26 +285,6 @@ export const enum SurfaceFlags {
   HasMaterialAtlas = 1 << SurfaceBitIndex.HasMaterialAtlas,
 }
 
-/** 16-bit flags indicating what aspects of a feature's symbology are overridden.
- * @internal
- */
-export const enum OvrFlags {
-  None = 0,
-  Visibility = 1 << 0,
-  Rgb = 1 << 1,
-  Alpha = 1 << 2,
-  IgnoreMaterial = 1 << 3, // ignore material color, specular properties, and texture.
-  Flashed = 1 << 4,
-  NonLocatable = 1 << 5, // do not draw during pick - allows geometry beneath to be picked.
-  LineCode = 1 << 6,
-  Weight = 1 << 7,
-  Hilited = 1 << 8,
-  Emphasized = 1 << 9, // rendered with "emphasis" hilite settings (silhouette etc).
-  ViewIndependentTransparency = 1 << 10,
-
-  Rgba = Rgb | Alpha,
-}
-
 /** 8-bit flags indicating emphasis effects applied to a feature.
  * @internal
  */

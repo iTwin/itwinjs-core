@@ -14,8 +14,8 @@ import { desync, sync } from "./Sync";
 import { Target } from "./Target";
 import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
-import { OvrFlags } from "./RenderFlags";
 import { Contours } from "./Contours";
+import { OvrFlags } from "../../common/internal/render/OvrFlags";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);

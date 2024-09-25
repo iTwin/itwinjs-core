@@ -1223,9 +1223,10 @@ export class Vector3d extends XYZ {
     return result;
   }
   /**
-   * Return a (optionally new or reused) vector in the direction of `this` but with specified length.
+   * Return a vector in the direction of `this` but with specified length.
    * @param length desired length of vector
-   * @param result optional preallocated result
+   * @param result optional preallocated result to populate and return
+   * @returns scaled instance vector, or undefined if the instance magnitude is too small
    */
   public scaleToLength(length: number, result?: Vector3d): Vector3d | undefined {
     const mag = Geometry.correctSmallFraction(this.magnitude());

@@ -671,6 +671,7 @@ export namespace Id64 {
         delete(low: number, high: number): void;
         deleteId(id: Id64String): void;
         deleteIds(ids: Id64Arg): void;
+        equals(other: Uint32Set): boolean;
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;

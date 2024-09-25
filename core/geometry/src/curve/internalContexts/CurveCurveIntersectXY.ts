@@ -108,7 +108,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   public resetGeometry(geometryB: AnyCurve): void {
     this._geometryB = geometryB;
   }
+  /** Accept the fraction if it falls inside (possibly extended) fraction range. */
   private acceptFraction(extend0: boolean, fraction: number, extend1: boolean, fractionTol: number = 1.0e-12): boolean {
+    // Note that default tol is tighter than Geometry.smallFraction. We aggressively toss intersections past endpoints.
     if (!extend0 && fraction < -fractionTol)
       return false;
     if (!extend1 && fraction > 1.0 + fractionTol)
@@ -400,18 +402,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         const arcPoint = data.center.plus2Scaled(
           data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i),
         );
-        let arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
-        if (extendB0 && arcFraction > 1)
-          arcFraction -= 2;
-        else if (extendB1 && arcFraction < 0)
-          arcFraction += 2;
+        const arcFraction = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0);
         const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
         if (lineFraction !== undefined &&
           this.acceptFraction(extendA0, lineFraction, extendA1) &&
           this.acceptFraction(extendB0, arcFraction, extendB1)) {
-          this.recordPointWithLocalFractions(
-            lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed,
-          );
+          this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed);
         }
       }
     } else {
@@ -431,24 +427,18 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(
         alpha, beta, gamma, cosines, sines, radians,
       );
-      const lineFractionTol = 1.0e-10;
+      const lineFractionTol = 1.0e-10;  // TODO: why are we loosening tolerances here?
       const arcFractionTol = 1.0e-7;
       for (let i = 0; i < numRoots; i++) {
         const arcPoint = data.center.plus2Scaled(
           data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i),
         );
-        let arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
-        if (extendB0 && arcFraction > 1)
-          arcFraction -= 2;
-        else if (extendB1 && arcFraction < 0)
-          arcFraction += 2;
+        const arcFraction = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0);
         const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
         if (lineFraction !== undefined &&
           this.acceptFraction(extendA0, lineFraction, extendA1, lineFractionTol) &&
           this.acceptFraction(extendB0, arcFraction, extendB1, arcFractionTol)) {
-          this.recordPointWithLocalFractions(
-            lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed,
-          );
+          this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed);
         }
       }
     }
@@ -485,16 +475,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       );
       // the intersections are transform-invariant, so the solution angles apply directly to the input arcs
       for (let i = 0; i < ellipseRadians.length; i++) {
-        let fractionA = cpA.sweep.radiansToSignedPeriodicFraction(circleRadians[i]);
-        let fractionB = cpB.sweep.radiansToSignedPeriodicFraction(ellipseRadians[i]);
-        if (extendA0 && fractionA > 1)
-          fractionA -= 2;
-        else if (extendA1 && fractionA < 0)
-          fractionA += 2;
-        if (extendB0 && fractionB > 1)
-          fractionB -= 2;
-        else if (extendB1 && fractionB < 0)
-          fractionB += 2;
+        const fractionA = cpA.sweep.radiansToSignedFraction(circleRadians[i], extendA0);
+        const fractionB = cpB.sweep.radiansToSignedFraction(ellipseRadians[i], extendB0);
         if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1))
           this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
       }
@@ -610,13 +592,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
               const bcurvePoint4d = bezier.fractionToPoint4d(root);
               const c = bcurvePoint4d.dotProductXYZW(axx, axy, axz, axw);
               const s = bcurvePoint4d.dotProductXYZW(ayx, ayy, ayz, ayw);
-              let arcFraction = cpA.sweep.radiansToSignedPeriodicFraction(Math.atan2(s, c));
-              if (extendA0 && arcFraction > 1)
-                arcFraction -= 2;
-              else if (extendA1 && arcFraction < 0)
-                arcFraction += 2;
-              if (this.acceptFraction(extendA0, arcFraction, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1))
+              const arcFraction = cpA.sweep.radiansToSignedFraction(Math.atan2(s, c), extendA0);
+              if (this.acceptFraction(extendA0, arcFraction, extendA1) &&
+                this.acceptFraction(extendB0, fractionB, extendB1)) {
                 this.recordPointWithLocalFractions(arcFraction, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
+              }
             }
           }
         }
@@ -923,10 +903,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       let fB0;
       let fA1;
       let fB1;
-      const extendA0 = this._extendA0;
-      const extendA1 = this._extendA1;
-      const extendB0 = this._extendB0;
-      const extendB1 = this._extendB1;
       lsA.pointAt(0, pointA0);
       for (let ia = 1; ia < numA; ia++, pointA0.setFrom(pointA1), fA0 = fA1) {
         fA1 = ia * dfA;
@@ -937,8 +913,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           lsB.pointAt(ib, pointB1);
           fB1 = ib * dfB;
           this.dispatchSegmentSegment(
-            lsA, ia === 1 && extendA0, pointA0, fA0, pointA1, fA1, (ia + 1) === numA && extendA1,
-            lsB, ib === 1 && extendB0, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && extendB1,
+            lsA, ia === 1 && this._extendA0, pointA0, fA0, pointA1, fA1, (ia + 1) === numA && this._extendA1,
+            lsB, ib === 1 && this._extendB0, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && this._extendB1,
             reversed,
           );
         }
@@ -966,18 +942,15 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const extendB1 = this._extendB1; // save
     for (let i = 0; i < children.length; i++) {
       this.resetGeometry(children[i]);
-      if (geomB instanceof Path) {
-        if (i === 0) // first child only extends from start
-          this._extendB1 = false;
-        else if (i === children.length - 1) // last child only extends from end
-          this._extendB0 = false;
-        else { // middle children do not extend
-          this._extendB0 = false;
-          this._extendB1 = false;
-        }
-      } else if (geomB instanceof Loop) { // Loop never extends
-        this._extendB0 = false;
-        this._extendB1 = false;
+      if (geomB instanceof Path && children.length > 1) {
+        if (i === 0)
+          this._extendB1 = false; // first child can only extend from start
+        else if (i === children.length - 1)
+          this._extendB0 = false; // last child can only extend from end
+        else
+          this._extendB0 = this._extendB1 = false; // middle children cannot extend
+      } else if (geomB instanceof Loop) {
+        this._extendB0 = this._extendB1 = false; // Loops cannot extend
       }
       geomAHandler(geomA);
       this._extendB0 = extendB0; // restore
@@ -997,11 +970,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       return;
     }
     const index0 = this._results.length;
-    const geomB = this._geometryB;  // save
+    const geomB = this._geometryB; // save
     this.resetGeometry(geomB.path);
     this.dispatchCurveCollection(geomA, geomAHandler);
     this.resetGeometry(geomB); // restore
-    this._results = CurveChainWithDistanceIndex.convertChildDetailToChainDetail(this._results, index0, undefined, geomB, true);
+    this._results = CurveChainWithDistanceIndex.convertChildDetailToChainDetail(
+      this._results, index0, undefined, geomB, true,
+    );
   }
   /**
    * Invoke `child.dispatchToGeometryHandler(this)` for each child in the array returned by the query `g.children`.
@@ -1013,18 +988,15 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const extendA1 = this._extendA1; // save
     if (children)
       for (let i = 0; i < children.length; i++) {
-        if (g instanceof Path) {
-          if (i === 0) // first child only extends from start
-            this._extendA1 = false;
-          else if (i === children.length - 1) // last child only extends from end
-            this._extendA0 = false;
-          else { // middle children do not extend
-            this._extendA0 = false;
-            this._extendA1 = false;
-          }
-        } else if (g instanceof Loop) { // Loop never extends
-          this._extendA0 = false;
-          this._extendA1 = false;
+        if (g instanceof Path && children.length > 1) {
+          if (i === 0)
+            this._extendA1 = false; // first child can only extend from start
+          else if (i === children.length - 1)
+            this._extendA0 = false; // last child can only extend from end
+          else
+            this._extendA0 = this._extendA1 = false; // middle children cannot extend
+        } else if (g instanceof Loop) {
+          this._extendA0 = this._extendA1 = false; // Loops cannot extend
         }
         children[i].dispatchToGeometryHandler(this);
         this._extendA0 = extendA0; // restore
@@ -1089,8 +1061,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   public override handleArc3d(arc0: Arc3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentArc(
-        this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref,
-        1.0, this._extendB1, arc0, this._extendA0, this._extendA1, true,
+        this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
+        arc0, this._extendA0, this._extendA1, true,
       );
     } else if (this._geometryB instanceof LineString3d) {
       this.computeArcLineString(

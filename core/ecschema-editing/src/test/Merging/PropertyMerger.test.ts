@@ -2,10 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, ECClass, EntityClass, Mixin, Property, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
+import { expect } from "chai";
+
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Property merger tests", () => {
@@ -15,6 +17,12 @@ describe("Property merger tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
 
   const testJson = {
@@ -40,10 +48,26 @@ describe("Property merger tests", () => {
         phenomenon: "TestSchema.TestPhenomenon",
         definition: "YRD",
       },
+      TestUnit2: {
+        schemaItemType: "Unit",
+        unitSystem: "TestSchema.TestUnitSystem",
+        phenomenon: "TestSchema.TestPhenomenon",
+        definition: "Ft",
+      },
       TestKoq: {
         schemaItemType: "KindOfQuantity",
         relativeError: 0.00001,
         persistenceUnit: "TestSchema.TestUnit",
+      },
+      TestKoqCopy: {
+        schemaItemType: "KindOfQuantity",
+        relativeError: 0.00001,
+        persistenceUnit: "TestSchema.TestUnit",
+      },
+      TestKoqDifferentUnit: {
+        schemaItemType: "KindOfQuantity",
+        relativeError: 0.00001,
+        persistenceUnit: "TestSchema.TestUnit2",
       },
       TestEnumeration: {
         schemaItemType: "Enumeration",
@@ -87,7 +111,7 @@ describe("Property merger tests", () => {
   };
 
   beforeEach(async () => {
-    targetContext = new SchemaContext();
+    targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson(testJson, targetContext);
   });
 
@@ -546,6 +570,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -666,6 +691,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -835,6 +861,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -899,6 +926,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -1053,7 +1081,57 @@ describe("Property merger tests", () => {
       await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.Prop' type is not supported.");
     });
 
-    it("should throw an error when merging properties kind of quantity changed", async () => {
+    it("should not throw an error when merging properties with changed kind of quantity but same persistence unit", async () => {
+      await Schema.fromJson(testJson, targetContext);
+      await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "Prop",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "TestSchema.TestKoq",
+            }],
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge({
+        sourceSchemaName: "SourceSchema.01.02.03",
+        targetSchemaName: "TargetSchema.01.00.00",
+        differences: [
+          {
+            changeType: "modify",
+            schemaType: SchemaOtherTypes.Property,
+            itemName: "TestEntity",
+            path: "Prop",
+            difference: {
+              kindOfQuantity: "TestSchema.TestKoqCopy",
+            },
+          },
+        ],
+      });
+
+      await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
+        .then(async (ecClass: ECClass) => {
+          await expect(ecClass.getProperty("Prop")).to.be.eventually.not.undefined
+            .then((property: Property) => {
+              expect(property).to.have.nested.property("kindOfQuantity.fullName", "TestSchema.TestKoqCopy");
+            });
+        });
+    });
+
+    it("should not throw an error when merging properties with changed kind of quantity from undefined", async () => {
       await Schema.fromJson({
         ...targetJson,
         items: {
@@ -1069,7 +1147,7 @@ describe("Property merger tests", () => {
       }, targetContext);
 
       const merger = new SchemaMerger(targetContext);
-      const merge = merger.merge({
+      const mergedSchema = await merger.merge({
         sourceSchemaName: "SourceSchema.01.02.03",
         targetSchemaName: "TargetSchema.01.00.00",
         differences: [
@@ -1092,7 +1170,57 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.Prop' kind of quantity is not supported.");
+
+      await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
+        .then(async (ecClass: ECClass) => {
+          await expect(ecClass.getProperty("Prop")).to.be.eventually.not.undefined
+            .then((property: Property) => {
+              expect(property).to.have.nested.property("kindOfQuantity.fullName", "TestSchema.TestKoq");
+            });
+        });
+    });
+
+    it("should throw an error when merging properties kind of quantity changed", async () => {
+      await Schema.fromJson(testJson, targetContext);
+      await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          {
+            name: "TestSchema",
+            version: "01.00.15",
+          },
+        ],
+        items: {
+          TestEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "Prop",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "TestSchema.TestKoq",
+            }],
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger(targetContext);
+      const merge = merger.merge({
+        sourceSchemaName: "SourceSchema.01.02.03",
+        targetSchemaName: "TargetSchema.01.00.00",
+        differences: [
+          {
+            changeType: "modify",
+            schemaType: SchemaOtherTypes.Property,
+            itemName: "TestEntity",
+            path: "Prop",
+            difference: {
+              kindOfQuantity: "TestSchema.TestKoqDifferentUnit",
+            },
+          },
+        ],
+      });
+      await expect(merge).to.be.rejectedWith("KindOfQuantity can only be changed if it has the same persistence unit as the property.");
     });
 
     it("should throw an error when merging struct properties structClass changed", async () => {
@@ -1303,6 +1431,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",
@@ -1345,6 +1474,7 @@ describe("Property merger tests", () => {
       await Schema.fromJson({
         ...targetJson,
         references: [
+          ...targetJson.references,
           {
             name: "TestSchema",
             version: "01.00.15",

@@ -2,19 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
+import { BisTestHelper } from "../../TestUtils/BisTestHelper";
+import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Difference Conflict Resolving", () => {
+describe("Schema Edit tests", () => {
   it("shall re-apply stored conflict resolutions", async () => {
     const targetSchema = await Schema.fromJson({
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "ConflictSchema",
       version: "1.0.0",
       alias: "conflict",
+      references: [
+        {
+          name: "CoreCustomAttributes",
+          version: "01.00.01",
+        },
+      ],
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.DynamicSchema",
+        },
+      ],
       items: {
         SameNameOtherItemType: {
           schemaItemType: "EntityClass",
@@ -27,7 +39,7 @@ describe("Difference Conflict Resolving", () => {
           ],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const sourceSchemas: Schema[] = [
       // 1st case: Conflicting name
@@ -92,8 +104,8 @@ describe("Difference Conflict Resolving", () => {
 
     // For all runs the class ClassToBeSkipped shall be skipped.
     const initialSchemaChanges = new SchemaEdits();
-    initialSchemaChanges.items.skip("ClassToBeSkipped");
-    initialSchemaChanges.properties.skip("SameNameOtherItemType", "PropertyToSkip");
+    initialSchemaChanges.items.skip("ConflictSchema", "ClassToBeSkipped");
+    initialSchemaChanges.properties.skip("ConflictSchema", "SameNameOtherItemType", "PropertyToSkip");
 
     let storedSchemaEdits = initialSchemaChanges.toJSON();
 
@@ -105,10 +117,10 @@ describe("Difference Conflict Resolving", () => {
       if (differences.conflicts) {
         for (const conflict of differences.conflicts) {
           if (conflict.code === ConflictCode.ConflictingItemName && conflict.itemName === "SameNameOtherItemType") {
-            schemaEdits.items.rename(conflict.itemName, `${conflict.itemName}_1`);
+            schemaEdits.items.rename(sourceSchema.name, conflict.itemName, `${conflict.itemName}_1`);
           }
           if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.path === "MyProperty") {
-            schemaEdits.properties.rename(conflict.itemName!, conflict.path, `${conflict.path}_1`);
+            schemaEdits.properties.rename(sourceSchema.name, conflict.itemName!, conflict.path, `${conflict.path}_1`);
           }
         }
       }
@@ -120,8 +132,7 @@ describe("Difference Conflict Resolving", () => {
     }
 
     await expect(targetSchema.getItem("ClassToBeSkipped")).to.be.eventually.undefined;
-    await expect(targetSchema.getItem("SameNameOtherItemType")).to.be.eventually.fulfilled.then(async (ecClass: EntityClass) => {
-      expect(ecClass).instanceOf(EntityClass);
+    await expect(targetSchema.getItem("SameNameOtherItemType")).to.be.eventually.instanceOf(EntityClass).then(async (ecClass: EntityClass) => {
       await expect(ecClass.getProperty("PropertyToSkip")).to.be.eventually.undefined;
       await expect(ecClass.getProperty("MyProperty")).to.be.eventually.fulfilled.then((property) => {
         expect(property, "Could not find MyProperty").to.be.not.undefined;
