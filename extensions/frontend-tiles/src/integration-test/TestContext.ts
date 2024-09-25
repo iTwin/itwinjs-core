@@ -22,15 +22,15 @@ export class TestContext {
 
   private async initialize() {
     const oidcConfig = {
-      clientId: process.env.OIDC_CLIENT_ID || "",
-      redirectUri: process.env.OIDC_REDIRECT_URI || "",
-      scope: process.env.OIDC_IMODEL_SCOPE || "",
-      authority: process.env.OIDC_AUTHORITY_URL || "",
+      clientId: process.env.MES_OIDC_CLIENT_ID || "",
+      redirectUri: process.env.OIDC_REDIRECT || "",
+      scope: process.env.MES_OIDC_SCOPE || "",
+      authority: process.env.MES_OIDC_AUTH_URL || "",
     };
 
     const user = {
-      email: process.env.MES_INTEGRATION_USERNAME || "",
-      password: process.env.MES_INTEGRATION_PASSWORD || "",
+      email: process.env.mes_integration_testuser || "",
+      password: process.env.mes_integration_testpassword || "",
     };
 
     // Generate access token

@@ -33,11 +33,10 @@ describe("MeshExportServiceIntegrationTest", () => {
     const testContext = await TestContext.instance();
     accessToken = testContext.getAccessToken();
 
-    const iModelId = process.env.MES_INTEGRATION_IMODELID || "";
-    urlPrefix = process.env.MES_INTEGRATION_URLPREFIX || "";
+    const iModelId = process.env.MES_IMODEL_ID || "";
+    urlPrefix = process.env.imjs_url_prefix || "";
 
     await IModelApp.startup();
-
     const requestOptions: RequestInit = {
       method: "POST",
       headers: {
@@ -56,7 +55,7 @@ describe("MeshExportServiceIntegrationTest", () => {
     };
 
     // initiate mesh export
-    const response = await fetch(`https://${urlPrefix}api.bentley.com/mesh-export/`, requestOptions);
+    const response = await fetch(`https://qa-api.bentley.com/mesh-export/`, requestOptions);
     const result = JSON.parse(JSON.stringify(await response.json()));
     exportId = result.export.id;
   });
@@ -92,7 +91,6 @@ describe("MeshExportServiceIntegrationTest", () => {
 
     // obtain tileset from url
     const tileset = JSON.parse(JSON.stringify(await (await fetch(tilesetUrl)).json()));
-    // const tilesetObj = JSON.parse(tileset);
 
     // obtain major tile version from the returned tileset (removing minor version from the string)
     const tilesetMajorTileVersion = tileset.asset.version.slice(0,4);

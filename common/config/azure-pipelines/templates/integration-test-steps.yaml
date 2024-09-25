@@ -124,6 +124,13 @@ steps:
     displayName: "Run Electron Backend Tests"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
+  - script: npm run test:integration
+    workingDirectory: "extensions/frontend-tiles"
+    env:
+      NODE_ENV: development
+    displayName: "Run Frontend Tiles Tests"
+    condition: succeededOrFailed()
+
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
     inputs:
@@ -172,4 +179,11 @@ steps:
     inputs:
       testResultsFiles: core/electron/lib/test/*_junit_results.xml
       testRunTitle: "Core - Electron Tests - ${{ parameters.nodeVersion }}"
+    condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+    displayName: "Publish Frontend Tiles Test Results"
+    inputs:
+      testResultsFiles: extensions/frontend-tiles/lib/test/*_junit_results.xml
+      testRunTitle: "Frontend Tiles Tests - ${{ parameters.nodeVersion }}"
     condition: succeededOrFailed()

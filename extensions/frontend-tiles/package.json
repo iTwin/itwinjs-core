@@ -19,7 +19,7 @@
     "test": "npm run -s webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack-config.js 1>&2",
     "webpackIntegrationTests": "webpack --config ./src/integration-test/utils/webpack-config.js 1>&2",
-    "test:integration:tileversion": "npm run -s webpackIntegrationTests && certa --config ./src/integration-test/utils/certa.json -r chrome"
+    "test:integration": "npm run -s webpackIntegrationTests && certa --config ./src/integration-test/utils/certa.json -r chrome"
   },
   "repository": {
     "type": "git",
