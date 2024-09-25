@@ -4,7 +4,7 @@
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",
-  "typings": "lib/esm/core-bentley",
+  "typings": "lib/cjs/core-bentley",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -142,6 +142,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/node': ~18.16.20
+      '@vitest/coverage-istanbul': ^2.1.0
       eslint: ^8.56.0
       flatbuffers: ~1.12.0
       js-base64: ^3.6.1
@@ -161,6 +162,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/node': 18.16.20
+      '@vitest/coverage-istanbul': 2.1.0_vitest@2.1.0
       eslint: 8.56.0
       nyc: 15.1.0
       rimraf: 3.0.2
