@@ -88,8 +88,8 @@ export namespace ContourDisplay {
       if (undefined === json) {
         this.majorColor = ColorDef.black;
         this.minorColor = ColorDef.black;
-        this.majorPixelWidth = 4;
-        this.minorPixelWidth = 2;
+        this.majorPixelWidth = 2;
+        this.minorPixelWidth = 1;
         this.majorPattern = 0;
         this.minorPattern = 0;
         this.minorInterval = 1;
@@ -97,8 +97,8 @@ export namespace ContourDisplay {
       } else {
         this.majorColor = json.majorColor ? ColorDef.create(json.majorColor) : ColorDef.black;
         this.minorColor = json.minorColor ? ColorDef.create(json.minorColor) : ColorDef.black;
-        this.majorPixelWidth = json.majorPixelWidth ?? 4;
-        this.minorPixelWidth = json.minorPixelWidth ?? 2;
+        this.majorPixelWidth = json.majorPixelWidth ?? 2;
+        this.minorPixelWidth = json.minorPixelWidth ?? 1;
         this.majorPattern = json.majorPattern ?? 0;
         this.minorPattern = json.minorPattern ?? 0;
         this.minorInterval = json.minorInterval ?? 1;
@@ -119,10 +119,10 @@ export namespace ContourDisplay {
       if (!this.minorColor.equals(ColorDef.black))
         props.minorColor = this.minorColor.toJSON();
 
-      if (4 !== this.majorPixelWidth)
+      if (2 !== this.majorPixelWidth)
         props.majorPixelWidth = this.majorPixelWidth;
 
-      if (2 !== this.minorPixelWidth)
+      if (1 !== this.minorPixelWidth)
         props.minorPixelWidth = this.minorPixelWidth;
 
       if (0 !== this.majorPattern)
