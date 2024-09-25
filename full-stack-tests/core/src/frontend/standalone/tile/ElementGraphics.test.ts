@@ -42,7 +42,7 @@ describe("requestElementGraphics", () => {
       IModelApp.renderSystem.createMeshGeometry = (params, _origin) => {
         expect(params.vertices.usesUnquantizedPositions).to.equal(!expected);
         createdMesh = true;
-        return new MockRender.Geometry();
+        return new MockRender.Geometry("mesh");
       };
 
       const gfx = await readElementGraphics(bytes!, imodel, "0", true);
@@ -96,7 +96,7 @@ describe("requestElementGraphics", () => {
       IModelApp.renderSystem.createMeshGeometry = (params) => {
         expect(params.vertices.usesUnquantizedPositions).to.equal(true !== options.quantize);
         createdMesh = true;
-        return new MockRender.Geometry();
+        return new MockRender.Geometry("mesh");
       };
 
       let actualRtc: number[] | undefined;

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "4.9.0-dev.20",
+  "version": "4.10.0-dev.6",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -41,7 +41,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
-    "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -57,15 +56,12 @@
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.1",
+    "sinon": "^17.0.2",
     "typescript": "~5.3.3"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.9.0-dev.20",
-    "@itwin/core-quantity": "workspace:^4.9.0-dev.20"
-  },
-  "dependencies": {
-    "almost-equal": "^1.1.0"
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.6",
+    "@itwin/core-quantity": "workspace:^4.10.0-dev.6"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

@@ -13,6 +13,7 @@ public;interface;BaseTypeDescription
 public;interface;BooleanRulesetVariable
 public;interface;BooleanRulesetVariableJSON
 deprecated;interface;BooleanRulesetVariableJSON
+internal;const;buildElementProperties
 public;interface;CalculatedPropertiesSpecification
 public;interface;CategoryDescription
 public;namespace;CategoryDescription
@@ -398,6 +399,7 @@ public;type;RulesetVariableJSON
 public;enum;RuleTypes
 public;interface;SameLabelInstanceGroup
 public;enum;SameLabelInstanceGroupApplicationStage
+public;interface;SchemaCategoryIdentifier
 public;interface;SchemasSpecification
 public;interface;SelectClassInfo
 public;namespace;SelectClassInfo

@@ -64,6 +64,7 @@ export class NullRenderSystem extends RenderSystem {
   public dispose() { }
   public constructor() { super(); }
   public override createRenderGraphic() { return undefined; }
+  public override createGraphicFromTemplate() { return undefined as any; }
 }
 
 /** A utility class intended for applications (primarily test-runners) that run in environments that lack support for WebGL.
