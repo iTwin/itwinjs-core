@@ -408,12 +408,12 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      iconUnicode: "\ue90a",
+      iconUnicode: "\ue94b",
       createDropDown: async (container: HTMLElement) => {
         const panel = new ContoursPanel(this.viewport, container);
         return panel;
       },
-      tooltip: "Civil contours",
+      tooltip: "Contour display",
     });
 
     this.updateTitle();
