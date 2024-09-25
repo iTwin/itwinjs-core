@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Add Id64.Uint32Set.equals().",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

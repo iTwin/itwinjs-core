@@ -16,6 +16,7 @@ export type AttachGeoscienceTilesetArgs = BaseGeoscienceArgs;
 // @alpha
 export interface BaseGeoscienceArgs {
     accessToken: string;
+    endpointUrl: string;
     geoscienceObjectId: string;
     organizationId: string;
     workspaceId: string;
@@ -150,8 +151,10 @@ export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promis
 // @beta
 export interface ObtainIModelTilesetUrlArgs {
     accessToken: AccessToken;
+    changesetId?: string;
     enableCDN?: boolean;
-    iModel: IModelConnection;
+    iModelId?: string;
+    iTwinId?: string;
     requireExactChangeset?: boolean;
     urlPrefix?: string;
 }

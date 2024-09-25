@@ -114,7 +114,14 @@ export class PathFragment {
       this.childFraction0,
     )!; // the interval must have nonzero length so division should be safe
   }
-  /** Convert the given chainDistance to a fraction along this childCurve using `moveSignedDistanceFromFraction`. */
+  /**
+   * Convert the given chainDistance to a fraction along this childCurve using `moveSignedDistanceFromFraction`.
+   * @param chainDistance signed distance along the chain.
+   * @param allowExtrapolation whether to extrapolate off the start of the chain if `chainDistance` is negative,
+   * or off the end of the chain if `chainDistance` is more than `chainLength`. Extending the chain in this manner
+   * may result in significant inaccuracy, especially for negative distances.
+   * @return fraction local to the relevant chain primitive corresponding to the chain position at `chainDistance`.
+   */
   public chainDistanceToAccurateChildFraction(chainDistance: number, allowExtrapolation?: boolean): number {
     const childDetail = this.childCurve.moveSignedDistanceFromFraction(
       this.childFraction0, chainDistance - this.chainDistance0, allowExtrapolation ?? false,
@@ -225,17 +232,20 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
   }
 }
 /**
- * `CurveChainWithDistanceIndex` is a CurvePrimitive whose fractional parameterization is proportional to true
- * distance along a CurveChain.
+ * `CurveChainWithDistanceIndex` is a [[CurvePrimitive]] whose fractional parameterization is proportional to true
+ * distance along a path.
  * * For example if the total length of the chain is `L`, then the distance along the chain from parameters `t0`
  * to `t1` is easily computed as `L*(t1-t0)`.
- * * The curve chain can be any type derived from `CurveChain`, i.e., either a `Path` or a `Loop`.
+ * * In this way the `CurveChainWithDistanceIndex` provides a global arc length parameterization for a [[CurveChain]].
+ * * A `CurveChainWithDistanceIndex` can be created from any [[CurveChain]], but a [[Path]] is stored internally.
+ * * Adding a `CurveChainWithDistanceIndex` to a `CurveChain` does not preserve the distance index; instead the
+ * internal path children are added directly to the `CurveChain`.
  * @public
  */
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
   /** String name for schema properties */
   public readonly curvePrimitiveType = "curveChainWithDistanceIndex";
-  private readonly _path: CurveChain;
+  private readonly _path: Path;
   private readonly _fragments: PathFragment[];
   private readonly _totalLength: number; // matches final fragment distance1.
   private static _numCalls = 0;
@@ -249,25 +259,26 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   // final assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
   private constructor(path: CurveChain, fragments: PathFragment[]) {
     super();
-    this._path = path;
+    this._path = path instanceof Path ? path : Path.create(...path.children); // Loop semantics would be confusing
     this._fragments = fragments;
     this._totalLength = fragments.length > 0 ? fragments[fragments.length - 1].chainDistance1 : 0;
   }
   /**
    * Create a clone, transformed and with its own distance index.
    * @param transform transform to apply in the clone.
+   * @param options how finely to stroke the path to create the distance index
    */
-  public cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined {
-    const c = this._path.clone();
-    if (c instanceof CurveChain && c.tryTransformInPlace(transform))
-      return CurveChainWithDistanceIndex.createCapture(c);
+  public cloneTransformed(transform: Transform, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined {
+    const c = this._path.clone() as Path;
+    if (c.tryTransformInPlace(transform))
+      return CurveChainWithDistanceIndex.createCapture(c, options);
     return undefined;
   }
   /**
    * Reference to the contained path.
    * * Do not modify the path. The distance index will be wrong.
    */
-  public get path(): CurveChain {
+  public get path(): Path {
     return this._path;
   }
   /**
@@ -277,24 +288,34 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public get fragments(): PathFragment[] {
     return this._fragments;
   }
-  /** Return a deep clone */
-  public clone(): CurveChainWithDistanceIndex {
-    const c = this._path.clone() as CurveChain;
-    return CurveChainWithDistanceIndex.createCapture(c);
+  /**
+   * Return a deep clone with its own distance index.
+   * @param options how finely to stroke the path to create the distance index
+   */
+  public clone(options?: StrokeOptions): CurveChainWithDistanceIndex {
+    const c = this._path.clone() as Path;
+    return CurveChainWithDistanceIndex.createCapture(c, options);
   }
-  /** Return a deep clone */
-  public override clonePartialCurve(fractionA: number, fractionB: number): CurveChainWithDistanceIndex | undefined {
-    if (fractionA === fractionB)
+  /**
+   * Return a portion of this curve with its own distance index.
+   * * Passing a chain detail containing a `childDetail` is more accurate for extending the instance beyond [0,1].
+   * Such details are returned by e.g., [[CurveCurve.intersectionXYPairs]].
+   * @param fractionA start fraction or chain detail
+   * @param fractionB end fraction or chain detail
+   * @param options how finely to stroke the path to create the distance index
+   */
+  public override clonePartialCurve(fractionA: number | CurveLocationDetail, fractionB: number | CurveLocationDetail, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined {
+    const haveDetailA = fractionA instanceof CurveLocationDetail;
+    const haveDetailB = fractionB instanceof CurveLocationDetail;
+    let chainFractionA = haveDetailA ? fractionA.fraction : fractionA;
+    let chainFractionB = haveDetailB ? fractionB.fraction : fractionB;
+    if (chainFractionA === chainFractionB)
       return undefined;
-    let fracA = fractionA;
-    let fracB = fractionB;
-    const reversed = fractionA > fractionB;
-    if (reversed) {
-      fracA = fractionB;
-      fracB = fractionA;
-    }
-    const chainDistanceA = fracA * this._totalLength;
-    const chainDistanceB = fracB * this._totalLength;
+    const reversed = chainFractionA > chainFractionB;
+    if (reversed)
+      [chainFractionA, chainFractionB] = [chainFractionB, chainFractionA];
+    const chainDistanceA = chainFractionA * this._totalLength;
+    const chainDistanceB = chainFractionB * this._totalLength;
     const fragmentA = this.chainDistanceToFragment(chainDistanceA, true);
     if (undefined === fragmentA)
       return undefined;
@@ -307,8 +328,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     const childCurveIndexB = this._path.childIndex(fragmentB.childCurve, true);
     if (undefined === childCurveIndexB)
       return undefined;
-    const childFractionA = fragmentA.chainDistanceToAccurateChildFraction(chainDistanceA, true);
-    const childFractionB = fragmentB.chainDistanceToAccurateChildFraction(chainDistanceB, true);
+    const childFractionA = haveDetailA && fractionA.childDetail ? fractionA.childDetail.fraction : fragmentA.chainDistanceToAccurateChildFraction(chainDistanceA, true);
+    const childFractionB = haveDetailB && fractionB.childDetail ? fractionB.childDetail.fraction : fragmentB.chainDistanceToAccurateChildFraction(chainDistanceB, true);
     // add a (possibly reversed) partial clone to newPath
     const newPath = Path.create();
     const addPartialChild = (
@@ -335,7 +356,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     if (fragmentA.childCurve === fragmentB.childCurve) {
       // the two distances are within the same curve.
       if (addPartialChild(fragmentA.childCurve, childFractionA, childFractionB, reversed))
-        return CurveChainWithDistanceIndex.createCapture(newPath); // singleton -- children[] does not need to be reversed.
+        return CurveChainWithDistanceIndex.createCapture(newPath, options); // singleton -- children[] does not need to be reversed.
       return undefined;
     }
     addPartialChild(this._path.children[childCurveIndexA], childFractionA, 1.0, reversed);
@@ -347,7 +368,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     // This reverses array entries but not orientation within each curve ...
     if (reversed)
       newPath.children.reverse();
-    return CurveChainWithDistanceIndex.createCapture(newPath);
+    return CurveChainWithDistanceIndex.createCapture(newPath, options);
   }
   /**
    * Ask if the curve is within tolerance of a plane.
@@ -463,14 +484,14 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return flatChain;
   }
   /**
-   * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`
-   * @param path primitive array to be CAPTURED (not cloned)
+   * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`.
+   * @param path chain to be CAPTURED (not cloned)
+   * @param options how finely to stroke the path to create the distance index
    */
   public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex {
     path = this.flattenNestedChains(path);  // nested chains not allowed
     const fragments = DistanceIndexConstructionContext.createPathFragmentIndex(path, options);
-    const result = new CurveChainWithDistanceIndex(path, fragments);
-    return result;
+    return new CurveChainWithDistanceIndex(path, fragments);
   }
   /**
    * Return the PathFragment object at the given `distance` along the chain.
@@ -799,8 +820,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   }
   /**
    * Compute the global chain detail corresponding to a local child detail.
-   * @param childDetail the local (fragment) detail, captured.
-   * @returns newly allocated global (chain) detail with `childDetail` field pointing to the input, and `a` field copied from the input
+   * @param childDetail the local (fragment) detail, captured as-is.
+   * @returns newly allocated global (chain) detail with its `childDetail` field pointing to the input, and its `a`
+   * field copied from the input.
    */
   public computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined {
     if (!childDetail.curve)

@@ -671,6 +671,7 @@ export namespace Id64 {
         delete(low: number, high: number): void;
         deleteId(id: Id64String): void;
         deleteIds(ids: Id64Arg): void;
+        equals(other: Uint32Set): boolean;
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
@@ -1523,6 +1524,9 @@ export enum RealityDataStatus {
     Success = 0
 }
 
+// @public
+export type RemapTransientLocalId = (sourceLocalId: number) => number;
+
 // @internal
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1635,10 +1639,23 @@ export class Tracing {
 
 // @public
 export class TransientIdSequence {
+    constructor(initialLocalId?: number);
+    get currentLocalId(): number;
+    fork(): TransientIdSequenceProps;
+    static fromJSON(props: TransientIdSequenceProps): TransientIdSequence;
     getNext(): Id64String;
+    readonly initialLocalId: number;
+    merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number;
     // @deprecated
     get next(): Id64String;
     peekNext(): Id64String;
+    toJSON(): TransientIdSequenceProps;
+}
+
+// @public
+export interface TransientIdSequenceProps {
+    currentLocalId: number;
+    initialLocalId: number;
 }
 
 // @public

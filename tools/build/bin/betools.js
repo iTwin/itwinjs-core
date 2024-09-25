@@ -88,7 +88,11 @@ yargs.strict(true)
         },
         "apiSummaryFolder": {
           describe: "Directory for the API summary. Defaults to `<Rush repository root>/common/api/summary`."
-        }
+        },
+        "includeUnexportedApis": {
+          boolean: true,
+          describe: "If this flag is set, then APIs that are unexported, but still indirectly accessible via exported APIs, will also be included to the API report. Defaults to `false`"
+        },
       })
     },
     (argv) => { extractApiCommand(argv) })
@@ -161,7 +165,8 @@ function extractApiCommand(options) {
   const apiReportFolderOpt = options.apiReportFolder ? ["--apiReportFolder", options.apiReportFolder] : [];
   const apiReportTempFolderOpt = options.apiReportTempFolder ? ["--apiReportTempFolder", options.apiReportTempFolder] : [];
   const apiSummaryFolderOpt = options.apiSummaryFolder ? ["--apiSummaryFolder", options.apiSummaryFolder] : [];
-  exec("node", [getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt, ...apiReportFolderOpt, ...apiReportTempFolderOpt, ...apiSummaryFolderOpt]);
+  const includeUnexportedApisOpt = options.includeUnexportedApis ? ["--includeUnexportedApis"] : [];
+  exec("node", [getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt, ...apiReportFolderOpt, ...apiReportTempFolderOpt, ...apiSummaryFolderOpt, ...includeUnexportedApisOpt]);
 }
 
 function pseudolocalizeCommand(options) {

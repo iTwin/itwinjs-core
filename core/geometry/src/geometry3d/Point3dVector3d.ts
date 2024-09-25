@@ -324,7 +324,7 @@ export class XYZ implements XYAndZ {
     this.y += other.y;
     this.z += other.z;
   }
-  /** Add x,y,z from other in place. */
+  /** Subtract x,y,z from other in place. */
   public subtractInPlace(other: XYAndZ): void {
     this.x -= other.x;
     this.y -= other.y;
@@ -1223,9 +1223,10 @@ export class Vector3d extends XYZ {
     return result;
   }
   /**
-   * Return a (optionally new or reused) vector in the direction of `this` but with specified length.
+   * Return a vector in the direction of `this` but with specified length.
    * @param length desired length of vector
-   * @param result optional preallocated result
+   * @param result optional preallocated result to populate and return
+   * @returns scaled instance vector, or undefined if the instance magnitude is too small
    */
   public scaleToLength(length: number, result?: Vector3d): Vector3d | undefined {
     const mag = Geometry.correctSmallFraction(this.magnitude());
@@ -1242,8 +1243,7 @@ export class Vector3d extends XYZ {
     return this.crossProduct(vectorB, result).normalize(result);
   }
   /**
-   * Compute the cross product of this vector with `vectorB`.   Normalize it, using given xyz as
-   * default if length is zero.
+   * Compute the cross product of this vector with `vectorB`. Normalize it, using given xyz as default if length is zero.
    * @param vectorB second vector of cross product
    * @param x x value for default result
    * @param y y value for default result

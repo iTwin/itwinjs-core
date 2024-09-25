@@ -1703,11 +1703,16 @@ export class ContextRealityModel {
     set displaySettings(settings: RealityModelDisplaySettings);
     // @beta (undocumented)
     protected _displaySettings: RealityModelDisplaySettings;
+    // @beta
+    get invisible(): boolean;
+    set invisible(invisible: boolean);
     matchesNameAndUrl(name: string, url: string): boolean;
     readonly name: string;
     readonly onAppearanceOverridesChanged: BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(invisible: boolean, model: ContextRealityModel) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>;
     // @alpha (undocumented)
     readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -1731,6 +1736,8 @@ export interface ContextRealityModelProps {
     description?: string;
     // @beta
     displaySettings?: RealityModelDisplayProps;
+    // @beta
+    invisible?: boolean;
     name?: string;
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
@@ -1758,6 +1765,8 @@ export class ContextRealityModels {
     readonly onChanged: BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(model: ContextRealityModel, invisible: boolean) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
     populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
@@ -1810,8 +1819,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2228224,
-    Major = 34,
+    Combined = 2293760,
+    Major = 35,
     Minor = 0
 }
 
@@ -2743,6 +2752,30 @@ export interface ElementGeometryBuilderParamsForPart {
     is2dPart?: boolean;
 }
 
+// @beta
+export interface ElementGeometryCacheOperationRequestProps {
+    id: Id64String;
+    onGeometry?: ElementGeometryFunction;
+    op: number;
+    params?: any;
+}
+
+// @beta
+export interface ElementGeometryCacheRequestProps {
+    id?: Id64String;
+}
+
+// @beta
+export interface ElementGeometryCacheResponseProps {
+    numCurve?: number;
+    numGeom?: number;
+    numOther?: number;
+    numPart?: number;
+    numSolid?: number;
+    numSurface?: number;
+    status: BentleyStatus;
+}
+
 // @public (undocumented)
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
@@ -3538,12 +3571,7 @@ export type GenericInstanceFilterRuleGroupOperator = "and" | "or";
 export type GenericInstanceFilterRuleOperator = "is-equal" | "is-not-equal" | "is-null" | "is-not-null" | "is-true" | "is-false" | "less" | "less-or-equal" | "greater" | "greater-or-equal" | "like";
 
 // @beta
-export interface GenericInstanceFilterRuleValue {
-    // (undocumented)
-    displayValue: string;
-    // (undocumented)
-    rawValue: GenericInstanceFilterRuleValue.Values;
-}
+export type GenericInstanceFilterRuleValue = GenericInstanceFilterRuleNumericValue | GenericInstanceFilterRuleNonNumericValue;
 
 // @beta (undocumented)
 export namespace GenericInstanceFilterRuleValue {
@@ -6437,6 +6465,8 @@ export class PackedFeatureTable implements RenderFeatureTable {
     readonly batchModelIdPair: Id64.Uint32Pair;
     // (undocumented)
     get byteLength(): number;
+    // (undocumented)
+    readonly data: Uint32Array;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
@@ -7517,7 +7547,11 @@ export interface RenderFeatureTable {
 
 // @public
 export abstract class RenderMaterial {
-    protected constructor(params: RenderMaterial.Params);
+    protected constructor(params: {
+        key?: string;
+        textureMapping?: TextureMapping;
+    });
+    compare(other: RenderMaterial): number;
     // (undocumented)
     get hasTexture(): boolean;
     readonly key?: string;
@@ -7940,6 +7974,7 @@ export abstract class RenderTexture implements IDisposable {
     protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
+    compare(other: RenderTexture): number;
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
@@ -9804,6 +9839,7 @@ export interface TextureLoadProps {
 // @public
 export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
+    compare(other: TextureMapping): number;
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
     // @beta
@@ -9859,6 +9895,7 @@ export namespace TextureMapping {
     }
     export class Params {
         constructor(props?: TextureMapping.ParamProps);
+        compare(other: Params): number;
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
         constantLodParams: ConstantLodParams;
@@ -9871,6 +9908,7 @@ export namespace TextureMapping {
     }
     export class Trans2x3 {
         constructor(m00?: number, m01?: number, originX?: number, m10?: number, m11?: number, originY?: number);
+        compare(other: Trans2x3): number;
         static readonly identity: Trans2x3;
         readonly transform: Transform;
     }

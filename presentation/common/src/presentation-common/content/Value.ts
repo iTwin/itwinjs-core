@@ -193,7 +193,7 @@ export interface NestedContentValue {
   /** Names of fields whose values are merged */
   mergedFieldNames: string[];
   /** Label of the ECInstance that this `NestedContentValue` is based on. */
-  label?: string;
+  labelDefinition?: LabelDefinition;
 }
 
 /**
@@ -359,7 +359,8 @@ function isNestedContentValue(v: Value | ValueJSON): v is NestedContentValue[] |
     v !== undefined &&
     Array.isArray(v) &&
     (v.length === 0 ||
-      ((v[0] as NestedContentValue).primaryKeys !== undefined &&
+      (!!v[0] &&
+        (v[0] as NestedContentValue).primaryKeys !== undefined &&
         (v[0] as NestedContentValue).values !== undefined &&
         (v[0] as NestedContentValue).displayValues !== undefined &&
         (v[0] as NestedContentValue).mergedFieldNames !== undefined))

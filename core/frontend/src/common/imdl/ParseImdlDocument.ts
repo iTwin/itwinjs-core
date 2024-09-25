@@ -18,17 +18,17 @@ import {
   AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlCompactEdges, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges, ImdlMesh, ImdlMeshEdges,
   ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
 } from "./ImdlSchema";
-import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
-import { isValidSurfaceType, SurfaceMaterial } from "../render/primitives/SurfaceParams";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
-import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
-import { AnimationNodeId } from "../render/AnimationNodeId";
-import { EdgeParams } from "../render/primitives/EdgeParams";
-import { MeshParams } from "../render/primitives/MeshParams";
-import { VertexTable } from "../render/primitives/VertexTable";
+import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";
+import { isValidSurfaceType, SurfaceMaterial } from "../internal/render/SurfaceParams";
+import { DisplayParams } from "../internal/render/DisplayParams";
+import { AuxChannelTable, AuxChannelTableProps } from "../internal/render/AuxChannelTable";
+import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../internal/render/VertexTableSplitter";
+import { AnimationNodeId } from "../internal/render/AnimationNodeId";
+import { EdgeParams } from "../internal/render/EdgeParams";
+import { MeshParams } from "../internal/render/MeshParams";
+import { VertexTable } from "../internal/render/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
-import { VertexIndices } from "../render/primitives/VertexIndices";
+import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
 import {MeshoptDecoder} from "meshoptimizer/meshopt_decoder.module";
 
@@ -258,7 +258,8 @@ export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams {
   };
 }
 
-function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
+/** @internal */
+export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   return {
     ...params,
     segments: params.segments ? {

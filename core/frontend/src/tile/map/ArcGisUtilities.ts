@@ -18,6 +18,7 @@ import { headersIncludeAuthMethod } from "../../request/utils";
  */
 export enum ArcGisErrorCode {
   InvalidCredentials = 401,
+  MissingPermissions = 403,
   InvalidToken = 498,
   TokenRequired = 499,
   UnknownError = 1000,
@@ -189,7 +190,9 @@ export class ArcGisUtilities {
       // If we got a 'Token Required' error, lets check what authentification methods this ESRI service offers
       // and return information needed to initiate the authentification process... the end-user
       // will have to provide his credentials before we can fully validate this source.
-      if (json.error.code === ArcGisErrorCode.TokenRequired) {
+      // Note: Some servers will throw a error 403 (You do not have permissions to access this resource or perform this operation),
+      //       instead of 499 (TokenRequired)
+      if (json.error.code === ArcGisErrorCode.TokenRequired || json.error.code === ArcGisErrorCode.MissingPermissions)  {
         return (source.userName || source.password) ? {status: MapLayerSourceStatus.InvalidCredentials} : {status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
         return { status: MapLayerSourceStatus.InvalidCredentials};
@@ -287,17 +290,16 @@ export class ArcGisUtilities {
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
         }
       }
-      let response = await fetch(tmpUrl.toString(), { method: "GET" });
+      let response = await fetch(tmpUrl, { method: "GET" });
       if (response.status === 401 && !requireToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
         // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(url, {method: "GET", credentials: "include" });
+        response = await fetch(tmpUrl, {method: "GET", credentials: "include" });
       }
 
       // Append security token when corresponding error code is returned by ArcGIS service
       let errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
       if (!accessTokenRequired
-        && errorCode !== undefined
-        && errorCode === ArcGisErrorCode.TokenRequired ) {
+        && (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.MissingPermissions) ) {
         accessTokenRequired = true;
         // If token required
         const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);

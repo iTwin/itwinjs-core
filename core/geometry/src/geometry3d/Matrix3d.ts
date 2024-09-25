@@ -39,10 +39,12 @@ export class PackedMatrix3dOps {
    * @param a21 row 2, column 1 entry
    * @param a22 row 2, column 2 entry
    */
-  public static loadMatrix(dest: Float64Array,
+  public static loadMatrix(
+    dest: Float64Array,
     a00: number, a01: number, a02: number,
     a10: number, a11: number, a12: number,
-    a20: number, a21: number, a22: number) {
+    a20: number, a21: number, a22: number,
+  ) {
     dest[0] = a00; dest[1] = a01; dest[2] = a02;
     dest[3] = a10; dest[4] = a11; dest[5] = a12;
     dest[6] = a20; dest[7] = a21; dest[8] = a22;
@@ -154,7 +156,8 @@ export class PackedMatrix3dOps {
   }
 }
 
-/** A Matrix3d is tagged indicating one of the following states:
+/**
+ * A Matrix3d is tagged indicating one of the following states:
  * * unknown: it is not know if the matrix is invertible.
  * * inverseStored: the matrix has its inverse stored.
  * * singular: the matrix is known to be singular.
@@ -177,7 +180,8 @@ export enum InverseMatrixState {
   singular,
 }
 
-/** A Matrix3d is a 3x3 matrix.
+/**
+ * A Matrix3d is a 3x3 matrix.
  * * A very common use is to hold a rigid body rotation (which has no scaling or skew), but the 3x3 contents can
  * also hold scaling and skewing.
  * * The matrix with 2-dimensional layout (note: a 2d array can be shown by a matrix)
@@ -425,7 +429,8 @@ export class Matrix3d implements BeJSONFunctions {
     axx: number, axy: number, axz: number,
     ayx: number, ayy: number, ayz: number,
     azx: number, azy: number, azz: number,
-    result?: Matrix3d): Matrix3d {
+    result?: Matrix3d,
+  ): Matrix3d {
     result = result ? result : new Matrix3d();
     result.inverseState = InverseMatrixState.unknown;
     result.coffs[0] = axx; result.coffs[1] = axy; result.coffs[2] = axz;
@@ -630,7 +635,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
   /**
-   * Create a matrix with uniform scale factors for scale factor "s"
+   * Create a matrix with uniform scale factor "s":
    * ```
    * equation
    * \begin{bmatrix}s & 0 & 0 \\ 0 & s & 0\\ 0 & 0 & s\end{bmatrix}
@@ -736,7 +741,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Return the matrix for rotation of `angle` around desired `axis`
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeRotationAroundAnAxis
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/CubeTransform
    * @param axis the axis of rotation
    * @param angle the angle of rotation
    * @param result caller-allocated matrix (optional)
@@ -1641,24 +1646,29 @@ export class Matrix3d implements BeJSONFunctions {
     return Matrix3d.createUniformScale(scale);
   }
   /**
-   * Create a matrix which sweeps a vector along `sweepVector` until it hits the plane through the origin with the given normal.
-   * * To sweep an arbitrary vector U0 along direction W to the vector U1 in the plane through the origin with normal N:
-   *   *   `U1 = U0 + W * alpha`
-   *   *   `U1 DOT N = (U0 + W * alpha) DOT N = 0`
-   *   *   `U0 DOT N = - alpha * W DOT N`
-   *   *   `alpha = - U0 DOT N / W DOT N`
-   * * Insert the alpha definition in U1:
-   *   *   `U1 = U0 -  W * N DOT U0 / W DOT N`
-   * * Write vector dot expression N DOT U0 as a matrix product (^T indicates transpose):
-   *   *   `U1 = U0 -  W * N^T * U0 / W DOT N`
-   * * Note W * N^T is an outer product, i.e. a 3x3 matrix. By associativity of matrix multiplication:
-   *   *   `U1 = (I - W * N^T / W DOT N) * U0`
-   * * and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
-   * @param sweepVector sweep direction
+   * Create a matrix which sweeps a vector along `sweepVector` until it hits the plane through the origin with the
+   * given normal.
+   * * Geometrically, the returned matrix `M` acts on a vector `u` by rotating and scaling it to lie in the plane.
+   * Specifically, `Mu = u + sw` is perpendicular to `n` for some scalar `s`, where `w` is the sweep direction, and
+   * `n` is the plane normal.
+   * * Symbolically, `M = I - w⊗n / w.n`, where `I` is the identity, and ⊗ is the vector outer product.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix flattens to the plane.
    * @param planeNormal normal to the target plane
    */
   public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined {
-    const result = Matrix3d.createIdentity();
+    // To sweep an arbitrary vector U0 along direction W to the vector U1 in the plane through the origin with normal N:
+    //   `U1 = U0 + W * alpha`
+    //   `U1 DOT N = (U0 + W * alpha) DOT N = 0`
+    //   `U0 DOT N = - alpha * W DOT N`
+    //   `alpha = - U0 DOT N / W DOT N`
+    // Insert the alpha definition in U1:
+    //   `U1 = U0 -  W * N DOT U0 / W DOT N`
+    // Write W * N DOT U0 in terms of a vector outer product (^T indicates transpose):
+    //   `U1 = U0 -  W * N^T * U0 / W DOT N`
+    // Note W * N^T is a 3x3 matrix. By associativity of matrix multiplication:
+    //   `U1 = (I - W * N^T / W DOT N) * U0`
+    // and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
+     const result = Matrix3d.createIdentity();
     const dot = sweepVector.dotProduct(planeNormal);
     const inverse = Geometry.conditionalDivideCoordinate(1.0, -dot);
     if (inverse !== undefined) {

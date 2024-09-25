@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { dispose } from "@itwin/core-bentley";
+import { BeEvent, dispose } from "@itwin/core-bentley";
 import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
@@ -262,6 +262,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
   private _removeMe?: () => void;
+  private _featureSymbologySource: FeatureSymbology.Source = {
+    onSourceDisposed: new BeEvent<() => void>(),
+  };;
 
   private static _postProjectionMatrix = Matrix4d.createRowValues(
     0, 1, 0, 0,
@@ -341,6 +344,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this._removeMe();
       this._removeMe = undefined;
     }
+    this._featureSymbologySource.onSourceDisposed.raiseEvent();
   }
 
   public get texture(): Texture | undefined {
@@ -411,7 +415,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._width = requiredWidth;
     this._height = requiredHeight;
     const maskRange = Range3d.createNull();
-    const maskTrees = this._planarClipMask?.getTileTrees(viewState, target.modelId, maskRange);
+    const maskTrees = this._planarClipMask?.getTileTrees(context, target.modelId, maskRange);
     if (!maskTrees && !this._classifierTreeRef)
       return;
 
@@ -426,13 +430,13 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(viewState, context);
+    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
     if (!this._planarClipMask?.usingViewportOverrides && this._removeMe) {
       this._removeMe();
       this._removeMe = undefined;
     } else if (this._planarClipMask?.usingViewportOverrides && !this._removeMe) {
       this._removeMe = context.viewport.onFeatureOverridesChanged.addListener(() => {
-        this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(viewState, context);
+        this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
         context.viewport.requestRedraw();
       });
     }

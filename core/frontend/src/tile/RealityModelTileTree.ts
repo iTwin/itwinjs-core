@@ -584,7 +584,7 @@ export namespace RealityModelTileTree {
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
 
-    public get planarClipMaskPriority(): number {
+    public override get planarClipMaskPriority(): number {
       if (this._planarClipMask?.settings.priority !== undefined)
         return this._planarClipMask.settings.priority;
 
@@ -939,7 +939,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     if (batch !== undefined)
       for (const key of Object.keys(batch))
         if (-1 === key.indexOf("#"))     // Avoid internal cesium
-          strings.push(`${key}: ${batch[key]}`);
+          strings.push(`${key}: ${JSON.stringify(batch[key])}`);
 
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");

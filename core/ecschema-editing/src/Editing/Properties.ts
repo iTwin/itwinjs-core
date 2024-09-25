@@ -1,5 +1,5 @@
 import { CustomAttribute, CustomAttributeContainerProps, DelayedPromiseWithProps, ECClass, ECName,
-  EnumerationProperty, NavigationProperty, PrimitiveProperty,
+  EnumerationProperty, KindOfQuantity, NavigationProperty, PrimitiveProperty,
   PropertyCategory, SchemaItemKey, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
 import { SchemaContextEditor } from "./Editor";
@@ -141,6 +141,31 @@ export class Properties {
       });
 
     property.setCategory(new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(categoryKey, async () => category));
+  }
+
+  /**
+   * Sets the KindOfQuantity of a property.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   * @param kindOfQuantityKey The SchemaItemKey of the KindOfQuantity.
+   */
+  public async setKindOfQuantity(classKey: SchemaItemKey, propertyName: string, kindOfQuantityKey: SchemaItemKey) {
+    const property = await this.getProperty<MutableProperty>(classKey, propertyName)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
+      });
+
+    const koq = await this._schemaEditor.lookupSchemaItem<KindOfQuantity>(property.class.schema, kindOfQuantityKey, SchemaItemType.KindOfQuantity)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
+      });
+
+    const currentKoq = await property.kindOfQuantity;
+    if(currentKoq && currentKoq.persistenceUnit && koq.persistenceUnit && !currentKoq.persistenceUnit.matchesFullName(koq.persistenceUnit.fullName)) {
+      throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), undefined, undefined, "KindOfQuantity can only be changed if it has the same persistence unit as the property.");
+    }
+
+    property.setKindOfQuantity(new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(kindOfQuantityKey, async () => koq));
   }
 
   /**

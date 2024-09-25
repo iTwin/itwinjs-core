@@ -1349,7 +1349,7 @@ export class SelectExpr extends Expr {
  */
 export class SubqueryExpr extends ValueExpr {
   public static readonly type = ExprType.Subquery;
-  public constructor(public readonly query: SelectStatementExpr) {
+  public constructor(public readonly query: SelectStatementExpr | CteExpr) {
     super(SubqueryExpr.type);
   }
   public override get children(): Expr[] {
@@ -1359,7 +1359,11 @@ export class SubqueryExpr extends ValueExpr {
     if (node.id !== NativeExpIds.Subquery) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.Subquery'. ${JSON.stringify(node)}`);
     }
-    return new SubqueryExpr(SelectStatementExpr.deserialize(node.query as NativeECSqlParseNode));
+    if(node.query.id === NativeExpIds.SelectStatement)
+      return new SubqueryExpr(SelectStatementExpr.deserialize(node.query as NativeECSqlParseNode));
+    if(node.query.id === NativeExpIds.CommonTable)
+      return new SubqueryExpr(CteExpr.deserialize(node.query as NativeECSqlParseNode));
+    throw new Error(`Parse query node is 'node.query.id !== NativeExpIds.SelectStatement' and 'node.query.id !== NativeExpIds.CommonTable'. ${JSON.stringify(node.query)}`);
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.append("(");
@@ -1732,18 +1736,20 @@ export class CteBlockExpr extends Expr {
     if (node.id !== NativeExpIds.CommonTableBlock) {
       throw new Error(`Parse node is 'node.id !== NativeExpIds.CommonTableBlock'. ${JSON.stringify(node)}`);
     }
-    return new CteBlockExpr(node.name as string, SelectStatementExpr.deserialize(node.asQuery as NativeECSqlParseNode), node.args as string[]);
+    return new CteBlockExpr(node.name as string, SelectStatementExpr.deserialize(node.asQuery as NativeECSqlParseNode), node.args ? node.args as string[] : []);
   }
   public writeTo(writer: ECSqlWriter): void {
     writer.appendQuoted(this.name);
-    writer.append("(");
-    this.props.forEach((v, i) => {
-      if (i > 0) {
-        writer.appendComma();
-      }
-      writer.appendQuoted(v);
-    });
-    writer.append(")");
+    if(this.props.length > 0){
+      writer.append("(");
+      this.props.forEach((v, i) => {
+        if (i > 0) {
+          writer.appendComma();
+        }
+        writer.appendQuoted(v);
+      });
+      writer.append(")");
+    }
     writer.appendSpace();
     writer.appendKeyword("AS");
     writer.appendSpace();

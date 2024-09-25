@@ -30,7 +30,9 @@ export enum ECEditingStatus {
   InvalidBaseClass,
   EnumeratorDoesNotExist,
   InvalidECName,
+  InvalidSchemaAlias,
   InvalidFormatUnitsSpecified,
+  SchemaAliasAlreadyExists,
   // Outer Errors
   CreateSchemaItemFailed,
   CreateSchemaItemFromProps,
@@ -55,6 +57,7 @@ export enum ECEditingStatus {
   SetIsReadOnly,
   SetPriority,
   SetCategory,
+  SetKindOfQuantity,
   SetMinOccurs,
   SetMaxOccurs,
   SetExtendedTypeName,
@@ -89,6 +92,7 @@ export enum ECEditingStatus {
   AddSchemaReference,
   SetSchemaVersion,
   IncrementSchemaMinorVersion,
+  SetSchemaAlias
 }
 
 /**
@@ -524,6 +528,9 @@ export class SchemaEditingError extends Error {
         return;
       case ECEditingStatus.InvalidECName:
         this.message = `Could not rename class ${this._schemaItemId.name} because the specified name is not a valid ECName.`;
+        return;
+      case ECEditingStatus.InvalidSchemaAlias:
+        this.message = `Could not set the alias for schema ${this._schemaKey.name} because the specified alias is not a valid ECName.`;
         return;
       default:
         this.message = this._createTaskErrorMessage();

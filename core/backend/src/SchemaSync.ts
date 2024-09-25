@@ -18,6 +18,7 @@ import { _nativeDb } from "./internal/Symbols";
 
 /** @internal */
 export namespace SchemaSync {
+  const lockParams: CloudSqlite.ObtainLockParams = { retryDelayMs: 1000, nRetries: 30 };
 
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb {
@@ -53,6 +54,7 @@ export namespace SchemaSync {
       const props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       const accessToken = await CloudSqlite.requestToken(props);
       const access = new CloudAccess({ ...props, accessToken });
+      Object.assign(access.lockParams, lockParams);
       const testSyncCache = nativeDb.queryLocalValue(testSyncCachePropKey);
       if (testSyncCache)
         access.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: testSyncCache }));
@@ -73,12 +75,26 @@ export namespace SchemaSync {
     }
   };
 
+  export const withReadonlyAccess = async (iModel: IModelDb | { readonly fileName: LocalFileName }, operation: (access: CloudAccess) => Promise<void>): Promise<void> => {
+    const access = await getCloudAccess(iModel);
+    access.synchronizeWithCloud();
+    access.openForRead();
+    try {
+      await operation(access);
+    } finally {
+      access.close();
+    }
+  };
+
+  export const isEnabled = (iModel: IModelDb) => {
+    return iModel[_nativeDb].schemaSyncEnabled();
+  };
+
   /** Synchronize local briefcase schemas with cloud container */
   export const pull = async (iModel: IModelDb) => {
     if (iModel[_nativeDb].schemaSyncEnabled() && !iModel.isReadonly) {
-      await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+      await SchemaSync.withReadonlyAccess(iModel, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
-        syncAccess.synchronizeWithCloud();
         iModel.clearCaches();
         iModel[_nativeDb].schemaSyncPull(schemaSyncDbUri);
         iModel.saveChanges("schema synchronized with cloud container");

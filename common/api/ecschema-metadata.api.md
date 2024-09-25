@@ -1238,6 +1238,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     // @internal
     protected setIsReadOnly(isReadOnly: boolean): void;
     // @internal
+    protected setKindOfQuantity(kindOfQuantity: LazyLoadedKindOfQuantity): void;
+    // @internal
     protected setLabel(label: string): void;
     // (undocumented)
     protected setName(name: ECName): void;
@@ -1664,6 +1666,8 @@ export class Schema implements CustomAttributeContainerProps {
     get schemaKey(): SchemaKey;
     // (undocumented)
     protected _schemaKey?: SchemaKey;
+    // @alpha
+    protected setAlias(alias: string): void;
     // @alpha
     protected setContext(context: SchemaContext): void;
     // @alpha
