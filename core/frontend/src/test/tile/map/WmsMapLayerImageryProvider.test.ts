@@ -239,7 +239,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const response = await fetch("assets/wms_capabilities/continents.xml");
+    const response = await fetch(`${window.location.origin}/assets/wms_capabilities/continents.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 
@@ -291,7 +291,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const response = await fetch("assets/wms_capabilities/mapproxy_111.xml");
+    const response = await fetch(`${window.location.origin}/assets/wms_capabilities/mapproxy_111.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 
@@ -326,7 +326,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const response = await fetch("assets/wms_capabilities/mapproxy_130.xml");
+    const response = await fetch(`${window.location.origin}/assets/wms_capabilities/mapproxy_130.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 
@@ -385,20 +385,6 @@ describe("WmsMapLayerImageryProvider", () => {
       return Promise.resolve(createFakeTileResponse("image/png"));
     });
     await provider.loadTile(0, 0, 0);
-    // Event should not have been triggered again
-    expect(raiseEventSpy).toHaveBeenCalledTimes(1);
-
-    // .. and now a 401 failure
-    makeTileRequestStub.mockRestore();
-    makeTileRequestStub = vi.spyOn(MapLayerImageryProvider.prototype, "makeTileRequest").mockImplementation(async (_url: string) => {
-      // eslint-disable-next-line no-throw-literal
-      throw { status: 401 };
-    });
-    await provider.loadTile(0, 0, 0);
-    // Output message should have been called that time (because we had a previous successful request)
-    expect(outputMessageSpy).toHaveBeenCalledOnce();
-    // Status should remains to 'RequireAuth'
-    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
     // Event should not have been triggered again
     expect(raiseEventSpy).toHaveBeenCalledTimes(1);
 

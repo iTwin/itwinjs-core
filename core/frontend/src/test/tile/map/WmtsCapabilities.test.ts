@@ -16,7 +16,7 @@ describe("WmtsCapabilities", () => {
   });
 
   it("should parse USGS WMTS capabilities", async () => {
-    const response = await fetch("assets/wmts_capabilities/USGSHydroCached_capabilities.xml");
+    const response = await fetch(`${window.location.origin}/assets/wmts_capabilities/USGSHydroCached_capabilities.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 
@@ -130,9 +130,8 @@ describe("WmtsCapabilities", () => {
   });
 
   it("should parse sample OGC WMTS capabilities", async () => {
-    const response = await fetch("assets/wmts_capabilities/OGCSample_capabilities.xml");
+    const response = await fetch(`${window.location.origin}/assets/wmts_capabilities/OGCSample_capabilities.xml`);
     const text = await response.text();
-    console.log(text);
     fakeTextFetch(text);
 
     const capabilities = await WmtsCapabilities.create("https://fake/url1");
@@ -222,7 +221,7 @@ describe("WmtsCapabilities", () => {
   });
 
   it("should parse Great artesian basin sample", async () => {
-    const response = await fetch("assets/wmts_capabilities/great-artesian-basin.xml");
+    const response = await fetch(`${window.location.origin}/assets/wmts_capabilities/great-artesian-basin.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 

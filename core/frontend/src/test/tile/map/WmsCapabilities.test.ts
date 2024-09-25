@@ -15,7 +15,7 @@ describe("WmsCapabilities", () => {
   });
 
   it("should parse WMS 1.1.1 capabilities", async () => {
-    const response = await fetch("assets/wms_capabilities/mapproxy_111.xml");
+    const response = await fetch(`${window.location.origin}/assets/wms_capabilities/mapproxy_111.xml`);
     const text = await response.text();
     fakeTextFetch(text);
     const capabilities = await WmsCapabilities.create("https://fake/url");
@@ -47,7 +47,7 @@ describe("WmsCapabilities", () => {
   });
 
   it("should parse WMS 1.3.0 capabilities", async () => {
-    const response = await fetch("assets/wms_capabilities/mapproxy_130.xml");
+    const response = await fetch(`${window.location.origin}/assets/wms_capabilities/mapproxy_130.xml`);
     const text = await response.text();
     fakeTextFetch(text);
     const capabilities = await WmsCapabilities.create("https://fake/url2");

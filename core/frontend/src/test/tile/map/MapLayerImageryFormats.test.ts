@@ -29,17 +29,19 @@ const getSampleLayerSettings = (formatId: string) => {
 };
 
 describe("MapLayerImageryFormats", () => {
-  beforeEach(async () => {
-    await IModelApp.startup({ localization: new EmptyLocalization() });
-  });
-
-  afterEach(async () => {
-    vi.restoreAllMocks();
-    if (IModelApp.initialized)
-      await IModelApp.shutdown();
-  });
 
   describe("should create proper provider", () => {
+
+    beforeEach(async () => {
+      await IModelApp.startup({ localization: new EmptyLocalization() });
+    });
+
+    afterEach(async () => {
+      vi.restoreAllMocks();
+      if (IModelApp.initialized)
+        await IModelApp.shutdown();
+    });
+
     const registry = new MapLayerFormatRegistry({});
     internalMapLayerImageryFormats.forEach((imageryFormat) => {
       const layerSettings = getSampleLayerSettings(imageryFormat.formatId);
@@ -53,27 +55,27 @@ describe("MapLayerImageryFormats", () => {
       // Update this switch case if you add a new format.
       switch (imageryFormat.formatId) {
         case "WMS":
-          expect(provider instanceof WmsMapLayerImageryProvider).to.true;
+          expect(provider instanceof WmsMapLayerImageryProvider).toBe(true);
           break;
 
         case "WMTS":
-          expect(provider instanceof WmtsMapLayerImageryProvider).to.true;
+          expect(provider instanceof WmtsMapLayerImageryProvider).toBe(true);
           break;
 
         case "ArcGIS":
-          expect(provider instanceof ArcGISMapLayerImageryProvider).to.true;
+          expect(provider instanceof ArcGISMapLayerImageryProvider).toBe(true);
           break;
 
         case "BingMaps":
-          expect(provider instanceof BingMapsImageryLayerProvider).to.true;
+          expect(provider instanceof BingMapsImageryLayerProvider).toBe(true);
           break;
 
         case "MapboxImagery":
-          expect(provider instanceof MapBoxLayerImageryProvider).to.true;
+          expect(provider instanceof MapBoxLayerImageryProvider).toBe(true);
           break;
 
         case "TileURL":
-          expect(provider instanceof TileUrlImageryProvider).to.true;
+          expect(provider instanceof TileUrlImageryProvider).toBe(true);
           break;
 
         default:
