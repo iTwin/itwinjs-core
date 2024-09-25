@@ -2,6 +2,12 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "4.9.1",
+      "tag": "@itwin/core-geometry_v4.9.1",
+      "date": "Wed, 25 Sep 2024 20:10:58 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.9.0",
       "tag": "@itwin/core-geometry_v4.9.0",
       "date": "Mon, 23 Sep 2024 13:44:01 GMT",
