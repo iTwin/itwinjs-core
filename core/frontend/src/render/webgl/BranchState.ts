@@ -110,7 +110,7 @@ export class BranchState {
       realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
       viewAttachmentId: branch.viewAttachmentId ?? prev.viewAttachmentId,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
-      disableClipStyle: branch.disableClipStyle,
+      disableClipStyle: branch.disableClipStyle ?? prev.disableClipStyle,
     });
   }
 

@@ -189,4 +189,34 @@ describe("BranchUniforms", async () => {
 
     IModelApp.viewManager.dropViewport(vp);
   });
+
+  it("should inherit clip style from the top of the stack",async  () => {
+    const viewClip = makeClipVolume();
+    const firstClip = makeClipVolume();
+    const secondClip = makeClipVolume();
+
+    // create a viewport
+    const imodel = createBlankConnection("imodel");
+    const viewDiv = document.createElement("div");
+    viewDiv.style.width = viewDiv.style.height = "100px";
+    document.body.appendChild(viewDiv);
+    const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
+    const vp = ScreenViewport.create(viewDiv, view);
+    IModelApp.viewManager.addViewport(vp);
+    await IModelApp.viewManager.setSelectedView(vp);
+
+    // create a clip style and assign it to the viewport
+    const testStyle = ClipStyle.fromJSON({
+      insideColor: {r: 255, g: 0, b: 0},
+      outsideColor: {r: 0, g: 255, b: 0},
+      intersectionStyle: {
+        color: {r: 0, g: 0, b: 255},
+        width: 1,
+      },
+    });
+    vp.clipStyle = testStyle;
+
+    testBranches({ clip: viewClip }, [{ clip: firstClip, disableClipStyle: true }, { clip: secondClip}], true, [viewClip, firstClip, secondClip], [0,0,0]);
+    IModelApp.viewManager.dropViewport(vp);
+  });
 });

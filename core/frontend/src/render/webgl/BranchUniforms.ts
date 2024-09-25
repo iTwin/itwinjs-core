@@ -104,7 +104,7 @@ export class BranchUniforms {
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
-
+    const disableClipStyle = branch.disableClipStyle || this.top.disableClipStyle;
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
 
@@ -112,9 +112,9 @@ export class BranchUniforms {
       * Otherwise, we leave it to the viewport's clip style.
       */
       const style = vp.view.displayStyle.settings.clipStyle;
-      this.clipStack.insideColor.alpha = branch.disableClipStyle ? 0 : (style.insideColor ? 1 : 0);
-      this.clipStack.outsideColor.alpha = branch.disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
-      this.clipStack.intersectionStyle.alpha = branch.disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
+      this.clipStack.insideColor.alpha = disableClipStyle ? 0 : (style.insideColor ? 1 : 0);
+      this.clipStack.outsideColor.alpha = disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
+      this.clipStack.intersectionStyle.alpha = disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
     }
 
     if (this.top.clipVolume)
