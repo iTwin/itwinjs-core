@@ -9,13 +9,13 @@
 import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
   ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { createGraphicFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
@@ -45,10 +45,13 @@ import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
-import { _implementationProhibited, _textures } from "../common/internal/Symbols";
+import { _featureTable, _implementationProhibited, _renderSystem, _textures, _transformCenter, _transforms } from "../common/internal/Symbols";
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
+import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
+import { GraphicTemplate } from "./GraphicTemplate";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -214,15 +217,32 @@ export interface PlanarGridProps {
   transparency?: PlanarGridTransparency;
 }
 
-/** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]].
- * @internal
- */
-export type RenderGeometry = IDisposable & RenderMemory.Consumer;
-
 /** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].
  * @internal
  */
-export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
+  readonly [_implementationProhibited]: "renderAreaPattern";
+}
+
+/** Contains the WebGL resources necessary to draw multiple [[Instance]]s of a [[GraphicTemplate]] using [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html).
+ * Use [[RenderSystem.createRenderInstances]] to create one.
+ * The instances may be associated with [Feature]($common)s, in which case those features override any defined in the template itself.
+ * Example usage:
+ * ```ts
+ * [[include:Gltf_Instancing]]
+ * ```
+ * @beta
+ */
+export interface RenderInstances {
+  /** @internal */
+  readonly [_implementationProhibited]: "renderInstances";
+  /** @internal */
+  readonly [_transformCenter]: XYAndZ;
+  /** @internal */
+  readonly [_transforms]: Float32Array;
+  /** @internal */
+  readonly [_featureTable]?: PackedFeatureTable;
+}
 
 /** @internal */
 export interface RenderSkyGradientParams {
@@ -256,6 +276,16 @@ export interface CreateGraphicFromDescriptionArgs {
   description: GraphicDescription;
   /** The context that was used to create the graphic description, obtained from [[RenderSystem.resolveGraphicDescriptionContext]]. */
   context: GraphicDescriptionContext;
+}
+
+/** Arguments supplied to [[RenderSystem.createGraphicFromTemplate]].
+ * @beta
+ */
+export interface CreateGraphicFromTemplateArgs {
+  /** Describes how to draw the graphic. */
+  template: GraphicTemplate;
+  /** Optionally describes how to draw multiple repetitions of the graphic. */
+  instances?: RenderInstances;
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -396,6 +426,28 @@ export abstract class RenderSystem implements IDisposable {
     return polylineArgs ? this.createIndexedPolylines(polylineArgs, instances) : undefined;
   }
 
+  /** @internal */
+  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined {
+    const meshArgs = mesh.toMeshArgs();
+    if (meshArgs) {
+      const meshParams = createMeshParams(meshArgs, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
+      return this.createMeshGeometry(meshParams, viOrigin);
+    }
+
+    const plArgs = mesh.toPolylineArgs();
+    if (!plArgs) {
+      return undefined;
+    }
+
+    if (plArgs.flags.isDisjoint) {
+      const psParams = createPointStringParams(plArgs, this.maxTextureSize);
+      return psParams ? this.createPointStringGeometry(psParams, viOrigin) : undefined;
+    }
+
+    const plParams = createPolylineParams(plArgs, this.maxTextureSize);
+    return plParams ? this.createPolylineGeometry(plParams, viOrigin) : undefined;
+  }
+
   /** Create a graphic from a low-level representation of a set of line strings.
    * @param args A description of the line strings.
    * @param instances Repetitions of the line strings to be drawn.
@@ -406,7 +458,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
-      const pointStringParams = createPointStringParams(args, IModelApp.renderSystem.maxTextureSize);
+      const pointStringParams = createPointStringParams(args, this.maxTextureSize);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
     } else {
       const polylineParams = createPolylineParams(args, this.maxTextureSize);
@@ -420,9 +472,23 @@ export abstract class RenderSystem implements IDisposable {
   public createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
   /** @internal */
   public createPointStringGeometry(_params: PointStringParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
+  /** @internal */
+  public createPointCloudGeometry(_args: PointCloudArgs): RenderGeometry | undefined { return undefined; }
+  /** @internal */
+  public createRealityMeshGeometry(_params: RealityMeshParams, _disableTextureDisposal = false): RenderGeometry | undefined { return undefined; }
 
   /** @internal */
   public createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined { return undefined; }
+
+  /** Create a [[RenderInstances]] from a [[RenderInstancesParams]], to be supplied to [[createGraphicFromTemplate]] via [[CreateGraphicFromTempalateArgs.instances]].
+   * @beta
+   */
+  public createRenderInstances(_params: RenderInstancesParams): RenderInstances | undefined { return undefined; }
+
+  /** Creates a graphic that draws any number of repetitions of a [[GraphicTemplate]].
+   * @beta
+   */
+  public abstract createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic;
 
   /** Create a RenderGraphic from a RenderGeometry produced by this RenderSystem.
    * @internal
@@ -466,11 +532,18 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RenderGraphic | undefined {
+    const geom = this.createRealityMeshGeometry(realityMesh, disableTextureDisposal);
+    return geom ? this.createRenderGraphic(geom) : undefined;
+  }
+
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */
-  public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
+  public createPointCloud(args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined {
+    const geom = this.createPointCloudGeometry(args);
+    return geom ? this.createRenderGraphic(geom) : undefined;
+  }
 
   /** Create a clip volume to clip geometry.
    * @note The clip volume takes ownership of the ClipVector, which must not be subsequently mutated.
@@ -787,8 +860,15 @@ export abstract class RenderSystem implements IDisposable {
   /** Convert a [[GraphicDescription]] produced by a [[GraphicDescriptionBuilder]] into a [[RenderGraphic]].
    * @beta
    */
-  public async createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): Promise<RenderGraphic | undefined> {
+  public createGraphicFromDescription(args: CreateGraphicFromDescriptionArgs): RenderGraphic | undefined {
     return createGraphicFromDescription(args.description, args.context, this);
+  }
+
+  /** Convert a [[GraphicDescription]] produced by a [[GraphicDescriptionBuilder]] into a [[GraphicTemplate]].
+   * @beta
+   */
+  public createTemplateFromDescription(args: CreateGraphicFromDescriptionArgs): GraphicTemplate {
+    return createGraphicTemplateFromDescription(args.description, args.context, this);
   }
 
   /** Obtain the JSON representation of a [[WorkerGraphicDescriptionContext]] for the specified `iModel` that can be forwarded to a Worker for use with a [[GraphicDescriptionBuilder]].

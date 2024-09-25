@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item Type;API Item Name
+alpha;type;AnyClassItemDifference
 beta;type;AnyDiagnostic
 alpha;type;AnyEditingError
 alpha;type;AnyIdentifier
@@ -17,7 +18,6 @@ alpha;enum;ChangeType
 alpha;class;ClassChanges
 beta;class;ClassDiagnostic
 alpha;class;ClassId
-alpha;type;ClassItemDifference
 alpha;interface;ClassPropertyDifference
 alpha;enum;ConflictCode
 alpha;interface;ConstantDifference

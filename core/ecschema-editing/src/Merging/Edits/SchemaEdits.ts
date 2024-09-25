@@ -80,35 +80,35 @@ abstract class Editor {
 
 class PropertyEditor extends Editor {
 
-  public rename(className: string, propertyName: string, newName: string) {
+  public rename(schemaName: string, className: string, propertyName: string, newName: string) {
     this.add({
       type: SchemaEditType.RenameProperty,
-      key: `${className}.${propertyName}`,
+      key: `${schemaName}.${className}.${propertyName}`,
       value: newName,
     });
   }
 
-  public skip(className: string, propertyName: string) {
+  public skip(schemaName: string, className: string, propertyName: string) {
     this.add({
       type: SchemaEditType.Skip,
-      key: `${className}.${propertyName}`,
+      key: `${schemaName}.${className}.${propertyName}`,
     });
   }
 }
 
 class ItemEditor extends Editor {
-  public rename(itemName: string, newName: string) {
+  public rename(schemaName: string, itemName: string, newName: string) {
     this.add({
       type: SchemaEditType.RenameSchemaItem,
-      key: itemName,
+      key: `${schemaName}.${itemName}`,
       value: newName,
     });
   }
 
-  public skip(itemName: string) {
+  public skip(schemaName: string, itemName: string) {
     this.add({
       type: SchemaEditType.Skip,
-      key: itemName,
+      key: `${schemaName}.${itemName}`,
     });
   }
 }
