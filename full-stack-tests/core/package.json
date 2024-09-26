@@ -91,12 +91,10 @@
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
     "path-browserify": "^1.0.1",
-    "os-browserify": "^0.3.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "tty-browserify": "^0.0.1",
     "typescript": "~5.3.3",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
