@@ -74,7 +74,9 @@
   "importSorter.sortConfiguration.removeUnusedImports": true,
   "json.schemas": [
     {
-      "fileMatch": ["certa.json"],
+      "fileMatch": [
+        "certa.json"
+      ],
       "url": "./tools/certa/certa.schema.json"
     }
   ],
@@ -83,7 +85,9 @@
       "allow_different_nesting": true
     }
   },
-  "markdownlint.ignore": ["**/CHANGELOG.md"],
+  "markdownlint.ignore": [
+    "**/CHANGELOG.md"
+  ],
   "search.exclude": {
     "**/.nyc_output": true,
     "**/.rush": true,
@@ -100,5 +104,4 @@
     "NODE_ENV": "development"
   },
   "typescript.tsdk": "common/temp/node_modules/typescript/lib",
-  "cSpell.words": ["queryables"]
 }
