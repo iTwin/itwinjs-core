@@ -1,6 +1,23 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Fri, 13 Sep 2024 15:12:41 GMT and should not be manually modified.
+This log was last generated on Wed, 25 Sep 2024 20:12:30 GMT and should not be manually modified.
+
+## 4.9.1
+Wed, 25 Sep 2024 20:10:58 GMT
+
+### Updates
+
+- Fix failure to deserialize content from JSON for instances with nulls in array property values
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+### Updates
+
+- Different value type support for calculated properties
+- Add extended data for calculated properties
+- Make calculated property value optional
+- Support schema-based property category overrides
 
 ## 4.8.7
 Fri, 13 Sep 2024 15:11:17 GMT
