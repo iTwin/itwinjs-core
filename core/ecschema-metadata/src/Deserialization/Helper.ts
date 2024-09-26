@@ -30,6 +30,10 @@ import { SchemaGraph } from "../utils/SchemaGraph";
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
 
+/**
+ * Specifies the ECXml version for the schema
+ * @internal
+ */
 export interface ECXmlVersion {
   readVersion: number;
   writeVersion: number;

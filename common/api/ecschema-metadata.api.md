@@ -488,6 +488,14 @@ export class ECVersion {
     get write(): number;
 }
 
+// @internal (undocumented)
+export interface ECXmlVersion {
+    // (undocumented)
+    readVersion: number;
+    // (undocumented)
+    writeVersion: number;
+}
+
 // @beta
 export class EntityClass extends ECClass {
     constructor(schema: Schema, name: string, modifier?: ECClassModifier);
@@ -1613,6 +1621,10 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected createUnitSystemSync(name: string): UnitSystem;
     // (undocumented)
+    static get currentECXmlMajorVersion(): number;
+    // (undocumented)
+    static get currentECXmlMinorVersion(): number;
+    // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
     // @alpha
     protected deleteClass(name: string): Promise<void>;
@@ -1657,6 +1669,10 @@ export class Schema implements CustomAttributeContainerProps {
     get minorVersion(): number;
     // (undocumented)
     get name(): string;
+    // (undocumented)
+    get originalECXmlMajorVersion(): number | undefined;
+    // (undocumented)
+    get originalECXmlMinorVersion(): number | undefined;
     // (undocumented)
     get readVersion(): number;
     // (undocumented)
@@ -1974,6 +1990,10 @@ export interface SchemaProps {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
+    readonly ecXmlMajorVersion?: number;
+    // (undocumented)
+    readonly ecXmlMinorVersion?: number;
+    // (undocumented)
     readonly items?: {
         [name: string]: SchemaItemProps;
     };
@@ -2241,6 +2261,8 @@ export class XmlParser extends AbstractParser<Element> {
     parseUnit(xmlElement: Element): SchemaItemUnitProps;
     // (undocumented)
     parseUnitSystem(xmlElement: Element): UnitSystemProps;
+    // (undocumented)
+    static parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined;
 }
 
 // (No @packageDocumentation comment for this package)
