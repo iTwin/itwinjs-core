@@ -65,9 +65,6 @@ export class Contours implements WebGLDisposable {
 
   public get wantContourLines(): boolean { return this._lutWidth > 0; }
 
-  /** TODO: For tests. */
-  public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
-  // TODO: need to call this somewhere for collectStatistics?
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
 
   private _initialize(map: RenderFeatureTable, contours: ContourDisplay.Settings | undefined): Texture2DHandle | undefined {

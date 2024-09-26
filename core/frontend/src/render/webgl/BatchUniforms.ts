@@ -75,8 +75,7 @@ export class BatchUniforms {
     else
       this._featureMode = FeatureMode.None;
 
-    const contours = undefined !== batch ? batch.getContours(this._target) : undefined;
-    // this._contours = (undefined !== contours && contours.anyOverridden) ? contours : undefined;  // TODO:
+    const contours = undefined !== batch ? batch.getContours(this._target) : undefined; // TODO: does this need any more qualifiers?
     this._contours = contours;
   }
 

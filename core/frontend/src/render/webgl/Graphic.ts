@@ -89,7 +89,7 @@ export interface BatchContext {
 export class PerTargetBatchData {
   public readonly target: Target;
   protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
-  protected readonly _contours = new Map<number | undefined, Contours>();  // TODO:
+  protected readonly _contours = new Map<number | undefined, Contours>();  // TODO: how to implement source?
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
@@ -129,10 +129,10 @@ export class PerTargetBatchData {
   }
 
   public getContours(batch: Batch): Contours {
-    const source = undefined; // TODO: ? this.target.currentContours?.source;
+    const source = undefined; // TODO:  how to implement source? - this.target.currentContours?.source;
     let contours = this._contours.get(source);
     if (!contours) {
-      const cleanup = undefined; // TODO: source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
+      const cleanup = undefined; // TODO:  how to implement source? - source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
       this._contours.set(source, contours = Contours.createFromTarget(this.target, batch.options, cleanup));
       contours.initFromMap(batch.featureTable);
     }
@@ -147,6 +147,9 @@ export class PerTargetBatchData {
 
     for (const ovrs of this._featureOverrides.values())
       stats.addFeatureOverrides(ovrs.byteLength);
+
+    for (const contours of this._contours.values())
+      stats.addContours(contours.byteLength);
   }
 
   /** Exposed strictly for tests. */

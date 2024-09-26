@@ -111,7 +111,8 @@ float computeWorldHeight(vec4 rawPosition) {
 
   builder.vert.addUniform("u_contourLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_contourLUT", (uniform, params) => {
-      uniform.setUniform1i(TextureUnit.Contours - TextureUnit.Zero);  // TODO: why is this needed?
+      // set this uniform here so that it won't cause problems (e.g.: loopback) if it does not end up being set by bindContourLUT call
+      uniform.setUniform1i(TextureUnit.Contours - TextureUnit.Zero);
       params.target.uniforms.batch.bindContourLUT(uniform);
     });
   });
