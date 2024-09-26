@@ -8,8 +8,14 @@
 
 import { compareNumbers, Id64String } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
+import { LinePixels } from "./LinePixels";
 
+/** Namespace containing types controlling how contour lines are rendered.
+ * @public
+ * @extensions
+ */
 export namespace ContourDisplay {
+  /** JSON representation of the rendering styling settings that apply to a specific set of subcategories within a [[ContourDisplay.Terrain]]. */
   export interface ContourProps {
     /** See [[Contour.majorColor]]. */
     majorColor?: ColorDefProps;
@@ -19,32 +25,37 @@ export namespace ContourDisplay {
     majorPixelWidth?: number;
     /** See [[Contour.minorPixelWidth]]. */
     minorPixelWidth?: number;
-    /** See [[Contour.MajorPatterIndex]]. */
-    majorPattern?: number;
-    /** See [[Contour.MinorPatterIndex]]. */
-    minorPattern?: number;
+    /** See [[Contour.majorPattern]]. */
+    majorPattern?: LinePixels;
+    /** See [[Contour.minorPattern]]. */
+    minorPattern?: LinePixels;
     /** See [[Contour.minorInterval]]. */
     minorInterval?: number;
     /** See [[Contour.majorIntervalCount]]. */
     majorIntervalCount?: number;
   }
 
+  /** The rendering styling settings that apply to a specific set of subcategories within a [[ContourDisplay.Terrain]].
+   * This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other.
+   * The minor contour occurs at a defined interval in meters. These intervals draw at a fixed height; they are not dependent on the range of the geometry to which they are applied.
+   * The major contour is dependent on the minor contour. The interval of its occurence is not measured directly in meters; rather it is a count of minor contour intervals between its occurrences.
+   */
   export class Contour {
-    /** Color that a major contour line will use. */
+    /** Color that a major contour line will use. Defaults to [[ColorDef.black]].*/
     public readonly majorColor: ColorDef;
-    /** Color that a minor contour line will use. */
+    /** Color that a minor contour line will use. Defaults to [[ColorDef.black]]. */
     public readonly minorColor: ColorDef;
-    /** A width in pixels of a major contour line. (Range 1.5 to 9 in 0.5 increments) */
+    /** A width in pixels of a major contour line. (Range 1.5 to 9 in 0.5 increments). Defaults to 2. */
     public readonly majorPixelWidth: number;
-    /** A width in pixels of a minor contour line. (Range 1.5 to 9 in 0.5 increments) */
+    /** A width in pixels of a minor contour line. (Range 1.5 to 9 in 0.5 increments). Defaults to 1. */
     public readonly minorPixelWidth: number;
-    /** A pattern index defining the pattern for a major contour line (0 is solid). */
-    public readonly majorPattern: number;
-    /** A pattern index defining the pattern for a minor contour line (0 is solid). */
-    public readonly minorPattern: number;
-    /** The interval for the minor contour in the associated terrain in meters. */
+    /** The pattern for a major contour line. Defaults to [[LinePixels.Solid]]. */
+    public readonly majorPattern: LinePixels;
+    /** The pattern for a minor contour line. Defaults to [[LinePixels.Solid]].*/
+    public readonly minorPattern: LinePixels;
+    /** The interval for the minor contour in the associated terrain in meters. Defaults to 1. */
     public readonly minorInterval: number;
-    /** The count of minor contour intervals that define a major interval (integer > 0) */
+    /** The count of minor contour intervals that define a major interval (integer > 0). Defaults to 5. */
     public readonly majorIntervalCount: number;
 
     public static readonly defaults = new Contour({});
@@ -141,6 +152,7 @@ export namespace ContourDisplay {
     }
   }
 
+  /** JSON representation of the description of how contours should appear for a particular set of subcategories. */
   export interface TerrainProps {
     /** See [[Terrain.contourDef]]. */
     contourDef?: ContourProps;
@@ -148,8 +160,11 @@ export namespace ContourDisplay {
     subCategories?: Id64String[];
   }
 
+  /** Contains a description of how contours should appear for a particular set of subcategories. A terrain is an organizational concept which associates a contour appearance with a list of subcategories within an iModel.
+   * @see [[ContourDisplay.Contour]]
+   */
   export class Terrain {
-    /** How the contours for this terrain should appear. */
+    /** A [[ContourDisplay.Contour]] object describing how the contours for this terrain should appear. Defaults to an instantation of [[ContourDisplay.Contour]] using all of its own default properties. */
     public readonly contourDef: Contour;
     /** List of subcategory IDs to which this terrain styling will be applied. */
     public readonly subCategories: Id64String[];
@@ -198,13 +213,17 @@ export namespace ContourDisplay {
     }
   }
 
+  /** JSON representation of the contour display setup of a [[DisplayStyle3d]]. */
   export interface SettingsProps {
     /** See [[ContourDisplay.terrains]]. */
     terrains?: (TerrainProps | undefined)[];
   }
 
+  /** The contour display setup of a [[DisplayStyle3d]].
+   * Contour display allows a user to apply specific contour line renderings to subcategories within a scene.
+   */
   export class Settings {
-    /** A list of the terrains. */
+    /** A list of the terrains which contain their own specific contour display settings. Defaults to an empty array. */
     public readonly terrains: (Terrain | undefined)[] = [];
 
     public equals(other: Settings): boolean {

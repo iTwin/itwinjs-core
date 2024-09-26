@@ -1788,6 +1788,65 @@ export interface ContextRealityModelsContainer {
 }
 
 // @public
+export namespace ContourDisplay {
+    export class Contour {
+        static compare(lhs: Contour, rhs: Contour): number;
+        // (undocumented)
+        static readonly defaults: Contour;
+        // (undocumented)
+        equals(other: Contour): boolean;
+        // (undocumented)
+        static fromJSON(json?: ContourProps): Contour;
+        readonly majorColor: ColorDef;
+        readonly majorIntervalCount: number;
+        readonly majorPattern: LinePixels;
+        readonly majorPixelWidth: number;
+        readonly minorColor: ColorDef;
+        readonly minorInterval: number;
+        readonly minorPattern: LinePixels;
+        readonly minorPixelWidth: number;
+        // (undocumented)
+        toJSON(): ContourProps;
+    }
+    export interface ContourProps {
+        majorColor?: ColorDefProps;
+        majorIntervalCount?: number;
+        majorPattern?: LinePixels;
+        majorPixelWidth?: number;
+        minorColor?: ColorDefProps;
+        minorInterval?: number;
+        minorPattern?: LinePixels;
+        minorPixelWidth?: number;
+    }
+    export class Settings {
+        // (undocumented)
+        equals(other: Settings): boolean;
+        // (undocumented)
+        static fromJSON(json?: SettingsProps): Settings;
+        readonly terrains: (Terrain | undefined)[];
+        // (undocumented)
+        toJSON(): SettingsProps;
+    }
+    export interface SettingsProps {
+        terrains?: (TerrainProps | undefined)[];
+    }
+    export class Terrain {
+        readonly contourDef: Contour;
+        // (undocumented)
+        equals(other: Terrain | undefined): boolean;
+        // (undocumented)
+        static fromJSON(json?: TerrainProps): Terrain;
+        readonly subCategories: Id64String[];
+        // (undocumented)
+        toJSON(): TerrainProps;
+    }
+    export interface TerrainProps {
+        contourDef?: ContourProps;
+        subCategories?: Id64String[];
+    }
+}
+
+// @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
 // @internal
@@ -2132,6 +2191,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
+    get contours(): ContourDisplay.Settings;
+    set contours(contours: ContourDisplay.Settings);
     get environment(): Environment;
     set environment(environment: Environment);
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
@@ -2161,6 +2222,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     ao?: AmbientOcclusion.Props;
+    contours?: ContourDisplay.SettingsProps;
     environment?: EnvironmentProps;
     hline?: HiddenLine.SettingsProps;
     lights?: LightSettingsProps;
@@ -2264,6 +2326,7 @@ export class DisplayStyleSettings {
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
+    readonly onContoursChanged: BeEvent<(newContours: ContourDisplay.Settings) => void>;
     readonly onEnvironmentChanged: BeEvent<(newEnv: Readonly<Environment>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;

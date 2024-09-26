@@ -148,6 +148,7 @@ public;namespace;ContextRealityModelProps
 public;class;ContextRealityModels
 public;interface;ContextRealityModelsArgs
 public;interface;ContextRealityModelsContainer
+public;namespace;ContourDisplay
 public;type;CreateEmptySnapshotIModelProps
 internal;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps

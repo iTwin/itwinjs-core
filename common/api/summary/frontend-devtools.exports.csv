@@ -231,6 +231,7 @@ alpha;class;ToolSettingsTracker
 beta;class;UnmaskMapTool
 beta;class;UnmaskRealityModelTool
 beta;class;UnsharpenEffect
+alpha;function;updateSliderValue
 beta;class;ViewportAddRealityModel
 beta;class;ViewportTileSizeModifierTool
 beta;class;ViewportToggleTool

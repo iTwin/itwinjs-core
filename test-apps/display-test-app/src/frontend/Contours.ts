@@ -279,16 +279,16 @@ export class ContoursSettings implements IDisposable {
 
   public addStyle(parent: HTMLElement, value: LinePixels, major: boolean): ComboBox {
     const entries = [
-      { name: "Solid", value: 0 },
-      { name: "Code1", value: 1 },
-      { name: "Code2", value: 2 },
-      { name: "Code3", value: 3 },
-      { name: "Code4", value: 4 },
-      { name: "Code5", value: 5 },
-      { name: "Code6", value: 6 },
-      { name: "Code7", value: 7 },
-      { name: "Hidden Line", value: 8 },
-      { name: "Invisible", value: 9 },
+      { name: "Solid", value: LinePixels.Solid },
+      { name: "Code1", value: LinePixels.Code1 },
+      { name: "Code2", value: LinePixels.Code2 },
+      { name: "Code3", value: LinePixels.Code3 },
+      { name: "Code4", value: LinePixels.Code4 },
+      { name: "Code5", value: LinePixels.Code5 },
+      { name: "Code6", value: LinePixels.Code6 },
+      { name: "Code7", value: LinePixels.Code7 },
+      { name: "Hidden Line", value: LinePixels.HiddenLine },
+      { name: "Invisible", value: LinePixels.Invisible },
     ];
 
     const props: ComboBoxProps = {

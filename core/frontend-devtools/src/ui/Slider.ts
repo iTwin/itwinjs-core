@@ -75,6 +75,7 @@ export function createSlider(props: SliderProps): Slider {
   return { label, slider, div, readout };
 }
 
+/** @alpha */
 export function updateSliderValue(sliderCtrl: Slider, value: string) {
   sliderCtrl.slider.value = value;
   sliderCtrl.readout.innerText = value;
