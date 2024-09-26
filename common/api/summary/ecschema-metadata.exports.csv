@@ -35,7 +35,7 @@ internal;class;ECObjectsError
 beta;enum;ECObjectsStatus
 internal;class;ECStringConstants
 beta;class;ECVersion
-public;interface;ECXmlVersion
+internal;interface;ECXmlVersion
 beta;class;EntityClass
 beta;interface;EntityClassProps
 beta;class;Enumeration

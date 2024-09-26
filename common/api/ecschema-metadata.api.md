@@ -488,7 +488,7 @@ export class ECVersion {
     get write(): number;
 }
 
-// @internal (undocumented)
+// @internal
 export interface ECXmlVersion {
     // (undocumented)
     readVersion: number;
