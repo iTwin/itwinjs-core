@@ -14,8 +14,11 @@ export default defineConfig({
         "**/*.d.tsx"
       ],
       reporter: [
-        'text'
-      ]
+        "text-summary",
+        "lcov",
+        "cobertura"
+      ],
+      reportsDirectory: "./lib/cjs/test/coverage",
     }
   }
 })

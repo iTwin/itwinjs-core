@@ -15,8 +15,11 @@ export default defineConfig({
         "**/*.d.tsx"
       ],
       reporter: [
-        'text'
+        "text-summary",
+        "lcov",
+        "cobertura"
       ],
+      reportsDirectory: "./lib/cjs/test/coverage",
       thresholds: { // This should not be in the default config file.
         branches: 70,
         statements: 85,
