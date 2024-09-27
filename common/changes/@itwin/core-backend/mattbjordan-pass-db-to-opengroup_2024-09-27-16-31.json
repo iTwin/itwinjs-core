@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Require db for openGroup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
