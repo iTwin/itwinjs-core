@@ -788,7 +788,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': ^4.0.2
-      '@svgdotjs/svg.js': 3.0.13
+      '@svgdotjs/svg.js': 3.0.16
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       babel-loader: ~8.2.5
@@ -804,7 +804,7 @@ importers:
       typescript: ~5.3.3
       webpack: ^5.76.0
     dependencies:
-      '@svgdotjs/svg.js': 3.0.13
+      '@svgdotjs/svg.js': 3.0.16
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -4834,8 +4834,8 @@ packages:
   /@sinonjs/text-encoding/0.7.2:
     resolution: {integrity: sha512-sXXKG+uL9IrKqViTtao2Ws6dy0znu9sOaP1di/jKGW1M6VssO8vlpXCQcpZ+jisQ1tTFAC5Jo/EOzFbggBagFQ==}
 
-  /@svgdotjs/svg.js/3.0.13:
-    resolution: {integrity: sha512-Ix3dobG2DvdK5f2SHtZdiiLwi+G0RDuDfwA4tZ1eqTGoiopia8JIfeWGeA0h2frFHcLDXnYvNiVGtW4y6cSDig==}
+  /@svgdotjs/svg.js/3.0.16:
+    resolution: {integrity: sha512-yZ4jfP/SeLHEnCi9PIrzienKCrA4vW9+jm5uUV3N5DG2e9zgXLY5FgywK2u8/gMFIeKO0HuqTLFFfWJj+MfMLA==}
     dev: false
 
   /@szmarczak/http-timer/1.1.2:
