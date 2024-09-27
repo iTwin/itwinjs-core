@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// import { expect } from "chai";
+import { describe, it } from "vitest";
 // import { Checker } from "../Checker";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Loop } from "../../curve/Loop";

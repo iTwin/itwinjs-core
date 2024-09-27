@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";

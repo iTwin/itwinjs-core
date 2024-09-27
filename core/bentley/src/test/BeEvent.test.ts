@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { BeEvent, BeEventList, Listener, ListenerType } from "../core-bentley";
 
 /* eslint-disable no-empty */
