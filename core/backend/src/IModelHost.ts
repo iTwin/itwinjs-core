@@ -488,7 +488,7 @@ export class IModelHost {
       IModelReadRpcImpl,
       IModelTileRpcImpl,
       SnapshotIModelRpcImpl, // eslint-disable-line deprecation/deprecation
-      WipRpcImpl,
+      WipRpcImpl, // eslint-disable-line deprecation/deprecation
       DevToolsRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 

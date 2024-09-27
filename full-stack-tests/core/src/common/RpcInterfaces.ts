@@ -5,7 +5,7 @@
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
   DevToolsRpcInterface, IModelConnectionProps, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager,
-  SnapshotIModelRpcInterface, WipRpcInterface,
+  SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
@@ -71,7 +71,6 @@ export const rpcInterfaces = [
   IModelTileRpcInterface,
   SnapshotIModelRpcInterface, // eslint-disable-line deprecation/deprecation
   TestRpcInterface,
-  WipRpcInterface,
   DevToolsRpcInterface,
   EventsTestRpcInterface,
   ECSchemaRpcInterface,
