@@ -183,11 +183,6 @@ export function parseRatioType(ratioType: string, formatName: string): RatioType
   throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioType' attribute.`);
 }
 
-/**  @beta   */
-export function ratioTypeToString(ratioType: RatioType): string {
-  return ratioType;
-}
-
 /** @beta    */
 export function parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
   switch (showSignOption.toLowerCase()) {
