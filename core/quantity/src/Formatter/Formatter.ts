@@ -582,14 +582,14 @@ export class Formatter {
 
     switch (spec.format.ratioType) {
       case RatioType.OneToN:
-        return `1:${  this.formatMagnitude(reciprocal, spec)}`;
+        return `1:${this.formatMagnitude(reciprocal, spec)}`;
       case RatioType.NToOne:
-        return `${this.formatMagnitude(magnitude, spec)  }:1`;
+        return `${this.formatMagnitude(magnitude, spec)}:1`;
       case RatioType.ValueBased:
         if (magnitude > 1.0)
-          return `${this.formatMagnitude(magnitude, spec)  }:1`;
+          return `${this.formatMagnitude(magnitude, spec)}:1`;
         else
-          return `1:${  this.formatMagnitude(reciprocal, spec)}`;
+          return `1:${this.formatMagnitude(reciprocal, spec)}`;
       case RatioType.UseGreatestCommonDivisor:
         magnitude = Math.round(magnitude * precisionScale)/precisionScale;
         let numerator = magnitude * precisionScale;
@@ -599,7 +599,7 @@ export class Formatter {
         numerator /= gcd;
         denominator /= gcd;
 
-        return `${this.formatMagnitude(numerator, spec)  }:${  this.formatMagnitude(denominator, spec)}`;
+        return `${this.formatMagnitude(numerator, spec)}:${this.formatMagnitude(denominator, spec)}`;
       default:
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid ratio type specified.`);
     }
