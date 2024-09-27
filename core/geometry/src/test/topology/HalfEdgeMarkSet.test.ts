@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { AbstractHalfEdgeGraphMarkSet, MarkedEdgeSet, MarkedFaceSet, MarkedHalfEdgeSet, MarkedVertexSet } from "../../topology/HalfEdgeMarkSet";
 import { Checker } from "../Checker";

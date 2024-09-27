@@ -6,7 +6,7 @@
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { LineString3d } from "../../curve/LineString3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
