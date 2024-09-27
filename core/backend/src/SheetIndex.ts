@@ -12,10 +12,10 @@ import { IModelDb } from "./IModelDb";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "./NavigationRelationship";
 
-/** Argument for creating a `SheetIndexFolder`
+/** Arguments used to create a [[SheetIndexEntry]].
  * @beta
  */
-export interface SheetIndexFolderArg {
+export interface SheetIndexEntryCreateArgs {
   /** iModelDb The iModel */
   iModelDb: IModelDb;
   /** The [[SheetIndexModel]] */
@@ -31,7 +31,7 @@ export interface SheetIndexFolderArg {
 /** Argument for creating a `SheetIndexReference`
  * @beta
  */
-export interface SheetIndexReferenceArg extends SheetIndexFolderArg {
+export interface SheetIndexReferenceCreateArgs extends SheetIndexEntryCreateArgs {
   /** The Sheet Index referenced by the SheetIndexReference */
   sheetIndexId?: Id64String;
 }
@@ -39,7 +39,7 @@ export interface SheetIndexReferenceArg extends SheetIndexFolderArg {
 /** Argument for creating a `SheetReference`
  * @beta
  */
-export interface SheetReferenceArg extends SheetIndexFolderArg {
+export interface SheetReferenceCreateArgs extends SheetIndexEntryCreateArgs {
   /** The Sheet referenced by the SheetReference */
   sheetId?: Id64String;
 }
@@ -129,8 +129,7 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
     return { id, relClassName: relClass.classFullName };
   }
 
-  protected static createProps(arg: SheetIndexFolderArg) {
-    // SheetIndexFolderArg is used as a base type here since it shares properties with all other SheetIndexEntries
+  protected static createProps(arg: SheetIndexEntryCreateArgs) {
     const parent = this.createParentRelationshipProps(arg.iModelDb, arg.parentId);
     const props: SheetIndexEntryProps = {
       classFullName: this.classFullName,
@@ -153,7 +152,7 @@ export class SheetIndexFolder extends SheetIndexEntry {
    * @returns The newly constructed SheetIndexFolder element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(arg: SheetIndexFolderArg) {
+  public static create(arg: SheetIndexEntryCreateArgs) {
     const props: SheetIndexFolderProps = this.createProps(arg);
     return new this(props, arg.iModelDb);
   }
@@ -162,7 +161,7 @@ export class SheetIndexFolder extends SheetIndexEntry {
    * @returns The Id of the newly inserted SheetIndexFolder element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(arg: SheetIndexFolderArg): Id64String {
+  public static insert(arg: SheetIndexEntryCreateArgs): Id64String {
     const instance = this.create(arg);
     const elements = arg.iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
@@ -205,7 +204,7 @@ export class SheetIndexReference extends SheetIndexEntry {
    * @returns The newly constructed SheetIndexReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(arg: SheetIndexReferenceArg) {
+  public static create(arg: SheetIndexReferenceCreateArgs) {
     const props: SheetIndexReferenceProps = {
       ...this.createProps(arg),
       sheetIndex: arg.sheetIndexId ? this.createReferenceRelationshipProps(arg.sheetIndexId) : undefined,
@@ -217,7 +216,7 @@ export class SheetIndexReference extends SheetIndexEntry {
    * @returns The Id of the newly inserted SheetIndexReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(arg: SheetIndexReferenceArg): Id64String {
+  public static insert(arg: SheetIndexReferenceCreateArgs): Id64String {
     const instance = this.create(arg);
     const elements = arg.iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
@@ -266,7 +265,7 @@ export class SheetReference extends SheetIndexEntry {
    * @returns The newly constructed SheetReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(arg: SheetReferenceArg) {
+  public static create(arg: SheetReferenceCreateArgs) {
     const props: SheetReferenceProps = {
       ...this.createProps(arg),
       sheet: arg.sheetId ? this.createReferenceRelationshipProps(arg.sheetId) : undefined,
@@ -278,7 +277,7 @@ export class SheetReference extends SheetIndexEntry {
    * @returns The Id of the newly inserted SheetReference element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(arg: SheetReferenceArg): Id64String {
+  public static insert(arg: SheetReferenceCreateArgs): Id64String {
     const instance = this.create(arg);
     const elements = arg.iModelDb.elements;
     instance.id = elements.insertElement(instance.toJSON());
