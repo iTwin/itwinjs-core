@@ -30,7 +30,7 @@ import { VertexTable } from "../internal/render/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
-import { MeshoptDecoder } from "meshoptimizer/meshopt_decoder.module";
+import { MeshoptDecoder } from "meshoptimizer";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
