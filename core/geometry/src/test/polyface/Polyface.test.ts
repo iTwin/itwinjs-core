@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { randomInt } from "crypto";
 import * as fs from "fs";
 import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";

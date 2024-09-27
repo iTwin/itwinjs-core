@@ -290,6 +290,7 @@
     "projectwise",
     "pseudolocalize",
     "quantityformat",
+    "queryables",
     "Queryable",
     "rbac",
     "readlink",

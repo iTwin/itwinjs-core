@@ -6,6 +6,8 @@
  * @module RpcInterface
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { assert } from "@itwin/core-bentley";
 import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager, WipRpcInterface } from "@itwin/core-common";
 import { ChangedElementsManager } from "../ChangedElementsManager";
@@ -14,8 +16,9 @@ import { BriefcaseDb } from "../IModelDb";
 
 /** The backend implementation of WipRpcInterface.
  * @internal
+ * @deprecated in 4.10. If any of these methods are needed in the frontend, they should be rewritten using IPC or HTTP protocol.
  */
-export class WipRpcImpl extends RpcInterface implements WipRpcInterface { // eslint-disable-line deprecation/deprecation
+export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
 
   public static register() { RpcManager.registerImpl(WipRpcInterface, WipRpcImpl); }
   public async placeholder(_tokenProps: IModelRpcProps): Promise<string> { return "placeholder"; }
