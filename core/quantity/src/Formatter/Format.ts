@@ -12,7 +12,7 @@ import { UnitProps, UnitsProvider } from "../Interfaces";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
   getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseRatioType, parseScientificType, parseShowSignOption,
-  RatioType, ratioTypeToString, ScientificType, scientificTypeToString,
+  RatioType, ScientificType, scientificTypeToString,
   ShowSignOption, showSignOptionToString,
 } from "./FormatEnums";
 import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
@@ -438,7 +438,7 @@ export class Format extends BaseFormat {
     const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
     const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
 
-    const baseFormatProps = {
+    const baseFormatProps: FormatProps = {
       type: formatTypeToString(this.type),
       precision: this.precision,
       roundFactor: this.roundFactor,
@@ -449,7 +449,7 @@ export class Format extends BaseFormat {
       thousandSeparator: this.thousandSeparator,
       uomSeparator: this.uomSeparator,
       scientificType: this.scientificType !== undefined ? scientificTypeToString(this.scientificType) : undefined,
-      ratioType: this.ratioType !== undefined ? ratioTypeToString(this.ratioType) : undefined,
+      ratioType: this.ratioType,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       azimuthBase: this.azimuthBase,
