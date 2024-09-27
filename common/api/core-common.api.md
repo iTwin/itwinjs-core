@@ -11210,7 +11210,7 @@ export class WhiteOnWhiteReversalSettings {
     toJSON(): WhiteOnWhiteReversalProps | undefined;
 }
 
-// @internal @deprecated
+// @internal
 export abstract class WipRpcInterface extends RpcInterface {
     // (undocumented)
     attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;

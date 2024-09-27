@@ -5175,7 +5175,7 @@ export class SqliteChangesetReader implements IDisposable {
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     static openGroup(args: {
         readonly changesetFiles: string[];
-    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    } & MarkRequired<SqliteChangesetReaderArgs, "db">): SqliteChangesetReader;
     static openLocalChanges(args: {
         iModel: IModelJsNative.DgnDb;
         includeInMemoryChanges?: true;
