@@ -53,7 +53,8 @@ export abstract class ModifyHandle {
   public setMouseHandler(target: MarkupElement) {
     const node = target.node;
     node.addEventListener("mousedown", (event) => {
-      const ev = event;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const ev = event as MouseEvent;
       if (0 === ev.button && undefined === this.handles.active)
         this.handles.active = this;
     });
