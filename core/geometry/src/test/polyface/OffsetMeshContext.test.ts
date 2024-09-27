@@ -92,7 +92,7 @@ describe("OffsetMeshContext", () => {
     }
     OffsetMeshContext.stringDebugFunction = undefined;
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetPyramids");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetsFromFan", () => {
@@ -116,7 +116,7 @@ describe("OffsetMeshContext", () => {
     */
     testOffsets(ck, allGeometry, polyface, [0.5, 0.5, 1.0], [1.0, -1.0], 0.0, globalSeparateFaceEdgeAndVertexOutputs);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsFromFan");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetsFanToLine", () => {
@@ -146,7 +146,7 @@ describe("OffsetMeshContext", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsFanToLine");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetsWithConeApron", () => {
@@ -180,7 +180,7 @@ describe("OffsetMeshContext", () => {
       x0 += 10.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsWithConeApron");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetDTM", () => {
@@ -219,7 +219,7 @@ describe("OffsetMeshContext", () => {
       OffsetMeshContext.stringDebugFunction = undefined;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetDTM");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("OffsetSampler", () => {
     const ck = new Checker();
@@ -243,7 +243,7 @@ describe("OffsetMeshContext", () => {
     OffsetMeshContext.stringDebugFunction = undefined;
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetSampler");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetOptionsSampler", () => {
@@ -272,7 +272,7 @@ describe("OffsetMeshContext", () => {
     OffsetMeshContext.stringDebugFunction = undefined;
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetOptionsSampler");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ChamferExample", () => {
     const ck = new Checker();
@@ -311,7 +311,7 @@ describe("OffsetMeshContext", () => {
     OffsetMeshContext.stringDebugFunction = undefined;
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "ChamferExample");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
