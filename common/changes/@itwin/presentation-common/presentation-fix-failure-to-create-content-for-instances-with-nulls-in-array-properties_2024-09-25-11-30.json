@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Fix failure to deserialize content from JSON for instances with nulls in array property values",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

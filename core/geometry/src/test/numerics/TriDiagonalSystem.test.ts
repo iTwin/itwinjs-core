@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { TriDiagonalSystem } from "../../numerics/TriDiagonalSystem";
 import { Checker } from "../Checker";
