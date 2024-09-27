@@ -45,7 +45,6 @@ beta;type;QuantityParseResult
 beta;interface;QuantityProps
 beta;enum;QuantityStatus
 beta;enum;RatioType
-beta;function;ratioTypeToString
 beta;enum;ScientificType
 beta;function;scientificTypeToString
 beta;enum;ShowSignOption
