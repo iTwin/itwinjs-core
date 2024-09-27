@@ -10,7 +10,7 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -18,6 +18,25 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 // spell:ignore localstore itwindb
 
 useFromChai(chaiAsPromised);
+
+/**
+ * Waits until `check` doesn't throw or a timeout happens. In case the `check` succeeds before the timeout,
+ * it's result is returned. In case of a timeout, the last error, thrown by calling `check`, is re-thrown.
+ */
+async function waitFor<T>(check: () => Promise<T> | T, timeout: number = 5000): Promise<T> {
+  const timer = new StopWatch(undefined, true);
+  let lastError: unknown;
+  do {
+    try {
+      const res = check();
+      return res instanceof Promise ? await res : res;
+    } catch (e) {
+      lastError = e;
+      await BeDuration.wait(0);
+    }
+  } while (timer.current.milliseconds < timeout);
+  throw lastError;
+}
 
 describe("CloudSqlite", () => {
   const azSqlite = AzuriteTest.Sqlite;
@@ -218,6 +237,10 @@ describe("CloudSqlite", () => {
     // Check for a dirty block log message
     let dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
     expect(dirtyBlockLogMsg).to.be.true;
+    // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
+    // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
+    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("enters DELETE state")));
+    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("leaves DELETE state")));
     logTrace.resetHistory();
     logInfo.resetHistory();
 

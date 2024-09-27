@@ -6,8 +6,9 @@
 import { expect } from "chai";
 import { ColorDef, HiddenLine, LinePixels, RenderMode, ViewFlags } from "@itwin/core-common";
 import { EdgeSettings } from "../../../render/webgl/EdgeSettings";
-import { OvrFlags, RenderPass } from "../../../render/webgl/RenderFlags";
+import { RenderPass } from "../../../render/webgl/RenderFlags";
 import { LineCode } from "../../../render/webgl/LineCode";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 
 describe("EdgeSettings", () => {
   it("defaults to overriding nothing", () => {

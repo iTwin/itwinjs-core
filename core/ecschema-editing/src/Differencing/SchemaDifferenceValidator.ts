@@ -367,18 +367,42 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     }
 
     if (entry.changeType === "modify" && targetProperty !== undefined) {
-      if (entry.difference.kindOfQuantity) {
+      if ("kindOfQuantity" in entry.difference) {
         const sourceKoQ = await sourceProperty.kindOfQuantity;
         const targetKoQ = await targetProperty.kindOfQuantity;
-        if (!targetKoQ || sourceKoQ && resolveLazyItemName(sourceKoQ.persistenceUnit) !== resolveLazyItemName(targetKoQ.persistenceUnit)) {
-          this.addConflict({
+        if(!targetKoQ) {
+          return this.addConflict({
             code: ConflictCode.ConflictingPropertyKindOfQuantity,
             schemaType: targetClass.schemaItemType,
             itemName: targetClass.name,
             path: targetProperty.name,
             source: entry.difference.kindOfQuantity,
+            target: null,
+            description: "The kind of quantity cannot be assiged if the property did not have a kind of quantities before.",
+          });
+        }
+
+        if(!sourceKoQ) {
+          return this.addConflict({
+            code: ConflictCode.ConflictingPropertyKindOfQuantity,
+            schemaType: targetClass.schemaItemType,
+            itemName: targetClass.name,
+            path: targetProperty.name,
+            source: null,
             target: resolveLazyItemFullName(targetProperty.kindOfQuantity),
-            description: "The property has different kind of quantities with conflicting units defined.",
+            description: "The kind of quantity cannot be undefined if the property had a kind of quantities before.",
+          });
+        }
+
+        if (resolveLazyItemName(sourceKoQ.persistenceUnit) !== resolveLazyItemName(targetKoQ.persistenceUnit)) {
+          this.addConflict({
+            code: ConflictCode.ConflictingPropertyKindOfQuantityUnit,
+            schemaType: targetClass.schemaItemType,
+            itemName: targetClass.name,
+            path: targetProperty.name,
+            source: entry.difference.kindOfQuantity,
+            target: resolveLazyItemFullName(targetProperty.kindOfQuantity),
+            description: "The property has different kind of quantities with conflicting units.",
           });
         }
       }
