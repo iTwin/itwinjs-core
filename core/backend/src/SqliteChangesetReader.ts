@@ -6,7 +6,7 @@
  * @module SQLiteDb
  */
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable, MarkRequired } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -107,10 +107,10 @@ export class SqliteChangesetReader implements IDisposable {
   }
   /**
    * Group changeset file into single changeset and open that changeset.
-   * @param args - The arguments for opening the changeset group.
+   * @param args - The arguments for opening the changeset group. Requires an open db.
    * @returns The SqliteChangesetReader instance.
    */
-  public static openGroup(args: { readonly changesetFiles: string[] } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+  public static openGroup(args: { readonly changesetFiles: string[] } & MarkRequired<SqliteChangesetReaderArgs, "db">): SqliteChangesetReader {
     if (args.changesetFiles.length === 0) {
       throw new Error("changesetFiles must contain at least one file.");
     }
