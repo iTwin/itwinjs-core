@@ -8,14 +8,18 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangedElementsDb } from "./ChangedElementsDb";
 import { IModelJsFs } from "./IModelJsFs";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @internal */
 interface ChangedElementsDbCacheEntry {
   iModelId: GuidString;
   db: ChangedElementsDb;
 }
 
-/** Utilities for querying changed elements caches */
-/** @internal */
+/** Utilities for querying changed elements caches
+ * @internal
+ * @deprecated in 4.10. Call methods on [[IModelDb]] instance directly.
+ */
 export class ChangedElementsManager {
   /** Maintains a single entry since we will only have a cache per iModel, which means a ChangedElementsDb per backend instance */
   private static _entry: ChangedElementsDbCacheEntry | undefined;

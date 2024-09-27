@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.9.0-dev.24",
+  "version": "4.10.0-dev.8",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -45,12 +45,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.9.0-dev.24",
-    "@itwin/core-bentley": "workspace:^4.9.0-dev.24",
-    "@itwin/core-common": "workspace:^4.9.0-dev.24",
-    "@itwin/core-geometry": "workspace:^4.9.0-dev.24",
-    "@itwin/core-orbitgt": "workspace:^4.9.0-dev.24",
-    "@itwin/core-quantity": "workspace:^4.9.0-dev.24"
+    "@itwin/appui-abstract": "workspace:^4.10.0-dev.8",
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.8",
+    "@itwin/core-common": "workspace:^4.10.0-dev.8",
+    "@itwin/core-geometry": "workspace:^4.10.0-dev.8",
+    "@itwin/core-orbitgt": "workspace:^4.10.0-dev.8",
+    "@itwin/core-quantity": "workspace:^4.10.0-dev.8"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -70,7 +70,7 @@
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
     "@types/sinon": "^17.0.2",
-    "@vitest/coverage-istanbul": "^2.1.1",
+    "@vitest/coverage-istanbul": "^2.1.0",
     "@vitest/browser": "^2.1.1",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
@@ -86,7 +86,7 @@
     "source-map-loader": "^4.0.0",
     "typescript": "~5.3.3",
     "typemoq": "^2.1.0",
-    "vitest": "^2.1.1",
+    "vitest": "^2.1.0",
     "vite-multiple-assets": "^1.3.1",
     "webpack": "^5.76.0"
   },

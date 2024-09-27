@@ -223,6 +223,9 @@ public;interface;ElementAspectProps
 beta;namespace;ElementGeometry
 public;interface;ElementGeometryBuilderParams
 public;interface;ElementGeometryBuilderParamsForPart
+beta;interface;ElementGeometryCacheOperationRequestProps
+beta;interface;ElementGeometryCacheRequestProps
+beta;interface;ElementGeometryCacheResponseProps
 public;type;ElementGeometryChange
 public;namespace;ElementGeometryChange
 public;interface;ElementGeometryDataEntry
@@ -294,7 +297,7 @@ beta;interface;GenericInstanceFilterRule
 beta;interface;GenericInstanceFilterRuleGroup
 beta;type;GenericInstanceFilterRuleGroupOperator
 beta;type;GenericInstanceFilterRuleOperator
-beta;interface;GenericInstanceFilterRuleValue
+beta;type;GenericInstanceFilterRuleValue
 beta;namespace;GenericInstanceFilterRuleValue
 public;class;GeocentricTransform
 public;interface;GeocentricTransformProps
@@ -918,5 +921,6 @@ internal;class;WebAppRpcRequest
 public;interface;WhiteOnWhiteReversalProps
 public;class;WhiteOnWhiteReversalSettings
 internal;class;WipRpcInterface
+deprecated;class;WipRpcInterface
 public;class;XyzRotation
 public;interface;XyzRotationProps

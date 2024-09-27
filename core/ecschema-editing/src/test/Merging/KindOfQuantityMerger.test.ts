@@ -6,6 +6,7 @@ import { KindOfQuantity, Schema, SchemaContext, SchemaItemType } from "@itwin/ec
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -17,6 +18,12 @@ describe("KindOfQuantity merge tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
   const referenceJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -74,7 +81,7 @@ describe("KindOfQuantity merge tests", () => {
   };
 
   beforeEach(async () => {
-    targetContext = new SchemaContext();
+    targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson(referenceJson, targetContext);
   });
 
@@ -122,6 +129,7 @@ describe("KindOfQuantity merge tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "ReferenceSchema",
           version: "1.2.0",
@@ -215,6 +223,7 @@ describe("KindOfQuantity merge tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "ReferenceSchema",
           version: "1.2.0",
@@ -285,6 +294,7 @@ describe("KindOfQuantity merge tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "ReferenceSchema",
           version: "1.2.0",
@@ -334,6 +344,7 @@ describe("KindOfQuantity merge tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "ReferenceSchema",
           version: "1.2.0",

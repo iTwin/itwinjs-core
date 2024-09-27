@@ -14,9 +14,9 @@ import {
   RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem,
 } from "@itwin/ecschema-metadata";
 import {
+  type AnyClassItemDifference,
   type AnySchemaItemDifference,
   type AnySchemaItemPathDifference,
-  type ClassItemDifference,
   type ClassPropertyDifference,
   type CustomAttributeDifference,
   type DifferenceType,
@@ -284,7 +284,7 @@ export class SchemaDiagnosticVisitor {
       this.schemaItemPathDifferences.push(modifyEntry);
     }
 
-    if (propertyName !== "name" && sourceValue !== undefined) {
+    if (propertyName !== "name") {
       modifyEntry.difference[propertyName] = sourceValue;
     }
   }
@@ -293,7 +293,7 @@ export class SchemaDiagnosticVisitor {
     const ecClass = diagnostic.ecDefinition as ECClass;
     const [sourceBaseClass] = diagnostic.messageArgs as [ECClass, ECClass];
 
-    let modifyEntry = this.schemaItemDifferences.find((entry): entry is ClassItemDifference => {
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is AnyClassItemDifference => {
       return entry.changeType === "modify" && entry.schemaType === ecClass.schemaItemType && entry.itemName === ecClass.name;
     });
 
@@ -303,7 +303,7 @@ export class SchemaDiagnosticVisitor {
         schemaType: ecClass.schemaItemType,
         itemName: ecClass.name,
         difference: {},
-      } as ClassItemDifference;
+      } as AnyClassItemDifference;
       this.schemaItemDifferences.push(modifyEntry);
     }
 

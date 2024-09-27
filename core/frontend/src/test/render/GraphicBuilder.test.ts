@@ -13,8 +13,7 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { MeshGraphic } from "../../render/webgl/Mesh";
-import { InstancedGraphicParams } from "../../common";
+import { MeshRenderGeometry } from "../../render/webgl/Mesh";
 import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
 import { MeshArgs } from "../../render/MeshArgs";
@@ -139,28 +138,28 @@ describe("GraphicBuilder", () => {
 	});
 
 	describe("createMesh", () => {
-	  let renderSystemCreateMesh: typeof RenderSystem.prototype.createMesh;
+	  let renderSystemCreateMesh: typeof RenderSystem.prototype.createMeshGeometry;
 	  let createMeshInvoked = false;
 
 	  afterEach(() => {
 	    if (renderSystemCreateMesh)
-	      IModelApp.renderSystem.createMesh = renderSystemCreateMesh; // eslint-disable-line @typescript-eslint/unbound-method
+	      IModelApp.renderSystem.createMeshGeometry = renderSystemCreateMesh; // eslint-disable-line @typescript-eslint/unbound-method
 	  });
 
-	  function overrideCreateMesh(verifyParams?: (params: MeshParams) => void, verifyGraphic?: (graphic: MeshGraphic) => void): void {
+	  function overrideCreateMesh(verifyParams?: (params: MeshParams) => void, verifyGraphic?: (graphic: MeshRenderGeometry) => void): void {
 	    if (!renderSystemCreateMesh)
-	      renderSystemCreateMesh = IModelApp.renderSystem.createMesh; // eslint-disable-line @typescript-eslint/unbound-method
+	      renderSystemCreateMesh = IModelApp.renderSystem.createMeshGeometry; // eslint-disable-line @typescript-eslint/unbound-method
 
 	    createMeshInvoked = false;
 
 	    // eslint-disable-next-line @typescript-eslint/unbound-method
-	    IModelApp.renderSystem.createMesh = (params: MeshParams, instances?: InstancedGraphicParams) => {
+	    IModelApp.renderSystem.createMeshGeometry = (params: MeshParams, viOrigin?: Point3d) => {
 	      createMeshInvoked = true;
 	      if (verifyParams)
 	        verifyParams(params);
 
-	      const graphic = renderSystemCreateMesh.apply(IModelApp.renderSystem, [params, instances]) as MeshGraphic;
-	      expect(graphic).toBeInstanceOf(MeshGraphic);
+	      const graphic = renderSystemCreateMesh.apply(IModelApp.renderSystem, [params, viOrigin]) as MeshRenderGeometry;
+	      expect(graphic).toBeInstanceOf(MeshRenderGeometry);
 	      if (verifyGraphic)
 	        verifyGraphic(graphic);
 
@@ -172,8 +171,8 @@ describe("GraphicBuilder", () => {
 	    const verifyParams = (params: MeshParams) => {
 	      expect(params.vertices.numRgbaPerVertex).toEqual(5);
 	    };
-	    const verifyGraphic = (graphic: MeshGraphic) => {
-	      expect(graphic.meshData.type).toEqual(expectNormals ? SurfaceType.Lit : SurfaceType.Unlit);
+	    const verifyGraphic = (graphic: MeshRenderGeometry) => {
+	      expect(graphic.data.type).toEqual(expectNormals ? SurfaceType.Lit : SurfaceType.Unlit);
 	    };
 
 	    overrideCreateMesh(verifyParams, verifyGraphic);

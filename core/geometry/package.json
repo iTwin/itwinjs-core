@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "4.9.0-dev.24",
+  "version": "4.10.0-dev.8",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
@@ -41,11 +41,11 @@
     "@itwin/eslint-plugin": "^4.0.2",
     "@types/flatbuffers": "~1.10.0",
     "@types/node": "~18.16.20",
-    "@vitest/coverage-istanbul": "^2.1.1",
+    "@vitest/coverage-istanbul": "^2.1.0",
     "eslint": "^8.56.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3",
-    "vitest": "^2.1.1"
+    "vitest": "^2.1.0"
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",

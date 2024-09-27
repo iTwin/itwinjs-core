@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "4.9.0-dev.24",
+  "version": "4.10.0-dev.8",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -40,8 +40,8 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.9.0-dev.24",
-    "@itwin/core-geometry": "workspace:^4.9.0-dev.24"
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.8",
+    "@itwin/core-geometry": "workspace:^4.10.0-dev.8"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -52,11 +52,12 @@
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/node": "~18.16.20",
+    "@vitest/coverage-istanbul": "^2.1.0",
     "eslint": "^8.56.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.3.3",
-    "vitest": "^2.1.1"
+    "vitest": "^2.1.0"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
