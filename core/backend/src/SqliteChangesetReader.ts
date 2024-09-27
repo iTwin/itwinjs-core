@@ -10,6 +10,7 @@ import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
+import { _nativeDb } from "./internal/Symbols";
 
 /** Changed value type
  * @beta
@@ -115,7 +116,7 @@ export class SqliteChangesetReader implements IDisposable {
     }
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
-    reader._nativeReader.openGroup(args.changesetFiles, args.invert ?? false);
+    reader._nativeReader.openGroup(args.changesetFiles, args.db[_nativeDb], args.invert ?? false);
     return reader;
   }
   /**
