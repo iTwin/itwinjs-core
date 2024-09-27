@@ -30,7 +30,7 @@ import { VertexTable } from "../internal/render/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
-import {MeshoptDecoder} from "meshoptimizer/meshopt_decoder.module";
+import { MeshoptDecoder } from "meshoptimizer/meshopt_decoder.module";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -447,7 +447,7 @@ class Parser {
       nodeId = nodeId ?? AnimationNodeId.Untransformed;
       let node = nodesById.get(nodeId);
       if (!node) {
-        node =  {
+        node = {
           animationNodeId: nodeId,
           animationId: `${this._options.batchModelId}_Node_${nodeId}`,
           primitives: [],
@@ -736,7 +736,7 @@ class Parser {
     if (!indexed && imdl.compact)
       indexed = this.parseCompactEdges(imdl.compact, new VertexIndices(indices));
 
-    if (!segments && !silhouettes && !indexed &&!polylines)
+    if (!segments && !silhouettes && !indexed && !polylines)
       return undefined;
 
     return {
@@ -895,13 +895,13 @@ class Parser {
     if (!indices)
       return undefined;
 
-    if(surf.isCompressed){
-      const decompressedIndices = new Uint8Array(surf.indexCount * 4);
-      MeshoptDecoder.decodeIndexBuffer(decompressedIndices, surf.indexCount, 4, indices);
+    if (surf.compressedIndexCount) {
+      const decompressedIndices = new Uint8Array(surf.compressedIndexCount * 4);
+      MeshoptDecoder.decodeIndexBuffer(decompressedIndices, surf.compressedIndexCount, 4, indices);
 
       // reduce from 32 to 24 bits
-      indices = new Uint8Array(surf.indexCount * 3);
-      for (let i = 0; i < surf.indexCount; i++) {
+      indices = new Uint8Array(surf.compressedIndexCount * 3);
+      for (let i = 0; i < surf.compressedIndexCount; i++) {
         const srcIndex = i * 4;
         const dstIndex = i * 3;
         indices[dstIndex + 0] = decompressedIndices[srcIndex + 0];
@@ -977,7 +977,7 @@ class Parser {
       return undefined;
 
     let bytes: Uint8Array | undefined;
-    if(json.isCompressed){
+    if (json.isCompressed) {
 
       const bufferViewJson = this._document.bufferViews[JsonUtils.asString(json.bufferView)];
       if (undefined === bufferViewJson)
@@ -998,18 +998,18 @@ class Parser {
       const remainingBytesSize = byteLength - json.compressedSize;
 
       // if there are remaining bytes, copy the data that did not go through the compression
-      if(remainingBytesSize > 0){
+      if (remainingBytesSize > 0) {
         const remainingBytes = this._binaryData.subarray(byteOffset + json.compressedSize, byteOffset + byteLength);
         if (!remainingBytes)
           return undefined;
 
         const decompressedSize = json.count * json.numRgbaPerVertex * 4;
-        for(let i = 0; i < remainingBytesSize; i++){
+        for (let i = 0; i < remainingBytesSize; i++) {
           bytes[decompressedSize + i] = remainingBytes[i];
         }
       }
 
-    } else{
+    } else {
       bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
       if (!bytes)
         return undefined;
@@ -1309,13 +1309,13 @@ export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document
       scene: JsonUtils.asString(sceneValue.scene),
       scenes: JsonUtils.asArray(sceneValue.scenes),
       animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
-      bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? { },
+      bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? {},
       meshes: JsonUtils.asObject(sceneValue.meshes),
-      nodes: JsonUtils.asObject(sceneValue.nodes) ?? { },
-      materials: JsonUtils.asObject(sceneValue.materials) ?? { },
-      renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? { },
-      namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? { },
-      patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? { },
+      nodes: JsonUtils.asObject(sceneValue.nodes) ?? {},
+      materials: JsonUtils.asObject(sceneValue.materials) ?? {},
+      renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? {},
+      namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? {},
+      patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? {},
       rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
     };
 
