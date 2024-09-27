@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BSplineCurveOps } from "../../bspline/BSplineCurveOps";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { AngleSweep } from "../../geometry3d/AngleSweep";

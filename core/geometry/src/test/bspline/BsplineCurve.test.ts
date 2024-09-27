@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";

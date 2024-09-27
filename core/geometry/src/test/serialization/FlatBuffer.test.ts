@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, it } from "vitest";
 import { flatbuffers } from "flatbuffers";
 import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
