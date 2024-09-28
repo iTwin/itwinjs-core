@@ -89,7 +89,7 @@ export interface BatchContext {
 export class PerTargetBatchData {
   public readonly target: Target;
   protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
-  protected readonly _contours = new Map<number | undefined, Contours>();  // TODO: how to implement source?
+  protected _contours?: Contours;
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
@@ -98,6 +98,7 @@ export class PerTargetBatchData {
 
   public dispose(): void {
     this._thematicSensors = dispose(this._thematicSensors);
+    this._contours = this._contours?.dispose();
     for (const value of this._featureOverrides.values())
       dispose(value);
 
@@ -129,16 +130,16 @@ export class PerTargetBatchData {
   }
 
   public getContours(batch: Batch): Contours {
-    const source = undefined; // TODO:  how to implement source? - this.target.currentContours?.source;
-    let contours = this._contours.get(source);
-    if (!contours) {
-      const cleanup = undefined; // TODO:  how to implement source? - source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
-      this._contours.set(source, contours = Contours.createFromTarget(this.target, batch.options, cleanup));
-      contours.initFromMap(batch.featureTable);
-    }
+    if (this._contours && !this._contours.matchesTarget(this.target))
+      this._contours = this._contours.dispose();
 
-    contours.update(batch.featureTable);
-    return contours;
+    if (!this._contours) {
+      this._contours = Contours.createFromTarget(this.target, batch.options);
+      this._contours.initFromMap(batch.featureTable);
+    } else {
+      this._contours.update(batch.featureTable);
+    }
+    return this._contours;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -148,8 +149,8 @@ export class PerTargetBatchData {
     for (const ovrs of this._featureOverrides.values())
       stats.addFeatureOverrides(ovrs.byteLength);
 
-    for (const contours of this._contours.values())
-      stats.addContours(contours.byteLength);
+    if (this._contours)
+      stats.addContours(this._contours.byteLength);
   }
 
   /** Exposed strictly for tests. */

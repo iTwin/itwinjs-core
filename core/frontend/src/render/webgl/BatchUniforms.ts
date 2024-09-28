@@ -16,6 +16,8 @@ import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
 import { Contours } from "./Contours";
 import { OvrFlags } from "../../common/internal/render/OvrFlags";
+import { ContourDisplay } from "@itwin/core-common";
+import { ContourUniforms } from "./ContourUniforms";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
@@ -75,8 +77,7 @@ export class BatchUniforms {
     else
       this._featureMode = FeatureMode.None;
 
-    const contours = undefined !== batch ? batch.getContours(this._target) : undefined; // TODO: does this need any more qualifiers?
-    this._contours = contours;
+    this._contours = undefined !== batch && this.wantContourLines ? batch.getContours(this._target) : undefined;
   }
 
   public resetBatchState(): void {
@@ -96,7 +97,14 @@ export class BatchUniforms {
   }
 
   public get wantContourLines(): boolean {
-    return this._contours?.wantContourLines ?? false;
+    const contours: ContourDisplay.Settings | undefined = this._target.plan.contours;
+    if (contours && contours.terrains !== undefined && contours.terrains.length) {
+      for (let index = 0, len = contours.terrains.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
+        if (undefined !== contours.terrains[index]?.subCategories)
+          return true;
+      }
+    }
+    return false;
   }
 
   public bindContourLUT(uniform: UniformHandle): void {
@@ -106,8 +114,12 @@ export class BatchUniforms {
   }
 
   public bindContourLUTWidth(uniform: UniformHandle): void {
-    if (undefined !== this._contours && !sync(this, uniform))
-      this._contours.bindContourLUTWidth(uniform);
+    if (!sync(this, uniform)) {
+      if (undefined === this._contours)
+        uniform.setUniform1ui(0);
+      else
+        this._contours.bindContourLUTWidth(uniform);
+    }
   }
 
   public bindLUT(uniform: UniformHandle): void {

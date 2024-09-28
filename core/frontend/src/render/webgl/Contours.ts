@@ -58,42 +58,44 @@ const scratchPackedFeature = PackedFeature.createWithIndex();
 export class Contours implements WebGLDisposable {
   public readonly target: Target;
   private readonly _options: BatchOptions;
+  public readonly contours?: ContourDisplay.Settings;
   private _lut?: Texture2DHandle;
-  private _width = 0;
   private _lutWidth = 0;
-  private _cleanup?: ContoursCleanup;
-
-  public get wantContourLines(): boolean { return this._lutWidth > 0; }
 
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
 
-  private _initialize(map: RenderFeatureTable, contours: ContourDisplay.Settings | undefined): Texture2DHandle | undefined {
+  public matchesTarget(target: Target): boolean {
+    if (target !== this.target)
+      return false;
+    if (this.contours === undefined && target.plan.contours === undefined)
+      return true;
+    if (this.contours === undefined || target.plan.contours === undefined)
+      return false;
+    return this.contours.equals(target.plan.contours);
+  }
+
+  private _initialize(map: RenderFeatureTable) {
     const nFeatures = map.numFeatures;
     const dims = computeWidthAndHeight(nFeatures, 1/8);
-    this._width = dims.width;
+    const width = dims.width;
     const height = dims.height;
-    assert(this._width * height * 8 >= nFeatures);
+    assert(width * height * 8 >= nFeatures);
 
-    this._lutWidth = this._width;
-    const data = new Uint8Array(this._width * height * 4);
+    const data = new Uint8Array(width * height * 4);
     const creator = new Texture2DDataUpdater(data);
-    if (contours && contours.terrains.length > 0 && !this.buildLookupTable(creator, map, contours))
-      this._lutWidth = 0; // flag to indicate no contours
-    return TextureHandle.createForData(this._width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
+    this.buildLookupTable(creator, map, this.target.plan.contours!);
+    this._lut = TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
+    this._lutWidth = width;
   }
 
-  private _update(map: RenderFeatureTable, lut: Texture2DHandle, contours: ContourDisplay.Settings) {
+  private _update(map: RenderFeatureTable, lut: Texture2DHandle) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
-    if (this.buildLookupTable(updater, map, contours))
-      lut.update(updater);
-    else
-      this._lutWidth = 0; // flag to indicate no contours
+    const contours: ContourDisplay.Settings | undefined = this.target.plan.contours;
+    this.buildLookupTable(updater, map, contours!);
+    lut.update(updater);
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: ContourDisplay.Settings): boolean {
-    if (contours.terrains === undefined || contours.terrains.length === 0)
-      return false;
-
+  private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: ContourDisplay.Settings) {
     // setup an efficient way to compare feature subcategories with lists in terrains
     const subCatMap = new Id64.Uint32Map<number>();
     // NB: index also has to be a max of 14 - has to fit in 4 bits with value 15 reserved for no terrain def
@@ -104,8 +106,6 @@ export class Contours implements WebGLDisposable {
           subCatMap.setById(subCat, index);
       }
     }
-    if (subCatMap.size === 0)
-      return false;
 
     // NB: We currently use 1/2 of one component of RGBA value per feature as follows:
     //   [0] R/G/B/A = index pair - lower 4 bits = ndx n, upper 4 bits = ndx n+1
@@ -123,49 +123,36 @@ export class Contours implements WebGLDisposable {
     }
     if (even) // not written
       data.setByteAtIndex(dataIndex, byteOut);
-
-    return true;
   }
 
-  private constructor(target: Target, options: BatchOptions, cleanup: ContoursCleanup | undefined) {
+  private constructor(target: Target, options: BatchOptions) {
     this.target = target;
     this._options = options;
-    this._cleanup = cleanup;
+    this.contours = target.plan.contours;
   }
 
-  public static createFromTarget(target: Target, options: BatchOptions, cleanup: ContoursCleanup | undefined) {
-    return new Contours(target, options, cleanup);
+  public static createFromTarget(target: Target, options: BatchOptions) {
+    return new Contours(target, options);
   }
 
   public get isDisposed(): boolean { return undefined === this._lut; }
 
   public dispose() {
     this._lut = dispose(this._lut);
-    if (this._cleanup) {
-      this._cleanup();
-      this._cleanup = undefined;
-    }
+    return undefined;
   }
 
   public initFromMap(map: RenderFeatureTable) {
     const nFeatures = map.numFeatures;
     assert(0 < nFeatures);
-
     this._lut = dispose(this._lut);
-
-    const contours: ContourDisplay.Settings | undefined = this.target.plan.contours;
-    this._lut = this._initialize(map, contours);
+    this._initialize(map);
   }
 
   public update(features: RenderFeatureTable) {
     // _lut can be undefined if context was lost, (gl.createTexture returns null)
     if (this._lut) {
-      const contours: ContourDisplay.Settings | undefined = this.target.plan.contours;
-      this._lutWidth = this._width;
-      if (contours && contours.terrains.length > 0)
-        this._update(features, this._lut, contours);
-      else
-        this._lutWidth = 0; // flag to indicate no contours
+      this._update(features, this._lut);
     }
   }
 
