@@ -221,6 +221,7 @@ export class SheetIndexReference extends SheetIndexEntry {
     return instance.id;
   }
 
+  /** @alpha */
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     if (this.sheetIndex)
@@ -282,6 +283,7 @@ export class SheetReference extends SheetIndexEntry {
     return instance.id;
   }
 
+  /** @alpha */
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     if (this.sheet)
