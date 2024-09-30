@@ -16,9 +16,9 @@ import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReference
  * @beta
  */
 export interface SheetIndexEntryCreateArgs {
-  /** iModelDb The iModel */
+  /** The iModel that will contain the sheet index entry. */
   iModelDb: IModelDb;
-  /** The [[SheetIndexModel]] */
+  /** The Id of the [[SheetIndexModel]] that will contain the sheet index entry. */
   sheetIndexModelId: Id64String;
   /** The [[SheetIndex]] or [[SheetIndexFolder]] that is parent to this SheetIndexEntry */
   parentId: Id64String;
@@ -28,27 +28,25 @@ export interface SheetIndexEntryCreateArgs {
   priority: number;
 }
 
-/** Argument for creating a `SheetIndexReference`
+/** Arguments supplied when creating a [[SheetIndexReference]].
  * @beta
  */
 export interface SheetIndexReferenceCreateArgs extends SheetIndexEntryCreateArgs {
-  /** The Sheet Index referenced by the SheetIndexReference */
+  /** The [[SheetIndex]] to which the reference refers. */
   sheetIndexId?: Id64String;
 }
 
-/** Argument for creating a `SheetReference`
+/** Arguments supplied when creating a [[SheetReference]].
  * @beta
  */
 export interface SheetReferenceCreateArgs extends SheetIndexEntryCreateArgs {
-  /** The Sheet referenced by the SheetReference */
+  /** The [[Sheet]] to which the reference refers. */
   sheetId?: Id64String;
 }
 
-/**
- * A bis:InformationReferenceElement used to organize bis:Sheet instances into a hierarchy with the assistance
- * of [[bis:SheetIndexFolder]] and other [[bis:SheetIndex]] instances.
- *
- * See the doc site for more information about [SheetIndex]($docs/bis/domains/drawings-sheets#sheet-index).
+/** A [structured collection]($docs/bis/domains/drawings-sheets#sheet-index) of [[SheetIndexEntry]]s.
+ * The sheet index is a tree whose leaf nodes refer to [[Sheet]]s, optionally grouped by [[SheetIndexFolder]]s and/or incorporating
+ * sub-trees via [[SheetIndexReference]]s.
  * @beta
  */
 export class SheetIndex extends InformationReferenceElement {
@@ -95,7 +93,7 @@ export class SheetIndex extends InformationReferenceElement {
   }
 }
 
-/** A InformationReferenceElement used as the base-class for elements that participate in a Sheet-Index hierarchy.
+/** The base class for all elements that can participate in a [[SheetIndex]] hierarchy.
  * @beta
 */
 export abstract class SheetIndexEntry extends InformationReferenceElement {
@@ -142,7 +140,7 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
   }
 }
 
-/** A SheetIndexFolder used to organize other [[SheetIndexEntry]] instances in a hierarchy.
+/** A container used to group [[SheetIndexEntry]]s within a [[SheetIndex]].
  * @beta
  */
 export class SheetIndexFolder extends SheetIndexEntry {
@@ -169,7 +167,7 @@ export class SheetIndexFolder extends SheetIndexEntry {
   }
 }
 
-/** A SheetIndexReference used to include a [[SheetIndex]] hierarchy into another one.
+/** A node within one [[SheetIndex]] that incorporates another [[SheetIndex]] as a sub-tree.
  * @beta
 */
 export class SheetIndexReference extends SheetIndexEntry {
@@ -230,7 +228,7 @@ export class SheetIndexReference extends SheetIndexEntry {
   }
 }
 
-/** A SheetReference used to include a [[Sheet]] instance into a Sheet-Index hierarchy.
+/** A leaf node in a [[SheetIndex]] that refers to a specific [[Sheet]].
  * @beta
 */
 export class SheetReference extends SheetIndexEntry {
