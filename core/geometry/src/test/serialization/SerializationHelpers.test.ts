@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineSurface3dH, UVSelect } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
