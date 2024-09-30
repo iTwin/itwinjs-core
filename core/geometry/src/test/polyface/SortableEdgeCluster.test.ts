@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
 import { Checker } from "../Checker";
 
