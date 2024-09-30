@@ -25,12 +25,12 @@ export interface ParseImdlWorker {
   /** Parse the binary content into a document.
    * @note The [[Uint8Array]] containing the binary data is transferred from the caller to the worker - it will become unusable for the caller.
    */
-  parse(options: ImdlParserOptions): ImdlModel.Document | ImdlParseError;
+  parse(options: ImdlParserOptions): Promise<any>;
 }
 
 registerWorker<ParseImdlWorker>({
-  parse: (options: ImdlParserOptions) => {
-    const result = parseImdlDocument({
+  parse: async (options: ImdlParserOptions) => {
+    const result = await parseImdlDocument({
       ...options,
       data: options.data,
       timeline,

@@ -1276,7 +1276,7 @@ export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchMo
 }
 
 /** @internal */
-export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document | ImdlParseError {
+export async function parseImdlDocument(options: ParseImdlDocumentArgs): Promise<Imdl.Document | ImdlParseError> {
   const stream = ByteStream.fromUint8Array(options.data);
   const imdlHeader = new ImdlHeader(stream);
   if (!imdlHeader.isValid)
@@ -1327,6 +1327,8 @@ export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document
       startPos: ftStartPos,
       multiModel: 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable),
     };
+
+    await MeshoptDecoder.ready;
 
     const parser = new Parser(imdlDoc, binaryData, options, featureTable, stream);
     return parser.parse();

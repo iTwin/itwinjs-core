@@ -101,7 +101,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     modelGroups: args.modelGroups,
   };
 
-  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : parseImdlDocument({ ...parseOpts, timeline: args.timeline });
+  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : await parseImdlDocument({ ...parseOpts, timeline: args.timeline });
   if (isCanceled())
     return { isLeaf: true, readStatus: TileReadStatus.Canceled };
   else if (typeof document === "number")

@@ -41,10 +41,10 @@ export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
   const timeline = args.timeline;
   if (args.noWorker) {
     return {
-      parse: async (options) => Promise.resolve(parseImdlDocument({
+      parse: async (options) => parseImdlDocument({
         ...options,
         timeline,
-      })),
+      }),
       release: () => undefined,
     };
   }
