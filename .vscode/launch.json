@@ -1093,6 +1093,26 @@
       ],
       "autoAttachChildProcesses": true
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Vitest Browser",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/core/frontend",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "test",
+        "--inspect",
+        "--no-file-parallelism"
+      ],
+    },
+    {
+      "type": "chrome",
+      "request": "attach",
+      "name": "Attach to Vitest Browser",
+      "port": 9229
+    }
   ],
   "compounds": [
     {
@@ -1101,10 +1121,8 @@
         "group": "0_CoreTests",
         "order": 2
       },
-      "configurations": [
-        "[BROWSER] Frontend Tests",
-        "[NODE] Certa Test Runner for Frontend Tests"
-      ]
+      "configurations": ["Attach to Vitest Browser", "Run Vitest Browser"],
+      "stopAll": true
     },
     {
       "name": "Electron Frontend Tests",

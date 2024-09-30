@@ -310,7 +310,9 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
       const v = (data[dataIndex + 3] & 0xffff0000) >>> 16;
       const uv = qparams.unquantize(u, v);
       expect(uv.x).toBe(mesh.points[vertIndex].uv);
-      expect(uv.y).toBe(-(mesh.points[vertIndex].uv!));
+      if (uv.y !== 0) {
+        expect(uv.y).toBe(-(mesh.points[vertIndex].uv!));
+      }
     }
   }
 

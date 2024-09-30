@@ -8,7 +8,8 @@ export default defineConfig({
     browser: {
       provider: "playwright",
       enabled: true,
-      name: "chromium"
+      name: "chromium",
+      headless: true
     },
     coverage: {
       provider: "istanbul", // akin to nyc,
