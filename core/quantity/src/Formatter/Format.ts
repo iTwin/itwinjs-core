@@ -438,6 +438,9 @@ export class Format extends BaseFormat {
     const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
     const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
 
+    const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
+    const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
+
     const baseFormatProps: FormatProps = {
       type: formatTypeToString(this.type),
       precision: this.precision,
