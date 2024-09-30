@@ -21,7 +21,7 @@ There are nine built-in quantity types (see [QuantityType]($frontend)). The Quan
 
 #### Overriding Default Formats
 
-The `QuantityFormat` provides the method `setOverrideFormats` which allows the default format to be overridden.  These overrides may be persisted by implementing the [UnitFormattingSettingsProvider]($frontend) interface in the QuantityFormatter. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be used store settings to local storage and to maintain overrides by iModel as shown below:
+The `QuantityFormatter` provides the method `setOverrideFormats` which allows the default format to be overridden.  These overrides may be persisted by implementing the [UnitFormattingSettingsProvider]($frontend) interface in the QuantityFormatter. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be used to store settings in local storage and to maintain overrides by iModel as shown below:
 
 ```ts
     await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true));
@@ -42,11 +42,11 @@ To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) as sh
 
 ### Units Provider
 
-A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most IModels contain a `Units` schema. If this is the case, an SchemaUnitsProvider may be defined when an IModel is opened. The parent application must opt-in to using an IModel specific UnitsProvider using the following technique:
+A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most IModels contain a `Units` schema. If this is the case, a SchemaUnitProvider may be defined when an IModel is opened. The parent application must opt-in to using an IModel specific UnitsProvider using the following technique:
 
 ```ts
     const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
+    await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(schemaLocater));
 ```
 
 If errors occur while configuring the units provider, they are caught within the [QuantityFormatter.setUnitsProvider]($frontend) method, and the code reverts back to the [BasicUnitsProvider] described above.
@@ -181,9 +181,10 @@ The Quantity Package `@itwinjs\core-quantity` defines interfaces and classes use
 Common Terms:
 
 - Unit/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label.
-- [UnitsProvider]($quantity) - A class that will also locate the UnitProps for a unit given name or label. This class will also provide a [UnitConversion]($quantity) to convert from one unit to another.
-- Unit Family/[Phenomenon]($ecschema-metadata) - The physical quantity that this unit measures (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
-- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel.
+- [UnitsProvider]($quantity) - A class that locates the UnitProps for a unit given name or label. This class also provides a [UnitConversion]($quantity) to convert from one unit to another.
+- Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
+- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel. IModels define the persistence unit through [KindOfQuantity](../../bis/ec/kindofquantity.md) objects.
+- KindOfQuantity = An object that defines a persistence unit and presentation formats.
 - Format/FormatProp - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
   - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
 - FormatterSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the UnitsProvider during the formatting process.
@@ -195,7 +196,7 @@ For a detailed description of all the setting supported by FormatProp see the EC
 
 ### Formatting Examples
 
-Below are a couple examples of formatting values using methods directly from the @itwinjs/core-quantity package. The UnitsProvider used in the examples below can be seen [here](https://github.com/iTwin/itwinjs-core/blob/f3c8ee1d57ebb3e7b097a7e09201969fb57773ea/core/quantity/src/test/TestUtils/TestHelper.ts#L79). As discussed above, there are UnitProviders that can read units defined in the active IModel, and there is a basic provider that can be used when not IModel is open.
+Below are a couple examples of formatting values using methods directly from the @itwinjs/core-quantity package. The UnitsProvider used in the examples below can be seen in [TestHelper](https://github.com/iTwin/itwinjs-core/blob/master/core/quantity/src/test/TestUtils/TestHelper.ts). As discussed above, there are UnitProviders that can read units defined in the active IModel, and there is a basic provider that can be used when not IModel is open.
 
 #### Numeric Format
 
@@ -226,7 +227,7 @@ Below are a couple examples of formatting values using methods directly from the
 
     // create the formatter spec - the name is not used by the formatter it is only
     // provided so user can cache formatter spec and then retrieve spec via its name.
-    const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
 
     // apply the formatting held in FormatterSpec
     const formattedValue = spec.applyFormatting(magnitude);
@@ -275,7 +276,7 @@ The composite format below we will provide a unit in meters and produce a format
 
     // create the formatter spec - the name is not used by the formatter it is only
     // provided so user can cache formatter spec and then retrieve spec via its name.
-    const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
 
     // apply the formatting held in FormatterSpec
     const formattedValue = spec.applyFormatting(magnitude);
@@ -321,16 +322,31 @@ The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
 ```Typescript
+const unitsProvider = IModelApp.quantityFormatter.unitsProvider; // Uses the BasicUnitsProvider by default
+const outUnit = await unitsProvider.findUnitByName("Units.FT");
+
+const formatData = {
+  composite: {
+    includeZero: true,
+    spacer: "-",
+    units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
+  },
+  formatTraits: ["keepSingleZero", "showUnitLabel"],
+  precision: 8,
+  type: "Fractional",
+  uomSeparator: "",
+  allowMathematicOperations: true,
+};
+
+const format = new Format("compositeFeetInches");
+await format.fromJSON(unitsProvider, formatData);
+
 // Operation containing many units (feet, inches, yards).
-const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
+const inString = "5 ft + 12 in + 1 yd -1 ft 6 in + 1'6\""; // 1'6" translates to a value of 1.5 ft
 
-// Asynchronous implementation
-const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
-quantityProps.magnitude // 7.5 (feet)
-
-// Synchronous implementation
-const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
-parseResult.value // 7.5 (feet)
+const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
+const parseResult = parserSpec.parseToQuantityValue(inString);
+// parseResult.value returns 9.0 (value in feet)
 ```
 
 #### Limitations
@@ -350,4 +366,3 @@ To enable it, you can override the default QuantityFormatter. Ex :
   // Override the formatter and enable mathematical operations.
   await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicOperations: true });
 ```
-
