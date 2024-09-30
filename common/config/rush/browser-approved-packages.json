@@ -387,6 +387,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@vitest/coverage-istanbul",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "@xmldom/xmldom",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
@@ -885,6 +889,10 @@
     {
       "name": "vite-plugin-inspect",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vitest",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "webpack",
