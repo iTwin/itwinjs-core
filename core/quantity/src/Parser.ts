@@ -8,6 +8,7 @@
 
 import { QuantityConstants } from "./Constants";
 import { QuantityError, QuantityStatus } from "./Exception";
+import { QuantityError, QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";

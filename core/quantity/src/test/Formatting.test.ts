@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import { assert, expect } from "chai";
 import { QuantityError } from "../Exception";
 import { Format } from "../Formatter/Format";
 import { DecimalPrecision, FormatTraits, formatTypeToString, parseFormatTrait } from "../Formatter/FormatEnums";
+import { CustomFormatProps, FormatProps } from "../Formatter/Interfaces";
 import { CustomFormatProps, FormatProps } from "../Formatter/Interfaces";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
