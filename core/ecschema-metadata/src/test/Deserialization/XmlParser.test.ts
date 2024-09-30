@@ -158,6 +158,8 @@ describe("XmlParser", () => {
         label: "TestLabel",
         description: "Test description",
         modifier: "Abstract",
+        originalECXmlMajorVersion: 3,
+        originalECXmlMinorVersion: 1,
         baseClass: "TestSchema.TestBaseClass",
         mixins: ["TestSchema.TestMixin", "TestSchema.TestMixin2"],
       } as EntityClassProps;
@@ -188,6 +190,8 @@ describe("XmlParser", () => {
         description: "Test class",
         label: "Test",
         modifier: "None",
+        originalECXmlMajorVersion: 3,
+        originalECXmlMinorVersion: 1,
         baseClass: "TestSchema.Element",
         mixins: ["TestSchema.Mixin1", "TestSchema.Mixin2"],
       } as EntityClassProps;
@@ -224,6 +228,8 @@ describe("XmlParser", () => {
         description: "Test class",
         label: "Test",
         modifier: "None",
+        originalECXmlMajorVersion: 3,
+        originalECXmlMinorVersion: 1,
         baseClass: "BisCore.Element",
         mixins: ["BisCore.Mixin1", "CoreCustomAttribute.ElementMixin1", "CoreCustomAttribute.ElementMixin2"],
       } as EntityClassProps;

@@ -550,7 +550,7 @@ export class Schema implements CustomAttributeContainerProps {
    */
   public toJSON(): SchemaProps {
     if (!this.isECXmlVersionSupported())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be serialized.`);
+      throw new ECObjectsError(ECObjectsStatus.NewerSchemaVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be serialized.`);
 
     const schemaJson: { [value: string]: any } = {};
     schemaJson.$schema = SCHEMAURL3_2_JSON; // $schema is required
@@ -582,7 +582,7 @@ export class Schema implements CustomAttributeContainerProps {
    */
   public async toXml(schemaXml: Document): Promise<Document> {
     if (!this.isECXmlVersionSupported())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be serialized.`);
+      throw new ECObjectsError(ECObjectsStatus.NewerSchemaVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be serialized.`);
 
     const schemaMetadata = schemaXml.createElement("ECSchema");
     schemaMetadata.setAttribute("xmlns", SCHEMAURL3_2_XML);
@@ -684,7 +684,7 @@ export class Schema implements CustomAttributeContainerProps {
     this._originalECXmlMinorVersion = ecVersion?.writeVersion;
 
     if (!this.isECXmlMajorVersionSupported(ecVersion?.readVersion))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be loaded.`);
+      throw new ECObjectsError(ECObjectsStatus.NewerSchemaVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be loaded.`);
 
     if (ECName.validate(schemaProps.alias)) {
       this._alias = schemaProps.alias;

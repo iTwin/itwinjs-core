@@ -278,7 +278,14 @@ export class SchemaReadHelper<T = unknown> {
     switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
         schemaItem = await (schema as MutableSchema).createEntityClass(name);
-        await this.loadEntityClass(schemaItem, schemaItemObject);
+        try {
+          await this.loadEntityClass(schemaItem, schemaItemObject);
+        } catch (err: any) {
+          if (err.errorNumber === ECObjectsStatus.NewerSchemaVersion)
+            await (schema as MutableSchema).deleteClass(name);
+          else
+            throw err;
+        }
         break;
       case SchemaItemType.StructClass:
         schemaItem = await (schema as MutableSchema).createStructClass(name);
@@ -356,7 +363,14 @@ export class SchemaReadHelper<T = unknown> {
     switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
         schemaItem = (schema as MutableSchema).createEntityClassSync(name);
-        this.loadEntityClassSync(schemaItem, schemaItemObject);
+        try {
+          this.loadEntityClassSync(schemaItem, schemaItemObject);
+        } catch (err: any) {
+          if (err.errorNumber === ECObjectsStatus.NewerSchemaVersion)
+            (schema as MutableSchema).deleteClassSync(name);
+          else
+            throw err;
+        }
         break;
       case SchemaItemType.StructClass:
         schemaItem = (schema as MutableSchema).createStructClassSync(name);
@@ -1051,5 +1065,12 @@ export class SchemaReadHelper<T = unknown> {
       const customAttribute = provider(caClass);
       (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
     }
+  }
+
+  public static isECXmlVersionNewer(ecXmlMajorVersionToCheck?: number, ecXmlMinorVersionToCheck?: number): boolean {
+    if (ecXmlMajorVersionToCheck === undefined || ecXmlMinorVersionToCheck === undefined)
+      return false;
+
+    return ((ecXmlMajorVersionToCheck > Schema.currentECXmlMajorVersion) || (ecXmlMajorVersionToCheck === Schema.currentECXmlMajorVersion && ecXmlMinorVersionToCheck > Schema.currentECXmlMinorVersion));
   }
 }

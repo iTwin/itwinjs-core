@@ -28,6 +28,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   private _rawSchema: UnknownObject;
   private _schemaName?: string;
   private _currentItemFullName?: string;
+  private _ecXmlVersion?: ECXmlVersion;
 
   constructor(rawSchema: Readonly<unknown>) {
     super();
@@ -37,9 +38,13 @@ export class JsonParser extends AbstractParser<UnknownObject> {
 
     this._rawSchema = rawSchema;
     this._schemaName = rawSchema.name as string | undefined;
+    this._ecXmlVersion = JsonParser.parseJSUri(rawSchema.$schema as string);
   }
 
   public static parseJSUri(uri: string): ECXmlVersion | undefined {
+    if (uri === undefined)
+      return undefined;
+
     const match = uri.match(`^${SCHEMAURL_JSON}/([0-9]+)/ecschema$`);
     if (!match)
       return;
@@ -254,7 +259,12 @@ export class JsonParser extends AbstractParser<UnknownObject> {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this._currentItemFullName} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
       }
     }
-    return jsonObj as EntityClassProps;
+
+    return {
+      ...jsonObj,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
+    } as unknown as EntityClassProps;
   }
 
   /**

@@ -19,7 +19,7 @@ import {
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
-import { ECXmlVersion } from "./Helper";
+import { ECXmlVersion, SchemaReadHelper } from "./Helper";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
@@ -136,8 +136,11 @@ export class XmlParser extends AbstractParser<Element> {
         }
 
         const itemType = this.getSchemaItemType(rawItemType);
-        if (itemType === undefined)
+        if (itemType === undefined) {
+          if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion?.readVersion, this._ecXmlVersion?.writeVersion))
+            continue;
           throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `A SchemaItem in ${this._schemaName} has an invalid type. '${rawItemType}' is not a valid SchemaItem type.`);
+        }
 
         const itemName = this.getRequiredAttribute(item, "typeName", `A SchemaItem in ${this._schemaName} is missing the required 'typeName' attribute.`);
 
@@ -197,6 +200,8 @@ export class XmlParser extends AbstractParser<Element> {
     const entityClassProps = {
       ...classProps,
       mixins,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
     };
 
     return entityClassProps;

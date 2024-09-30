@@ -74,6 +74,8 @@ export interface SchemaItemProps {
   readonly label?: string;
   readonly description?: string;
   readonly customAttributes?: Array<{ [value: string]: any }>;
+  readonly originalECXmlMajorVersion?: number;
+  readonly originalECXmlMinorVersion?: number;
 }
 
 /**
