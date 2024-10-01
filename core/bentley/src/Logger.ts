@@ -246,6 +246,12 @@ export class Logger {
   }
 
   private static getExceptionMessage(err: unknown): string {
+    if (err === undefined) {
+      return "Error: err is undefined.";
+    }
+    if (err === null) {
+      return "Error: err is null.";
+    }
     const stack = Logger.logExceptionCallstacks ? `\n${BentleyError.getErrorStack(err)}` : "";
     return BentleyError.getErrorMessage(err) + stack;
   }
@@ -257,7 +263,7 @@ export class Logger {
    */
   public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      return { ...BentleyError.getErrorMetadata(err), exceptionType: err.constructor.name };
+      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>"};
     });
   }
 

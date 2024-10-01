@@ -853,11 +853,13 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public quickLength(): number { return this.curveLength(); }
   /**
    * Compute and normalize cross product among 3 points on the linestring.
-   * * "any" 3 points are acceptable -- no test for positive overall sense.
-   * * This is appropriate for polygon known to be convex.
-   * * use points spread at index step n/3, hopefully avoiding colinear points.
-   * * If that fails, try points 012
-   * @param result computed normal.
+   * * Essentially 3 random points are used to form the cross product.
+   * * This is appropriate for a polygon known to be convex.
+   * * No test for convexity or collinearity is performed.
+   * * If the polygon is not convex, the returned normal may be reversed.
+   * * If the random points used in the cross product are collinear, undefined is returned.
+   * @param result pre-allocated object to populate and return
+   * @returns unit normal, or undefined if normalization failed
    */
   public quickUnitNormal(result?: Vector3d): Vector3d | undefined {
     let step = Math.floor(this._points.length / 3);

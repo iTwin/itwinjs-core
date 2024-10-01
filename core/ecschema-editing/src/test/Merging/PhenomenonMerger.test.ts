@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Phenomenon, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Phenomenon, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 
 describe("Phenomenon merger tests", () => {
@@ -12,10 +13,16 @@ describe("Phenomenon merger tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
 
   it("should merge missing phenomenon item", async () => {
-    const targetSchema = await Schema.fromJson(targetJson, new SchemaContext());
+    const targetSchema = await Schema.fromJson(targetJson, await BisTestHelper.getNewContext());
     const merger = new SchemaMerger(targetSchema.context);
 
     const mergedSchema = await merger.merge({
@@ -35,13 +42,13 @@ describe("Phenomenon merger tests", () => {
       ],
     });
 
-    const mergedPhenomenon = await mergedSchema.getItem<Phenomenon>("testPhenomenon");
-    expect(mergedPhenomenon!.toJSON()).deep.equals({
-      schemaItemType: "Phenomenon",
-      label: "Area",
-      description: "Area description",
-      definition: "Units.LENGTH(2)",
-    });
+    await expect(mergedSchema.getItem("testPhenomenon")).to.be.eventually.not.undefined
+      .then((phenomenon: Phenomenon) => {
+        expect(phenomenon).to.have.a.property("schemaItemType", SchemaItemType.Phenomenon);
+        expect(phenomenon).to.have.a.property("label").to.equal("Area");
+        expect(phenomenon).to.have.a.property("description").to.equal("Area description");
+        expect(phenomenon).to.have.a.property("definition").to.equal("Units.LENGTH(2)");
+      });
   });
 
   it("should throw error for definition conflict", async () => {
@@ -56,7 +63,7 @@ describe("Phenomenon merger tests", () => {
           definition: "Units.LENGTH(4)",
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     await expect(merger.merge({

@@ -46,6 +46,7 @@ export enum ConflictCode {
   ConflictingBaseClass = "C-100",
   RemovingBaseClass = "C-101",
   SealedBaseClass = "C-102",
+  ConflictingClassModifier = "C-103",
 
   ConflictingEnumerationType = "C-700",
   ConflictingEnumeratorValue = "C-701",
@@ -54,6 +55,8 @@ export enum ConflictCode {
   MixinAppliedMustDeriveFromConstraint = "C-1100",
 
   ConflictingPropertyName = "C-1300",
+  ConflictingPropertyKindOfQuantity = "C-1301",
+  ConflictingPropertyKindOfQuantityUnit = "C-1302",
 
   AbstractConstraintMustNarrowBaseConstraints = "C-1500",
   DerivedConstraintsMustNarrowBaseConstraints = "C-1501",
@@ -92,7 +95,4 @@ export interface SchemaDifferenceConflict {
 
   /** The value in the target schema. */
   readonly target: unknown;
-
-  /** The conflicting difference */
-  readonly difference?: unknown;
 }

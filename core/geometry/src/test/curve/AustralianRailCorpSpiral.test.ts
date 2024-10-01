@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
 import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
