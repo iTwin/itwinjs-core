@@ -35,8 +35,37 @@ pr:
       - "**/CHANGELOG.json"
       - "**/CHANGELOG.md"
 
+resources:
+  repositories:
+    - repository: build-pipeline-scripts
+      type: git
+      name: iModelTechnologies/imodeljs-build-pipeline-scripts
+
 jobs:
+  - job: VeracodeScan
+    condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.SourceBranch'], 'refs/heads/nick/veracode-scan'))
+    displayName: Veracode SAST Scan
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - template: templates/appsec/veracode/package-veracode.yaml@build-pipeline-scripts
+        parameters:
+          foldersToInclude: "src"
+          foldersToExclude: "test"
+      - script: |
+          zip_file_path="$(Build.ArtifactStagingDirectory)/veracode-scan.zip"
+          file_size=$(stat -c%s "$zip_file_path")
+          echo "Size of $zip_file_path is $file_size bytes."
+        displayName: Print size of zip file.
+      - task: Veracode@3
+        inputs:
+          ConnectionDetailsSelection: "Service Connection"
+          AnalysisService: "AppSec - Veracode-iModelTechnologies"
+          veracodeAppProfile: "iTwinjs - itwinjscore (ITJS - 2686)"
+          version: "$(Build.BuildNumber)"
+          filepath: "$(Build.ArtifactStagingDirectory)/veracode-scan.zip"
   - job: CheckLinkedPR
+    dependsOn: []
     displayName: Get PRs
     pool:
       vmImage: ubuntu-latest
