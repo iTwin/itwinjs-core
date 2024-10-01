@@ -50,7 +50,7 @@ jobs:
     steps:
       - template: templates/appsec/veracode/package-veracode.yaml@build-pipeline-scripts
         parameters:
-          foldersToInclude: "src"
+          foldersToInclude: "core,editor,domains,example-code,extensions,presentation,test-apps,tools,ui,utils" #note I skipped common, docs, full-stack-tests
           foldersToExclude: "test"
       - script: |
           zip_file_path="$(Build.ArtifactStagingDirectory)/veracode-scan.zip"
@@ -65,7 +65,7 @@ jobs:
           version: "$(Build.BuildNumber)"
           filepath: "$(Build.ArtifactStagingDirectory)/veracode-scan.zip"
   - job: CheckLinkedPR
-    dependsOn: []
+    dependsOn: VeracodeScan # TODO: REMOVE LATER Just doing it to avoid doing useless work.
     displayName: Get PRs
     pool:
       vmImage: ubuntu-latest
