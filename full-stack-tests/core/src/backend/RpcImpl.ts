@@ -7,7 +7,7 @@ import * as nock from "nock";
 import * as path from "path";
 import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
-import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
+import { IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { AzuriteUsers, TestRpcInterface } from "../common/RpcInterfaces";
 import { AzuriteTest } from "./AzuriteTest";
 import { OpenMode } from "@itwin/core-bentley";
@@ -23,9 +23,23 @@ async function initializeContainer(containerId: string) {
   await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
 }
 
-export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // eslint-disable-line deprecation/deprecation
+export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
+  }
+
+  public async openSnapshot(filePath: string): Promise<IModelConnectionProps> {
+    let resolvedFileName: string | undefined = filePath;
+    if (IModelHost.snapshotFileNameResolver) {
+      resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath);
+      if (undefined === resolvedFileName)
+        throw new IModelNotFoundResponse();
+    }
+    return SnapshotDb.openFile(resolvedFileName).getConnectionProps();
+  }
+
+  public async closeIModel(iModelKey: string): Promise<void> {
+    IModelDb.findByKey(iModelKey).close();
   }
 
   public async restartIModelHost(): Promise<void> {

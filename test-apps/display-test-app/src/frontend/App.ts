@@ -11,7 +11,7 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
@@ -253,7 +253,6 @@ export class DisplayTestApp {
           DtaRpcInterface,
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          SnapshotIModelRpcInterface,
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {

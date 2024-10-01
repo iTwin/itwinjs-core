@@ -5,10 +5,11 @@
 import { assert, expect } from "chai";
 import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
-import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, SnapshotConnection, TileTreeReference, Viewport } from "@itwin/core-frontend";
+import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { Point2d } from "@itwin/core-geometry";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
@@ -37,7 +38,7 @@ describe("Planar clip mask (#integration)", () => {
       },
     });
 
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

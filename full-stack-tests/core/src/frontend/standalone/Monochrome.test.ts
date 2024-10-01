@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
-import { FeatureSymbology, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { FeatureSymbology, IModelConnection, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, testOnScreenViewport } from "../TestViewport";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Monochrome", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

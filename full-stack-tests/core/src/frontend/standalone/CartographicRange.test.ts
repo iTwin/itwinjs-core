@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { CartographicRange } from "@itwin/core-common";
-import { SnapshotConnection } from "@itwin/core-frontend";
 import { Range2d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Cartographic range tests", () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

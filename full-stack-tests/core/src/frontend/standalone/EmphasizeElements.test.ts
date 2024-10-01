@@ -7,9 +7,10 @@ import { assert, expect } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;
@@ -22,7 +23,7 @@ describe("EmphasizeElements tests", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim");
+    imodel = await TestSnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });

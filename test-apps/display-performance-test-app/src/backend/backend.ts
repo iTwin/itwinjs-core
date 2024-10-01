@@ -10,7 +10,7 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
 import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
@@ -40,7 +40,7 @@ export async function initializeBackend() {
   iModelHost.authorizationClient = await initializeAuthorizationClient();
 
   if (ProcessDetector.isElectronAppBackend) {
-    const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+    const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface];
     await ElectronHost.startup({
       electronHost: {
         webResourcesPath: path.join(__dirname, "..", "..", "lib"),

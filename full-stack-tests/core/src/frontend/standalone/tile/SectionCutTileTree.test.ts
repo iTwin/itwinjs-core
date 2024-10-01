@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipStyle } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
+import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;
@@ -28,7 +29,7 @@ describe("Section-cut tile tree", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    const imodels = await Promise.all([ SnapshotConnection.openFile("mirukuru.ibim"), SnapshotConnection.openFile("planprojection.bim") ]);
+    const imodels = await Promise.all([TestSnapshotConnection.openFile("mirukuru.ibim"), TestSnapshotConnection.openFile("planprojection.bim")]);
     testCases.push({ imodel: imodels[0], viewId: "0x24" });
     testCases.push({ imodel: imodels[1], viewId: "0x29" });
   });

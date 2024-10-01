@@ -4,17 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef, FeatureAppearance, RenderMode, ViewFlags, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
-import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, IModelConnection, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { Color, testOnScreenViewport } from "../TestViewport";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("White-on-white reversal", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

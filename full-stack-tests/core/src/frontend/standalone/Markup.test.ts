@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { TestUtility } from "../TestUtility";
 import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Markup tests", async () => {
   let imodel: IModelConnection;
@@ -15,7 +16,7 @@ describe("Markup tests", async () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     await MarkupApp.initialize();
     vp = await createOnScreenTestViewport("0x24", imodel, 500, 500);
     await MarkupApp.start(vp);

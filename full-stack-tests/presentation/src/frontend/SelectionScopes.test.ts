@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { waitFor } from "../Utils";
+import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("Selection Scopes", () => {
   let imodel: IModelConnection;
@@ -15,7 +16,7 @@ describe("Selection Scopes", () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openFile(testIModelName);
+    imodel = TestIModelConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 

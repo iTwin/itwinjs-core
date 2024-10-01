@@ -17,8 +17,25 @@ import {
   LocalFileName,
   PhysicalElementProps,
 } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { XMLParser } from "fast-xml-parser";
+
+export class TestIModelConnection extends IModelConnection {
+  constructor(private readonly _db: IModelDb) {
+    super(_db.getConnectionProps());
+    IModelConnection.onOpen.raiseEvent(this);
+  }
+
+  public override get isClosed(): boolean { return !this._db.isOpen }
+
+  public override async close(): Promise<void> {
+    this._db.close();
+  }
+
+  public static openFile(filePath: string): IModelConnection {
+    return new TestIModelConnection(SnapshotDb.openFile(filePath));
+  }
+}
 
 export function createValidIModelFileName(imodelName: string) {
   return sanitize(imodelName.replace(/[ ]+/g, "-").replaceAll("`", "").replaceAll("'", "")).toLocaleLowerCase();
@@ -45,9 +62,8 @@ export async function buildTestIModelDb(name: string, cb: (db: IModelDb) => Prom
  * frontend connection to the imodel.
  */
 export async function buildTestIModelConnection(name: string, cb: (db: IModelDb) => Promise<void>): Promise<IModelConnection> {
-  const { db, fileName } = await buildTestIModelDb(name, cb);
-  db.close();
-  return SnapshotConnection.openFile(fileName);
+  const { db } = await buildTestIModelDb(name, cb);
+  return new TestIModelConnection(db);
 }
 
 /** Import an ECSchema into given iModel. */
@@ -176,11 +192,11 @@ export function insertPhysicalElement<TAdditionalProps extends {}>(
     code: Code.createEmpty(),
     ...(parentId
       ? {
-          parent: {
-            id: parentId,
-            relClassName: `BisCore:PhysicalElementAssemblesElements`,
-          },
-        }
+        parent: {
+          id: parentId,
+          relClassName: `BisCore:PhysicalElementAssemblesElements`,
+        },
+      }
       : undefined),
     ...elementProps,
   } as PhysicalElementProps);

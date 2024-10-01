@@ -9,7 +9,7 @@ import { LogLevel } from "@itwin/core-bentley";
 import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { DevTools, DevToolsStatsFormatter } from "../DevTools";
 
-/** The backend implementation of WipRpcInterface.
+/** The backend implementation of DevToolsRpcInterface.
  * @internal
  */
 export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterface { // eslint-disable-line deprecation/deprecation

@@ -6,8 +6,9 @@ import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
-import { B3dmReader, GltfDataType, IModelApp, MockRender, RealityMeshParams, SnapshotConnection } from "@itwin/core-frontend";
+import { B3dmReader, GltfDataType, IModelApp, MockRender, RealityMeshParams } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
+import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -280,11 +281,11 @@ const b3dmBytes = new Uint8Array([
 ]);
 
 describe("B3dmReader", () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
 
   before(async () => {
     await TestUtility.startFrontend(undefined, false);
-    imodel = await SnapshotConnection.openFile("test.bim");
+    imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {

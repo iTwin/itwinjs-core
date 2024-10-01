@@ -9,10 +9,11 @@ import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
 } from "@itwin/core-common";
 import {
-  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport, ViewState,
+  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Viewport changed events", async () => {
   // test.bim:
@@ -22,7 +23,7 @@ describe("Viewport changed events", async () => {
   //    models: 1c 1f 22 23 24 (all spatial models in file)
   //    spatial categories: 17, 2d, 2f (subcats: 30, 33)), 31
   //    drawing category: 19
-  let testBim: SnapshotConnection;
+  let testBim: TestSnapshotConnection;
 
   // testImodel.bim: All Ids have briefcase Id=1
   //  2d views:
@@ -36,7 +37,7 @@ describe("Viewport changed events", async () => {
   //    display style:      10 10 10 10 11    12
   //  category selector 0x0e: 07 1a 1c
   //  category selector 0x0f: 01 03 05 07
-  let testImodel: SnapshotConnection;
+  let testImodel: TestSnapshotConnection;
   let vp: ScreenViewport;
 
   const viewDiv = document.createElement("div");
@@ -45,8 +46,8 @@ describe("Viewport changed events", async () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    testBim = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    testImodel = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
+    testBim = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    testImodel = await TestSnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {

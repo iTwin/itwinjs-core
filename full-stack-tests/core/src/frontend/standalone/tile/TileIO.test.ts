@@ -6,18 +6,20 @@ import { expect } from "chai";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
   BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, SnapshotIModelRpcInterface, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
-  RenderGraphic, SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
 import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
+import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
@@ -262,7 +264,7 @@ describe("TileIO (WebGL)", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -440,7 +442,7 @@ describe("TileIO (mock render)", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -613,13 +615,13 @@ describe("mirukuru TileTree", () => {
       await ElectronApp.startup({
         iModelApp: {
           localization: new EmptyLocalization(),
-          rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+          rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
           tileAdmin,
         },
       });
     }
 
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   afterEach(() => {
@@ -777,7 +779,7 @@ describe("TileAdmin", () => {
       await super.startup({
         tileAdmin: props,
         localization: new EmptyLocalization(),
-        rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+        rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
       });
 
       if (ProcessDetector.isElectronAppFrontend) {
@@ -785,12 +787,12 @@ describe("TileAdmin", () => {
           iModelApp: {
             tileAdmin: props,
             localization: new EmptyLocalization(),
-            rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+            rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
           },
         });
       }
 
-      theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+      theIModel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;
     }
 
