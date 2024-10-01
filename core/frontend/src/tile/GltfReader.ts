@@ -19,27 +19,28 @@ import {
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { PickableGraphicOptions } from "../render/GraphicBuilder";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import { RealityMeshParams } from "../render/RealityMeshParams";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { Triangle } from "../render/primitives/Primitives";
+import { Mesh } from "../common/internal/render/MeshPrimitives";
+import { Triangle } from "../common/internal/render/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
-import { DisplayParams } from "../common/render/primitives/DisplayParams";
+import { DisplayParams } from "../common/internal/render/DisplayParams";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
-import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
-import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
+import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
+import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { TextureImageSource } from "../common/render/TextureParams";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, Gltf2Node, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
+import { PickableGraphicOptions } from "../common/render/BatchOptions";
+import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../render/GraphicTemplate";
+import { RenderGeometry } from "../internal/render/RenderGeometry";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -143,6 +144,17 @@ class GltfBufferView {
 export interface GltfReaderResult extends TileContent {
   readStatus: TileReadStatus;
   range?: AxisAlignedBox3d;
+}
+
+type GltfTemplateResult = Omit<GltfReaderResult, "graphic"> & { template?: GraphicTemplate };
+
+function templateToGraphicResult(result: GltfTemplateResult, system: RenderSystem): GltfReaderResult {
+  const template = result.template;
+  delete result.template;
+  return {
+    ...result,
+    graphic: template ? system.createGraphicFromTemplate({ template }) : undefined,
+  };
 }
 
 /** Data required for creating a [[GltfReader]] capable of deserializing [glTF](https://www.khronos.org/gltf/).
@@ -501,6 +513,11 @@ export abstract class GltfReader {
   }
 
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
+    const result = this.readGltfAndCreateTemplate(isLeaf, featureTable, contentRange, true, transformToRoot, pseudoRtcBias, instances);
+    return templateToGraphicResult(result, this._system);
+  }
+
+  protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfTemplateResult {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
 
@@ -522,12 +539,12 @@ export abstract class GltfReader {
       pseudoRtcBias = undefined;
 
     const transformStack = new TransformStack();
-    const renderGraphicList: RenderGraphic[] = [];
+    const templateNodes: GraphicTemplateNode[] = [];
     let readStatus: TileReadStatus = TileReadStatus.InvalidTileData;
     for (const nodeKey of this._sceneNodes) {
       assert(transformStack.isEmpty);
       const node = this._nodes[nodeKey];
-      if (node && TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, node, featureTable, transformStack, instances, pseudoRtcBias)))
+      if (node && TileReadStatus.Success !== (readStatus = this.readTemplateNodes(templateNodes, node, featureTable, transformStack, instances, pseudoRtcBias)))
         return { readStatus, isLeaf };
     }
 
@@ -540,19 +557,12 @@ export abstract class GltfReader {
       }
     }
 
-    if (0 === renderGraphicList.length)
+    if (0 === templateNodes.length)
       return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
-
-    let renderGraphic: RenderGraphic | undefined;
-    if (1 === renderGraphicList.length)
-      renderGraphic = renderGraphicList[0];
-    else
-      renderGraphic = this._system.createGraphicList(renderGraphicList);
-
-    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
 
     // Compute range in tileset/world space.
     let range = contentRange;
+    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
     const invTransform = transform?.inverse();
     if (invTransform)
       range = invTransform.multiplyRange(contentRange);
@@ -560,26 +570,26 @@ export abstract class GltfReader {
     // The batch range needs to be in tile coordinate space.
     // If we computed the content range ourselves, it's already in tile space.
     // If the content range was supplied by the caller, it's in tileset space and needs to be transformed to tile space.
-    if (featureTable)
-      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), this._computedContentRange ? contentRange : range);
+    const batch: GraphicTemplateBatch | undefined = !featureTable ? undefined : {
+      featureTable: PackedFeatureTable.pack(featureTable),
+      range: this._computedContentRange ? contentRange : range,
+    };
 
     const viewFlagOverrides = this.viewFlagOverrides;
-    if (transform || viewFlagOverrides) {
-      const branch = new GraphicBranch(true);
-      if (viewFlagOverrides)
-        branch.setViewFlagOverrides(viewFlagOverrides);
-
-      branch.add(renderGraphic);
-      renderGraphic = this._system.createBranch(branch, transform ?? Transform.createIdentity());
-    }
+    const branch: GraphicTemplateBranch | undefined = transform || viewFlagOverrides ? { transform, viewFlagOverrides } : undefined;
 
     return {
       readStatus,
       isLeaf,
       contentRange,
       range,
-      graphic: renderGraphic,
       containsPointCloud: this._containsPointCloud,
+      template: createGraphicTemplate({
+        nodes: templateNodes,
+        batch,
+        branch,
+        noDispose,
+      }),
     };
   }
 
@@ -595,16 +605,16 @@ export abstract class GltfReader {
     return { polyfaces };
   }
 
-  private graphicFromMeshData(gltfMesh: GltfPrimitiveData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
+  private geometryFromMeshData(gltfMesh: GltfPrimitiveData, isInstanced: boolean): RenderGeometry | undefined {
     if ("pointcloud" === gltfMesh.type)
-      return this._system.createPointCloud(gltfMesh, this._iModel);
+      return this._system.createPointCloudGeometry(gltfMesh);
 
     if (!gltfMesh.points || !gltfMesh.pointRange)
-      return gltfMesh.primitive.getGraphics(this._system, instances);
+      return this._system.createGeometryFromMesh(gltfMesh.primitive, undefined);
 
-    const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
+    const realityMeshPrimitive = (this._vertexTableRequired || isInstanced) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
-      const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
+      const realityMesh = this._system.createRealityMeshGeometry(realityMeshPrimitive);
       if (realityMesh)
         return realityMesh;
     }
@@ -626,7 +636,7 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return mesh.getGraphics(this._system, instances);
+    return this._system.createGeometryFromMesh(mesh, undefined);
   }
 
   private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {
@@ -770,7 +780,14 @@ export abstract class GltfReader {
     return { count, transforms, transformCenter, featureIds };
   }
 
-  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, batchInstances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
+  private readTemplateNodes(
+    templateNodes: GraphicTemplateNode[],
+    node: GltfNode,
+    featureTable: FeatureTable | undefined,
+    transformStack: TransformStack,
+    batchInstances?: InstancedGraphicParams,
+    pseudoRtcBias?: Vector3d,
+  ): TileReadStatus {
     if (undefined === node)
       return TileReadStatus.InvalidTileData;
 
@@ -797,30 +814,20 @@ export abstract class GltfReader {
       if (nodeMesh?.primitives) {
         const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias, nodeInstances);
 
-        let renderGraphic: RenderGraphic | undefined;
         if (0 !== meshes.length) {
-          if (1 === meshes.length) {
-            renderGraphic = this.graphicFromMeshData(meshes[0], batchInstances ?? nodeInstances);
-          } else {
-            const thisList: RenderGraphic[] = [];
-            for (const mesh of meshes) {
-              renderGraphic = this.graphicFromMeshData(mesh, batchInstances ?? nodeInstances);
-              if (undefined !== renderGraphic)
-                thisList.push(renderGraphic);
-            }
-
-            if (0 !== thisList.length)
-              renderGraphic = this._system.createGraphicList(thisList);
+          const thisList: RenderGeometry[] = [];
+          for (const mesh of meshes) {
+            const geometry = this.geometryFromMeshData(mesh, !!batchInstances || !!nodeInstances);
+            if (undefined !== geometry)
+              thisList.push(geometry);
           }
 
-          if (renderGraphic) {
-            if (thisTransform && !thisTransform.isIdentity) {
-              const branch = new GraphicBranch(true);
-              branch.add(renderGraphic);
-              renderGraphic = this._system.createBranch(branch, thisTransform);
-            }
-
-            renderGraphicList.push(renderGraphic);
+          if (0 !== thisList.length) {
+            templateNodes.push({
+              geometry: thisList,
+              transform: thisTransform && !thisTransform.isIdentity ? thisTransform : undefined,
+              instances: batchInstances ?? nodeInstances,
+            });
           }
         }
       }
@@ -830,7 +837,7 @@ export abstract class GltfReader {
       for (const childId of node.children) {
         const child = this._nodes[childId];
         if (child)
-          this.readNodeAndCreateGraphics(renderGraphicList, child, featureTable, transformStack, batchInstances ?? nodeInstances);
+          this.readTemplateNodes(templateNodes, child, featureTable, transformStack, batchInstances ?? nodeInstances);
       }
     }
 
@@ -2062,19 +2069,50 @@ export interface GltfGraphic {
   boundingBox: AxisAlignedBox3d;
 }
 
+/** The output of [[readGltfTemplate]].
+ * @beta
+ */
+export interface GltfTemplate {
+  /** The graphic template created from the glTF model. */
+  template: GraphicTemplate;
+  /** The bounding box of the model, in local coordinates (y-axis up). */
+  localBoundingBox: ElementAlignedBox3d;
+  /** The bounding box of the model, in world coordinates (z-axis up). */
+  boundingBox: AxisAlignedBox3d;
+}
+
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
- * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
- * If a particular glTF asset fails to load and/or display properly, please
- * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
- * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
- * @see [[readGltf]] to obtain more information about the glTF model.
+ * @see [[readGltf]] for more details.
  * @public
  * @extensions
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
   const result = await readGltf(args);
   return result?.graphic;
+}
+
+/** Produce a [[GraphicTemplate]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
+ * @returns a template produced from the glTF asset's default scene, or `undefined` if a template could not be produced from the asset.
+ * @see [[readGltf]] for more details.
+ * @beta
+ */
+export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<GltfTemplate | undefined> {
+  const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
+  const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
+  const reader = props ? new GltfGraphicsReader(props, args) : undefined;
+  if (!reader)
+    return undefined;
+
+  const result = await reader.readTemplate();
+  if (!result.template)
+    return undefined;
+
+  return {
+    template: result.template,
+    localBoundingBox: result.contentRange ?? Range3d.createNull(),
+    boundingBox: result.range ?? Range3d.createNull(),
+  };
 }
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
@@ -2084,26 +2122,20 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
  * If a particular glTF asset fails to load and/or display properly, please
  * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
  * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
+ * @see [[readGltfTemplate]] to produce a [[GraphicTemplate]] instead of a [[RenderGraphic]].
  * @public
  */
 export async function readGltf(args: ReadGltfGraphicsArgs): Promise<GltfGraphic | undefined> {
-  const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
-  const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
-  const reader = props ? new GltfGraphicsReader(props, args) : undefined;
-  if (!reader)
+  const result = await readGltfTemplate(args);
+  if (!result) {
     return undefined;
+  }
 
-  const result = await reader.read();
-  if (!result.graphic)
-    return undefined;
-
-  assert(result.contentRange !== undefined, "readGltf always computes content range");
-  assert(result.range !== undefined, "readGltf always computes world range");
-
+  const template = result.template;
+  delete (result as Partial<GltfTemplate>).template;
   return {
-    graphic: result.graphic,
-    localBoundingBox: result.contentRange ?? Range3d.createNull(),
-    boundingBox: result.range ?? Range3d.createNull(),
+    ...result,
+    graphic: IModelApp.renderSystem.createGraphicFromTemplate({ template }),
   };
 }
 
@@ -2187,7 +2219,6 @@ export class GltfGraphicsReader extends GltfReader {
   }
 
   private getGltfStructuralMetadataPropertyValues(property: GltfStructuralMetadata.PropertyTableProperty, classProperty: GltfStructuralMetadata.ClassProperty, count: number){
-
     // Not supported for now
     if(classProperty.type === "ENUM" || classProperty.type === "BOOLEAN"){
       return undefined;
@@ -2328,10 +2359,15 @@ export class GltfGraphicsReader extends GltfReader {
     }
   }
 
-  public async read(): Promise<GltfReaderResult> {
+  public async readTemplate(): Promise<GltfTemplateResult> {
     await this.resolveResources();
     this.readGltfStructuralMetadata();
-    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._contentRange, this._transform);
+    return this.readGltfAndCreateTemplate(this._isLeaf, this._featureTable, this._contentRange, true, this._transform);
+  }
+
+  public async read(): Promise<GltfReaderResult> {
+    const result = await this.readTemplate();
+    return templateToGraphicResult(result, this._system);
   }
 
   public get structuralMetadata(): StructuralMetadata | undefined { return this._structuralMetadata; }

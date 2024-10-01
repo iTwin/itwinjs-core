@@ -146,7 +146,7 @@ export namespace XmlSerializationUtils {
         propertyElement.textContent = propertyValue.toString();
         return;
       case PrimitiveType.DateTime:
-        propertyElement.textContent = (propertyValue as Date).getTime().toString();
+        propertyElement.textContent = new Date(propertyValue).getTime().toString();
         return;
       case PrimitiveType.Point2d:
         propertyElement.textContent = `${propertyValue.x},${propertyValue.y}`;

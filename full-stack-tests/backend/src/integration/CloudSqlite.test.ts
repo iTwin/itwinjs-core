@@ -10,7 +10,7 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -18,6 +18,25 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 // spell:ignore localstore itwindb
 
 useFromChai(chaiAsPromised);
+
+/**
+ * Waits until `check` doesn't throw or a timeout happens. In case the `check` succeeds before the timeout,
+ * it's result is returned. In case of a timeout, the last error, thrown by calling `check`, is re-thrown.
+ */
+async function waitFor<T>(check: () => Promise<T> | T, timeout: number = 5000): Promise<T> {
+  const timer = new StopWatch(undefined, true);
+  let lastError: unknown;
+  do {
+    try {
+      const res = check();
+      return res instanceof Promise ? await res : res;
+    } catch (e) {
+      lastError = e;
+      await BeDuration.wait(0);
+    }
+  } while (timer.current.milliseconds < timeout);
+  throw lastError;
+}
 
 describe("CloudSqlite", () => {
   const azSqlite = AzuriteTest.Sqlite;
@@ -275,6 +294,56 @@ describe("CloudSqlite", () => {
     expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, currentTime, 4.5*60*1000)).to.be.true;
     expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, currentTime, 6*60*1000)).to.be.false;
     testContainer1.disconnect();
+
+  it("should LogLevel.Trace set LogMask to ALL", async () => {
+    const testContainer0 = testContainers[0];
+
+    const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
+      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
+    const logTrace = sinon.spy(logConsole("Trace"));
+    const logInfo = sinon.spy(logConsole("Info"));
+    Logger.initialize(undefined, undefined, logInfo, logTrace);
+
+    const executeWithWriteLock = async (cacheName: string, fileName: string) => {
+      const testCache = azSqlite.makeCaches([cacheName])[0];
+      testContainer0.connect(testCache);
+      await CloudSqlite.withWriteLock({ user: user1, container: testContainer0 }, async () => {
+        await testContainer0.copyDatabase("testBim", fileName);
+        const db = await BriefcaseDb.open({ fileName, container: testContainer0 });
+        db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
+        db.close();
+        await testContainer0.deleteDatabase(fileName);
+      });
+      testContainer0.disconnect();
+    };
+    // LogLevel.Trace should set logMask to ALL, including dirty block
+    Logger.setLevel("CloudSqlite", LogLevel.Trace);
+    await executeWithWriteLock("testCache1", "copyTestBim1");
+    // Check that Trace and Info messages were logged
+    sinon.assert.called(logTrace);
+    sinon.assert.called(logInfo);
+    // Check for a dirty block log message
+    let dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    expect(dirtyBlockLogMsg).to.be.true;
+    // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
+    // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
+    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("enters DELETE state")));
+    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("leaves DELETE state")));
+    logTrace.resetHistory();
+    logInfo.resetHistory();
+
+    // LogLevel.Info uses the default log
+    Logger.setLevel("CloudSqlite", LogLevel.Info);
+    await executeWithWriteLock("testCache2", "copyTestBim2");
+    sinon.assert.notCalled(logTrace);
+    sinon.assert.notCalled(logInfo);
+    // Check for a dirty block log message(expect nothing)
+    dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    expect(dirtyBlockLogMsg).to.be.false;
+    // clean up
+    logTrace.resetHistory();
+    logInfo.resetHistory();
+    Logger.initialize();
   });
 
   it("should query bcv stat table", async () => {

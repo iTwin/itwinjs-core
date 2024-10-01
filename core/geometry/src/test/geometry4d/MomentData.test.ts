@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyRegion } from "../../curve/CurveTypes";
@@ -74,7 +74,7 @@ describe("MomentData", () => {
     const regions: AnyRegion[] = [];
     const regionD0 = Loop.create(
       LineString3d.create([[1, 4], [0, 4], [0, 0], [1, 0]]),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0), Point3d.create(3, 2), Point3d.create(1, 4))!);
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0), Point3d.create(3, 2), Point3d.create(1, 4)));
     const mirrorX = Transform.createFixedPointAndMatrix(undefined, Matrix3d.createScale(-1, 1, 1));
     const regionD1 = regionD0.cloneTransformed(mirrorX)!;
     regions.push(regionD0, regionD1 as Loop);

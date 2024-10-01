@@ -5,21 +5,23 @@
 
 import { expect } from "chai";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
+import { Point2d, Point3d } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, ColorDef, EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
+  AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
-import { openBlankViewport, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
+import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { createBlankConnection } from "./createBlankConnection";
 import { DecorateContext } from "../ViewContext";
-import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 import * as sinon from "sinon";
+import { GraphicType } from "../common/render/GraphicType";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { Decorator } from "../ViewManager";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -253,7 +255,7 @@ describe("Viewport", () => {
       bgColor?: ColorDef;
     }
 
-    class Decorator {
+    class PointDecorator {
       public constructor(public readonly image: ColorDef[], public readonly width: number, public readonly height: number) {
         IModelApp.viewManager.addDecorator(this);
       }
@@ -289,7 +291,7 @@ describe("Viewport", () => {
           if (testCase.bgColor)
             viewport.displayStyle.backgroundColor = testCase.bgColor;
 
-          const decorator = new Decorator(testCase.image, testCase.width, decHeight);
+          const decorator = new PointDecorator(testCase.image, testCase.width, decHeight);
           try {
             viewport.renderFrame();
             func(viewport);
@@ -545,7 +547,21 @@ describe("Viewport", () => {
   });
 
   describe("readPixels", () => {
-    it("returns undefined if viewport is disposed", async () => {
+    const activeDecorators: Decorator[] = [];
+    function addDecorator(dec: Decorator) {
+      IModelApp.viewManager.addDecorator(dec);
+      activeDecorators.push(dec);
+    }
+
+    afterEach(() => {
+      for (const dec of activeDecorators) {
+        IModelApp.viewManager.dropDecorator(dec);
+      }
+
+      activeDecorators.length = 0;
+    });
+
+    it("returns undefined if viewport is disposed", () => {
       testBlankViewport((vp) => {
         vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).not.to.be.undefined);
 
@@ -560,13 +576,111 @@ describe("Viewport", () => {
         vp.dispose = dispose;
       });
     });
-  });
 
-  describe("readPixels", () => {
-    it("returns undefined if specified area is invalid", async () => {
+    it("returns undefined if specified area is invalid", () => {
       testBlankViewport((vp) => {
         vp.readPixels(new ViewRect(10, 0, 50, 0), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
         vp.readPixels(new ViewRect(0, 10, 0, 50), Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
+      });
+    });
+
+    it("can filter out specified elements", () => {
+      class SquareDecorator {
+        private readonly _graphic: RenderGraphic;
+
+        public constructor(z: number, id: string, vp: Viewport) {
+          const pts = [
+            new Point3d(-10, -10, z), new Point3d(10, -10, z), new Point3d(10, 10, z), new Point3d(-10, 10, z), new Point3d(-10, -10, z),
+          ];
+          vp.viewToWorldArray(pts);
+
+          const builder = IModelApp.renderSystem.createGraphic({
+            type: GraphicType.WorldDecoration,
+            pickable: { id },
+            computeChordTolerance: () => 0,
+          });
+          builder.addShape(pts);
+
+          this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
+        }
+
+        public decorate(context: DecorateContext): void {
+          context.addDecoration(GraphicType.WorldDecoration, this._graphic);
+        }
+      }
+
+      testBlankViewport((vp) => {
+        addDecorator(new SquareDecorator(0, "0xa", vp));
+        addDecorator(new SquareDecorator(-10, "0xb", vp));
+
+        vp.renderFrame();
+
+        let features = readUniqueFeatures(vp, undefined, undefined, undefined);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xa"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xb"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, undefined);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xb"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xa"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
+        expect(features.length).to.equal(0);
+      });
+    });
+
+    it("can filter out specified elements within a single batch", () => {
+      testBlankViewport((vp) => {
+        const frontPts = [
+          new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),
+        ];
+        const backPts = frontPts.map((pt) => new Point3d(pt.x, pt.y, -10));
+
+        vp.viewToWorldArray(frontPts);
+        vp.viewToWorldArray(backPts);
+
+        const builder = IModelApp.renderSystem.createGraphic({
+          type: GraphicType.WorldDecoration,
+          pickable: { id: "0xc" },
+          computeChordTolerance: () => 0,
+        });
+
+        builder.addShape(frontPts);
+        builder.activateFeature(new Feature("0xd"));
+        builder.addShape(backPts);
+
+        const graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
+        addDecorator({
+          decorate: (context) => context.addDecoration(GraphicType.WorldDecoration, graphic),
+        });
+
+        vp.renderFrame();
+
+        let features = readUniqueFeatures(vp, undefined, undefined, undefined);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xc"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, undefined);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xc"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xd"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xc"))).to.be.true;
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xc", "0xd"]);
+        expect(features.length).to.equal(0);
+
+        features = readUniqueFeatures(vp, undefined, undefined, ["0xc"]);
+        expect(features.length).to.equal(1);
+        expect(features.contains(new Feature("0xd"))).to.be.true;
       });
     });
   });

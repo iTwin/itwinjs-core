@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveExtendMode } from "../../curve/CurveExtendMode";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -118,8 +119,8 @@ describe("CurveChainWithDistanceIndex", () => {
       const ray1 = path.fractionToPointAndUnitTangent(1);
       ray0.direction.scaleInPlace(-offsetDist);
       ray1.direction.scaleInPlace(offsetDist);
-      const detail0 = path.closestPoint(ray0.fractionToPoint(1), true)!;
-      const detail1 = path.closestPoint(ray1.fractionToPoint(1), true)!;
+      const detail0 = path.closestPoint(ray0.fractionToPoint(1), [CurveExtendMode.OnCurve, CurveExtendMode.None])!;
+      const detail1 = path.closestPoint(ray1.fractionToPoint(1), [CurveExtendMode.None, CurveExtendMode.OnCurve])!;
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, [detail0.point, detail1.point], 0.1, x0);
 
       const path0 = path.clonePartialCurve(detail0.fraction, 1)!;
@@ -133,10 +134,61 @@ describe("CurveChainWithDistanceIndex", () => {
       ck.testPoint3d(detail1.point, path1.endPoint(), "Point projected off path end equals end of clonedPartialCurve at projection fraction");
       ck.testPoint3d(detail1.point, path.fractionToPoint(detail1.fraction), "Point projected off path end equals fractionToPoint at projection fraction");
 
-      x0 += path.range().xLength() + 1;
+      x0 += path.range().xLength() + 2;
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClonePartialFromExtendedClosestPointDetailFraction");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("clonePartialCurve", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const pointsA = [
+      Point3d.create(165.15210702877113, -48.85042626460839),
+      Point3d.create(181.2465069178576, -48.85042626460837),
+      Point3d.create(181.2465069178576, -57.903526202219496),
+      Point3d.create(173.19930697331435, -57.90352620221951),
+      Point3d.create(173.19930697331438, -64.94482615369483),
+    ];
+    const pointsB = [
+      Point3d.create(173.19930697331438, -64.94482615369483),
+      Point3d.create(181.24650691785763, -64.94482615369483),
+      Point3d.create(181.24650691785763, -72.58966610101089),
+      Point3d.create(165.15210702877116, -72.58966610101089),
+    ];
+    const curveChain = CurveChainWithDistanceIndex.createCapture(
+      Path.create(LineString3d.create(pointsA), LineString3d.create(pointsB)),
+    );
+    const center = Point3d.create(165.15210702877116, -72.58966610101089);
+    const radius = 170.01312554693135 - 165.15210702877116;
+    const circle = Arc3d.createXY(center, radius);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveChain);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle);
+
+    const intersectionDetail = CurveCurve.intersectionProjectedXYPairs(undefined, curveChain, false, circle, false).at(0);
+    ck.testDefined(intersectionDetail, "intersectionDetail is defined");
+    if (intersectionDetail) {
+      const expectedIntersectionFraction = 0.9325068888021624;
+      ck.testSmallRelative(
+        expectedIntersectionFraction - intersectionDetail.detailA.fraction,
+        "expected intersection fraction is returned",
+      );
+      const expectedIntersectionPoint = Point3d.create(170.01312554693135, -72.58966610101089);
+      ck.testPoint3d(expectedIntersectionPoint, intersectionDetail.detailA.point, "expected intersection point is returned");
+    }
+
+    const partialCurveChain = curveChain.clonePartialCurve(0.9325068888021624, 1.0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, partialCurveChain, 30);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circle, 30);
+    ck.testDefined(partialCurveChain, "partialCurveChain is defined");
+    if (partialCurveChain) {
+      const length = partialCurveChain.quickLength();
+      ck.testCoordinate(length, radius, "partial curve length equals circle radius");
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "clonePartialCurve");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -273,7 +325,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(4, 0), Point3d.create(6, 2), Point3d.create(8, 0),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // test closest approach global fractions
@@ -451,7 +503,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(4, 0), Point3d.create(6, 2), Point3d.create(8, 0),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // test intersectionXY global fractions
@@ -588,7 +640,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
       Point3d.create(4, 2, 1), Point3d.create(6, 2, -1), Point3d.create(8, 2, 1),
-    )!;
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     // test intersectionXY global fractions

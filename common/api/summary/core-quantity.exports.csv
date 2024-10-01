@@ -1,52 +1,53 @@
 sep=;
-Release Tag;API Item
-beta;AlternateUnitLabelsProvider
-beta;BadUnit 
-beta;BaseFormat
-beta;BasicUnit 
-beta;CloneOptions
-beta;CloneUnit
-beta;CustomFormatProps 
-beta;DecimalPrecision
-beta;Format 
-beta;FormatProps
-internal;formatStringRgx: RegExp
-beta;Formatter
-beta;FormatterSpec
-beta;FormatTraits
-beta;formatTraitsToArray(currentFormatTrait: FormatTraits): string[]
-beta;FormatType
-beta;formatTypeToString(type: FormatType): string
-beta;FractionalPrecision
-internal;getItemNamesFromFormatString(formatString: string): Iterable
-beta;getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative"
-beta;isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps
-beta;parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision
-beta;ParsedQuantity
-beta;ParseError
-beta;parseFormatTrait(formatTraitsString: string, formatName: string): FormatTraits
-beta;parseFormatType(jsonObjType: string, formatName: string): FormatType
-beta;parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision
-beta;parsePrecision(precision: number, type: FormatType, formatName: string): DecimalPrecision | FractionalPrecision
-beta;ParseQuantityError
-beta;Parser
-beta;ParserSpec
-beta;parseScientificType(scientificType: string, formatName: string): ScientificType
-beta;parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption
-beta;PotentialParseUnit
-beta;Quantity 
-internal;QuantityConstants
-beta;QuantityError 
-beta;QuantityParseResult = ParsedQuantity | ParseQuantityError
-beta;QuantityProps
-beta;QuantityStatus
-beta;ScientificType
-beta;scientificTypeToString(scientificType: ScientificType): string
-beta;ShowSignOption
-beta;showSignOptionToString(showSign: ShowSignOption): string
-beta;UnitConversionProps
-beta;UnitConversionSpec
-alpha;UnitExtraData
-beta;UnitProps
-beta;UnitsProvider
-beta;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
+Release Tag;API Item Type;API Item Name
+internal;function;almostEqual
+beta;interface;AlternateUnitLabelsProvider
+beta;class;BadUnit
+beta;class;BaseFormat
+beta;class;BasicUnit
+beta;interface;CloneOptions
+beta;interface;CloneUnit
+beta;interface;CustomFormatProps
+beta;enum;DecimalPrecision
+beta;class;Format
+beta;interface;FormatProps
+internal;const;formatStringRgx
+beta;class;Formatter
+beta;class;FormatterSpec
+beta;enum;FormatTraits
+beta;function;formatTraitsToArray
+beta;enum;FormatType
+beta;function;formatTypeToString
+beta;enum;FractionalPrecision
+internal;function;getItemNamesFromFormatString
+beta;function;getTraitString
+beta;const;isCustomFormatProps
+beta;function;parseDecimalPrecision
+beta;interface;ParsedQuantity
+beta;enum;ParseError
+beta;function;parseFormatTrait
+beta;function;parseFormatType
+beta;function;parseFractionalPrecision
+beta;function;parsePrecision
+beta;interface;ParseQuantityError
+beta;class;Parser
+beta;class;ParserSpec
+beta;function;parseScientificType
+beta;function;parseShowSignOption
+beta;interface;PotentialParseUnit
+beta;class;Quantity
+internal;class;QuantityConstants
+beta;class;QuantityError
+beta;type;QuantityParseResult
+beta;interface;QuantityProps
+beta;enum;QuantityStatus
+beta;enum;ScientificType
+beta;function;scientificTypeToString
+beta;enum;ShowSignOption
+beta;function;showSignOptionToString
+beta;interface;UnitConversionProps
+beta;interface;UnitConversionSpec
+alpha;interface;UnitExtraData
+beta;interface;UnitProps
+beta;interface;UnitsProvider
+beta;type;UnitSystemKey

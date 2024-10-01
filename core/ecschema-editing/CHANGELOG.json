@@ -2,6 +2,99 @@
   "name": "@itwin/ecschema-editing",
   "entries": [
     {
+      "version": "4.9.1",
+      "tag": "@itwin/ecschema-editing_v4.9.1",
+      "date": "Wed, 25 Sep 2024 20:10:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.0",
+      "tag": "@itwin/ecschema-editing_v4.9.0",
+      "date": "Mon, 23 Sep 2024 13:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added support for editing a Properties KindOfQuantity. "
+          },
+          {
+            "comment": "Schema editing api addition, setAlias, to update Schema alias. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.8.7",
+      "tag": "@itwin/ecschema-editing_v4.8.7",
+      "date": "Fri, 13 Sep 2024 15:11:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.6",
+      "tag": "@itwin/ecschema-editing_v4.8.6",
+      "date": "Fri, 06 Sep 2024 05:06:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.5",
+      "tag": "@itwin/ecschema-editing_v4.8.5",
+      "date": "Wed, 28 Aug 2024 17:27:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added support for editing a Properties KindOfQuantity. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.8.4",
+      "tag": "@itwin/ecschema-editing_v4.8.4",
+      "date": "Thu, 22 Aug 2024 17:37:06 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.3",
+      "tag": "@itwin/ecschema-editing_v4.8.3",
+      "date": "Fri, 16 Aug 2024 18:18:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.2",
+      "tag": "@itwin/ecschema-editing_v4.8.2",
+      "date": "Thu, 15 Aug 2024 15:33:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.1",
+      "tag": "@itwin/ecschema-editing_v4.8.1",
+      "date": "Mon, 12 Aug 2024 14:05:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.0",
+      "tag": "@itwin/ecschema-editing_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Introduced Schema Merging Changes API"
+          },
+          {
+            "comment": "Removed SchemaDifference namspace; difference method and typeguards are now exported functions of the package. SchemaDifferences has been renamed to SchemaDifferenceResult"
+          },
+          {
+            "comment": "Added SchemaItem name editing in the schema editing API."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.8",
+      "tag": "@itwin/ecschema-editing_v4.7.8",
+      "date": "Wed, 31 Jul 2024 13:38:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.7.7",
       "tag": "@itwin/ecschema-editing_v4.7.7",
       "date": "Fri, 19 Jul 2024 14:52:42 GMT",

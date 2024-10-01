@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
@@ -917,7 +917,7 @@ describe("Ellipsoid", () => {
     const point0 = ellipsoid.transformRef.multiplyXYZ(2, 0, 0);
     const point1 = ellipsoid.transformRef.multiplyXYZ(0, -0.2, 1);
     const point2 = ellipsoid.transformRef.multiplyXYZ(-1, -1, 1);
-    const arc012 = Arc3d.createCircularStartMiddleEnd(point0, point1, point2)!;
+    const arc012 = Arc3d.createCircularStartMiddleEnd(point0, point1, point2);
     const segment01 = LineSegment3d.create(point0, point1);
     const segment12 = LineSegment3d.create(point0, point2);
     for (const curve of [segment01, segment12, arc012]) {

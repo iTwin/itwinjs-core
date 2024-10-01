@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -851,9 +851,9 @@ describe("Curves", () => {
     let y0 = 0;
     const primitives = [];
     primitives.push(LineString3d.create(Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1.8, 2, 0), Point3d.create(2, 3, 0)));
-    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 3, 0), Point3d.create(2.2, 4, 0), Point3d.create(2, 5, 0))!);
+    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 3, 0), Point3d.create(2.2, 4, 0), Point3d.create(2, 5, 0)));
     primitives.push(LineString3d.create(Point3d.create(2, 5, 0), Point3d.create(2.2, 6, 0), Point3d.create(1, 7, 0), Point3d.create(2, 8, 0)));
-    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 8, 0), Point3d.create(1.7, 9, 0), Point3d.create(2, 10, 0))!);
+    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 8, 0), Point3d.create(1.7, 9, 0), Point3d.create(2, 10, 0)));
     primitives.push(LineSegment3d.create(Point3d.create(2, 10, 0), Point3d.create(2.1, 11, 0)));
     for (const numPrimitive of [1, 2, 3, 4, 5]) {
       for (const primitive0 of [0, 1, 2, 3, 4]) {

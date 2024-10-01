@@ -237,7 +237,13 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
-* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
+* `dta gltf` - load a glTF asset from and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files). Optional arguments:
+  * `u=assetUrl` - URL for the asset to load.
+  * `i=numInstances` - the number of instances (at least 1) of the asset to render. If more than one, each will be drawn with a random translation roughly within the project extents.
+  * `f=0|1` - if true, force multiple instances to render without instancing, chiefly for performance comparison purposes.
+  * `s=0|1` - if true, apply a random scale to each instance.
+  * `r=0|1` - if true, apply a random rotation to each instance.
+  * `c=0|1` if true, apply a random color to each instance.
 * `dta text` *command* *args* - an extremely basic text editing system that allows you to build up a TextAnnotation to be displayed as a decoration graphic in the current viewport. Start it using `dta text init <categoryId>`. Then use commands like `dta text fraction "numerator" "denominator"`, `dta text height <height>`, `dta text color <color>`, etc to build up the annotation. Use `dta text clear` to delete the decoration and reset all state to defaults. See TextDecoration.ts for the full set of commands.
 * `dta version compare` - emulate version comparison.
 * `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
@@ -284,6 +290,11 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `volume=0|1` - 1 to produce a volume classifier, 0 for a planar classifier.
   * `inside=0|1|2|3|4` - SpatialClassifierInsideDisplay.
   * `outside=0|1|2` - SpatialClassifierOutsideDisplay.
+* `dta clip mask` - Start a tool demonstrating how to use dynamically-created geometry to apply a planar clip mask to the background map or terrain. Left-click to place spheres, then right-click to apply their geometry as a mask. Options:
+  * `radius=number` - radius of each sphere.
+  * `invert=0|1` - if true, invert the mask so only regions of the map intersecting the mask are displayed.
+  * `transparency=number` - transparency of the masked geometry in [0..1].
+  * `priority=number` - the PlanarClipMaskPriority of the sphere geometry.
 * `dta classifyclip selected` *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
 * `dta grid settings` - Change the grid settings for the selected viewport.
   * `spacing=number` Specify x and y grid reference line spacing in meters.
@@ -303,6 +314,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
 * `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
 * `dta record tilesize [on|off|toggle]` - When turned on, begins recording the encoded size of every subsequently requested iMdl tile's content. When turned off, copies the tile sizes in CSV format to the clipboard. See TileSizeRecorder.ts for details. If no argument is supplied, it defaults to `toggle`.
+* `dta imodel attach` - Toggles a secondary IModelConnection to be displayed in the active viewport. The first time it is invoked, it opens a file open dialog from which you can select the iModel. All of the 3d models in the secondary iModel will be displayed in the viewport. Invoke it again to remove the secondary iModel from the view.
 
 ## Editing
 
@@ -323,6 +335,7 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
+* `dta move element *elementId* *x* *y* *z*` - Move an element, given an element Id and an x y z offset (in world space, relative to its current). If Y and/or Z are not specified they will default to 0.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
 * `dta create section drawing *drawingName*` - insert a spatial view matching the active viewport's current view and a section drawing referencing that view, then switch to a non-persistent drawing view to visualize the spatial view in a 2d context. Requires the camera to be turned off.

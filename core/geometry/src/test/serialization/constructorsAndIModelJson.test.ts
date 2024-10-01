@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
@@ -72,7 +72,7 @@ describe("constructorsAndImodelJson", () => {
     // A linestring along the x axis, up and back above the origin
     emitIModelJson("LineString3d.create", "linestring by points", LineString3d.create(pointA, pointB, pointC, pointD));
     // circular arc with 3-point construction
-    emitIModelJson("Arc3d.createCircularStartMiddleEnd", "arc passing through 3 points", Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!);
+    emitIModelJson("Arc3d.createCircularStartMiddleEnd", "arc passing through 3 points", Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC));
 
     emitIModelJson("Arc3d.create", "circular arc", Arc3d.create(pointA, vectorAB, vectorAD, AngleSweep.createStartEndDegrees(-45, 90)));
     // elliptic arc -- larger vector90 . . .

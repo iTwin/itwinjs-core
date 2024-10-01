@@ -1,40 +1,73 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 Table of contents:
 
-- [Workspaces](#workspaces)
-- [Electron 31 support](#electron-31-support)
-- [Internal APIs](#internal-apis)
-- [ListenerType helper](#listenertype-helper)
-- [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
-- [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
+- [Revert timeline changes](#revert-timeline-changes)
+- [Display](#display)
+  - [Instancing](#instancing)
+- [Interactive Tools](#interactive-tools)
+  - [Element Locate](#element-locate)
+- [Presentation](#presentation)
+  - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
+  - [API Deprecations](#api-deprecations)
 
-## Workspaces
+## Revert timeline changes
 
-The `beta` [Workspace]($backend) and [Settings]($backend) APIs have been updated to make them easier to use, including the addition of the [WorkspaceEditor]($backend) API for creating new [WorkspaceDb]($backend)s to hold workspace resources. Consult the [learning article](../learning/backend/Workspace) for a comprehensive overview with examples.
+At present, the sole method to reverse a defective changeset is to remove it from the iModel hub, which can lead to numerous side effects. A preferable approach would be to reverse the changeset in the timeline and introduce it as a new changeset. Although this method remains intrusive and necessitates a schema lock, it is safer because it allows for the reversal to restore previous changes, ensuring that nothing is permanently lost from the timeline.
 
-## Electron 31 support
+[BriefcaseDb.revertAndPushChanges]($backend) Allow to push a single changeset that undo all changeset from tip to specified changeset in history.
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 31](https://www.electronjs.org/blog/electron-31-0).
+Some detail and requirements are as following.
 
-## Internal APIs
+- When invoking the iModel, it must not have any local modifications.
+- The operation is atomic; if it fails, the database will revert to its previous state.
+- The revert operation necessitates a schema lock (an exclusive lock on the iModel) because it does not lock each individual element affected by the revert.
+- If no description is provided after a revert, a default description for the changeset will be created and pushed, which releases the schema lock.
+- Schema changes are not reverted during SchemaSync, or they can be optionally skipped when SchemaSync is not utilized.
 
-iTwin.js categorizes the stability of each API using [release tags](../learning/api-support-policies.md#api-categories) like `@public`, `@beta`, and `@internal`. `@internal` APIs are intended strictly for use inside of the itwinjs-core repository. They can be tricky to use correctly, and may be changed or removed at any time, so consumers of iTwin.js should not write code that depends on them. Unfortunately, up until now they have been exported from the iTwin.js core packages just like any other type of APIs, making it easy for anyone to accidentally or intentionally introduce a dependency on them. To ensure that we can adhere to our commitment to providing stable libraries, we have begun to transition to a new approach to handling these kinds of APIs.
+## Display
 
-The [details](../learning/guidelines/release-tags-guidelines.md) are relevant primarily to contributors, but consumers should expect to find that `@internal` APIs they currently depend upon have been marked as deprecated. The deprecation messages include information about alternative public APIs to use instead, where appropriate. If you encounter a dependency on an `@internal` API which you struggle to remove, please [let us know](https://github.com/orgs/iTwin/discussions). Beginning in iTwin.js 5.0, you will no longer be able to access any `@internal` APIs.
+### Instancing
 
-## ListenerType helper
+Some scenarios involve displaying the same basic graphic repeatedly. For example, imagine you are writing a [Decorator]($frontend) that displays stop signs at many intersections along a road network. You might create one [RenderGraphic]($frontend) for each individual stop sign and draw them all, but doing so would waste a lot of memory by duplicating the same geometry many times, and negatively impact your frame rate by invoking many draw calls.
 
-We added a new helper type [ListenerType]($core-bentley) to retrieve the type of the callback function for a given [BeEvent]($core-bentley). This is useful when implicit types cannot be used - for example, when you need to define a listener outside of a call to [BeEvent.addListener]($core-bentley).
+WebGL provides [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html) to more efficiently support this kind of use case. You can define a single representation of the stop sign graphic, and then tell the renderer to draw it many times at different locations, orientations, and scales. iTwin.js now provides APIs that make it easy for you to create instanced graphics:
 
-## ecschema-metadata CustomAttributeClass.containerType deprecated and replaced with appliesTo
+- [GraphicTemplate]($frontend) defines what the graphic should look like. You can obtain a template from [GraphicBuilder.finishTemplate]($frontend), [RenderSystem.createTemplateFromDescription]($frontend), or [readGltfTemplate]($frontend).
+- [RenderInstances]($frontend) defines the set of instances of the template to draw. In addition to a [Transform]($geometry), each instance can also override aspects of the template's appearance like color and line width, along with a unique [Feature]($common) to permit each instance to behave as a discrete entity. You can create a `RenderInstances` using [RenderInstancesParamsBuilder]($frontend).
+- [RenderSystem.createGraphicFromTemplate]($frontend) produces a [RenderGraphic]($frontend) from a graphic template and a set of instances.
 
-The Xml and JSON representations of a custom attribute (and related TypeScript interfaces) all use a property named `appliesTo` of type [CustomAttributeContainerType]($ecschema-metadata) to indicate the kind(s) of schema entities to which the attribute can be applied. Confusingly, the `@beta` [CustomAttributeClass]($ecschema-metadata) class exposes this same information via a property named `containerType`. To address this discrepancy, `containerType` has been deprecated in favor of the new `appliesTo` property. The protected `_containerType` property was renamed to `_appliesTo`.
+`GraphicTemplate` and `RenderInstances` are both reusable - you can produce multiple sets of instances of a given template, and use the same set of instances with multiple different templates.
 
-## Improve the performance of the ECSchemaRpcLocater
+For the stop sign example described above, you might have a [glTF model](https://en.wikipedia.org/wiki/GlTF) representing a stop sign and an array containing the position of each stop sign. You could then use a function like the following to produce a graphic that draws the stop sign at each of those positions.
 
-Improve the performance of the ECSchemaRpcLocater by making all of the underlying ECSchemaRpcInterface methods GET by default so responses are cached by default. Previously each client had to set the methods to be GET or they would default to POST and were not cached.
+```ts
+[[include:Gltf_Instancing]]
+```
+### Context Reality model visibility
+Context reality models that have been attached using `DisplayStyleState.attachRealityModel`, can now be hidden by turning ON the `ContextRealityModel.invisible` flag.  Previous implementation requiered context reality models to be detached in order to hide it from the scene.
+
+## Interactive Tools
+
+### Element Locate
+
+After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used to accept some elements that were obscured by another element. Previously Reset would only choose between visible elements within the locate aperture.
+
+![locate example](./element-locate.png "Example of using reset to accept obscured element")
+
+## Presentation
+
+### Calculated properties specification enhancements
+
+A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md). The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
+
+## API deprecations
+
+### @itwin/appui-abstract
+
+- `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
+
+- `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.

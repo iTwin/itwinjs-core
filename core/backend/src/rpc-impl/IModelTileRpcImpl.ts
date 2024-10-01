@@ -140,7 +140,7 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
     };
-    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
+    await IModelHost.tileStorage?.uploadTile(props.tokenProps.iModelId ?? db.iModelId, props.tokenProps.changeset?.id ?? db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
     const { accessToken: _, ...safeProps } = props;
     Logger.logInfo(BackendLoggerCategory.IModelTileRequestRpc, "Generated and uploaded tile", { tileMetadata, ...safeProps });
 

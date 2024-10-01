@@ -1,6 +1,78 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 19 Jul 2024 14:54:06 GMT and should not be manually modified.
+This log was last generated on Wed, 25 Sep 2024 20:12:30 GMT and should not be manually modified.
+
+## 4.9.1
+Wed, 25 Sep 2024 20:10:58 GMT
+
+_Version update only_
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+### Updates
+
+- spelling
+- Fixed bad clipping of edges in some cut plane graphics.
+- Fix GeometryStreamBuilder.appendTextBlock producing incorrect geometry for black text.
+- Added `roundingError` to numeric `GenericInstanceFilterRuleValue`
+
+## 4.8.7
+Fri, 13 Sep 2024 15:11:17 GMT
+
+_Version update only_
+
+## 4.8.6
+Fri, 06 Sep 2024 05:06:49 GMT
+
+_Version update only_
+
+## 4.8.5
+Wed, 28 Aug 2024 17:27:23 GMT
+
+_Version update only_
+
+## 4.8.4
+Thu, 22 Aug 2024 17:37:06 GMT
+
+_Version update only_
+
+## 4.8.3
+Fri, 16 Aug 2024 18:18:14 GMT
+
+_Version update only_
+
+## 4.8.2
+Thu, 15 Aug 2024 15:33:49 GMT
+
+_Version update only_
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+### Updates
+
+- Fix GeometryStreamBuilder.appendTextBlock producing incorrect geometry for black text.
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:37 GMT
+
+### Updates
+
+- Fixed planar masks when using new tiles
+- Added new LayoutResult classes, containing information about the result of laying out the lines of a TextBlock.
+- Add RPC method queryAllUsedSpatialSubCategories() to fetch all subcategories of used spatial categories and 3D elements.
+- Remove ThirdPartyNotices.md
+- add ConflictingLocksError
+- TextAnnotation.computeTransform aligns the anchor point with the origin.
+- Add IModel.onChangesetChanged event.
+- Begin deprecating @internal APis.
+- Fix bugs with TextAnnotation wrapping and justification.
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
 
 ## 4.7.7
 Fri, 19 Jul 2024 14:52:42 GMT

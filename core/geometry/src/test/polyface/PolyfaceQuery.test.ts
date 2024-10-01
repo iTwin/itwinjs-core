@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve } from "../../curve/CurveTypes";
@@ -856,6 +856,21 @@ describe("ReorientFacets", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ComputeNormals");
 
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("NullNormal", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const mesh = GeometryCoreTestIO.jsonFileToIndexedPolyface("./src/test/data/polyface/nullNormal.imjs");
+    if (ck.testType(mesh, IndexedPolyface, "imported mesh")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+      PolyfaceQuery.buildAverageNormals(mesh); // should not crash on the 0-area facet
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 1.1 * mesh.range().xLength());
+      ck.testTrue(mesh.normalCount > 0, "normals were added");
+      ck.testTrue(undefined !== mesh.data.normalIndex && (mesh.data.normalIndex.length === mesh.data.pointIndex.length), "normal indices were added");
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "NullNormal");
     expect(ck.getNumErrors()).equals(0);
   });
 

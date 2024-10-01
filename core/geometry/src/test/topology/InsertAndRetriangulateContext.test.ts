@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -16,7 +16,7 @@ import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
-import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
+import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "../../topology/InsertAndRetriangulateContext";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
@@ -134,12 +134,12 @@ describe("InsertAndRetriangulateContext", () => {
       showPosition(allGeometry, oldPosition, position, aa, x0, y0, z1);
     }
     oldPosition.resetAsUnknown();
-    context.resetSearch(Point3d.create(1.5, 0.5), 0);
+    context.resetSearch(Point3d.create(1.5, 0.5), false);
     ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to vertex");
-    context.resetSearch(Point3d.create(1.5, 0.5), 1);
+    context.resetSearch(Point3d.create(1.5, 0.5), true);
     ck.testExactNumber(HalfEdgeTopo.Edge, context.currentPosition.getTopo(), "Reset to edge search");
     // hit the "vertex sector" case. ..
-    context.resetSearch(Point3d.create(-0.5, -0.5), 1);
+    context.resetSearch(Point3d.create(-0.5, -0.5), true);
     ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to edge search");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "moveTo");
@@ -209,8 +209,7 @@ describe("InsertAndRetriangulateContext", () => {
         Point3d.create(1.0, 1.0), // at vertex
         Point3d.create(1.0, 1.0), // stay
       ]) {
-        //        GeometryCoreTestIO.consoleLog("insertAndRetriangulate", point);
-        context.insertAndRetriangulate(point, true);
+        context.insertAndRetriangulate(point, InsertedVertexZOptions.Replace);
         numPointsInserted++;
         if (numPointsInserted < 4) {
           y0 += yStep;

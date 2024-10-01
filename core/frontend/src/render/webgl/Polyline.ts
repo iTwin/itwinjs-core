@@ -9,7 +9,7 @@
 import { dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
-import { PolylineParams } from "../../common/render/primitives/PolylineParams";
+import { PolylineParams } from "../../common/internal/render/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
@@ -22,9 +22,13 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { VertexLUT } from "./VertexLUT";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
-export class PolylineGeometry extends LUTGeometry {
+export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "polyline" = "polyline" as const;
+  public readonly isInstanceable: boolean;
+  public noDispose = false;
   public vertexParams: QParams3d;
   private readonly _hasFeatures: boolean;
   public lineWeight: number;
@@ -39,6 +43,7 @@ export class PolylineGeometry extends LUTGeometry {
 
   private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams, viOrigin: Point3d | undefined) {
     super(viOrigin);
+    this.isInstanceable = undefined === viOrigin;
     this.vertexParams = params.vertices.qparams;
     this._hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     this.lineWeight = params.weight;
@@ -53,8 +58,10 @@ export class PolylineGeometry extends LUTGeometry {
   public get isDisposed(): boolean { return this._buffers.isDisposed && this.lut.isDisposed; }
 
   public dispose() {
-    dispose(this.lut);
-    dispose(this._buffers);
+    if (!this.noDispose) {
+      dispose(this.lut);
+      dispose(this._buffers);
+    }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
