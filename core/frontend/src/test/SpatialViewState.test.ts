@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization } from "@itwin/core-common";
 import { SpatialViewState } from "../SpatialViewState";
@@ -11,11 +11,10 @@ import type { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { RealityModelTileTree, TileTreeLoadStatus, TileTreeReference } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 
 describe("SpatialViewState", () => {
   afterEach(() => {
-    sinonRestore();
+    vi.restoreAllMocks();
   });
 
   const projectExtents = new Range3d(-100, -50, -25, 25, 50, 100);
@@ -108,14 +107,14 @@ describe("SpatialViewState", () => {
       const state = view.displayStyle.attachRealityModel({tilesetUrl: "https://fake.com"});
 
       state.invisible = true;
-      const unionFitRangeSpy = sinonSpy(RealityModelTileTree.Reference.prototype, "unionFitRange");
+      const unionFitRangeSpy = vi.spyOn(RealityModelTileTree.Reference.prototype, "unionFitRange");
       view.computeFitRange();
-      expect(unionFitRangeSpy.called).to.false;
+      expect(unionFitRangeSpy).not.toHaveBeenCalled();
 
-      // Make sure its still being called when not 'invisible'
+      // Make sure it's still being called when not 'invisible'
       state.invisible = false;
       view.computeFitRange();
-      expect(unionFitRangeSpy.called).to.true;
+      expect(unionFitRangeSpy).toHaveBeenCalled();
     });
   });
 });

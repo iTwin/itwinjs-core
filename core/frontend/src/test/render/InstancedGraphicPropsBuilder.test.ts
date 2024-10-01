@@ -7,7 +7,7 @@ import { Feature, FeatureTable, GeometryClass, LinePixels } from "@itwin/core-co
 import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
 import { InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
 import { Instance, InstanceSymbology } from "../../common/render/RenderInstancesParams";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { Id64String } from "@itwin/core-bentley";
 import { OvrFlags } from "../../common/internal/render/OvrFlags";
@@ -20,7 +20,7 @@ function build(instances: Instance[], haveFeatures = false): InstancedGraphicPro
 
   const featureTable = haveFeatures ? new FeatureTable(1000) : undefined;
   const props = builder.finish(featureTable);
-  expect(props).not.to.be.undefined;
+  expect(props).toBeDefined();
   return props;
 }
 
@@ -32,33 +32,33 @@ function makeInstance(tf: Transform | XYZProps = [1, 2, 3], feature?: Id64String
 describe("InstancedGraphicPropsBuilder", () => {
   it("only populates feature indices if features are provided", () => {
     const instances = [makeInstance(), makeInstance(), makeInstance(), makeInstance()];
-    expect(build(instances).featureIds).to.be.undefined;
+    expect(build(instances).featureIds).toBeUndefined();
 
     const props = build(instances, true);
-    expect(props.featureIds!.byteLength).to.equal(3 * 4);
+    expect(props.featureIds!.byteLength).toEqual(3 * 4);
   });
 
   it("only populates symbology overrides if symbology is overridden", () => {
-    expect(build([makeInstance(), makeInstance(undefined, "0x123"), makeInstance()]).symbologyOverrides).to.be.undefined;
+    expect(build([makeInstance(), makeInstance(undefined, "0x123"), makeInstance()]).symbologyOverrides).toBeUndefined();
 
     const props = build([makeInstance(), makeInstance(undefined, "0x123"), makeInstance(undefined, undefined, { weight: 12 })]);
-    expect(props.symbologyOverrides!.byteLength).to.equal(3 * 8);
+    expect(props.symbologyOverrides!.byteLength).toEqual(3 * 8);
   });
 
   it("computes transforms relative to center", () => {
     const instances = [makeInstance([0, 0, 0])];
     function expectCenter(expected: [number, number, number]): void {
       const props = build(instances);
-      expect(props.transformCenter.x).to.equal(expected[0]);
-      expect(props.transformCenter.y).to.equal(expected[1]);
-      expect(props.transformCenter.z).to.equal(expected[2]);
+      expect(props.transformCenter.x).toEqual(expected[0]);
+      expect(props.transformCenter.y).toEqual(expected[1]);
+      expect(props.transformCenter.z).toEqual(expected[2]);
 
       for (let i = 0; i < instances.length; i++) {
         const o = instances[i].transform.origin;
         const j = i * 12;
-        expect(props.transforms[j + 3]).to.equal(o.x - props.transformCenter.x);
-        expect(props.transforms[j + 7]).to.equal(o.y - props.transformCenter.y);
-        expect(props.transforms[j + 11]).to.equal(o.z - props.transformCenter.z);
+        expect(props.transforms[j + 3]).toEqual(o.x - props.transformCenter.x);
+        expect(props.transforms[j + 7]).toEqual(o.y - props.transformCenter.y);
+        expect(props.transforms[j + 11]).toEqual(o.z - props.transformCenter.z);
       }
     }
 
@@ -95,8 +95,8 @@ describe("InstancedGraphicPropsBuilder", () => {
 
     const props = build(instances);
     const symbs = props.symbologyOverrides!;
-    expect(symbs).not.to.be.undefined;
-    expect(symbs.byteLength).to.equal(8 * instances.length);
+    expect(symbs).toBeDefined();
+    expect(symbs.byteLength).toEqual(8 * instances.length);
 
     function expectOvrs(instanceIdx: number, expected: { rgb?: [number, number, number], weight?: number, lineCode?: number }): void {
       const i = instanceIdx * 8;
@@ -112,15 +112,15 @@ describe("InstancedGraphicPropsBuilder", () => {
         undefined !== expected.lineCode ? OvrFlags.LineCode : 0
       );
 
-      expect(symbs[i + 0]).to.equal(flags);
-      expect(symbs[i + 1]).to.equal(weight);
-      expect(symbs[i + 2]).to.equal(lineCode);
-      expect(symbs[i + 3]).to.equal(0);
+      expect(symbs[i + 0]).toEqual(flags);
+      expect(symbs[i + 1]).toEqual(weight);
+      expect(symbs[i + 2]).toEqual(lineCode);
+      expect(symbs[i + 3]).toEqual(0);
 
-      expect(symbs[i + 4]).to.equal(rgb[0]);
-      expect(symbs[i + 5]).to.equal(rgb[1]);
-      expect(symbs[i + 6]).to.equal(rgb[2]);
-      expect(symbs[i + 7]).to.equal(0);
+      expect(symbs[i + 4]).toEqual(rgb[0]);
+      expect(symbs[i + 5]).toEqual(rgb[1]);
+      expect(symbs[i + 6]).toEqual(rgb[2]);
+      expect(symbs[i + 7]).toEqual(0);
     }
 
     expectOvrs(0, { rgb: [63, 127, 191]});
@@ -158,18 +158,18 @@ describe("InstancedGraphicPropsBuilder", () => {
       const ft = new FeatureTable(9999);
       const props = builder.finish(ft);
 
-      expect(ft.length).to.equal(expectedFeatures.length);
+      expect(ft.length).toEqual(expectedFeatures.length);
       const actualFeatures = ft.getArray().map((x) => [x.value.elementId, x.value.subCategoryId, x.value.geometryClass]);
-      expect(actualFeatures).to.deep.equal(expectedFeatures);
+      expect(actualFeatures).toEqual(expectedFeatures);
 
       const ftIds = props.featureIds!;
-      expect(ftIds.byteLength).to.equal(3 * instances.length);
+      expect(ftIds.byteLength).toEqual(3 * instances.length);
       const actualIndices = [];
       for (let i = 0; i < ftIds.byteLength; i += 3) {
         actualIndices.push(ftIds[i] | (ftIds[i + 1] << 8) | (ftIds[i + 2] << 16));
       }
 
-      expect(actualIndices).to.deep.equal(expectedIndices);
+      expect(actualIndices).toEqual(expectedIndices);
     }
 
     expectFeatures([

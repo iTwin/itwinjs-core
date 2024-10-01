@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../IModelApp";
 import { EmptyLocalization } from "@itwin/core-common";
 import { GraphicType } from "../../common/render/GraphicType";
@@ -19,14 +19,14 @@ import { WorkerGraphicDescriptionContext } from "../../common/render/GraphicDesc
 import { IModelConnection } from "../../IModelConnection";
 
 describe("GraphicTemplate", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   it("produces reusable non-disposable geometry", () => {
     function expectDisposed(tmplt: GraphicTemplate, expected: boolean): void {
       for (const node of tmplt[_nodes]) {
         for (const geom of node.geometry) {
-          expect(geom.isDisposed).to.equal(expected);
+          expect(geom.isDisposed).toEqual(expected);
         }
       }
     }
@@ -58,16 +58,16 @@ describe("GraphicTemplate", () => {
       const builder = RenderInstancesParamsBuilder.create({});
       builder.add({ transform: Transform.createIdentity() });
       const instances = IModelApp.renderSystem.createRenderInstances(builder.finish())!;
-      expect(instances).not.to.be.undefined;
+      expect(instances).toBeDefined();
       return instances;
     }
 
     const viewDep = makeTemplate(false);
-    expect(viewDep.isInstanceable).to.be.true;
-    expect(IModelApp.renderSystem.createGraphicFromTemplate({ template: viewDep, instances: makeInstances() })).not.to.be.undefined;
+    expect(viewDep.isInstanceable).toBe(true);
+    expect(IModelApp.renderSystem.createGraphicFromTemplate({ template: viewDep, instances: makeInstances() })).toBeDefined();
 
     const viewIndep = makeTemplate(true);
-    expect(viewIndep.isInstanceable).to.be.false;
+    expect(viewIndep.isInstanceable).toBe(false);
     expect(() => IModelApp.renderSystem.createGraphicFromTemplate({
       template: viewIndep,
       instances: makeInstances(),
@@ -87,13 +87,13 @@ describe("GraphicTemplate", () => {
     }
 
     const noFeat = makeTemplate(false);
-    expect(noFeat[_batch]).to.be.undefined;
+    expect(noFeat[_batch]).toBeUndefined();
 
     const feat = makeTemplate(true);
     const batch = feat[_batch]!;
-    expect(batch).not.to.be.undefined;
-    expect(batch.featureTable.numFeatures).to.equal(1);
-    expect(batch.featureTable.batchModelId).to.equal("0x2");
+    expect(batch).toBeDefined();
+    expect(batch.featureTable.numFeatures).toEqual(1);
+    expect(batch.featureTable.batchModelId).toEqual("0x2");
   });
 
   it("produces a Branch if GraphicDescription specifies a translation", async () => {
@@ -105,14 +105,14 @@ describe("GraphicTemplate", () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, computeChordTolerance: () => 0, context: workerContext });
     builder.addPointString2d([new Point2d(10, 0)], 2);
     const descr = builder.finish() as GraphicDescriptionImpl;
-    expect(descr.translation).not.to.be.undefined;
+    expect(descr.translation).toBeDefined();
 
     const template = IModelApp.renderSystem.createTemplateFromDescription({ context: mainContext, description: descr });
     const branch = template[_branch]!;
-    expect(branch).not.to.be.undefined;
-    expect(branch.transform).not.to.be.undefined;
-    expect(branch.transform!.origin.x).to.equal(10);
-    expect(branch.transform!.origin.y).to.equal(0);
-    expect(branch.transform!.origin.z).to.equal(2);
+    expect(branch).toBeDefined();
+    expect(branch.transform).toBeDefined();
+    expect(branch.transform!.origin.x).toEqual(10);
+    expect(branch.transform!.origin.y).toEqual(0);
+    expect(branch.transform!.origin.z).toEqual(2);
   });
 });
