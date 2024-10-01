@@ -9,11 +9,17 @@ import { BentleyError } from '@itwin/core-bentley';
 // @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
 
+// @internal
+export function almostZero(value: number): boolean;
+
 // @beta
 export interface AlternateUnitLabelsProvider {
     // (undocumented)
     getAlternateUnitLabels: (unit: UnitProps) => string[] | undefined;
 }
+
+// @internal
+export function applyConversion(value: number, props: UnitConversionProps): number;
 
 // @beta
 export class BadUnit implements UnitProps {
@@ -85,6 +91,11 @@ export class BaseFormat {
     set precision(precision: DecimalPrecision | FractionalPrecision);
     // (undocumented)
     protected _precision: number;
+    // (undocumented)
+    get ratioType(): RatioType | undefined;
+    set ratioType(ratioType: RatioType | undefined);
+    // (undocumented)
+    protected _ratioType?: RatioType;
     // (undocumented)
     get revolutionUnit(): UnitProps | undefined;
     set revolutionUnit(revolutionUnit: UnitProps | undefined);
@@ -252,6 +263,7 @@ export interface FormatProps {
     readonly minWidth?: number;
     // (undocumented)
     readonly precision?: number;
+    readonly ratioType?: string;
     readonly revolutionUnit?: string;
     // (undocumented)
     readonly roundFactor?: number;
@@ -333,6 +345,7 @@ export enum FormatType {
     Bearing = 4,
     Decimal = 0,
     Fractional = 1,
+    Ratio = 6,
     Scientific = 2,
     Station = 3
 }
@@ -431,6 +444,9 @@ export class Parser {
     static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult;
     static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult;
 }
+
+// @beta (undocumented)
+export function parseRatioType(ratioType: string, formatName: string): RatioType;
 
 // @beta
 export class ParserSpec {
@@ -549,6 +565,8 @@ export enum QuantityStatus {
     // (undocumented)
     InvalidJson = 35040,
     // (undocumented)
+    InvertingZero = 35049,
+    // (undocumented)
     MissingRequiredProperty = 35048,
     // (undocumented)
     NoValueOrUnitFoundInString = 35043,
@@ -566,6 +584,14 @@ export enum QuantityStatus {
     UnknownUnit = 35045,
     // (undocumented)
     UnsupportedUnit = 35047
+}
+
+// @beta
+export enum RatioType {
+    NToOne = "NToOne",
+    OneToN = "OneToN",
+    UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
+    ValueBased = "ValueBased"
 }
 
 // @beta
@@ -589,10 +615,15 @@ export enum ShowSignOption {
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
 // @beta
+export enum UnitConversionInvert {
+    InvertPostConversion = "InvertPostConversion",
+    InvertPreConversion = "InvertPreConversion"
+}
+
+// @beta
 export interface UnitConversionProps {
-    // (undocumented)
     factor: number;
-    // (undocumented)
+    inversion?: UnitConversionInvert;
     offset: number;
 }
 

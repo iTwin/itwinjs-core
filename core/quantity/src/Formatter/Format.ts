@@ -11,8 +11,9 @@ import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
-  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, ScientificType,
-  scientificTypeToString, ShowSignOption, showSignOptionToString,
+  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseRatioType, parseScientificType, parseShowSignOption,
+  RatioType, ScientificType, scientificTypeToString,
+  ShowSignOption, showSignOptionToString,
 } from "./FormatEnums";
 import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
@@ -38,6 +39,7 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
+  protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
   protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
@@ -64,6 +66,9 @@ export class BaseFormat {
 
   public get scientificType(): ScientificType | undefined { return this._scientificType; }
   public set scientificType(scientificType: ScientificType | undefined) { this._scientificType = scientificType; }
+
+  public get ratioType(): RatioType | undefined { return this._ratioType; }
+  public set ratioType(ratioType: RatioType | undefined) { this._ratioType = ratioType; }
 
   public get showSignOption(): ShowSignOption { return this._showSignOption; }
   public set showSignOption(showSignOption: ShowSignOption) { this._showSignOption = showSignOption; }
@@ -138,6 +143,13 @@ export class BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Scientific' type therefore the attribute 'scientificType' is required.`);
 
       this._scientificType = parseScientificType(formatProps.scientificType, this.name);
+    }
+
+    if (this.type === FormatType.Ratio){
+      if (undefined === formatProps.ratioType)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type therefore the attribute 'ratioType' is required.`);
+
+      this._ratioType = parseRatioType(formatProps.ratioType, this.name);
     }
 
     if (undefined !== formatProps.roundFactor) { // optional; default is 0.0
@@ -283,6 +295,7 @@ export class Format extends BaseFormat {
     newFormat._azimuthBase = this._azimuthBase;
     newFormat._azimuthBaseUnit = this._azimuthBaseUnit;
     newFormat._azimuthCounterClockwise = this._azimuthCounterClockwise;
+    newFormat._ratioType = this._ratioType;
     newFormat._revolutionUnit = this._revolutionUnit;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
@@ -425,29 +438,7 @@ export class Format extends BaseFormat {
     const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
     const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
 
-    if (this.customProps)
-      return {
-        type: formatTypeToString(this.type),
-        precision: this.precision,
-        roundFactor: this.roundFactor,
-        minWidth: this.minWidth,
-        showSignOption: showSignOptionToString(this.showSignOption),
-        formatTraits: formatTraitsToArray(this.formatTraits),
-        decimalSeparator: this.decimalSeparator,
-        thousandSeparator: this.thousandSeparator,
-        uomSeparator: this.uomSeparator,
-        scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
-        stationOffsetSize: this.stationOffsetSize,
-        stationSeparator: this.stationSeparator,
-        azimuthBase: this.azimuthBase,
-        azimuthBaseUnit,
-        azimuthCounterClockwise: this.azimuthCounterClockwise,
-        revolutionUnit,
-        composite,
-        custom: this.customProps,
-      } as CustomFormatProps;
-
-    return {
+    const baseFormatProps: FormatProps = {
       type: formatTypeToString(this.type),
       precision: this.precision,
       roundFactor: this.roundFactor,
@@ -457,7 +448,8 @@ export class Format extends BaseFormat {
       decimalSeparator: this.decimalSeparator,
       thousandSeparator: this.thousandSeparator,
       uomSeparator: this.uomSeparator,
-      scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
+      scientificType: this.scientificType !== undefined ? scientificTypeToString(this.scientificType) : undefined,
+      ratioType: this.ratioType,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       azimuthBase: this.azimuthBase,
@@ -466,5 +458,13 @@ export class Format extends BaseFormat {
       revolutionUnit,
       composite,
     };
+
+    if (this.customProps)
+      return {
+        ...baseFormatProps,
+        custom: this.customProps,
+      } as CustomFormatProps;
+
+    return baseFormatProps;
   }
 }
