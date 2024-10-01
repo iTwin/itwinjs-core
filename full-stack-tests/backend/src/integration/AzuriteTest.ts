@@ -54,7 +54,8 @@ export namespace AzuriteTest {
       return blobClient.exists();
     };
 
-    export const subtractFromCurrentWriteLockExpiryTime = async (container: CloudSqlite.CloudContainer, numOfMin: number, blockName: string = "bcv_kv.bcv") => {
+    export const subtractFromCurrentWriteLockExpiryTime = async (container: CloudSqlite.CloudContainer, numOfMin: number) => {
+      const blockName = "bcv_kv.bcv";
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       const tempFilePath = join(KnownLocations.tmpdir, blockName);
