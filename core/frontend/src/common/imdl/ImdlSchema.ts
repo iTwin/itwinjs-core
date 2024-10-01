@@ -332,7 +332,7 @@ export interface ImdlSurface {
   /** The 24-bit indices into the [[ImdlVertexTable]] of each triangle's vertex. */
   readonly indices: string;
   /** The number of indices, only set if data is compressed. */
-  readonly compressedIndexCount: number;
+  readonly compressedIndexCount?: number;
   /** If true, the [[ImdlTextureMapping]] is applied regardless of [ViewFlags.textures]($common). */
   readonly alwaysDisplayTexture?: boolean;
   /** The quantization range for the UV coordinates. @see [QParams2d]($common). */
