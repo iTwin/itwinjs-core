@@ -71,7 +71,7 @@ describe("Decorations", () => {
   it("draws box decoration in expected location", { timeout: 20000 }, () => { // macOS is slow.
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
-    expectColors(viewport, [dec.color], boxDecLocRect); // is decorator rendering at expected location?
+    expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor], boxDecLocRect); // is decorator rendering at expected location?
     dec.drop();
   });
 
@@ -100,16 +100,16 @@ describe("Decorations", () => {
     const viewIndependentOrigin = new Point3d(0.5, 0.5, 0);
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints, viewIndependentOrigin });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
-    expectColors(viewport, [dec.color], boxDecLocRect);
+    expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor], boxDecLocRect);
 
     viewport.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(StandardViewId.Bottom), viewIndependentOrigin);
     viewport.synchWithView();
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
-    expectColors(viewport, [dec.color], boxDecLocRect);
+    expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor], boxDecLocRect);
 
     viewport.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(StandardViewId.Front), viewIndependentOrigin);
     viewport.synchWithView();
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
-    expectColors(viewport, [dec.color], boxDecLocRect);
+    expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor], boxDecLocRect);
   });
 });
