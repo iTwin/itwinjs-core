@@ -444,7 +444,7 @@ export namespace BlobContainer {
     }
     export type Provider = "azure" | "google";
     export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
-    export interface RequestTokenProps extends AccessContainerProps {
+    export interface RequestTokenProps extends Omit<AccessContainerProps, "baseUri"> {
         accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
     }
