@@ -599,6 +599,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 interface BatchInfo {
   featureTable: RenderFeatureTable;
   iModel?: IModelConnection;
+  transformToIModel?: Transform;
   tileId?: string;
   viewAttachmentId?: Id64String;
 }
@@ -645,8 +646,15 @@ class PixelBuffer implements Pixel.Buffer {
     const featureId = this.getFeatureId(pixelIndex);
     if (undefined !== featureId) {
       const batch = this._batchState.find(featureId);
-      if (undefined !== batch)
-        return { featureTable: batch.featureTable, iModel: batch.batchIModel, tileId: batch.tileId, viewAttachmentId: batch.viewAttachmentId };
+      if (undefined !== batch) {
+        return {
+          featureTable: batch.featureTable,
+          iModel: batch.batchIModel,
+          transformToIModel: batch.transformToBatchIModel,
+          tileId: batch.tileId,
+          viewAttachmentId: batch.viewAttachmentId,
+        };
+      }
     }
 
     return undefined;
@@ -732,10 +740,11 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModel, tileId, viewAttachmentId;
+    let featureTable, iModel, transformToIModel, tileId, viewAttachmentId;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
       iModel = batchInfo.iModel;
+      transformToIModel = batchInfo.transformToIModel;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
     }
@@ -747,6 +756,7 @@ class PixelBuffer implements Pixel.Buffer {
       planarity,
       batchType: featureTable?.type,
       iModel,
+      transformToIModel,
       tileId,
       viewAttachmentId,
     });

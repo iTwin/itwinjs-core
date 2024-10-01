@@ -11,6 +11,7 @@ import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-com
 import { HitPriority, ViewAttachmentHitInfo } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
+import { Transform } from "@itwin/core-geometry";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].
@@ -34,6 +35,8 @@ export namespace Pixel {
     /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
     /** @internal */
+    public readonly transformToIModel?: Transform;
+    /** @internal */
     public readonly tileId?: string;
     /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
      * @beta
@@ -54,6 +57,7 @@ export namespace Pixel {
       iModel?: IModelConnection;
       tileId?: string;
       viewAttachmentId?: string;
+      transformToIModel?: Transform;
     }) {
       if (args?.feature)
         this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
@@ -65,6 +69,7 @@ export namespace Pixel {
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
       this.viewAttachmentId = args?.viewAttachmentId;
+      this.transformToIModel = args?.transformToIModel;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -119,6 +124,7 @@ export namespace Pixel {
         tileId: this.tileId,
         isClassifier: this.isClassifier,
         sourceIModel: this.iModel,
+        transformToSourceIModel: this.transformToIModel,
         viewAttachment,
       };
     }
@@ -156,6 +162,8 @@ export namespace Pixel {
      * @internal
      */
     sourceIModel?: IModelConnection;
+    /** @internal */
+    transformToSourceIModel?: Transform;
     /** @internal chiefly for debugging */
     tileId?: string;
     /** True if the hit originated from a reality model classifier.

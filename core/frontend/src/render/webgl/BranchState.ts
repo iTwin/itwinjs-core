@@ -33,6 +33,7 @@ export interface BranchStateOptions {
   readonly edgeSettings: EdgeSettings;
   /** Used chiefly for readPixels() to identify context of picked Ids when graphics from multiple iModels are displayed together. */
   readonly iModel?: IModelConnection;
+  readonly transformToIModel?: Transform;
   /** Whether the graphics in this branch are 2d or 3d.
    * Sometimes we draw 3d orthographic views in the context of a 2d view (e.g., sheet view attachments).
    * Currently this only affects the logic for discarding surfaces (in 2d, we relay on display priority to enforce draw order between different elements;
@@ -64,6 +65,7 @@ export class BranchState {
   public get textureDrape() { return this._opts.textureDrape; }
   public get edgeSettings() { return this._opts.edgeSettings; }
   public get iModel() { return this._opts.iModel; }
+  public get transformToIModel() { return this._opts.transformToIModel; }
   public get is3d() { return this._opts.is3d; }
   public get frustumScale() { return this._opts.frustumScale!; }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
@@ -92,6 +94,7 @@ export class BranchState {
       transform: prev.transform.multiplyTransformTransform(branch.localToWorldTransform),
       symbologyOverrides: branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
       iModel: branch.iModel ?? prev.iModel,
+      transformToIModel: branch.externalIModelTransform ?? prev.transformToIModel,
       planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier,
       textureDrape: branch.textureDrape ?? prev.textureDrape,
       clipVolume: branch.clips,

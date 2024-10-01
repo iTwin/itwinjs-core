@@ -151,6 +151,8 @@ export interface HitDetailProps {
    * @internal
    */
   readonly sourceIModel?: IModelConnection;
+  /** @internal */
+  readonly transformToSourceIModel?: Transform;
   /** @internal chiefly for debugging */
   readonly tileId?: string;
   /** True if the hit originated from a reality model classifier.
@@ -200,6 +202,8 @@ export class HitDetail {
    * @internal
    */
   public get sourceIModel(): IModelConnection | undefined { return this._props.sourceIModel; }
+  /** @internal */
+  public get transformToSourceIModel(): Transform | undefined { return this._props.transformToSourceIModel; }
   /** @internal chiefly for debugging */
   public get tileId(): string | undefined { return this._props.tileId; }
   /** True if the hit originated from a reality model classifier.
@@ -255,6 +259,7 @@ export class HitDetail {
         geometryClass: arg0.geometryClass,
         modelId: arg0.modelId,
         sourceIModel: arg0.sourceIModel,
+        transformToSourceIModel: arg0.transformToSourceIModel,
         tileId: arg0.tileId,
         isClassifier: arg0.isClassifier,
         viewAttachment: arg0.viewAttachment,
