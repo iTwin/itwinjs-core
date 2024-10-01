@@ -10,7 +10,7 @@ import { BeTimePoint } from "@itwin/core-bentley";
 import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { GraphicBranch } from "../render/GraphicBranch";
+import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
@@ -67,6 +67,8 @@ export interface TileDrawArgParams {
   boundingRange?: Range3d;
   /** @alpha */
   maximumScreenSpaceError?: number;
+  /** @alpha */
+  transformToIModel?: Transform;
 }
 
 /**
@@ -129,6 +131,8 @@ export class TileDrawArgs {
   public readonly groupNodeId?: number;
   /** @alpha */
   public maximumScreenSpaceError;
+  /** @alpha */
+  public transformToIModel?: Transform;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -273,6 +277,7 @@ export class TileDrawArgs {
     this.groupNodeId = params.groupNodeId;
     this.boundingRange = params.boundingRange;
     this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
+    this.transformToIModel = params.transformToIModel;
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
@@ -355,8 +360,9 @@ export class TileDrawArgs {
     if (graphics.isEmpty)
       return undefined;
 
-    const opts = {
+    const opts: GraphicBranchOptions = {
       iModel: this.tree.iModel,
+      transformToIModel: this.transformToIModel,
       clipVolume: this.clipVolume,
       classifierOrDrape: this.planarClassifier ?? this.drape,
       appearanceProvider: this.appearanceProvider,
