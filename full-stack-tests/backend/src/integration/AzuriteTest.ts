@@ -83,7 +83,8 @@ export namespace AzuriteTest {
       fs.unlinkSync(tempFilePath);
     };
 
-    export const isWriteLockValidForAtLeast = async (container: CloudSqlite.CloudContainer, currentTime: Date, writeLockTimeRemainsMs: number, blockName: string = "bcv_kv.bcv"): Promise<boolean> => {
+    export const isWriteLockValidForAtLeast = async (container: CloudSqlite.CloudContainer, currentTime: Date, writeLockTimeRemainsMs: number): Promise<boolean> => {
+      const blockName = "bcv_kv.bcv";
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       const tempFilePath = join(KnownLocations.tmpdir, blockName);
