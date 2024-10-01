@@ -55,8 +55,8 @@ describe("CloudSqlite", () => {
       { containerId: "test1", logId: "logId-1" },
       { containerId: "test2" },
       { containerId: "test3", logId: "logId-3", isPublic: true },
-      { containerId: "test1", logId: "logId-1", lockExpireSeconds: 5 },
-      { containerId: "test1", logId: "logId-1", lockExpireSeconds: 60 },
+      { containerId: "test1", logId: "logId-1", lockExpireSeconds: 5 }, // native code should convert this to 5 mins. some tests would fail if that wasn't true.
+      { containerId: "test1", logId: "logId-1", lockExpireSeconds: 60 }, // native code should convert this to 5 mins. some tests would fail if that wasn't true.
 
     ]);
     caches = azSqlite.makeCaches(["cache1", "cache2"]);
@@ -294,6 +294,7 @@ describe("CloudSqlite", () => {
     expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, currentTime, 4.5*60*1000)).to.be.true;
     expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, currentTime, 6*60*1000)).to.be.false;
     testContainer1.disconnect();
+  });
 
   it("should LogLevel.Trace set LogMask to ALL", async () => {
     const testContainer0 = testContainers[0];
@@ -735,4 +736,3 @@ describe("CloudSqlite", () => {
     BlobContainer.service = service;
   });
 });
-
