@@ -128,8 +128,9 @@ export type AngleProps = {
 
 // @public
 export class AngleSweep implements BeJSONFunctions {
-    angleToPositivePeriodicFraction(theta: Angle): number;
-    angleToSignedPeriodicFraction(theta: Angle): number;
+    angleToPositivePeriodicFraction(theta: Angle, zeroSweepDefault?: number): number;
+    angleToSignedFraction(theta: Angle, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
+    angleToSignedPeriodicFraction(theta: Angle, zeroSweepDefault?: number): number;
     angleToUnboundedFraction(theta: Angle): number;
     capLatitudeInPlace(): void;
     clone(): AngleSweep;
@@ -150,6 +151,8 @@ export class AngleSweep implements BeJSONFunctions {
     fractionPeriod(): number;
     fractionToAngle(fraction: number): Angle;
     fractionToRadians(fraction: number): number;
+    fractionToSignedPeriodicFraction(fraction: number, toNegativeFraction: boolean): number;
+    static fractionToSignedPeriodicFractionStartEnd(fraction: number, radians0: number, radians1: number, toNegativeFraction: boolean): number;
     static fromJSON(json?: AngleSweepProps): AngleSweep;
     interpolate(fraction: number, other: AngleSweep): AngleSweep;
     isAlmostEqual(other: AngleSweep): boolean;
@@ -165,8 +168,10 @@ export class AngleSweep implements BeJSONFunctions {
     radiansArrayToPositivePeriodicFractions(data: GrowableFloat64Array): void;
     radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault?: number): number;
     static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault?: number): number;
-    radiansToSignedPeriodicFraction(radians: number): number;
-    static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number;
+    radiansToSignedFraction(radians: number, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
+    static radiansToSignedFractionStartEnd(radians: number, radians0: number, radians1: number, toNegativeFraction?: boolean, zeroSweepDefault?: number): number;
+    radiansToSignedPeriodicFraction(radians: number, zeroSweepDefault?: number): number;
+    static radiansToSignedPeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault?: number): number;
     reverseInPlace(): void;
     setFrom(other: AngleSweep): void;
     setFromJSON(json?: any): void;
@@ -1520,9 +1525,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainDistanceToChainFraction(distance: number): number;
     chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
     protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation?: boolean): number | undefined;
-    clone(): CurveChainWithDistanceIndex;
-    clonePartialCurve(fractionA: number, fractionB: number): CurveChainWithDistanceIndex | undefined;
-    cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined;
+    clone(options?: StrokeOptions): CurveChainWithDistanceIndex;
+    clonePartialCurve(fractionA: number | CurveLocationDetail, fractionB: number | CurveLocationDetail, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
+    cloneTransformed(transform: Transform, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;

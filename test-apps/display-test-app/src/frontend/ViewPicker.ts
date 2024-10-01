@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
-import { ColorDef } from "@itwin/core-common";
+import { ColorDef, RenderMode } from "@itwin/core-common";
 import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 interface ViewSpec extends IModelConnection.ViewSpec {
@@ -122,11 +122,15 @@ export class ViewList extends SortedArray<ViewSpec> {
     const ext = iModel.projectExtents;
 
     // start with a new "blank" spatial view to show the extents of the project, from top view
-    const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low));
+    const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low), undefined);
 
     // turn on the background map
     const style = blankView.displayStyle;
-    style.viewFlags = style.viewFlags.with("backgroundMap", true);
+    style.viewFlags = style.viewFlags.copy({
+      backgroundMap: true,
+      lighting: true,
+      renderMode: RenderMode.SmoothShade,
+    });
 
     style.backgroundColor = ColorDef.white;
 

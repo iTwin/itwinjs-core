@@ -8,12 +8,13 @@ import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ECEditingStatus } from "../../Editing/Exception";
 import { AnyDiagnostic } from "../../ecschema-editing";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
   let violations = "";
-  for (const diagnostic of ruleViolations){
+  for (const diagnostic of ruleViolations) {
     violations += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
   }
   return violations;
@@ -26,7 +27,14 @@ describe("Relationship Class merger tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
+
   const testJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TestSchema",
@@ -114,8 +122,8 @@ describe("Relationship Class merger tests", () => {
     };
   }
 
-  beforeEach(() => {
-    targetContext = new SchemaContext();
+  beforeEach(async () => {
+    targetContext = await BisTestHelper.getNewContext();
   });
 
   it("should merge missing relationship class with added constraint classes", async () => {
@@ -285,6 +293,7 @@ describe("Relationship Class merger tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -357,6 +366,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -460,6 +470,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -541,6 +552,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -606,6 +618,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -657,6 +670,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -709,6 +723,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -760,6 +775,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -816,6 +832,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -872,6 +889,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -929,6 +947,7 @@ describe("Relationship Class merger tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -1004,6 +1023,7 @@ describe("Relationship Class merger tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
