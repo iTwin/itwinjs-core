@@ -43,7 +43,7 @@ resources:
 
 jobs:
   - job: VeracodeScan
-    condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.SourceBranch'], 'refs/heads/nick/veracode-scan'))
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
     displayName: Veracode SAST Scan
     pool:
       vmImage: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
           version: "$(Build.BuildNumber)"
           filepath: "$(Build.ArtifactStagingDirectory)/veracode-scan.zip"
   - job: CheckLinkedPR
-    dependsOn: VeracodeScan # TODO: REMOVE LATER Just doing it to avoid doing useless work.
+    dependsOn: []
     displayName: Get PRs
     pool:
       vmImage: ubuntu-latest
