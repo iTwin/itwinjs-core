@@ -12,6 +12,7 @@ Table of contents:
   - [Element Locate](#element-locate)
 - [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
+- [Quantity](#quantity)
 - [API Deprecations](#api-deprecations)
   - [@itwin/appui-abstract](#itwinappui-abstract)
   - [@itwin/core-frontend](#itwincore-frontend)
@@ -49,7 +50,9 @@ For the stop sign example described above, you might have a [glTF model](https:/
 ```ts
 [[include:Gltf_Instancing]]
 ```
+
 ### Context Reality model visibility
+
 Context reality models that have been attached using `DisplayStyleState.attachRealityModel`, can now be hidden by turning ON the `ContextRealityModel.invisible` flag.  Previous implementation requiered context reality models to be detached in order to hide it from the scene.
 
 ## Interactive Tools
@@ -65,6 +68,30 @@ After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used 
 ### Calculated properties specification enhancements
 
 A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md). The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
+
+## Quantity
+
+- Add support for 'Ratio' format type (e.g. "1:2")
+  - Example: Formatting a Ratio
+  - Assuming that a `UnitsProvider` has been registered and initialized, here's how to format a ratio:
+
+```ts
+const ratioFormatProps: FormatProps = {
+    type: "Ratio",
+    ratioType: "OneToN",  // Formats the ratio in "1:N" form
+    composite: {
+        includeZero: true,
+        units: [
+            { name: "Units.HORIZONTAL_PER_VERTICAL" },
+        ],
+    },
+};
+
+const ratioFormat = new Format("Ratio");
+ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
+```
+
+- Add support for unit inversion during unit conversion
 
 ## API deprecations
 
