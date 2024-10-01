@@ -897,7 +897,7 @@ class Parser {
 
     if (surf.compressedIndexCount) {
       const decompressedIndices = new Uint8Array(surf.compressedIndexCount * 4);
-      MeshoptDecoder.decodeIndexBuffer(decompressedIndices, surf.compressedIndexCount, 4, indices);
+      MeshoptDecoder.decodeIndexSequence(decompressedIndices, surf.compressedIndexCount, 4, indices);
 
       // reduce from 32 to 24 bits
       indices = new Uint8Array(surf.compressedIndexCount * 3);
