@@ -696,10 +696,13 @@ export class AccuSnap implements Decorator {
       }
     }
 
+    const toIModel = thisHit.transformToSourceIModel;
+    const testPoint = toIModel?.multiplyPoint3d(thisHit.testPoint) ?? thisHit.testPoint;
+    const closePoint = toIModel?.multiplyPoint3d(thisHit.hitPoint) ?? thisHit.hitPoint;
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId,
-      testPoint: thisHit.testPoint,
-      closePoint: thisHit.hitPoint,
+      testPoint,
+      closePoint,
       worldToView: hitVp.worldToViewMap.transform0.toJSON(),
       viewFlags: hitVp.viewFlags,
       snapModes,
@@ -768,12 +771,18 @@ export class AccuSnap implements Decorator {
         return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
       };
 
-      const snapPoint = Point3d.fromJSON(result.snapPoint);
-      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({
+      let displayTransform;
+      if (undefined !== toIModel) {
+        displayTransform = toIModel.inverse();
+      } else if (undefined !== thisHit.modelId) {
+        displayTransform = thisHit.viewport.view.computeDisplayTransform({
         modelId: thisHit.modelId,
         elementId: thisHit.sourceId,
         viewAttachmentId: thisHit.viewAttachment?.id,
-      }) : undefined;
+        });
+      }
+
+      const snapPoint = Point3d.fromJSON(result.snapPoint);
       displayTransform?.multiplyPoint3d(snapPoint, snapPoint);
 
       const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
