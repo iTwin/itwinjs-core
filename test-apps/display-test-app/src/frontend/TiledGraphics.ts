@@ -5,7 +5,7 @@
 
 import {
   BriefcaseConnection,
-  FeatureSymbology, HitDetail, IModelApp, IModelConnection, TiledGraphicsProvider, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
+  FeatureSymbology, HitDetail, IModelApp, IModelConnection, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { Transform } from "@itwin/core-geometry";
@@ -13,6 +13,7 @@ import { Transform } from "@itwin/core-geometry";
 class Reference extends TileTreeReference {
   private readonly _ref: TileTreeReference;
   private readonly _provider: Provider;
+  private _transform?: Promise<Transform> | Transform;
 
   public constructor(ref: TileTreeReference, provider: Provider) {
     super();
@@ -27,19 +28,27 @@ class Reference extends TileTreeReference {
   public override getToolTipPromise(hit: HitDetail) { return this._ref.getToolTipPromise(hit); }
 
   protected override getSymbologyOverrides() { return this._provider.ovrs; }
-  protected override computeTransform(): Transform {
-    // ###TODO
-    return Transform.createIdentity();
+  protected override computeTransform(tree: TileTree): Transform {
+    if (!this._transform) {
+      this._provider.computeTransform(tree).then((tf) => {
+        this._provider.viewport.invalidateScene();
+        this._transform = tf;
+      })
+    }
+
+    return this._transform instanceof Transform ? this._transform : tree.iModelTransform;
   }
 }
 
 class Provider implements TiledGraphicsProvider {
   public readonly iModel: IModelConnection;
   public readonly ovrs: FeatureSymbology.Overrides;
+  public readonly viewport: Viewport;
   private readonly _refs: Reference[];
 
-  private constructor(view: ViewState) {
+  private constructor(view: ViewState, vp: Viewport) {
     this.iModel = view.iModel;
+    this.viewport = vp;
 
     // These overrides ensure that all of the categories and subcategories in the secondary iModel are displayed.
     // Any symbology overrides applied to the viewport are ignored.
@@ -57,10 +66,22 @@ class Provider implements TiledGraphicsProvider {
     }
   }
 
-  public static async create(iModel: IModelConnection): Promise<Provider> {
-    const creator = new ViewCreator3d(iModel);
+  public static async create(attachedIModel: IModelConnection, vp: Viewport): Promise<Provider> {
+    const creator = new ViewCreator3d(attachedIModel);
     const view = await creator.createDefaultView();
-    return new Provider(view);
+    return new Provider(view, vp);
+  }
+
+  public async computeTransform(tree: TileTree): Promise<Transform> {
+    const ecefTransform = await tree.getEcefTransform();
+    if (ecefTransform) {
+      const worldTf = this.viewport.iModel.getEcefTransform().inverse();
+      if (worldTf) {
+        return worldTf.multiplyTransformTransform(ecefTransform);
+      }
+    }
+
+    return tree.iModelTransform;
   }
 }
 
@@ -83,7 +104,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
   let iModel;
   try {
     iModel = await BriefcaseConnection.openFile( { fileName, key: fileName });
-    const provider = await Provider.create(iModel);
+    const provider = await Provider.create(iModel, vp);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);
   } catch (err: any) {
