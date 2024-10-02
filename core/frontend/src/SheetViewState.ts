@@ -300,7 +300,7 @@ class ViewAttachments {
   }
 
   /** For tests. */
-  public get attachments(): Object[] {
+  public get attachments(): object[] {
     return this._attachments;
   }
 
@@ -392,7 +392,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** Strictly for testing. @internal */
-  public get attachments(): Object[] | undefined {
+  public get attachments(): object[] | undefined {
     return this._attachments?.attachments;
   }
 

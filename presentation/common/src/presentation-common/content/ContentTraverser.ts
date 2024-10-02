@@ -558,7 +558,7 @@ function traverseContentItemPrimitiveFieldValue(
  *
  * @public
  */
-export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean) {
+export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean) {
   const hierarchies = new Array<FieldHierarchy>();
   const visitField = (category: CategoryDescription, field: Field, parentField: Field | undefined): FieldHierarchy | undefined => {
     let childFields: FieldHierarchy[] = [];

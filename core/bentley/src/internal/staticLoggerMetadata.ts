@@ -13,4 +13,4 @@ import { LoggingMetaData } from "../BentleyError";
  * Use a key to identify entries in the map so the can be removed individually.
  * @internal
  */
-export const staticLoggerMetadata = new Map<String, LoggingMetaData>();
+export const staticLoggerMetadata = new Map<string, LoggingMetaData>();

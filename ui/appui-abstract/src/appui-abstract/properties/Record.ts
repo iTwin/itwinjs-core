@@ -109,7 +109,7 @@ export class PropertyRecord {
   }
 }
 
-function assignMemberIfExists<T extends Object>(target: T, source: T, memberName: keyof T) {
+function assignMemberIfExists<T extends object>(target: T, source: T, memberName: keyof T) {
   if (source.hasOwnProperty(memberName))
     target[memberName] = source[memberName];
 }

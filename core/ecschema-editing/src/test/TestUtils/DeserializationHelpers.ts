@@ -18,7 +18,7 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
   };
 }
 export class ReferenceSchemaLocater implements ISchemaLocater {
-  private readonly _schemaList: Map<string, Object>;
+  private readonly _schemaList: Map<string, object>;
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema;
   private readonly _asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>;
 
