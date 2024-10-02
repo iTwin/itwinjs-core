@@ -75,14 +75,6 @@ class Provider implements TiledGraphicsProvider {
     const ecefTransform = vp.iModel.ecefLocation?.getTransform();
     const worldTf = attachedIModel.ecefLocation?.getTransform().inverse();
     const transform = ecefTransform && worldTf ? worldTf.multiplyTransformTransform(ecefTransform) : Transform.createIdentity();
-    
-    // let transform;
-    // const ecefTransform = attachedIModel.ecefLocation?.getTransform();
-    // const worldTf = vp.iModel.getEcefTransform().inverse();
-    // if (worldTf && ecefTransform) {
-    //   transform = worldTf.multiplyTransformTransform(ecefTransform).inverse();
-    // }
-
     return new Provider(view, vp, transform);
   }
 
