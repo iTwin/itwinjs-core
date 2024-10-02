@@ -2032,7 +2032,7 @@ export interface ReadGltfGraphicsArgs {
    *  - A JSON object conforming to the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html); or
    *  - A Uint8Array containing the utf8-encoded stringified JSON of an object conforming to the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html).
    */
-  gltf: Uint8Array | Object;
+  gltf: Uint8Array | object;
   /** The iModel with which the graphics will be associated - typically obtained from the [[Viewport]] into which they will be drawn. */
   iModel: IModelConnection;
   /** Options for making the graphic [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations).

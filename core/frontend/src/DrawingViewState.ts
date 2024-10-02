@@ -337,7 +337,7 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** Strictly for testing. @internal */
-  public get attachment(): Object | undefined {
+  public get attachment(): object | undefined {
     return this._attachment;
   }
 

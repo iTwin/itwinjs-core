@@ -244,7 +244,7 @@ export class RpcRequestsHandler {
   }
 }
 
-function isOptionsWithRuleset(options: Object): options is { rulesetOrId: Ruleset } {
+function isOptionsWithRuleset(options: object): options is { rulesetOrId: Ruleset } {
   return typeof (options as RequestOptionsWithRuleset<any, any>).rulesetOrId === "object";
 }
 
