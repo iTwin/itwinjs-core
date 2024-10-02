@@ -71,7 +71,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async op8(x: number, y: number): Promise<{ initializer: number, sum: number }> {
     if (!op8Initializer) {
       op8Initializer = TestRpcInterface.OP8_INITIALIZER;
-      throw new RpcPendingResponse(TestRpcInterface.OP8_PENDING_MESSAGE);
+      throw new RpcPendingResponse(TestRpcInterface.OP8_PENDING_MESSAGE); // eslint-disable-line @typescript-eslint/only-throw-error
     } else {
       const val = { initializer: op8Initializer, sum: x + y };
       return val;
@@ -93,10 +93,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async op11(input: string, call: number): Promise<string> {
     if (input === "oldvalue") {
-      throw new TestNotFoundResponse(TestNotFoundResponseCode.CanRecover);
+      throw new TestNotFoundResponse(TestNotFoundResponseCode.CanRecover); // eslint-disable-line @typescript-eslint/only-throw-error
     } else if (input === "newvalue") {
       if (call === 1) {
-        throw new TestNotFoundResponse(TestNotFoundResponseCode.Fatal);
+        throw new TestNotFoundResponse(TestNotFoundResponseCode.Fatal); // eslint-disable-line @typescript-eslint/only-throw-error
       } else {
         const val = input;
         return val;

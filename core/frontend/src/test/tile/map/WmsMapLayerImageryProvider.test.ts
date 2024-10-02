@@ -137,7 +137,7 @@ describe("WmsMapLayerImageryProvider", () => {
       chai.assert.fail("Could not create settings");
 
     const createSub = sandbox.stub(WmsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
     const provider = new WmsMapLayerImageryProvider(settings);
@@ -152,7 +152,7 @@ describe("WmsMapLayerImageryProvider", () => {
       chai.assert.fail("Could not create settings");
 
     const createSub = sandbox.stub(WmtsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -167,7 +167,7 @@ describe("WmsMapLayerImageryProvider", () => {
       chai.assert.fail("Could not create settings");
 
     sandbox.stub(WmsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
+      throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmsMapLayerImageryProvider(settings);
     await chai.expect(provider.initialize()).to.be.rejectedWith(ServerError);
@@ -179,7 +179,7 @@ describe("WmsMapLayerImageryProvider", () => {
       chai.assert.fail("Could not create settings");
 
     sandbox.stub(WmtsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
+      throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
     await chai.expect(provider.initialize()).to.be.rejectedWith(ServerError);
@@ -369,7 +369,7 @@ describe("WmsMapLayerImageryProvider", () => {
 
     // Make the tile fetch fails with error 401
     let makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
 
@@ -396,7 +396,7 @@ describe("WmsMapLayerImageryProvider", () => {
     // .. and now a 401 failure
     makeTileRequestStub.restore();
     makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
     await provider.loadTile(0, 0, 0);

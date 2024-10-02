@@ -75,7 +75,7 @@ class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
     await BeDuration.race(this._timeoutMs, memo.promise).catch(() => undefined);
 
     if (memo.isPending)
-      throw new RpcPendingResponse();
+      throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
 
     this.deleteMemoized(props);
 

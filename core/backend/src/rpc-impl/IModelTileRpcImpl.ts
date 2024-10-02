@@ -74,7 +74,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     if (tileQP.isPending) {
       this.log("issuing pending status for", props);
-      throw new RpcPendingResponse();
+      throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
     }
 
     this.deleteMemoized(props);

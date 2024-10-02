@@ -33,7 +33,7 @@ describe("WmtsMapLayerImageryProvider", () => {
       chai.assert.fail("Could not create settings");
 
     sandbox.stub(WmtsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
+      throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
     await chai.expect(provider.initialize()).to.be.rejectedWith(ServerError);
@@ -45,7 +45,7 @@ describe("WmtsMapLayerImageryProvider", () => {
       chai.assert.fail("Could not create settings");
 
     sandbox.stub(WmtsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
+      throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
     await chai.expect(provider.initialize()).to.be.rejectedWith(ServerError);
