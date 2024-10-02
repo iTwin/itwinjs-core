@@ -7,7 +7,7 @@
  */
 
 import { BeDuration, Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Vector3d, XAndY } from "@itwin/core-geometry";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Matrix4d, Point2d, Point3d, Vector3d, XAndY } from "@itwin/core-geometry";
 import { SnapRequestProps } from "@itwin/core-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -697,13 +697,20 @@ export class AccuSnap implements Decorator {
     }
 
     const toIModel = thisHit.transformToSourceIModel;
+    let worldToViewMap = hitVp.worldToViewMap.transform0;
+    if (toIModel) {
+      const toIModelMap = Matrix4d.createTransform(toIModel);
+      worldToViewMap = toIModelMap.multiplyMatrixMatrix(worldToViewMap);
+    }
+
     const testPoint = toIModel?.multiplyPoint3d(thisHit.testPoint) ?? thisHit.testPoint;
     const closePoint = toIModel?.multiplyPoint3d(thisHit.hitPoint) ?? thisHit.hitPoint;
+
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId,
       testPoint,
       closePoint,
-      worldToView: hitVp.worldToViewMap.transform0.toJSON(),
+      worldToView: worldToViewMap.toJSON(),
       viewFlags: hitVp.viewFlags,
       snapModes,
       snapAperture: hitVp.pixelsFromInches(hotDistanceInches),
