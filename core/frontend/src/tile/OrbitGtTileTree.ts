@@ -357,7 +357,6 @@ export class OrbitGtTileTree extends TileTree {
 }
 
 /** @internal */
-// eslint-disable-next-line no-redeclare
 export namespace OrbitGtTileTree {
   export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
     orbitGtBlob?: OrbitGtBlobProps;

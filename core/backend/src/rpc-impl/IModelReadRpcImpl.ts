@@ -75,7 +75,7 @@ class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
     await BeDuration.race(this._timeoutMs, memo.promise).catch(() => undefined);
 
     if (memo.isPending)
-      throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
+      throw new RpcPendingResponse();
 
     this.deleteMemoized(props);
 
@@ -85,7 +85,7 @@ class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
     }
 
     assert(memo.isRejected);
-    throw memo.error; // eslint-disable-line no-throw-literal
+    throw memo.error;
   }
 }
 
@@ -100,7 +100,7 @@ async function getIModelForRpc(tokenProps: IModelRpcProps): Promise<IModelDb> {
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
  */
-export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface { // eslint-disable-line deprecation/deprecation
+export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface {
 
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
@@ -330,7 +330,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
    */
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    // eslint-disable-next-line deprecation/deprecation
     const thumbnail = iModelDb.views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();

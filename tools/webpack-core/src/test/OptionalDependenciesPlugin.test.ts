@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 import { Volume } from "memfs";
 import { expect } from "chai";
 import * as path from "path";

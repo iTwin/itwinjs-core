@@ -16,8 +16,6 @@ import {
   RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
 } from "./RpcRequest";
 
-/* eslint-disable deprecation/deprecation */
-
 /** The policy for an RPC operation.
  * @internal
  */
@@ -113,7 +111,7 @@ export class RpcOperation {
 export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
 /** @internal */
-export namespace RpcOperation { // eslint-disable-line no-redeclare
+export namespace RpcOperation {
   function obtainInstance(obj: RpcOperationPolicy | RpcOperationPolicyProps) {
     if (obj instanceof RpcOperationPolicy) {
       return obj;

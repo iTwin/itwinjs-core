@@ -3201,7 +3201,6 @@ export class ScreenViewport extends Viewport {
     this.target.updateViewRect();
 
     // SEE: decorationDiv doc comment
-    // eslint-disable-next-line deprecation/deprecation
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
@@ -3422,7 +3421,6 @@ export class ScreenViewport extends Viewport {
   /** Populate a set of decoration graphics to be displayed in this viewport. */
   protected override addDecorations(decorations: Decorations): void {
     // SEE: decorationDiv doc comment
-    // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
     const context = new DecorateContext(this, decorations, this._decorationCache);
     try {
@@ -3436,7 +3434,6 @@ export class ScreenViewport extends Viewport {
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);
 
-      // eslint-disable-next-line deprecation/deprecation
       ScreenViewport.removeMarkedChildren(this.decorationDiv);
     } finally {
       this._decorationCache.prohibitRemoval = false;

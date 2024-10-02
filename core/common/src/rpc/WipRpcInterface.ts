@@ -20,7 +20,7 @@ import { RpcManager } from "../RpcManager";
  * @internal
  * @deprecated in 4.10. If any of these methods are needed in the frontend, they should be rewritten using IPC or HTTP protocol.
  */
-export abstract class WipRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class WipRpcInterface extends RpcInterface {
   /** Returns the IModelReadRpcInterface instance for the frontend. */
   public static getClient(): WipRpcInterface { return RpcManager.getClientForInterface(WipRpcInterface); } // eslint-disable-line deprecation/deprecation
 

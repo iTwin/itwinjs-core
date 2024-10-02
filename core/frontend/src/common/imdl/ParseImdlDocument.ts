@@ -1094,7 +1094,6 @@ class Parser {
     if (undefined !== materialJson.textureMapping)
       materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
-    // eslint-disable-next-line deprecation/deprecation
     return new Material(materialParams);
   }
 

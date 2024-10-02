@@ -7,8 +7,6 @@
  * @module Serialization
  */
 
-/* eslint-disable quote-props */
-
 /**
  * Utilities to compare json objects by searching through their properties.
  * @public

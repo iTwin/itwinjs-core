@@ -38,7 +38,7 @@ export abstract class RenderMaterial {
 }
 
 /** @public */
-export namespace RenderMaterial { // eslint-disable-line no-redeclare
+export namespace RenderMaterial {
   function clampToNormalizedRange(value: number): number {
     return Math.max(0.0, Math.min(1.0, value));
   }

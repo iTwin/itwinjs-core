@@ -11,8 +11,6 @@ import {
   TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3, TokenValues, WebRoutingInterface, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
-/* eslint-disable deprecation/deprecation */
-
 export async function testInterfaceResource() {
   const data = new Uint8Array(4);
   data[0] = 1;

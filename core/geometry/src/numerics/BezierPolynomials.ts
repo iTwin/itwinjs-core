@@ -13,7 +13,6 @@ import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { PascalCoefficients } from "./PascalCoefficients";
 import { AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial } from "./Polynomials";
 
-/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * * BezierCoffs is an abstract base class for one-dimensional (u to f(u)) Bezier polynomials.
  * * The base class carries a Float64Array with coefficients.

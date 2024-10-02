@@ -51,7 +51,7 @@ async function setupToolRegistryTests() {
 }
 
 function logResult(..._args: any[]) {
-  // eslint-disable-next-line no-console
+  // // eslint-disable-next-line no-console
   // console.log(..._args);
 }
 
@@ -210,7 +210,6 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
     return;
   logResult(searchResults.length, title);
 
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let resultIndex: number = 0; resultIndex < searchResults.length; resultIndex++) {
     const thisResult: FuzzySearchResult<typeof Tool> | undefined = searchResults.getResult(resultIndex);
     assert.isDefined(thisResult);

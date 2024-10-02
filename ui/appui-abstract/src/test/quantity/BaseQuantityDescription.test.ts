@@ -12,7 +12,6 @@ describe("BaseQuantityDescription", () => {
         super(name, displayLabel, iconSpec);
       }
 
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       protected formatValue = (_numberValue: number): string => {
         return ("This is the number");
       };

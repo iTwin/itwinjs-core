@@ -186,9 +186,8 @@ export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<Co
  * @public
  */
 export class PresentationRpcInterface extends RpcInterface {
-  // eslint-disable-line deprecation/deprecation
   /** The immutable name of the interface. */
-  public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
+  public static readonly interfaceName = "PresentationRpcInterface";
 
   /** The semantic version of the interface. */
   public static interfaceVersion = "4.1.0";

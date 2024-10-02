@@ -8,7 +8,6 @@
 
 // import { Point2d } from "../Geometry2d";
 import { Geometry } from "../Geometry";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
 

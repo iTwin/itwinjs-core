@@ -34,7 +34,6 @@ describe("Custom attributes class comparison tests", () => {
   let contextA: SchemaContext;
   let contextB: SchemaContext;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const dummyRefJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "DummyReference",

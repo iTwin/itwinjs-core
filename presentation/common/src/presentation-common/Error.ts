@@ -59,7 +59,6 @@ export class PresentationError extends BentleyError {
    * Returns the name of each error status. The name is used by the `Error.prototype.toString()`
    * method to create a string representation of the error.
    */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected override _initName(): string {
     let value = PresentationStatus[this.errorNumber];
     if (!value) {

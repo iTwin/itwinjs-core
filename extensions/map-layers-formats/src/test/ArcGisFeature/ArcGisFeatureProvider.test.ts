@@ -1194,7 +1194,6 @@ describe("ArcGisFeatureProvider", () => {
       drawingInfo,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     (drawingInfo.renderer.defaultSymbol as any) = null;  // Force no default symbology
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {

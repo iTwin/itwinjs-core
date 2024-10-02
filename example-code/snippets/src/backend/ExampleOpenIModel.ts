@@ -7,8 +7,6 @@ import { BriefcaseDb } from "@itwin/core-backend";
 import { IModelError, IModelStatus, OpenBriefcaseProps } from "@itwin/core-common";
 import { TestUserCredentials, TestUtility } from "@itwin/oidc-signin-tool";
 
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
   return TestUtility.getAccessToken(userCredentials);
 }

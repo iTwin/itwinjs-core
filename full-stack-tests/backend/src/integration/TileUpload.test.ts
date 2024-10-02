@@ -109,7 +109,7 @@ describe("TileUpload", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    const tile = await RpcTrace.run({ // eslint-disable-line deprecation/deprecation
+    const tile = await RpcTrace.run({
       accessToken,
       activityId: "",
       applicationId: "",

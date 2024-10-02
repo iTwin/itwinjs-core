@@ -27,7 +27,6 @@ export class PresentationRules extends Schema {
 /** @internal */
 /* istanbul ignore next */
 export namespace PresentationRules {
-  // eslint-disable-line no-redeclare
   export enum CodeSpec {
     Ruleset = "PresentationRules:Ruleset",
   }

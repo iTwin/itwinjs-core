@@ -29,7 +29,6 @@ export enum DbOpcode {
 /** Values for return codes from BeSQLite functions. Consult SQLite documentation for further explanations.
  * @public
  */
-/* eslint-disable @typescript-eslint/naming-convention */
 //  Disabling for the rest of the file since eslint does not correctly parse the entire enum, only parts of it
 export enum DbResult {
   /** Success */
@@ -182,4 +181,3 @@ export enum DbResult {
   BE_SQLITE_CONSTRAINT_UNIQUE = (BE_SQLITE_CONSTRAINT_BASE | (8 << 8)),
   BE_SQLITE_CONSTRAINT_VTAB = (BE_SQLITE_CONSTRAINT_BASE | (9 << 8)),
 }
-/* eslint-enable @typescript-eslint/naming-convention */

@@ -239,12 +239,9 @@ describe("Viewport changed events", async () => {
       mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.timePoint = 43);
       expectNoChange(() => settings.timePoint = 43);
 
-      // eslint-disable-next-line deprecation/deprecation
       mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
-      // eslint-disable-next-line deprecation/deprecation
       mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = undefined);
       // If assignment to scheduleScriptProps produces no net change, no event.
-      // eslint-disable-next-line deprecation/deprecation
       expectNoChange(() => settings.scheduleScriptProps = undefined);
 
       expectChange(() => settings.hiddenLineSettings = settings.hiddenLineSettings.override({ transThreshold: 1.0 - settings.hiddenLineSettings.transThreshold }));

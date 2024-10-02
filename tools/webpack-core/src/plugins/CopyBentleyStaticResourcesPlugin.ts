@@ -6,9 +6,9 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
 import { getPaths, resolveApp } from "../utils/paths";
-/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention */
 const CopyPlugin = require("copy-webpack-plugin");
-/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
+/* eslint-enable @typescript-eslint/naming-convention */
 
 abstract class AbstractAsyncStartupPlugin {
   private _name: string;

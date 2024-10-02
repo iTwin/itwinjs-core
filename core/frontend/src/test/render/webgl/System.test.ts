@@ -144,7 +144,6 @@ describe("System", () => {
         const map = this.getIdMap(imodel);
         const createTextureFromImageSource = map.createTextureFromImageSource.bind(map);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         map.createTextureFromImageSource = async (args) => {
           expect(typeof args.ownership).to.equal("object");
           const key = (args.ownership as any).key;

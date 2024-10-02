@@ -54,7 +54,7 @@ interface CommonPntsProps {
   RGB565?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
 
   extensions?: {
-    "3DTILES_draco_point_compression"?: DracoPointCloud; // eslint-disable-line @typescript-eslint/naming-convention
+    "3DTILES_draco_point_compression"?: DracoPointCloud;
   };
 
   // The following are currently ignored.

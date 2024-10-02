@@ -173,7 +173,6 @@ describe("PresentationManager", () => {
     it("[deprecated] sets active unit system override if supplied with props", async () => {
       const props = { activeUnitSystem: "usSurvey" as UnitSystemKey };
       const mgr = PresentationManager.create(props);
-      // eslint-disable-next-line deprecation/deprecation
       expect(mgr.activeUnitSystem).to.eq(props.activeUnitSystem);
     });
 
@@ -317,7 +316,6 @@ describe("PresentationManager", () => {
     it("[deprecated] requests with manager's unit system if not set in request options", async () => {
       const keys = new KeySet();
       const unitSystem = "usSurvey";
-      // eslint-disable-next-line deprecation/deprecation
       manager.activeUnitSystem = unitSystem;
       await manager.getContentDescriptor({
         imodel: testData.imodelMock.object,
@@ -341,7 +339,6 @@ describe("PresentationManager", () => {
     it("requests with request's unit system if set", async () => {
       const keys = new KeySet();
       const unitSystem = "usSurvey";
-      // eslint-disable-next-line deprecation/deprecation
       manager.activeUnitSystem = "metric";
       await manager.getContentDescriptor({
         imodel: testData.imodelMock.object,
@@ -466,7 +463,6 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
@@ -486,7 +482,6 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
@@ -506,12 +501,10 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 0, size: 0 } })))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 1 } })))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
@@ -531,7 +524,6 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: result.length, items: result.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
@@ -553,7 +545,6 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: 666, items: prelocalizedNode.map(Node.toJSON) }))
         .verifiable();
 
@@ -576,7 +567,6 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
@@ -596,12 +586,10 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 0, size: 0 } })))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 1 } })))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
@@ -702,7 +690,6 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getFilteredNodePaths(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => value.map(NodePathElement.toJSON))
         .verifiable();
       const result = await manager.getFilteredNodePaths(options);
@@ -723,7 +710,6 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getNodePaths(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => value.map(NodePathElement.toJSON))
         .verifiable();
       const result = await manager.getNodePaths(options);
@@ -1265,12 +1251,10 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item1)] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 1, size: 1 } }))
-        // eslint-disable-next-line deprecation/deprecation
         .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item2)] }))
         .verifiable();
       const actualResult = await manager.getPagedDistinctValues(managerOptions);

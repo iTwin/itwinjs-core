@@ -185,7 +185,6 @@ export class MobileHost {
           resolve();
       }, progressCb);
       if (cancelRequest) {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         cancelRequest.cancel = () => this.device.cancelDownloadTask(requestId);
       }
     });

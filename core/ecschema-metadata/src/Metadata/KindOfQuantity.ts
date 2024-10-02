@@ -30,7 +30,7 @@ interface OverrideFormatProps {
  * @beta
  */
 export class KindOfQuantity extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.KindOfQuantity; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.KindOfQuantity;
   protected _relativeError: number = 1.0;
   protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
@@ -78,7 +78,7 @@ export class KindOfQuantity extends SchemaItem {
       let currPos;
 
       // TODO need to include `,` as a valid search argument.
-      while (-1 !== (currPos = overrideString.indexOf(")", prevPos))) { // eslint-disable-line
+      while (-1 !== (currPos = overrideString.indexOf(")", prevPos))) {
         tokens.push(overrideString.substring(prevPos, currPos));
         prevPos = currPos + 1;
       }

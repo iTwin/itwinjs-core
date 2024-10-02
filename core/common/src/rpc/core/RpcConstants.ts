@@ -59,7 +59,7 @@ export enum RpcRequestStatus {
 }
 
 /** @public @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future. */
-export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace RpcRequestStatus {
   export function isTransientError(status: RpcRequestStatus) {
     return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout
       || status === RpcRequestStatus.RequestTimeout || status === RpcRequestStatus.TooManyRequests;

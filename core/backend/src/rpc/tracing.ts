@@ -70,7 +70,6 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
       Tracing.enableOpenTelemetry(tracer, api);
       RpcInvocation.runActivity = async (activity, fn) => RpcTrace.runWithSpan(activity, fn); // wrap invocation in an OpenTelemetry span in addition to RpcTrace
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       Logger.logError(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");
       Logger.logException(BackendLoggerCategory.IModelHost, e);
     }

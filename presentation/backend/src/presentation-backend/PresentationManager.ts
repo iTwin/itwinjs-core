@@ -651,7 +651,6 @@ export class PresentationManager {
     const result = await this._detail.getPagedDistinctValues(requestOptions);
     return {
       ...result,
-      // eslint-disable-next-line deprecation/deprecation
       items: result.items.map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
     };
   }

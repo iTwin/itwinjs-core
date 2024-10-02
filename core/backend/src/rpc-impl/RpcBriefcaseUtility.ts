@@ -21,7 +21,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** @internal */
 export interface DownloadAndOpenArgs {
-  activity: RpcActivity; // eslint-disable-line deprecation/deprecation
+  activity: RpcActivity;
   tokenProps: IModelRpcOpenProps;
   syncMode: SyncMode;
   fileNameResolvers?: ((arg: BriefcaseProps) => string)[];
@@ -142,7 +142,7 @@ export class RpcBriefcaseUtility {
 
       if (briefcaseDb === undefined) {
         Logger.logTrace(loggerCategory, "Open briefcase - pending", tokenProps);
-        throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
+        throw new RpcPendingResponse();
       }
       // note: usage is logged in the function BriefcaseManager.downloadNewBriefcaseAndOpen
       return briefcaseDb;
@@ -183,7 +183,7 @@ export class RpcBriefcaseUtility {
 
       if (db === undefined) {
         Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", tokenProps);
-        throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
+        throw new RpcPendingResponse();
       }
       Logger.logTrace(loggerCategory, "Opened V1 checkpoint", tokenProps);
     }
@@ -197,7 +197,7 @@ export class RpcBriefcaseUtility {
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;
-  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> { // eslint-disable-line deprecation/deprecation
+  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
     if (tokenProps.iModelId)
       await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
     // eslint-disable-next-line deprecation/deprecation

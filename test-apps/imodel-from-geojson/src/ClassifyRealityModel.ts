@@ -66,7 +66,7 @@ class RealityModelTileUtils {
     const res = await fetch(url, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json", // eslint-disable-line @typescript-eslint/naming-convention
+        "Content-Type": "application/json",
       },
     });
     const json = res.json();

@@ -172,8 +172,8 @@ export class MobileFileHandler {
       method: "PUT",
       headers: {
         "x-ms-blob-type": "BlockBlob",
-        "Content-Type": "application/octet-stream", // eslint-disable-line @typescript-eslint/naming-convention
-        "Content-Length": buffer.length, // eslint-disable-line @typescript-eslint/naming-convention
+        "Content-Type": "application/octet-stream",
+        "Content-Length": buffer.length,
       },
       body: buffer,
       progressCallback: callback,
@@ -222,8 +222,8 @@ export class MobileFileHandler {
       const options: RequestOptions = {
         method: "PUT",
         headers: {
-          "Content-Type": "application/xml", // eslint-disable-line @typescript-eslint/naming-convention
-          "Content-Length": blockList.length, // eslint-disable-line @typescript-eslint/naming-convention
+          "Content-Type": "application/xml",
+          "Content-Length": blockList.length,
         },
         body: blockList,
         agent: this.agent,

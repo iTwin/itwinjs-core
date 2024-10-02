@@ -92,7 +92,7 @@ export interface GroupButton extends ToolbarItem {
   /** label shown as the title in at top of group panel. */
   readonly panelLabel?: string | ConditionalStringValue;
   /** children of the group */
-  readonly items: ReadonlyArray<ActionButton | GroupButton>; // eslint-disable-line deprecation/deprecation
+  readonly items: ReadonlyArray<ActionButton | GroupButton>;
 }
 
 /** Describes the data needed to insert a custom button into a toolbar.
@@ -116,7 +116,7 @@ export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinit
  * @deprecated in 3.6. Please use `ToolbarItem["id"]` from @itwin/appui-react.
  * @public
  */
-export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation
+export type ToolbarItemId = CommonToolbarItem["id"];
 
 /** Helper class to create Abstract StatusBar Item definitions.
  * @public

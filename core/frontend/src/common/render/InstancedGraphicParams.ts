@@ -73,7 +73,7 @@ export namespace InstancedGraphicProps { // eslint-disable-line @typescript-esli
 }
 
 /** @public */
-export namespace InstancedGraphicParams { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace InstancedGraphicParams {
   /** Convert `params` to a representation that can be copied using [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone). */
   export function toProps(params: InstancedGraphicParams): InstancedGraphicProps {
     const props: InstancedGraphicProps = {

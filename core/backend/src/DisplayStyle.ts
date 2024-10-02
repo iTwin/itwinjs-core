@@ -52,7 +52,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     } else {
       const script = this.loadScheduleScript();
       if (script)
-        script.script.discloseIds(referenceIds); // eslint-disable-line deprecation/deprecation
+        script.script.discloseIds(referenceIds);
     }
   }
 

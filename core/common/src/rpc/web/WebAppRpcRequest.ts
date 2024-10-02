@@ -249,7 +249,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private setupTextTransport(parameters: RpcSerializedValue) {
     if (this.operation.policy.allowResponseCaching(this)) {
-      const encodedBody = btoa(parameters.objects); // eslint-disable-line deprecation/deprecation
+      const encodedBody = btoa(parameters.objects);
       if (encodedBody.length <= WebAppRpcRequest.maxUrlComponentSize) {
         this._request.method = "get";
         this._request.body = undefined;

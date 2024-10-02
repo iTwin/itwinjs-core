@@ -828,7 +828,7 @@ export class SnapshotConnection extends IModelConnection {
 }
 
 /** @public */
-export namespace IModelConnection { // eslint-disable-line no-redeclare
+export namespace IModelConnection {
 
   /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
   export interface ViewSpec {

@@ -9,9 +9,7 @@ import { getAppRelativePath } from "../utils/paths";
 const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 import { externalPrefix } from "./RequireMagicCommentsPlugin";
-/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
-/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 
 type WebpackLogger = ReturnType<Compilation["getLogger"]>;
 

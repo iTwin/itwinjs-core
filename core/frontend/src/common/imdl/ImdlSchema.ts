@@ -15,8 +15,6 @@ import { DisplayParams } from "../internal/render/DisplayParams";
 import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";
 import { SurfaceType } from "../internal/render/SurfaceParams";
 
-/* eslint-disable no-restricted-syntax */
-
 /** Describes a [ColorDef]($common) as [r, g, b] with each component in [0..1].
  * @internal
  */

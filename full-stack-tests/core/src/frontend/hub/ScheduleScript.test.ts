@@ -92,7 +92,7 @@ describe("Schedule script (#integration)", () => {
     const styleHasNonEmptyElementIds = (styleProps: DisplayStyleProps) => {
       expect(styleProps.jsonProperties).not.to.be.undefined;
       expect(styleProps.jsonProperties!.styles).not.to.be.undefined;
-      const script = styleProps.jsonProperties!.styles!.scheduleScript!; // eslint-disable-line deprecation/deprecation
+      const script = styleProps.jsonProperties!.styles!.scheduleScript!;
       expect(script).not.to.be.undefined;
       return scriptHasNonEmptyElementIds(script);
     };
@@ -142,7 +142,7 @@ describe("Schedule script (#integration)", () => {
 
     expect(countTileTrees(view)).to.equal(2);
 
-    view.displayStyle.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
+    view.displayStyle.settings.scheduleScriptProps = undefined;
     expect(view.displayStyle.scheduleScript).to.be.undefined;
     expect(countTileTrees(view)).to.equal(1);
 
@@ -161,7 +161,7 @@ describe("Schedule script (#integration)", () => {
       }],
     }];
 
-    view.displayStyle.settings.scheduleScriptProps = json; // eslint-disable-line deprecation/deprecation
+    view.displayStyle.settings.scheduleScriptProps = json;
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
 
     // eslint-disable-next-line deprecation/deprecation
@@ -177,16 +177,16 @@ describe("Schedule script (#integration)", () => {
     expect(countTileTrees(view)).to.equal(2);
 
     const script = view.displayStyle.scheduleScript!;
-    view.displayStyle.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
+    view.displayStyle.settings.scheduleScriptProps = undefined;
     expect(view.displayStyle.scheduleScript).to.be.undefined;
     expect(countTileTrees(view)).to.equal(1);
 
-    view.displayStyle.settings.scheduleScriptProps = script.toJSON(); // eslint-disable-line deprecation/deprecation
+    view.displayStyle.settings.scheduleScriptProps = script.toJSON();
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
     expect(countTileTrees(view)).to.equal(2);
 
     const style = view.displayStyle.clone();
-    style.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
+    style.settings.scheduleScriptProps = undefined;
     view.displayStyle = style;
     expect(countTileTrees(view)).to.equal(1);
   });
