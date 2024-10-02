@@ -10,7 +10,7 @@ import { IModelJsExpressServer } from "../ExpressServer";
 export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfiguration {
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private static info: OpenAPIInfo = { title: "randomTitle", version: "randomVersion" }; // eslint-disable-line deprecation/deprecation
+  private static info: OpenAPIInfo = { title: "randomTitle", version: "randomVersion" }; // eslint-disable-line @typescript-eslint/no-deprecated
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private protocolClass = class extends BentleyCloudRpcProtocol {

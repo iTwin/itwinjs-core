@@ -347,7 +347,7 @@ describe("PresentationManager", () => {
       it("sets up active locale if supplied [deprecated]", () => {
         const locale = faker.random.locale();
         using(new PresentationManager({ addon: addon.object, defaultLocale: locale }), (manager) => {
-          expect(manager.activeLocale).to.eq(locale); // eslint-disable-line deprecation/deprecation
+          expect(manager.activeLocale).to.eq(locale); // eslint-disable-line @typescript-eslint/no-deprecated
         });
       });
     });
@@ -841,7 +841,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyLevelJSON = {
           nodes: [
             {
@@ -918,7 +918,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyLevelJSON = {
           nodes: [
             {
@@ -946,7 +946,7 @@ describe("PresentationManager", () => {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           parentKey: NodeKey.fromJSON(parentNodeKeyJSON),
         };
         const result = await manager.getNodes(options);
@@ -964,7 +964,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyLevelJSON = {
           nodes: [
             {
@@ -1044,7 +1044,7 @@ describe("PresentationManager", () => {
         const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           parentKey: NodeKey.fromJSON(parentNodeKeyJSON),
         };
         const result = await manager.getNodesCount(options);
@@ -1179,7 +1179,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const unprocessedResponse: HierarchyCompareInfoJSON = {
           changes: [
             {
@@ -1203,7 +1203,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [nodeKey],
         };
         const result = await manager.compareHierarchies(options);
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
@@ -1221,7 +1221,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyCompareInfoJSON = {
           changes: [
             {
@@ -1242,7 +1242,7 @@ describe("PresentationManager", () => {
           rulesetOrId: "test",
         };
         const result = await manager.compareHierarchies(options);
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
@@ -1263,7 +1263,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyCompareInfoJSON = {
           changes: [
             {
@@ -1285,7 +1285,7 @@ describe("PresentationManager", () => {
           rulesetVariables: [var2],
         };
         const result = await manager.compareHierarchies(options);
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
@@ -3255,7 +3255,7 @@ describe("PresentationManager", () => {
           }),
         );
         // what the addon returns
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyLevelJSON = {
           nodes: [
             {
@@ -3326,7 +3326,7 @@ describe("PresentationManager", () => {
       const ids = [createRandomId()];
       const resultKeys = new KeySet();
       const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const result = await manager.computeSelection({ imodel: imodel.object, ids, scopeId: "test scope" });
       expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
       expect(result).to.eq(resultKeys);

@@ -7,7 +7,7 @@
  */
 
 // file copied from https://github.com/microsoft/vscode/blob/master/src/vs/base/common/filters.ts
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** Interface that returns indices of matches
  * @public @deprecated in 4.3.x. A rarely used interface. If needed, please add a custom implementation.

@@ -269,7 +269,7 @@ export class PresentationManagerDetail implements IDisposable {
       return key === ""
         ? {
             total: value.total,
-            // eslint-disable-next-line deprecation/deprecation
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             items: value.items.map(DisplayValueGroup.fromJSON),
           }
         : value;

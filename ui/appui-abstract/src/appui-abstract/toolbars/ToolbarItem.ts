@@ -36,7 +36,7 @@ export enum ToolbarOrientation {
 /** Describes the data needed to insert a UI items into an existing set of UI items.
  * @public
  */
-export interface ToolbarItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+export interface ToolbarItem extends ProvidedItem { // eslint-disable-line @typescript-eslint/no-deprecated
   /** can be used by application to store miscellaneous data. */
   readonly applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
@@ -92,7 +92,7 @@ export interface GroupButton extends ToolbarItem {
   /** label shown as the title in at top of group panel. */
   readonly panelLabel?: string | ConditionalStringValue;
   /** children of the group */
-  readonly items: ReadonlyArray<ActionButton | GroupButton>; // eslint-disable-line deprecation/deprecation
+  readonly items: ReadonlyArray<ActionButton | GroupButton>; // eslint-disable-line @typescript-eslint/no-deprecated
 }
 
 /** Describes the data needed to insert a custom button into a toolbar.
@@ -116,7 +116,7 @@ export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinit
  * @deprecated in 3.6. Please use `ToolbarItem["id"]` from @itwin/appui-react.
  * @public
  */
-export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation
+export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line @typescript-eslint/no-deprecated
 
 /** Helper class to create Abstract StatusBar Item definitions.
  * @public

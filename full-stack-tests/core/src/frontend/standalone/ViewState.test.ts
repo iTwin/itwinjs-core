@@ -144,10 +144,10 @@ describe("ViewState", () => {
 
     const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap.toPersistentJSON();
     if (undefined !== oldBackgroundMap) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const mt = oldBackgroundMap.providerData?.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
       vs0DisplayStyle3d.changeBackgroundMapProvider({
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         name: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         type: mt,
       });

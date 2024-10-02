@@ -13,7 +13,7 @@ import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, V
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 const expect = chai.expect;
 

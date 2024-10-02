@@ -84,8 +84,8 @@ export class CheckpointConnection extends IModelConnection {
     Logger.logTrace(loggerCategory, `IModelConnection.open`, iModelToken);
     const startTime = Date.now();
 
-    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => { // eslint-disable-line deprecation/deprecation
-      if (type !== RpcRequestEvent.PendingUpdateReceived) // eslint-disable-line deprecation/deprecation
+    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => { // eslint-disable-line @typescript-eslint/no-deprecated
+      if (type !== RpcRequestEvent.PendingUpdateReceived) // eslint-disable-line @typescript-eslint/no-deprecated
         return;
       if (!(openForReadOperation && request.operation === openForReadOperation))
         return;

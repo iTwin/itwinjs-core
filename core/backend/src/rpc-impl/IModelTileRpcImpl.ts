@@ -74,7 +74,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     if (tileQP.isPending) {
       this.log("issuing pending status for", props);
-      throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
+      throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/no-deprecated
     }
 
     this.deleteMemoized(props);
@@ -186,11 +186,11 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, 
 }
 
 function currentActivity() {
-  return RpcTrace.expectCurrentActivity; // eslint-disable-line deprecation/deprecation
+  return RpcTrace.expectCurrentActivity; // eslint-disable-line @typescript-eslint/no-deprecated
 }
 
 /** @internal */
-export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface { // eslint-disable-line deprecation/deprecation
+export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface { // eslint-disable-line @typescript-eslint/no-deprecated
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {

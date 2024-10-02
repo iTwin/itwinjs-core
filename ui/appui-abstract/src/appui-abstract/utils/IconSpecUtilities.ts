@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** Creates an IconSpec with an SVG source and gets the SVG source from an IconSpec.
  * @public @deprecated in 4.3. AppUI libraries >= 4.7.x support loading SVGs sources without prefixes, eliminating the need for these utilities.

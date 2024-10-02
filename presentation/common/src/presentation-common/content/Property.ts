@@ -72,7 +72,7 @@ export namespace Property {
  * JSON representation of [[Property]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface PropertyJSON<TClassInfoJSON = ClassInfoJSON> {
   property: PropertyInfoJSON<TClassInfoJSON>;
 }

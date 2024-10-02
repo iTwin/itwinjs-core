@@ -128,7 +128,7 @@ describe("ModelState", () => {
   });
 
   it("view thumbnails", async () => {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let thumbnail = await imodel3.views.getThumbnail("0x34");
     assert.equal(thumbnail.format, "png", "thumbnail format");
     assert.equal(thumbnail.height, 768, "thumbnail height");
@@ -144,7 +144,7 @@ describe("ModelState", () => {
     assert.equal(image[6], 0x1A);
     assert.equal(image[7], 0x0A);
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     thumbnail = await imodel2.views.getThumbnail("0x24");
     assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
@@ -154,7 +154,7 @@ describe("ModelState", () => {
     assert.equal(thumbnail.image[18061], 217);
 
     try {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await imodel2.views.getThumbnail("0x25");
     } catch (_err) {
       return;

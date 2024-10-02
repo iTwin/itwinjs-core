@@ -111,7 +111,7 @@ export class GeoJsonImporter {
   }
   private addCategoryToExistingDb(categoryName: string) {
     const categoryId = SpatialCategory.insert(this.iModelDb, IModel.dictionaryId, categoryName, { color: ColorDef.white.tbgr });
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.iModelDb.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, ((view: ViewDefinition) => {
       const categorySelector = this.iModelDb.elements.getElement<CategorySelector>(view.categorySelectorId);
       categorySelector.categories.push(categoryId);

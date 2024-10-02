@@ -80,7 +80,7 @@ function flattenObject(obj: object): SpanAttributes {
   return Object.fromEntries(getFlatEntries(obj));
 }
 
-/* eslint-disable deprecation/deprecation -- lots of self-references here... */
+/* eslint-disable @typescript-eslint/no-deprecated -- lots of self-references here... */
 
 /**
  * Enables OpenTelemetry tracing in addition to traditional logging.
@@ -188,4 +188,4 @@ export class Tracing {
   }
 }
 
-/* eslint-enable deprecation/deprecation */
+/* eslint-enable @typescript-eslint/no-deprecated */

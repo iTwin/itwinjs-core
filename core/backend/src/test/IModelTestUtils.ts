@@ -174,10 +174,10 @@ export class HubWrappers {
     assert.isTrue(this.hubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
     while (true) {
       try {
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
+        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line @typescript-eslint/no-deprecated
           throw error;
       }
     }
@@ -219,7 +219,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs));
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
+        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line @typescript-eslint/no-deprecated
           throw error;
       }
     }

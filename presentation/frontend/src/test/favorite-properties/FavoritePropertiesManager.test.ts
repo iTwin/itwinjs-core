@@ -82,7 +82,7 @@ describe("FavoritePropertiesManager", () => {
       .returns(() => ecSqlReaderMock.object);
   }
 
-  /* eslint-disable deprecation/deprecation */
+  /* eslint-disable @typescript-eslint/no-deprecated */
   describe("initializeConnection", () => {
     it("loads iTwin and iModel scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
@@ -155,7 +155,7 @@ describe("FavoritePropertiesManager", () => {
       expect(orderInfos.length).to.eq(4);
     });
   });
-  /* eslint-enable deprecation/deprecation */
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   describe("startConnectionInitialization", () => {
     it("calls initializeConnection once", () => {
@@ -168,7 +168,7 @@ describe("FavoritePropertiesManager", () => {
 
   describe("has", () => {
     it("[deprecated] throws if not initialized", () => {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(() => manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.throw(
         `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`,
       );

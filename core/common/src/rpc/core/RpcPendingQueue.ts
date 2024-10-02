@@ -9,7 +9,7 @@
 import { RpcRequestEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcRequest } from "./RpcRequest";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** Manages pending RPC requests and responses.
  * @internal

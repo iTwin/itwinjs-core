@@ -37,11 +37,11 @@ import { StyleOverride } from "./StyleOverride";
  */
 export declare type CustomizationRule =
   | InstanceLabelOverride
-  | CheckBoxRule // eslint-disable-line deprecation/deprecation
+  | CheckBoxRule // eslint-disable-line @typescript-eslint/no-deprecated
   | GroupingRule
-  | ImageIdOverride // eslint-disable-line deprecation/deprecation
-  | LabelOverride // eslint-disable-line deprecation/deprecation
+  | ImageIdOverride // eslint-disable-line @typescript-eslint/no-deprecated
+  | LabelOverride // eslint-disable-line @typescript-eslint/no-deprecated
   | SortingRule
-  | StyleOverride // eslint-disable-line deprecation/deprecation
+  | StyleOverride // eslint-disable-line @typescript-eslint/no-deprecated
   | ExtendedDataRule
   | NodeArtifactsRule;

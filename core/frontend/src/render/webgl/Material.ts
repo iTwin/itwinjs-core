@@ -39,7 +39,7 @@ import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/ren
  * @internal
  */
 export class Material extends RenderMaterial {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
   // Used for type-switching vs MaterialAtlas
@@ -54,10 +54,10 @@ export class Material extends RenderMaterial {
   /** Strictly for testing. */
   public static preserveParams = false;
   /** Strictly for testing. */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public params?: RenderMaterial.Params;
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public constructor(params: RenderMaterial.Params) {
     super(params);
 

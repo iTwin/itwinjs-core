@@ -19,7 +19,7 @@ import {
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 /* eslint-disable @typescript-eslint/unbound-method */
 // cspell:ignore oldvalue newvalue
 
@@ -241,8 +241,8 @@ describe("RpcInterface", () => {
       });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
-        return btoa(id); // eslint-disable-line deprecation/deprecation
+      if (typeof (btoa) !== "undefined") // eslint-disable-line @typescript-eslint/no-deprecated
+        return btoa(id); // eslint-disable-line @typescript-eslint/no-deprecated
       return Buffer.from(id, "binary").toString("base64");
     };
 

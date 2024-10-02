@@ -26,7 +26,7 @@ export enum BackstageItemType {
  * @deprecated in 3.6. Use [CommonBackstageItem]($appui-react) instead.
  * @public
  */
-export interface CommonBackstageItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+export interface CommonBackstageItem extends ProvidedItem { // eslint-disable-line @typescript-eslint/no-deprecated
   /** can be used by application to store miscellaneous data. */
   applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
@@ -62,7 +62,7 @@ export interface CommonBackstageItem extends ProvidedItem { // eslint-disable-li
  * @deprecated in 3.6. Use [BackstageActionItem]($appui-react) instead.
  * @public
  */
-export interface BackstageActionItem extends CommonBackstageItem { // eslint-disable-line deprecation/deprecation
+export interface BackstageActionItem extends CommonBackstageItem { // eslint-disable-line @typescript-eslint/no-deprecated
   readonly execute: () => void;
 }
 
@@ -70,7 +70,7 @@ export interface BackstageActionItem extends CommonBackstageItem { // eslint-dis
  * @deprecated in 3.6. Use [BackstageActionItem]($appui-react) instead.
  * @public
  */
-export interface BackstageStageLauncher extends CommonBackstageItem { // eslint-disable-line deprecation/deprecation
+export interface BackstageStageLauncher extends CommonBackstageItem { // eslint-disable-line @typescript-eslint/no-deprecated
   readonly stageId: string;
 }
 
@@ -78,22 +78,22 @@ export interface BackstageStageLauncher extends CommonBackstageItem { // eslint-
  * @deprecated in 3.6. Use [BackstageItem]($appui-react) instead.
  * @public
  */
-export type BackstageItem = BackstageActionItem | BackstageStageLauncher; // eslint-disable-line deprecation/deprecation
+export type BackstageItem = BackstageActionItem | BackstageStageLauncher; // eslint-disable-line @typescript-eslint/no-deprecated
 
 /** BackstageActionItem type guard.
  * @deprecated in 3.6. Use [isBackstageActionItem]($appui-react) instead.
  * @public
  */
-export const isActionItem = (item: BackstageItem): item is BackstageActionItem => { // eslint-disable-line deprecation/deprecation
-  return (item as BackstageActionItem).execute !== undefined; // eslint-disable-line deprecation/deprecation
+export const isActionItem = (item: BackstageItem): item is BackstageActionItem => { // eslint-disable-line @typescript-eslint/no-deprecated
+  return (item as BackstageActionItem).execute !== undefined; // eslint-disable-line @typescript-eslint/no-deprecated
 };
 
 /** BackstageStageLauncher type guard.
  * @deprecated in 3.6. Use [isBackstageStageLauncher]($appui-react) instead.
  * @public
  */
-export const isStageLauncher = (item: BackstageItem): item is BackstageStageLauncher => { // eslint-disable-line deprecation/deprecation
-  return (item as BackstageStageLauncher).stageId !== undefined; // eslint-disable-line deprecation/deprecation
+export const isStageLauncher = (item: BackstageItem): item is BackstageStageLauncher => { // eslint-disable-line @typescript-eslint/no-deprecated
+  return (item as BackstageStageLauncher).stageId !== undefined; // eslint-disable-line @typescript-eslint/no-deprecated
 };
 
 /** Utilities for creating and maintaining backstage items
@@ -104,8 +104,8 @@ export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item */
   public static createStageLauncher = (
     frontstageId: string, groupPriority: number, itemPriority: number, label: string | ConditionalStringValue,
-    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageStageLauncher>, // eslint-disable-line deprecation/deprecation
-  ): BackstageStageLauncher => ({ // eslint-disable-line deprecation/deprecation
+    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageStageLauncher>, // eslint-disable-line @typescript-eslint/no-deprecated
+  ): BackstageStageLauncher => ({ // eslint-disable-line @typescript-eslint/no-deprecated
     groupPriority,
     icon,
     internalData: overrides?.internalData,
@@ -120,8 +120,8 @@ export class BackstageItemUtilities {
   /** Creates an action backstage item */
   public static createActionItem = (
     itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string | ConditionalStringValue,
-    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageActionItem>, // eslint-disable-line deprecation/deprecation
-  ): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
+    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageActionItem>, // eslint-disable-line @typescript-eslint/no-deprecated
+  ): BackstageActionItem => ({ // eslint-disable-line @typescript-eslint/no-deprecated
     execute,
     groupPriority,
     icon,

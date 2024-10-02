@@ -47,7 +47,7 @@ export interface BaseFieldJSON {
  * Data structure for a [[PropertiesField]] serialized to JSON.
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
   properties: PropertyJSON<TClassInfoJSON>[];
 }
@@ -72,7 +72,7 @@ export interface StructPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends P
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
   contentClassInfo: TClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
@@ -86,7 +86,7 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
  * JSON representation of a [[Field]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type FieldJSON<TClassInfoJSON = ClassInfoJSON> =
   | BaseFieldJSON
   | PropertiesFieldJSON<TClassInfoJSON>
@@ -240,7 +240,7 @@ export class Field {
       return PropertiesField.fromJSON(json, categories);
     }
     if (isNestedContentField(json)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return NestedContentField.fromJSON(json, categories);
     }
     const field = Object.create(Field.prototype);
@@ -828,7 +828,7 @@ export class NestedContentField extends Field {
     });
   }
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[]): Partial<NestedContentField> {
     return {
       category: this.getCategoryFromFieldJson(json, categories),

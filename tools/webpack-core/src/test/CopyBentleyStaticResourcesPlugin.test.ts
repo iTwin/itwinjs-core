@@ -16,7 +16,7 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
   const vol = new Volume();
 
   beforeEach(() => {
-    testConfig = getTestConfig("assets/copy-bentley-static-resources-plugin-test/test.js", [new CopyBentleyStaticResourcesPlugin(["assets"])]); // eslint-disable-line deprecation/deprecation
+    testConfig = getTestConfig("assets/copy-bentley-static-resources-plugin-test/test.js", [new CopyBentleyStaticResourcesPlugin(["assets"])]); // eslint-disable-line @typescript-eslint/no-deprecated
     vol.fromJSON({
       "lib/test/assets/copy-bentley-static-resources-plugin-test/test.js": "",
     });

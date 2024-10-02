@@ -235,7 +235,7 @@ class MoveHandle extends ModifyHandle {
   }
   public override async onClick(_ev: BeButtonEvent): Promise<void> {
     const el = this.handles.el;
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (el instanceof MarkupText || (el instanceof G && el.node.className.baseVal === MarkupApp.boxedTextClass)) // if they click on the move handle of a text element, start the text editor
       await new EditTextTool(el).run();
   }

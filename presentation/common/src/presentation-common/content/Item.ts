@@ -19,14 +19,14 @@ export interface ItemJSON {
   inputKeys?: InstanceKey[];
   primaryKeys: InstanceKey[];
   // TODO: rename to `label`
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   labelDefinition: LabelDefinitionJSON;
   /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   imageId: string;
   classInfo?: ClassInfo;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   values: ValuesDictionary<ValueJSON>;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   displayValues: ValuesDictionary<DisplayValueJSON>;
   mergedFieldNames: string[];
   extendedData?: { [key: string]: any };
@@ -84,7 +84,7 @@ export class Item {
     extendedData?: { [key: string]: any },
   ) {
     this.primaryKeys = primaryKeys;
-    this.imageId = imageId; // eslint-disable-line deprecation/deprecation
+    this.imageId = imageId; // eslint-disable-line @typescript-eslint/no-deprecated
     this.classInfo = classInfo;
     this.values = values;
     this.displayValues = displayValues;
@@ -105,11 +105,11 @@ export class Item {
     const { label, ...baseItem } = this;
     return {
       ...baseItem,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       values: Value.toJSON(this.values) as ValuesMapJSON,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       labelDefinition: LabelDefinition.toJSON(label),
     };
   }
@@ -125,11 +125,11 @@ export class Item {
     const item = Object.create(Item.prototype);
     const { labelDefinition, ...baseJson } = json;
     return Object.assign(item, baseJson, {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       values: Value.fromJSON(json.values),
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       displayValues: DisplayValue.fromJSON(json.displayValues),
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       label: LabelDefinition.fromJSON(labelDefinition),
     } as Partial<Item>);
   }

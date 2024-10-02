@@ -1223,7 +1223,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const children = data.children;
       if (children)
         for (const child of children)
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           this.applyStrokeCountsToCurvePrimitives(child);
     }
   }
