@@ -58,13 +58,13 @@
       "cwd": "${workspaceFolder}/core/bentley/",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/bentley/lib/**/*.js"
-      ]
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
     },
     {
       "name": "OrbitGT Tests",
@@ -92,13 +92,12 @@
       "cwd": "${workspaceFolder}/core/common/",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ]
+      "runtimeExecutable": "pnpm",
+      "autoAttachChildProcesses": true,
+      "console": "integratedTerminal",
     },
     {
       "name": "EC Tests",
@@ -287,13 +286,13 @@
       "cwd": "${workspaceFolder}/core/geometry",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
       "env": {
         "NODE_ENV": "development" // needed for asserts to fire
       }
