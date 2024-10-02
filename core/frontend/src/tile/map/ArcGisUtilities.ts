@@ -317,7 +317,7 @@ export class ArcGisUtilities {
       ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
       return info;  // Always return json, even though it contains an error code.
 
-    } catch (_error) {
+    } catch {
       ArcGisUtilities._serviceCache.set(url, undefined);
       return undefined;
     }

@@ -1111,7 +1111,7 @@ describe("Tween", () => {
 
     try {
       tweens.update(500);
-    } catch (exception) {
+    } catch {
       success = false;
     } finally {
       assert.ok(success);

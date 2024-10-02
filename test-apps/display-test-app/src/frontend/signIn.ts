@@ -45,7 +45,7 @@ export async function signIn(): Promise<boolean> {
     });
     try {
       await authClient.signInSilent();
-    } catch (err) { }
+    } catch { }
   }
 
   if (typeof authClient === "undefined") {

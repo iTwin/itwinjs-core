@@ -139,7 +139,7 @@ describe("Viewport", () => {
     let plan: RenderPlan | undefined;
     try {
       plan = createRenderPlanFromViewport(vp);
-    } catch (e) {
+    } catch {
       plan = undefined;
     }
 

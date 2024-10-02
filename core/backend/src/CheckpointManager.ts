@@ -429,7 +429,7 @@ export class CheckpointManager {
     const nativeDb = new IModelNative.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.Readonly);
-    } catch (error) {
+    } catch {
       return false;
     }
 

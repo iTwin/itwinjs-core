@@ -70,7 +70,7 @@ export class IModelJsFs {
     try {
       fs.accessSync(pathname, fs.constants.W_OK);
       return true;
-    } catch (_err) {
+    } catch {
       return false;
     }
   }

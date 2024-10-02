@@ -704,7 +704,7 @@ export class LocalHub {
     try {
       this.removeDir(BriefcaseManager.getIModelPath(this.iModelId));
       this.removeDir(this.rootDir);
-    } catch (err) {
+    } catch {
       // eslint-disable-next-line no-console
       console.log(`ERROR: test left an iModel open for [${this.iModelName}]. LocalMock cannot clean up - make sure you call imodel.close() in your test`);
     }

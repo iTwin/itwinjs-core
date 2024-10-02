@@ -15,7 +15,7 @@ export class WorkspaceSqliteDb extends VersionedSqliteDb {
   public override getRequiredVersions(): SQLiteDb.RequiredVersionRanges {
     try {
       return super.getRequiredVersions();
-    } catch (e) {
+    } catch {
       // early versions didn't have a version range, but they're fine
       return { readVersion: "^1", writeVersion: "^1" };
     }

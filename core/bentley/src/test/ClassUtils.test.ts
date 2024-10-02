@@ -33,17 +33,17 @@ describe("ClassUtils", () => {
     // test won't compile if our type assumptions aren't met
     const X: typeof A | typeof B | typeof C = B;
     if (ClassUtils.isProperSubclassOf(X, C)) {
-      const instanceOfX = new X();
-      const _doesInstanceOfXExtendA: Extends<typeof instanceOfX, A> = true;
-      const _doesInstanceOfXExtendB: Extends<typeof instanceOfX, B> = true;
-      const _doesInstanceOfXExtendC: Extends<typeof instanceOfX, C> = true;
-      const _doesInstanceOfXExtendM: Extends<typeof instanceOfX, M> = false;
+      const _instanceOfX = new X();
+      const _doesInstanceOfXExtendA: Extends<typeof _instanceOfX, A> = true;
+      const _doesInstanceOfXExtendB: Extends<typeof _instanceOfX, B> = true;
+      const _doesInstanceOfXExtendC: Extends<typeof _instanceOfX, C> = true;
+      const _doesInstanceOfXExtendM: Extends<typeof _instanceOfX, M> = false;
     } else if (ClassUtils.isProperSubclassOf(X, B)) {
-      const instanceOfX = new X();
-      const _doesInstanceOfXExtendA: Extends<typeof instanceOfX, A> = true;
-      const _doesInstanceOfXExtendB: Extends<typeof instanceOfX, B> = true;
-      const _doesInstanceOfXExtendC: Extends<typeof instanceOfX, C> = false;
-      const _doesInstanceOfXExtendM: Extends<typeof instanceOfX, M> = false;
+      const _instanceOfX = new X();
+      const _doesInstanceOfXExtendA: Extends<typeof _instanceOfX, A> = true;
+      const _doesInstanceOfXExtendB: Extends<typeof _instanceOfX, B> = true;
+      const _doesInstanceOfXExtendC: Extends<typeof _instanceOfX, C> = false;
+      const _doesInstanceOfXExtendM: Extends<typeof _instanceOfX, M> = false;
     }
   });
 
@@ -68,17 +68,17 @@ describe("ClassUtils", () => {
     // test won't compile if our type assumptions aren't met
     const X: typeof A | typeof B | typeof C = B;
     if (ClassUtils.isSubclassOf(X, C)) {
-      const instanceOfX = new X();
-      const _doesInstanceOfXExtendA: Extends<typeof instanceOfX, A> = true;
-      const _doesInstanceOfXExtendB: Extends<typeof instanceOfX, B> = true;
-      const _doesInstanceOfXExtendC: Extends<typeof instanceOfX, C> = true;
-      const _doesInstanceOfXExtendM: Extends<typeof instanceOfX, M> = false;
+      const _instanceOfX = new X();
+      const _doesInstanceOfXExtendA: Extends<typeof _instanceOfX, A> = true;
+      const _doesInstanceOfXExtendB: Extends<typeof _instanceOfX, B> = true;
+      const _doesInstanceOfXExtendC: Extends<typeof _instanceOfX, C> = true;
+      const _doesInstanceOfXExtendM: Extends<typeof _instanceOfX, M> = false;
     } else if (ClassUtils.isSubclassOf(X, B)) {
-      const instanceOfX = new X();
-      const _doesInstanceOfXExtendA: Extends<typeof instanceOfX, A> = true;
-      const _doesInstanceOfXExtendB: Extends<typeof instanceOfX, B> = true;
-      const _doesInstanceOfXExtendC: Extends<typeof instanceOfX, C> = false;
-      const _doesInstanceOfXExtendM: Extends<typeof instanceOfX, M> = false;
+      const _instanceOfX = new X();
+      const _doesInstanceOfXExtendA: Extends<typeof _instanceOfX, A> = true;
+      const _doesInstanceOfXExtendB: Extends<typeof _instanceOfX, B> = true;
+      const _doesInstanceOfXExtendC: Extends<typeof _instanceOfX, C> = false;
+      const _doesInstanceOfXExtendM: Extends<typeof _instanceOfX, M> = false;
     }
   });
 });

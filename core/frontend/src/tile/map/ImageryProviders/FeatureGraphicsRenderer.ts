@@ -137,7 +137,7 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer impleme
       try {
         const spatialPoints = await this.toSpatial(pointsArray);
         this._graphics.push({ type: "pointstring", points: spatialPoints });
-      } catch (error) {
+      } catch {
         Logger.logError(loggerCategory, "FeatureGraphicsRenderer: Could not reproject points");
       }
 

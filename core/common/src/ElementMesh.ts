@@ -87,7 +87,7 @@ export function readElementMeshes(data: Uint8Array): IndexedPolyface[] {
       const geom = BentleyGeometryFlatBuffer.bytesToGeometry(chunk.data, true);
       if (geom instanceof IndexedPolyface)
         polyfaces.push(geom);
-    } catch (_) {
+    } catch {
       //
     }
   }

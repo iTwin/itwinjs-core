@@ -190,7 +190,7 @@ export class GltfReaderProps {
 
           json = JSON.parse(utf8Json);
           version = 2;
-        } catch (_) {
+        } catch {
           return undefined;
         }
       } else {
@@ -210,7 +210,7 @@ export class GltfReaderProps {
             return undefined;
 
           json = JSON.parse(jsonStr);
-        } catch (_) {
+        } catch {
           return undefined;
         }
       }
@@ -969,7 +969,7 @@ export abstract class GltfReader {
       const aligned = 0 === (bufferData.byteOffset + offset) % dataSize;
       const bytes = aligned ? bufferData.subarray(offset, offset + length) : bufferData.slice(offset, offset + length);
       return new GltfBufferView(bytes, accessor.count, type, accessor, byteStride / dataSize);
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }
@@ -1851,8 +1851,7 @@ export abstract class GltfReader {
           promises.push(this.resolveImage(image));
 
       await Promise.all(promises);
-    } catch (_) {
-    }
+    } catch { }
   }
 
   private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
@@ -1876,7 +1875,7 @@ export abstract class GltfReader {
       const resolved = new URL(uri, this._baseUrl);
       resolved.search = this._baseUrl?.search ?? "";
       return resolved.toString();
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -1897,7 +1896,7 @@ export abstract class GltfReader {
 
       if (data)
         buffer.resolvedBuffer = new Uint8Array(data);
-    } catch (_) {
+    } catch {
       //
     }
   }
@@ -1926,7 +1925,7 @@ export abstract class GltfReader {
           image.resolvedImage = await imageBitmapFromImageSource(imageSource);
         else
           image.resolvedImage = await imageElementFromImageSource(imageSource);
-      } catch (_) {
+      } catch {
         //
       }
 

@@ -257,7 +257,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
         const tId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
         const query = IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.CIsRelatedToD WHERE TargetECInstanceId=${tId}`)[0];
         assert.isTrue(Id64.isValidId64(query.sourceId));
-      } catch (err) {
+      } catch {
         assert.isTrue(false);
       }
     }
@@ -272,7 +272,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
         const tId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
         const query = IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.ADrivesB WHERE TargetECInstanceId=${tId}`)[0];
         assert.isTrue(Id64.isValidId64(query.sourceId));
-      } catch (err) {
+      } catch {
         assert.isTrue(false);
       }
     }
@@ -302,7 +302,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
         const tId: Id64String = Id64.fromLocalAndBriefcaseIds(((minId + elementIdIncrement * i) + 1), 0);
         const rel = perfimodel.relationships.getInstance("TestRelationSchema:CIsRelatedToD", { sourceId: sId, targetId: tId });
         rel.delete();
-      } catch (err) {
+      } catch {
         assert.isTrue(false);
       }
     }
@@ -319,7 +319,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
         const editElem: any = perfimodel.elements.getElement(elId);
         editElem.childB = null;
         perfimodel.elements.updateElement(editElem);
-      } catch (err) {
+      } catch {
         assert.isTrue(false);
       }
     }

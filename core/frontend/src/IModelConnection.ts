@@ -904,7 +904,7 @@ export namespace IModelConnection {
       try {
         const propArray = await this.getProps(notLoaded);
         await this.updateLoadedWithModelProps(propArray);
-      } catch (err) {
+      } catch {
         // ignore error, we had nothing to do.
       }
     }
@@ -919,7 +919,7 @@ export namespace IModelConnection {
             this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
         }
-      } catch (err) {
+      } catch {
         // ignore error, we had nothing to do.
       }
     }

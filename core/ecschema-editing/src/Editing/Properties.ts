@@ -28,7 +28,7 @@ export class Properties {
     let newName: ECName;
     try {
       newName = new ECName(newPropertyName);
-    } catch(e: any) {
+    } catch {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
         new SchemaEditingError(ECEditingStatus.InvalidECName, new PropertyId(this.ecClassType, classKey, newPropertyName)));
     }

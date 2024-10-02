@@ -58,7 +58,7 @@ export namespace AzuriteTest {
       const containerService = BlobContainer.service!;
       try {
         await containerService.delete({ containerId: createProps.containerId!, baseUri, userToken: createProps.userToken });
-      } catch (e) {
+      } catch {
       }
 
       return containerService.create(createProps);

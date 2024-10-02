@@ -81,7 +81,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
     // eslint-disable-next-line deprecation/deprecation
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
     return options.system.createTextureFromElement(name, options.iModel, params, namedTex.format);
-  } catch (_) {
+  } catch {
     return undefined;
   }
 }
@@ -236,7 +236,7 @@ function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instance
         viOrigin: Point3d.fromJSON(mod.origin),
       };
     default:
-      return { };
+      return {};
   }
 }
 

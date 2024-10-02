@@ -28,7 +28,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
     let model;
     try {
       model = iModel.models.getModel<GeometricModel3d>(modelId);
-    } catch (err) {
+    } catch {
       continue;
     }
 

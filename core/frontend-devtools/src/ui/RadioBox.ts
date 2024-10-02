@@ -67,7 +67,7 @@ export function createRadioBox(props: RadioBoxProps): RadioBox {
         input.checked = true;
         const value = input.value;
         props.handler(value, form);
-      } catch (_ex) {
+      } catch {
         //
       }
     };
@@ -76,7 +76,7 @@ export function createRadioBox(props: RadioBoxProps): RadioBox {
       try {
         const value = input.value;
         props.handler(value, form);
-      } catch (_ex) {
+      } catch {
         //
       }
     };

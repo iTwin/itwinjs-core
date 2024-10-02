@@ -399,7 +399,7 @@ export class AccuSnap implements Decorator {
         const msg = await IModelApp.toolAdmin.getToolTip(hit);
         if (this._toolTipPromise === promise) // have we abandoned this request while awaiting getToolTip?
           this.showLocateMessage(viewPt, vp, msg);
-      } catch (error) { } // happens if getToolTip was canceled
+      } catch { } // happens if getToolTip was canceled
     });
   }
 
@@ -807,7 +807,7 @@ export class AccuSnap implements Decorator {
 
       const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
       return intersect;
-    } catch (_err) {
+    } catch {
       if (out)
         out.snapStatus = SnapStatus.Aborted;
 

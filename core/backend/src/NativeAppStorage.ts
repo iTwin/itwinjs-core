@@ -203,7 +203,7 @@ export class NativeAppStorage {
 
     try {
       return this.find(fileName); // see if it's already open
-    } catch (err) {
+    } catch {
       const ecdb = new ECDb();
       if (IModelJsFs.existsSync(storageFile)) {
         ecdb.openDb(storageFile, ECDbOpenMode.ReadWrite);

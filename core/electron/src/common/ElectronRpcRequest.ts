@@ -20,7 +20,7 @@ export class ElectronRpcRequest extends RpcRequest {
       this.protocol.requests.set(this.id, this);
       const request = await this.protocol.serialize(this);
       this.protocol.transport.sendRequest(request);
-    } catch (e) {
+    } catch {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this); // eslint-disable-line deprecation/deprecation
     }
 

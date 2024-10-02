@@ -276,7 +276,7 @@ describe("Ratio format tests", () => {
 
       try {
         await ratioFormat.fromJSON(unitsProvider, ratioJson);
-      } catch (error) {
+      } catch {
         assert.fail("Failed to create ratio format from JSON");
       }
 

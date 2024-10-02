@@ -221,7 +221,7 @@ describe("PerformanceElementsTests", () => {
             try {
               const elId = minId + elementIdIncrement * i;
               perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            } catch (err) {
+            } catch {
               assert.isTrue(false);
             }
           }
@@ -306,7 +306,7 @@ describe("PerformanceElementsTests", () => {
             editElem.setUserProperties("geom", geometryStream);
             try {
               perfimodel.elements.updateElement(editElem.toJSON());
-            } catch (_err) {
+            } catch {
               assert.fail("Element.update failed");
             }
           }
@@ -437,7 +437,7 @@ describe("PerformanceElementsTests2d", () => {
             try {
               const elId = minId + elementIdIncrement * i;
               perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            } catch (err) {
+            } catch {
               assert.isTrue(false);
             }
           }
@@ -521,7 +521,7 @@ describe("PerformanceElementsTests2d", () => {
             editElem.setUserProperties("geom", geometryStream);
             try {
               perfimodel.elements.updateElement(editElem.toJSON());
-            } catch (_err) {
+            } catch {
               assert.fail("Element.update failed");
             }
           }

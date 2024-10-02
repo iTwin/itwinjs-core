@@ -1100,7 +1100,7 @@ export abstract class IModelDb extends IModel {
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
     try {
       return this.getMetaData(classFullName);
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -1581,7 +1581,7 @@ export namespace IModelDb {
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
       try {
         return this._iModel[_nativeDb].getModel(modelIdArg) as T;
-      } catch (err: any) {
+      } catch {
         return undefined;
       }
     }
@@ -1752,7 +1752,7 @@ export namespace IModelDb {
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
         return this._iModel[_nativeDb].getElement(loadProps) as T;
-      } catch (err: any) {
+      } catch {
         return undefined;
       }
     }
@@ -2309,7 +2309,7 @@ export namespace IModelDb {
       ids.forEach((id) => {
         try {
           props.push(imodel.elements.getElementProps<ViewDefinitionProps>(id));
-        } catch (err: any) { }
+        } catch { }
       });
 
       return props;
@@ -2334,7 +2334,7 @@ export namespace IModelDb {
             if (!finished)
               break;
           }
-        } catch (err: any) { }
+        } catch { }
       }
 
       return finished;

@@ -189,7 +189,7 @@ export class TileRequest {
       this.tile.setContent(content);
       this.notifyAndClear();
       this.channel.recordCompletion(this.tile, content, Date.now() - start);
-    } catch (_err) {
+    } catch {
       this.setFailed();
     }
   }

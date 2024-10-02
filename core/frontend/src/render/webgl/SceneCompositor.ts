@@ -1609,7 +1609,7 @@ class Compositor extends SceneCompositor {
     System.instance.frameBufferStack.execute(fbo, true, false, () => {
       try {
         gl.readPixels(rect.left, bottom, rect.width, rect.height, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
-      } catch (e) {
+      } catch {
         result = undefined;
       }
     });

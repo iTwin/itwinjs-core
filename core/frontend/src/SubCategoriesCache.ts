@@ -72,7 +72,7 @@ export class SubCategoriesCache {
       if (undefined !== results){
         this.processResults(results, new Set<string>(), false);
       }
-    } catch (e) {
+    } catch {
       // In case of a truncated response, gracefully handle the error and exit.
     }
 

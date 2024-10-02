@@ -29,7 +29,7 @@ const argv = yargs
   try {
     await creator.create();
     process.stdout.write(`IModel: ${argv.output} Created for Reality Model: ${argv.input}`);
-  } catch (_error) {
+  } catch {
     process.stdout.write("Error occurred creating IModel\n");
   }
 

@@ -225,7 +225,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     try {
       const buf = new Uint8Array(stream.arrayBuffer, dataOffset + draco.byteOffset, draco.byteLength);
       props = await decodeDracoPointCloud(buf);
-    } catch (_) {
+    } catch {
       //
     }
   } else {

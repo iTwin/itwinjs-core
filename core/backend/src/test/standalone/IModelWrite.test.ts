@@ -308,7 +308,7 @@ describe("IModelWriteTest", () => {
       const theNewModel = rwIModel.elements.getElement(code1); // throws if element is not found
       assert.isTrue(theNewModel === undefined); // really should not be here.
       assert.fail(); // should not be here.
-    } catch (_err) {
+    } catch {
       // this is what I expect
     }
 
