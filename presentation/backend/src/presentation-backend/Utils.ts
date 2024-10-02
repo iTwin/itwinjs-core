@@ -18,7 +18,7 @@ import {
   InstanceKey,
 } from "@itwin/presentation-common";
 
-const presentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/Presentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
+const presentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/Presentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 
 /** @internal */
 export function getLocalizedStringEN(key: string) {

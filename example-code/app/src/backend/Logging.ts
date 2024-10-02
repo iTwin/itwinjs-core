@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports */
 
 // __PUBLISH_EXTRACT_START__ Logging-configureLoggingAndStreams.example-code
 import { Logger, LoggerLevelsConfig } from "@itwin/core-bentley";

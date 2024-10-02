@@ -79,7 +79,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
   }
 
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
     seedCount = configData.props.seedCount;
     opCount = configData.props.operationsCount;
     const pConfig = configData.props.propertiesCounts;
@@ -331,7 +331,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
     return schemaPath;
   }
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
     seedCount = configData.index.seedCount;
     opCount = configData.index.operationsCount;
     indexCounts = configData.index.indexCounts;

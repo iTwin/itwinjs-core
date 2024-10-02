@@ -24,8 +24,8 @@ function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))
     return;
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;
@@ -163,7 +163,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     // Electron only
     try {
-      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
+      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
       if (app !== undefined)
         app.exit();
     } catch {

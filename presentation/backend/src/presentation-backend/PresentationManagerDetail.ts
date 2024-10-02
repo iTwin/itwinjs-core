@@ -386,15 +386,15 @@ interface RequestParams {
 }
 
 function setupRulesets(nativePlatform: NativePlatformDefinition, supplementalRulesetDirectories: string[], primaryRulesetDirectories: string[]): void {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const elementPropertiesRuleset: Ruleset = require("./primary-presentation-rules/ElementProperties.PresentationRuleSet.json");
   nativePlatform.addRuleset(JSON.stringify(elementPropertiesRuleset));
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const bisSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/BisCore.PresentationRuleSet.json");
   nativePlatform.registerSupplementalRuleset(JSON.stringify(bisSupplementalRuleset));
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const funcSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/Functional.PresentationRuleSet.json");
   nativePlatform.registerSupplementalRuleset(JSON.stringify(funcSupplementalRuleset));
 
