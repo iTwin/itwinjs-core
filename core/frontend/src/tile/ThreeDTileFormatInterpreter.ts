@@ -94,7 +94,7 @@ export class ThreeDTileFormatInterpreter  {
           }
 
           location = ecefLocation;
-          Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({ isIdentity: worldToEcefTransform!.matrix.isIdentity }));
+          Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({ isIdentity: worldToEcefTransform.matrix.isIdentity }));
           // iModelDb.setEcefLocation(ecefLocation);
           const ecefToWorld = ecefLocation.getTransform().inverse()!;
           worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
