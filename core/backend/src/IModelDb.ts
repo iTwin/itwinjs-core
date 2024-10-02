@@ -928,9 +928,10 @@ export abstract class IModelDb extends IModel {
    */
   public static findByKey(key: string): IModelDb {
     const iModelDb = this.tryFindByKey(key);
-    if (undefined === iModelDb)
+    if (undefined === iModelDb) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
-
+    }
     return iModelDb;
   }
 

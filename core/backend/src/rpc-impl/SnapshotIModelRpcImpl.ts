@@ -26,7 +26,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
     if (IModelHost.snapshotFileNameResolver) {
       resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath);
       if (undefined === resolvedFileName)
-        throw new IModelNotFoundResponse();
+        throw new IModelNotFoundResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
     }
     return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
   }
@@ -35,7 +35,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
   public async openRemote(fileKey: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
     const resolvedFileName = IModelHost.snapshotFileNameResolver?.resolveKey(fileKey);
     if (undefined === resolvedFileName)
-      throw new IModelNotFoundResponse();
+      throw new IModelNotFoundResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
 
     return SnapshotDb.openFile(resolvedFileName, { key: fileKey, ...opts }).getConnectionProps();
   }

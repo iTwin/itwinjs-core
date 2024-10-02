@@ -142,7 +142,7 @@ export class RpcBriefcaseUtility {
 
       if (briefcaseDb === undefined) {
         Logger.logTrace(loggerCategory, "Open briefcase - pending", tokenProps);
-        throw new RpcPendingResponse();
+        throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
       }
       // note: usage is logged in the function BriefcaseManager.downloadNewBriefcaseAndOpen
       return briefcaseDb;
@@ -183,7 +183,7 @@ export class RpcBriefcaseUtility {
 
       if (db === undefined) {
         Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", tokenProps);
-        throw new RpcPendingResponse();
+        throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
       }
       Logger.logTrace(loggerCategory, "Opened V1 checkpoint", tokenProps);
     }
