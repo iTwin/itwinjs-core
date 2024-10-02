@@ -378,7 +378,7 @@ export class IModelHost {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }
@@ -475,7 +475,7 @@ export class IModelHost {
 
     this.authorizationClient = options.authorizationClient;
 
-    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
     initializeRpcBackend(options.enableOpenTelemetry);
 
     this.loadNative(options);
@@ -488,7 +488,7 @@ export class IModelHost {
       IModelReadRpcImpl,
       IModelTileRpcImpl,
       SnapshotIModelRpcImpl,
-      WipRpcImpl, // eslint-disable-line deprecation/deprecation
+      WipRpcImpl, // eslint-disable-line @typescript-eslint/no-deprecated
       DevToolsRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 

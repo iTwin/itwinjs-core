@@ -20,7 +20,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
@@ -94,7 +94,6 @@ class Cancellable<T> {
 
   public constructor(task: Promise<T>) {
     this.promise = new Promise((resolve, reject) => {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       this.cancel = () => resolve(undefined);
       task.then(resolve, reject);
     });

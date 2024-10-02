@@ -86,7 +86,6 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
     return filename;
   }
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   if (undefined === selector || !document.createEvent) {
     const filename = prompt("Enter absolute filename:");
     return null !== filename ? filename : undefined;
@@ -105,7 +104,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
         else
           resolve(undefined);
       } catch (e) {
-        reject(e);
+        reject(e); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
       }
     };
 

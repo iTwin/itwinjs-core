@@ -50,12 +50,12 @@ describe("DisplayStyleState", () => {
         super(props, iModel);
 
         this.eventPayloads = [];
-        this.onScheduleScriptReferenceChanged.addListener((ref) => this.eventPayloads.push(ref)); // eslint-disable-line deprecation/deprecation
+        this.onScheduleScriptReferenceChanged.addListener((ref) => this.eventPayloads.push(ref)); // eslint-disable-line @typescript-eslint/no-deprecated
       }
 
       public expectScript(props: RenderSchedule.ScriptProps, sourceId: string): void {
         expect(this.scheduleScript).not.to.be.undefined;
-        expect(this.scheduleScriptReference!.sourceId).to.equal(sourceId); // eslint-disable-line deprecation/deprecation
+        expect(this.scheduleScriptReference!.sourceId).to.equal(sourceId); // eslint-disable-line @typescript-eslint/no-deprecated
         expect(this.scheduleScript!.modelTimelines[0].modelId).to.equal(props[0].modelId);
       }
 
@@ -179,7 +179,7 @@ describe("DisplayStyleState", () => {
 
       function pushExpected(expectNonNull = true) {
         expect(style.scheduleScript !== undefined).to.equal(expectNonNull);
-        expected.push(style.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
+        expected.push(style.scheduleScriptReference); // eslint-disable-line @typescript-eslint/no-deprecated
         expectPayloads();
       }
 
@@ -221,7 +221,7 @@ describe("DisplayStyleState", () => {
       expect(style.isLoading).to.be.false;
 
       style.expectScript(script2, "0x2");
-      expect(style.eventPayloads).to.deep.equal([style.scheduleScriptReference]); // eslint-disable-line deprecation/deprecation
+      expect(style.eventPayloads).to.deep.equal([style.scheduleScriptReference]); // eslint-disable-line @typescript-eslint/no-deprecated
     });
 
     it("is set to undefined if loadScheduleScriptReference produces an exception", async () => {
@@ -230,7 +230,7 @@ describe("DisplayStyleState", () => {
       style.expectScript(script1, "0x1");
 
       await style.changeRenderTimeline("0x3");
-      expect(style.scheduleScriptReference).to.be.undefined; // eslint-disable-line deprecation/deprecation
+      expect(style.scheduleScriptReference).to.be.undefined; // eslint-disable-line @typescript-eslint/no-deprecated
     });
   });
 });

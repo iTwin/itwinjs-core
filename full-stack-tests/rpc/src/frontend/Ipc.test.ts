@@ -34,7 +34,7 @@ function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel:
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe("ElectronIpc", () => {
-    orderTest(it, () => require("electron").ipcRenderer); // eslint-disable-line @typescript-eslint/no-var-requires
+    orderTest(it, () => require("electron").ipcRenderer); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   });
 } else {
   describe("IpcWebSocket", () => {

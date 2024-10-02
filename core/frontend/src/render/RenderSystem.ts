@@ -53,7 +53,6 @@ import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "./GraphicTemplate";
 
-/* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
@@ -363,7 +362,7 @@ export abstract class RenderSystem implements IDisposable {
    * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
    * @deprecated in 3.x. Use [[createRenderMaterial]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a [RenderMaterial]($common).
@@ -739,7 +738,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an [[ImageBuffer]].
    * @deprecated in 3.x. Use [[createTexture]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     const ownership = params.key ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
     return this.createTexture({
@@ -755,7 +754,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
    * @deprecated in 3.x. Use [[createTexture]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
     const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
     return this.createTexture({
@@ -771,7 +770,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an ImageSource.
    * @deprecated in 3.x. Use RenderSystem.createTextureFromSource.
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     const ownership = iModel && params.key ? { iModel, key: params.key } : (params.isOwned ? "external" : undefined);
     return this.createTextureFromSource({
@@ -805,7 +804,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined {
     return undefined;
   }
@@ -817,7 +816,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from a cube of HTML images.
    * @internal
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined {
     return undefined;
   }
@@ -954,7 +953,7 @@ export abstract class RenderSystem implements IDisposable {
  * @see [[IModelApp.renderSystem]].
  * @public
  */
-export namespace RenderSystem { // eslint-disable-line no-redeclare
+export namespace RenderSystem {
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
    *
    * @public

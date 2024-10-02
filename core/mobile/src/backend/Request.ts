@@ -188,7 +188,6 @@ const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (re
   Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
 };
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
 const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentRequest => {
   const startTime = new Date().getTime();
   return req.on("response", logResponse(req, startTime));

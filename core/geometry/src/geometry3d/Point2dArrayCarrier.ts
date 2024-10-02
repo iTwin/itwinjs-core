@@ -5,8 +5,6 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
-
 import { IndexedXYCollection } from "./IndexedXYCollection";
 import { Point2d, Vector2d, XY } from "./Point2dVector2d";
 import { XAndY } from "./XYZProps";

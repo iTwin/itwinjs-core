@@ -123,12 +123,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const script = RenderSchedule.Script.fromJSON(scriptProps);
       if (script)
         newState = new RenderSchedule.ScriptReference(this.id, script);
-    } catch (_) {
+    } catch {
       // schedule state is undefined.
     }
 
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -150,14 +150,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
           if (script)
             newState = new RenderSchedule.ScriptReference(timelineId, script);
         }
-      } catch (_) {
+      } catch {
         // schedule state is undefined.
       }
     }
 
     this._queryRenderTimelinePropsPromise = undefined;
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -168,7 +168,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     try {
       const omitScriptElementIds = !IModelApp.tileAdmin.enableFrontendScheduleScripts;
       return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds } }) as RenderTimelineProps;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -309,7 +309,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
-      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(script);
       this._scriptReference = scriptRef;
 

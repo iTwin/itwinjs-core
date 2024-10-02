@@ -24,7 +24,7 @@ import { Schema } from "./Schema";
  * @beta
  */
 export class EntityClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.EntityClass; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.EntityClass;
   protected _mixins?: LazyLoadedMixin[];
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {

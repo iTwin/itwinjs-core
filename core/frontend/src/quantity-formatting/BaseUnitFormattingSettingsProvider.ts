@@ -108,7 +108,7 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     const overrideFormatProps = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
 
     // use map and await all returned promises - overrides are stored by QuantityType
-    for await (const quantityTypeKey of [...this._quantityFormatter.quantityTypesRegistry.keys()]) {
+    for (const quantityTypeKey of [...this._quantityFormatter.quantityTypesRegistry.keys()]) {
       const quantityTypeDef = this._quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
       if (quantityTypeDef) {
         const typeKey = quantityTypeDef.key;

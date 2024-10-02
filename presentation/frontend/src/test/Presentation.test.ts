@@ -34,7 +34,7 @@ describe("Presentation", () => {
   describe("initialize", () => {
     it("throws when initialized before IModelApp.startup()", async () => {
       await shutdownIModelApp();
-      expect(Presentation.initialize()).to.be.rejectedWith(PresentationError, "IModelApp.startup"); // eslint-disable-line @typescript-eslint/no-floating-promises
+      expect(Presentation.initialize()).to.be.rejectedWith(PresentationError, "IModelApp.startup");
     });
 
     it("creates manager instances", async () => {

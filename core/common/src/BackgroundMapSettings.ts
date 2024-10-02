@@ -204,9 +204,9 @@ export class BackgroundMapSettings {
 
     // Preserve deprecated imagery provider properties.
     if ("BingProvider" !== this._provider.name)
-      props.providerName = this._provider.name; // eslint-disable-line deprecation/deprecation
+      props.providerName = this._provider.name; // eslint-disable-line @typescript-eslint/no-deprecated
     if (BackgroundMapType.Hybrid !== this._provider.type)
-      props.providerData = { mapType: this._provider.type }; // eslint-disable-line deprecation/deprecation
+      props.providerData = { mapType: this._provider.type }; // eslint-disable-line @typescript-eslint/no-deprecated
 
     return props;
   }

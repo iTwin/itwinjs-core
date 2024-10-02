@@ -5,7 +5,6 @@
 import { assert, describe, expect, it } from "vitest";
 import { BeEvent, BeEventList, Listener, ListenerType } from "../core-bentley";
 
-/* eslint-disable no-empty */
 class Dummy {
   constructor(_name: string) { }
 }

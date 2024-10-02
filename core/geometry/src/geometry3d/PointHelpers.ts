@@ -6,8 +6,6 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";

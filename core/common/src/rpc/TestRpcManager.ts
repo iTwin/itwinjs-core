@@ -9,8 +9,6 @@
 import { RpcInterfaceDefinition } from "../RpcInterface";
 import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfiguration";
 
-/* eslint-disable deprecation/deprecation */
-
 /** An RpcManager that uses RpcDefaultConfiguration/RpcDirectProtocol to make client stubs invoke
  * registered server impls as direct method calls within the same JavaScript context. In other words,
  * TestRpcManager sets up a protocol that uses our remoting mechanism but cuts out the communication

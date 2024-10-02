@@ -154,4 +154,4 @@ export class Entity {
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
  * @public
  */
-export type EntityClassType<T> = Function & { prototype: T };
+export type EntityClassType<T> = Function & { prototype: T }; // eslint-disable-line @typescript-eslint/no-unsafe-function-type

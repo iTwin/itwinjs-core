@@ -121,7 +121,7 @@ export namespace CertaConfig {
   };
 
   // List of config options that may be relative file paths and should be resolved to absolute paths.
-  const _filePathOpts = [ // eslint-disable-line @typescript-eslint/naming-convention
+  const _filePathOpts = [
     "backendInitModule",
     "testBundle",
     "instrumentedTestBundle",

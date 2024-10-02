@@ -52,7 +52,7 @@ export class UnexpectedErrors {
       this._telemetry.forEach((telemetry) => {
         try {
           telemetry(error);
-        } catch (_) {
+        } catch {
           // ignore errors from telemetry trackers
         }
       });

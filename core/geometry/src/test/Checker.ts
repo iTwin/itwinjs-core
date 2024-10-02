@@ -258,6 +258,7 @@ export class Checker {
 
     return false;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   public testType<T extends Function>(data: any, classType: T, ...params: any[]): data is T["prototype"] {
     if (data !== undefined && data instanceof classType)
       return this.announceOK();

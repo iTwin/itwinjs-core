@@ -19,7 +19,6 @@
 
 // cSpell:ignore tweens yoyo catmull
 /* eslint-disable guard-for-in */
-/* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /** A group of `Tween`s. This class is called `Group` in the tween.js library.

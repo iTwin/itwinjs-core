@@ -99,7 +99,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   private isValidURL(url: string){
     try {
       new URL(url);
-    } catch (_) {
+    } catch {
       return false;
     }
     return true;

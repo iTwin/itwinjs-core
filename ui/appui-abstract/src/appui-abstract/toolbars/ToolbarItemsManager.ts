@@ -11,7 +11,7 @@ import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 

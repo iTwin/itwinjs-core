@@ -10,7 +10,7 @@ import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldReadRpcInterface
-export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface { // eslint-disable-line deprecation/deprecation
+export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface {
   public async countRobotsInArray(tokenProps: IModelRpcProps, elemIds: Id64String[]): Promise<number> {
     const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     return RobotWorldEngine.countRobotsInArray(iModelDb, elemIds);
@@ -33,7 +33,7 @@ import { Angle, AngleProps, Point3d, XYZProps } from "@itwin/core-geometry";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldWriteRpcInterface
-export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface { // eslint-disable-line deprecation/deprecation
+export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
   public async insertRobot(tokenProps: IModelRpcProps, modelId: Id64String, name: string, location: XYZProps): Promise<Id64String> {
     return RobotWorldEngine.insertRobot(IModelDb.findByKey(tokenProps.key), modelId, name, Point3d.fromJSON(location));
   }

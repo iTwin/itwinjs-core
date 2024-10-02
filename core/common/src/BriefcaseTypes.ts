@@ -86,7 +86,7 @@ export interface BriefcaseProps {
 /** Properties for opening a local briefcase file via [BriefcaseDb.open]($backend)
  * @public
  */
-export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line deprecation/deprecation
+export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line @typescript-eslint/no-deprecated
   /** the full path to the briefcase file  */
   readonly fileName: LocalFileName;
   /**

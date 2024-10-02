@@ -240,7 +240,7 @@ export class FrustumPlanes {
 }
 
 /** @public @extensions */
-export namespace FrustumPlanes { // eslint-disable-line no-redeclare
+export namespace FrustumPlanes {
   /** Describes the degree to which an object is contained within the planes of a [[Frustum]].
    * @see [[FrustumPlanes.computeContainment]], for example.
    */

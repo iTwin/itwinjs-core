@@ -15,7 +15,7 @@ import { HubUtility } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 describe("ChangedElements", () => {
   let accessToken: AccessToken;

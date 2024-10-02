@@ -22,7 +22,7 @@ import {
   WebAppRpcProtocol,
 } from "@itwin/core-common";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 function parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcActivity {
   const headerNames: SerializedRpcActivity = protocol.serializedClientRequestContextHeaderNames;

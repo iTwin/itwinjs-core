@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports */
 /* eslint-disable no-console */
 const debugLeaks = process.env.DEBUG_LEAKS;
 let asyncResourceStats: Map<number, any>;

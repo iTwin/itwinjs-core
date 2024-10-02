@@ -114,7 +114,7 @@ export class RealityModelContextIModelCreator {
       json = await fetch(this.url, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json", // eslint-disable-line @typescript-eslint/naming-convention
+          "Content-Type": "application/json",
         },
       });
       json = json.json();

@@ -19,7 +19,7 @@ import {
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 /* eslint-disable @typescript-eslint/unbound-method */
 // cspell:ignore oldvalue newvalue
 
@@ -104,7 +104,7 @@ describe("RpcInterface", () => {
     try {
       await TestRpcInterface2.getClient().op1(1);
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
 
@@ -173,7 +173,7 @@ describe("RpcInterface", () => {
     try {
       await RpcManager.getClientForInterface(LocalInterface).op();
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
     initializeLocalInterface();
@@ -182,7 +182,7 @@ describe("RpcInterface", () => {
     try {
       await RpcManager.getClientForInterface(LocalInterface).op();
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
     initializeLocalInterface();
@@ -241,8 +241,8 @@ describe("RpcInterface", () => {
       });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
-        return btoa(id); // eslint-disable-line deprecation/deprecation
+      if (typeof (btoa) !== "undefined")
+        return btoa(id);
       return Buffer.from(id, "binary").toString("base64");
     };
 
@@ -539,7 +539,7 @@ describe("RpcInterface", () => {
     try {
       await TestRpcInterface.getClient().op15();
       assert(true);
-    } catch (err) {
+    } catch {
       assert(false);
     } finally {
       RpcConfiguration.requestContext.serialize = backupFn;

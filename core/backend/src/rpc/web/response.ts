@@ -28,7 +28,7 @@ import { Readable, Stream } from "node:stream";
 import { promisify } from "node:util";
 import { brotliCompress, BrotliOptions, createBrotliCompress, createGzip, gzip, constants as zlibConstants } from "node:zlib";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 function configureResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
   const success = protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;

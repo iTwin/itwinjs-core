@@ -39,7 +39,7 @@ describe("NativePlatform", () => {
     nativePlatform.dispose();
     try {
       imodel.close();
-    } catch (_e) {}
+    } catch {}
   });
 
   it("throws on closed imodel", async () => {

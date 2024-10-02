@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { NodePathElement } from "../../presentation-common/hierarchy/NodePathElement";
 import { createRandomNodePathElement, createRandomNodePathElementJSON } from "../_helpers/random";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 describe("NodePathElement", () => {
   describe("toJSON", () => {

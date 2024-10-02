@@ -5,7 +5,6 @@
 
 export * from "./Validation/Diagnostic";
 export * from "./Validation/DiagnosticReporter";
-/* eslint-disable-next-line deprecation/deprecation */
 export { DiagnosticCodes, Diagnostics, ECRuleSet } from "./Validation/ECRules";
 export * from "./Validation/LoggingDiagnosticReporter";
 export * from "./Validation/Rules";

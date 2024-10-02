@@ -928,9 +928,10 @@ export abstract class IModelDb extends IModel {
    */
   public static findByKey(key: string): IModelDb {
     const iModelDb = this.tryFindByKey(key);
-    if (undefined === iModelDb)
+    if (undefined === iModelDb) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
-
+    }
     return iModelDb;
   }
 
@@ -1100,7 +1101,7 @@ export abstract class IModelDb extends IModel {
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
     try {
       return this.getMetaData(classFullName);
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -1480,7 +1481,7 @@ export abstract class IModelDb extends IModel {
 }
 
 /** @public */
-export namespace IModelDb { // eslint-disable-line no-redeclare
+export namespace IModelDb {
 
   /** The collection of models in an [[IModelDb]].
    * @public
@@ -1581,7 +1582,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
       try {
         return this._iModel[_nativeDb].getModel(modelIdArg) as T;
-      } catch (err: any) {
+      } catch {
         return undefined;
       }
     }
@@ -1752,7 +1753,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
         return this._iModel[_nativeDb].getElement(loadProps) as T;
-      } catch (err: any) {
+      } catch {
         return undefined;
       }
     }
@@ -2309,7 +2310,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       ids.forEach((id) => {
         try {
           props.push(imodel.elements.getElementProps<ViewDefinitionProps>(id));
-        } catch (err: any) { }
+        } catch { }
       });
 
       return props;
@@ -2334,7 +2335,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             if (!finished)
               break;
           }
-        } catch (err: any) { }
+        } catch { }
       }
 
       return finished;
@@ -3186,8 +3187,8 @@ export class SnapshotDb extends IModelDb {
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
-    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
+    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() }); // eslint-disable-line @typescript-eslint/no-deprecated
+    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   public static override findByKey(key: string): SnapshotDb {

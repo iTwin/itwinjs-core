@@ -28,7 +28,7 @@ export interface HierarchyLevel {
  * @deprecated in 3.x. Use [[HierarchyLevel]]
  */
 export interface HierarchyLevelJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   nodes: NodeJSON[];
   supportsFiltering?: boolean;
 }
@@ -43,11 +43,11 @@ export namespace HierarchyLevel {
    * @beta
    * @deprecated in 3.x. Use [[HierarchyLevel]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: HierarchyLevelJSON): HierarchyLevel {
     return {
       ...json,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       nodes: json.nodes.map(Node.fromJSON),
     };
   }

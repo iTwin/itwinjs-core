@@ -12,7 +12,7 @@ import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
 
-import sinon = require("sinon");
+import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
   constructor(suppressions?: Map<string, string[]>) {

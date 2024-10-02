@@ -15,7 +15,7 @@ import { SchemaItem } from "./SchemaItem";
  * @beta
  */
 export class PropertyCategory extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.PropertyCategory; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.PropertyCategory;
   protected _priority: number;
 
   public get priority() { return this._priority; }

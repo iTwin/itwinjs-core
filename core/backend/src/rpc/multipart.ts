@@ -10,7 +10,7 @@ import { BentleyStatus, FormDataCommon, HttpServerRequest, IModelError, RpcMulti
 import * as FormData from "form-data";
 import * as multiparty from "multiparty";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export function createMultipartStream(value: RpcSerializedValue) {
@@ -25,7 +25,7 @@ export function createMultipartStream(value: RpcSerializedValue) {
 export async function parseMultipartRequest(req: HttpServerRequest) {
   return new Promise<RpcSerializedValue>((resolve, reject) => {
     const form = new multiparty.Form({ maxFieldsSize: Infinity });
-    form.on("error", (err) => {
+    form.on("error", (err: Error) => {
       reject(err);
     });
 

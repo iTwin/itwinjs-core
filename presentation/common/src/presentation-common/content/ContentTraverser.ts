@@ -558,7 +558,7 @@ function traverseContentItemPrimitiveFieldValue(
  *
  * @public
  */
-export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean) {
+export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean) {
   const hierarchies = new Array<FieldHierarchy>();
   const visitField = (category: CategoryDescription, field: Field, parentField: Field | undefined): FieldHierarchy | undefined => {
     let childFields: FieldHierarchy[] = [];
@@ -734,7 +734,7 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
   const convertedItem = new Item(
     item.primaryKeys,
     item.label,
-    item.imageId, // eslint-disable-line deprecation/deprecation
+    item.imageId, // eslint-disable-line @typescript-eslint/no-deprecated
     item.classInfo,
     { [nextField.name]: nextFieldValues.raw },
     { [nextField.name]: nextFieldValues.display },
@@ -819,7 +819,7 @@ function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<
   const convertedItem = new Item(
     item.primaryKeys,
     item.label,
-    item.imageId, // eslint-disable-line deprecation/deprecation
+    item.imageId, // eslint-disable-line @typescript-eslint/no-deprecated
     item.classInfo,
     { [fieldName]: converted.raw },
     { [fieldName]: converted.display },

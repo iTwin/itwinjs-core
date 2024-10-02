@@ -18,7 +18,7 @@ import {
 import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import Sinon = require("sinon");
+import Sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 let iModelDb: StandaloneDb;
 const insertedLabel = "inserted label";

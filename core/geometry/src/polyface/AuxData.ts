@@ -8,7 +8,6 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";

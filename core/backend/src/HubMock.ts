@@ -217,7 +217,7 @@ export class HubMock {
     return undefined;
   }
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }

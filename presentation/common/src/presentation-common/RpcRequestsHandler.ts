@@ -148,9 +148,9 @@ export class RpcRequestsHandler {
 
   public async getPagedNodes(
     options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): Promise<PagedResponse<NodeJSON>> {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<PagedResponse<NodeJSON>, typeof options>(this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
   }
 
@@ -166,17 +166,17 @@ export class RpcRequestsHandler {
 
   public async getNodePaths(
     options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): Promise<NodePathElementJSON[]> {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<NodePathElementJSON[], typeof options>(this.rpcClient.getNodePaths.bind(this.rpcClient), options);
   }
 
   public async getFilteredNodePaths(
     options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): Promise<NodePathElementJSON[]> {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<NodePathElementJSON[], typeof options>(this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options);
   }
 
@@ -209,9 +209,9 @@ export class RpcRequestsHandler {
 
   public async getPagedDistinctValues(
     options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): Promise<PagedResponse<DisplayValueGroupJSON>> {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<PagedResponse<DisplayValueGroupJSON>, typeof options>(this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
   }
 
@@ -237,14 +237,14 @@ export class RpcRequestsHandler {
   }
   public async computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON> {
     return this.request<KeySetJSON, typeof options>(
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.rpcClient.computeSelection.bind(this.rpcClient),
       options,
     );
   }
 }
 
-function isOptionsWithRuleset(options: Object): options is { rulesetOrId: Ruleset } {
+function isOptionsWithRuleset(options: object): options is { rulesetOrId: Ruleset } {
   return typeof (options as RequestOptionsWithRuleset<any, any>).rulesetOrId === "object";
 }
 

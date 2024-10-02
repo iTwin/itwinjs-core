@@ -51,7 +51,7 @@ export interface SelectClassInfo {
  * Serialized [[SelectClassInfo]] JSON representation
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
@@ -416,8 +416,8 @@ export class Descriptor implements DescriptorSource {
     this.fields = [...source.fields];
     this.sortingField = source.sortingField;
     this.sortDirection = source.sortDirection;
-    this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
-    this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
+    this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line @typescript-eslint/no-deprecated
+    this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line @typescript-eslint/no-deprecated
     this.instanceFilter = source.instanceFilter;
     this.ruleset = source.ruleset;
   }
@@ -439,10 +439,10 @@ export class Descriptor implements DescriptorSource {
       this.connectionId !== undefined && { connectionId: this.connectionId },
       this.inputKeysHash !== undefined && { inputKeysHash: this.inputKeysHash },
       // istanbul ignore next
-      this.contentOptions !== undefined && { contentOptions: this.contentOptions }, // eslint-disable-line deprecation/deprecation
+      this.contentOptions !== undefined && { contentOptions: this.contentOptions }, // eslint-disable-line @typescript-eslint/no-deprecated
       this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
-      this.filterExpression !== undefined && { filterExpression: this.filterExpression }, // eslint-disable-line deprecation/deprecation
+      this.filterExpression !== undefined && { filterExpression: this.filterExpression }, // eslint-disable-line @typescript-eslint/no-deprecated
       this.fieldsFilterExpression !== undefined && { fieldsFilterExpression: this.fieldsFilterExpression },
       this.instanceFilter !== undefined && { instanceFilter: this.instanceFilter },
       this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo },
@@ -509,9 +509,9 @@ export class Descriptor implements DescriptorSource {
     if (this.contentFlags !== 0) {
       overrides.contentFlags = this.contentFlags;
     }
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (this.filterExpression || this.fieldsFilterExpression) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression;
     }
     if (this.instanceFilter) {

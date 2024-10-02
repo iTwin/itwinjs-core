@@ -7,7 +7,7 @@ import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 
 // The RPC query interface that may be exposed by the RobotWorldEngine.
-export abstract class RobotWorldReadRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class RobotWorldReadRpcInterface extends RpcInterface {
   public static readonly interfaceName = "RobotWorldReadRpcInterface"; // The immutable name of the interface
   public static interfaceVersion = "1.0.0";  // The API version of the interface
   public static getClient() { return RpcManager.getClientForInterface(this); }
@@ -20,7 +20,7 @@ export abstract class RobotWorldReadRpcInterface extends RpcInterface { // eslin
 import { AngleProps, XYZProps } from "@itwin/core-geometry";
 
 // The RPC write interface that may be exposed by the RobotWorldEngine.
-export abstract class RobotWorldWriteRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class RobotWorldWriteRpcInterface extends RpcInterface {
   public static readonly interfaceName = "RobotWorldWriteRpcInterface"; // The immutable name of the interface
   public static interfaceVersion = "1.0.0"; // The API version of the interface
   public static getClient() { return RpcManager.getClientForInterface(this); }

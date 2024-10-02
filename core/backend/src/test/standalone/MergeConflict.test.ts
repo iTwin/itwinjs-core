@@ -22,7 +22,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
-import sinon = require("sinon");
+import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);

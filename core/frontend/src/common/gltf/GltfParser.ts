@@ -58,7 +58,7 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
 
         json = JSON.parse(utf8Json);
         version = 2;
-      } catch (_) {
+      } catch {
         return undefined;
       }
     } else {
@@ -78,7 +78,7 @@ export async function parseGltf(args: ParseGltfArgs): Promise<Gltf.Model | undef
           return undefined;
 
         json = JSON.parse(jsonStr);
-      } catch (_) {
+      } catch {
         return undefined;
       }
     }
@@ -349,7 +349,7 @@ class GltfParser {
           promises.push(this.resolveImage(image));
 
       await Promise.all(promises);
-    } catch (_) {
+    } catch {
       // ###TODO_GLTF log
     }
   }
@@ -357,7 +357,7 @@ class GltfParser {
   private resolveUrl(uri: string): string | undefined {
     try {
       return new URL(uri, this._baseUrl).toString();
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -378,7 +378,7 @@ class GltfParser {
 
       if (data)
         buffer.resolvedBuffer = { data: new Uint8Array(data) };
-    } catch (_) {
+    } catch {
       //
     }
   }
@@ -404,7 +404,7 @@ class GltfParser {
       try {
         const imageSource = new ImageSource(bytes, format);
         image.resolvedImage = await this._imageFromImageSource(imageSource);
-      } catch (_) {
+      } catch {
         //
       }
 

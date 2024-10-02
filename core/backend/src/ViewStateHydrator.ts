@@ -21,9 +21,9 @@ export class ViewStateHydrator {
       promises.push(this.handleAcsId(response, options.acsId));
     if (options.sheetViewAttachmentIds)
       promises.push(this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.viewStateLoadProps));
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (options.notLoadedCategoryIds) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       promises.push(this.handleCategoryIds(response, options.notLoadedCategoryIds));
     }
     if (options.spatialViewId)
@@ -40,7 +40,7 @@ export class ViewStateHydrator {
     const decompressedIds = CompressedId64Set.decompressArray(categoryIds);
     const results: SubCategoryResultRow[] = await this._imodel.querySubCategories(decompressedIds);
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     response.categoryIdsResult = results;
   }
 
@@ -62,8 +62,7 @@ export class ViewStateHydrator {
       try {
         const modelProps = this._imodel.models.getModelJson({ id });
         modelJsonArray.push(modelProps);
-      } catch (error) {
-      }
+      } catch { }
     }
 
     response.modelSelectorStateModels = modelJsonArray;
@@ -85,9 +84,8 @@ export class ViewStateHydrator {
     const attachmentProps: ViewAttachmentProps[] = [];
     for (const id of decompressedIds) {
       try {
-        attachmentProps.push(this._imodel.elements.getElementJson({ id }) );
-      } catch (error) {
-      }
+        attachmentProps.push(this._imodel.elements.getElementJson({ id }));
+      } catch { }
     }
 
     const promises = [];

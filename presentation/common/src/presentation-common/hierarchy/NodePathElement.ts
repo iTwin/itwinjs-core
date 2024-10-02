@@ -14,13 +14,13 @@ import { Node, NodeJSON } from "./Node";
  * @deprecated in 3.x. Use [[NodePathElement]].
  */
 export interface NodePathElementJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   node: NodeJSON;
   index: number;
   isMarked?: boolean;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   children: NodePathElementJSON[];
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   filteringData?: NodePathFilteringDataJSON;
 }
 
@@ -47,21 +47,21 @@ export namespace NodePathElement {
    * Serialize given [[NodePathElement]] to JSON
    * @deprecated in 3.x. Use [[NodePathElement]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(npe: NodePathElement): NodePathElementJSON {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const result: NodePathElementJSON = {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       node: Node.toJSON(npe.node),
       index: npe.index,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       children: npe.children.map(NodePathElement.toJSON),
     };
     if (undefined !== npe.isMarked) {
       result.isMarked = npe.isMarked;
     }
     if (undefined !== npe.filteringData) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       result.filteringData = NodePathFilteringData.toJSON(npe.filteringData);
     }
     return result;
@@ -71,14 +71,14 @@ export namespace NodePathElement {
    * Deserialize [[NodePathElement]] from JSON
    * @deprecated in 3.x. Use [[NodePathElement]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: NodePathElementJSON | string): NodePathElement {
     if (typeof json === "string") {
       return JSON.parse(json, reviver);
     }
     const result: NodePathElement = {
       index: json.index,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       node: Node.fromJSON(json.node),
       children: listFromJSON(json.children),
     };
@@ -86,7 +86,7 @@ export namespace NodePathElement {
       result.isMarked = json.isMarked;
     }
     if (undefined !== json.filteringData) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       result.filteringData = NodePathFilteringData.fromJSON(json.filteringData);
     }
     return result;
@@ -98,7 +98,7 @@ export namespace NodePathElement {
    * @internal
    */
   export function reviver(key: string, value: any): any {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return key === "" ? fromJSON(value) : value;
   }
 
@@ -108,12 +108,12 @@ export namespace NodePathElement {
    * @returns Deserialized [[NodePathElement]] list
    * @internal
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function listFromJSON(json: NodePathElementJSON[] | string): NodePathElement[] {
     if (typeof json === "string") {
       return JSON.parse(json, listReviver);
     }
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return json.map((m) => fromJSON(m));
   }
 
@@ -154,7 +154,7 @@ export namespace NodePathFilteringData {
    * Serialize given [[NodePathFilteringData]] to JSON
    * @deprecated in 3.x. Use [[NodePathFilteringData]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(npfd: NodePathFilteringData): NodePathFilteringDataJSON {
     return {
       occurances: npfd.matchesCount,
@@ -166,7 +166,7 @@ export namespace NodePathFilteringData {
    * Deserialize [[NodePathFilteringData]] from JSON
    * @deprecated in 3.x. Use [[NodePathFilteringData]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: NodePathFilteringDataJSON): NodePathFilteringData {
     return {
       matchesCount: json.occurances,

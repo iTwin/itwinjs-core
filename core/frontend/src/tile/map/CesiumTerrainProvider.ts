@@ -60,7 +60,7 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, reques
       return {};
     }
     return { token: apiResponse.accessToken, url: apiResponse.url };
-  } catch (error) {
+  } catch {
     assert(false);
     return {};
   }
@@ -90,7 +90,7 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
     const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
     layers = await request(layerUrl, "json", layerRequestOptions);
-  } catch (error) {
+  } catch {
     notifyTerrainError();
     return undefined;
   }
@@ -236,7 +236,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     try {
       const response = await request(tileUrl, "arraybuffer", requestOptions);
       return new Uint8Array(response);
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

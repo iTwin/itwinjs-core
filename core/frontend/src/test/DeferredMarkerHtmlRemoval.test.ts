@@ -67,7 +67,6 @@ describe("ScreenViewport", () => {
 
     vp.renderFrame();
     for (const marker of decorator.markers) {
-      // eslint-disable-next-line deprecation/deprecation
       expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
     }
 
@@ -75,7 +74,6 @@ describe("ScreenViewport", () => {
 
     vp.renderFrame();
     for (const marker of decorator.markers) {
-      // eslint-disable-next-line deprecation/deprecation
       expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
     }
 
@@ -92,7 +90,6 @@ describe("ScreenViewport", () => {
 
     vp.renderFrame();
     for (const marker of decorator.markers) {
-      // eslint-disable-next-line deprecation/deprecation
       expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
     }
 
@@ -100,7 +97,6 @@ describe("ScreenViewport", () => {
 
     vp.renderFrame();
     for (const marker of decorator.markers) {
-      // eslint-disable-next-line deprecation/deprecation
       expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.false;
     }
 

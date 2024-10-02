@@ -7,7 +7,6 @@
  * @module Polyface
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 // cspell:word internaldocs
 
 import { assert } from "@itwin/core-bentley";

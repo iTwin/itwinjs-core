@@ -14,7 +14,7 @@ import { DiagnosticCategory } from "../../Validation/Diagnostic";
 import { SchemaValidationVisitor } from "../../Validation/SchemaValidationVisitor";
 import { ApplySuppressionSet, EmptyRuleSet, IgnoreSuppressionSet, TestDiagnostics, TestReporter, TestRuleSet, TestRuleSetB } from "../TestUtils/DiagnosticHelpers";
 
-import sinon = require("sinon");
+import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;

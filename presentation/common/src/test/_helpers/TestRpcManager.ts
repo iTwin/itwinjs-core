@@ -20,7 +20,7 @@ export class TestRpcManager {
     const instance = RpcConfiguration.obtain(config);
     try {
       RpcConfiguration.initializeInterfaces(instance);
-    } catch (_e) {
+    } catch {
       // this may fail with "Error: RPC interface "xxx" is already initialized." because
       // multiple different tests want to set up rpc interfaces
     }

@@ -62,7 +62,7 @@ export class Schema implements CustomAttributeContainerProps {
    * @param context The SchemaContext that will control the lifetime of the schema
    * @param key A SchemaKey that uniquely identifies the schema
    */
-  constructor(context: SchemaContext, key: SchemaKey, alias: string);  // eslint-disable-line @typescript-eslint/unified-signatures
+  constructor(context: SchemaContext, key: SchemaKey, alias: string);
   /**
    * Constructs an empty Schema (without a SchemaKey) in the provided context.
    * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.

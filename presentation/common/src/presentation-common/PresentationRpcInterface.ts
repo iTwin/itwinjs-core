@@ -186,9 +186,8 @@ export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<Co
  * @public
  */
 export class PresentationRpcInterface extends RpcInterface {
-  // eslint-disable-line deprecation/deprecation
   /** The immutable name of the interface. */
-  public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
+  public static readonly interfaceName = "PresentationRpcInterface";
 
   /** The semantic version of the interface. */
   public static interfaceVersion = "4.1.0";
@@ -202,7 +201,7 @@ export class PresentationRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>> {
     return this.forward(arguments);
   }
@@ -215,13 +214,13 @@ export class PresentationRpcInterface extends RpcInterface {
   }
 
   // TODO: add paged version of this (#387280)
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.forward(arguments);
   }
 
   // TODO: add paged version of this (#387280)
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.forward(arguments);
   }
@@ -264,7 +263,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getPagedDistinctValues(
     _token: IModelRpcProps,
     _options: DistinctValuesRpcRequestOptions,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
     return this.forward(arguments);
   }

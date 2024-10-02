@@ -146,6 +146,7 @@ describe("Learning Snippets", () => {
 
 async function fromAsync<T>(source: Iterable<T> | AsyncIterable<T>): Promise<T[]> {
   const items: T[] = [];
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   for await (const item of source) {
     items.push(item);
   }

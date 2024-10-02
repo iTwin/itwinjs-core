@@ -42,8 +42,6 @@ import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../render/GraphicTemplate";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 
-/* eslint-disable no-restricted-syntax */
-
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
@@ -192,7 +190,7 @@ export class GltfReaderProps {
 
           json = JSON.parse(utf8Json);
           version = 2;
-        } catch (_) {
+        } catch {
           return undefined;
         }
       } else {
@@ -212,7 +210,7 @@ export class GltfReaderProps {
             return undefined;
 
           json = JSON.parse(jsonStr);
-        } catch (_) {
+        } catch {
           return undefined;
         }
       }
@@ -971,7 +969,7 @@ export abstract class GltfReader {
       const aligned = 0 === (bufferData.byteOffset + offset) % dataSize;
       const bytes = aligned ? bufferData.subarray(offset, offset + length) : bufferData.slice(offset, offset + length);
       return new GltfBufferView(bytes, accessor.count, type, accessor, byteStride / dataSize);
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }
@@ -1853,8 +1851,7 @@ export abstract class GltfReader {
           promises.push(this.resolveImage(image));
 
       await Promise.all(promises);
-    } catch (_) {
-    }
+    } catch { }
   }
 
   private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
@@ -1878,7 +1875,7 @@ export abstract class GltfReader {
       const resolved = new URL(uri, this._baseUrl);
       resolved.search = this._baseUrl?.search ?? "";
       return resolved.toString();
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -1899,7 +1896,7 @@ export abstract class GltfReader {
 
       if (data)
         buffer.resolvedBuffer = new Uint8Array(data);
-    } catch (_) {
+    } catch {
       //
     }
   }
@@ -1928,7 +1925,7 @@ export abstract class GltfReader {
           image.resolvedImage = await imageBitmapFromImageSource(imageSource);
         else
           image.resolvedImage = await imageElementFromImageSource(imageSource);
-      } catch (_) {
+      } catch {
         //
       }
 
@@ -2035,7 +2032,7 @@ export interface ReadGltfGraphicsArgs {
    *  - A JSON object conforming to the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html); or
    *  - A Uint8Array containing the utf8-encoded stringified JSON of an object conforming to the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html).
    */
-  gltf: Uint8Array | Object;
+  gltf: Uint8Array | object;
   /** The iModel with which the graphics will be associated - typically obtained from the [[Viewport]] into which they will be drawn. */
   iModel: IModelConnection;
   /** Options for making the graphic [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations).

@@ -54,7 +54,7 @@ interface CommonPntsProps {
   RGB565?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
 
   extensions?: {
-    "3DTILES_draco_point_compression"?: DracoPointCloud; // eslint-disable-line @typescript-eslint/naming-convention
+    "3DTILES_draco_point_compression"?: DracoPointCloud;
   };
 
   // The following are currently ignored.
@@ -225,7 +225,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     try {
       const buf = new Uint8Array(stream.arrayBuffer, dataOffset + draco.byteOffset, draco.byteLength);
       props = await decodeDracoPointCloud(buf);
-    } catch (_) {
+    } catch {
       //
     }
   } else {

@@ -13,11 +13,10 @@ import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, V
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 const expect = chai.expect;
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 (global as any).btoa = (str: string) => {
   const buffer = Buffer.from(str, "binary");
   return buffer.toString("base64");
@@ -401,7 +400,6 @@ describe("Snapping", () => {
       worldToView: worldToView.toJSON(),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     const promise = IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
     try {
       await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);

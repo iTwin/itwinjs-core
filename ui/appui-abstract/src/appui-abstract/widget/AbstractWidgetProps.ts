@@ -15,7 +15,7 @@ import { WidgetState } from "./WidgetState";
  * @deprecated in 3.6. Use [Widget]($appui-react) instead.
  * @public
  */
-export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-line @typescript-eslint/no-deprecated
   /** Gets the widget content. */
   readonly getWidgetContent: () => any;
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
@@ -25,7 +25,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
    */
   readonly id?: string;
   /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Unloaded. */
-  readonly defaultState?: WidgetState; // eslint-disable-line deprecation/deprecation
+  readonly defaultState?: WidgetState; // eslint-disable-line @typescript-eslint/no-deprecated
   /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
   readonly label?: string | ConditionalStringValue;
   /** used to explicitly set the tooltip shown by a component. */
@@ -63,7 +63,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
    *  Used by UI 1.0 widgets ONLY.
    * @deprecated in 3.3. UI 1.0 support will be removed in AppUi 4.0.
   */
-  readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState; // eslint-disable-line deprecation/deprecation
+  readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState; // eslint-disable-line @typescript-eslint/no-deprecated
   /** Badge to be overlaid on the widget tab. */
   readonly badgeType?: BadgeType;
   /** Handler for widget state changed event */

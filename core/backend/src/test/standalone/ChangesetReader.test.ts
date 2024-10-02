@@ -578,7 +578,7 @@ describe("Changeset Reader API", async () => {
     const findEl = (id: Id64String) => {
       try {
         return rwIModel.elements.getElementProps(id);
-      } catch (e) {
+      } catch {
         return undefined;
       }
     };

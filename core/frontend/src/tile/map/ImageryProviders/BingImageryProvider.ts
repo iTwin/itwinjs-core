@@ -134,15 +134,14 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
 
     const unmatchedSet: BingAttribution[] = this._attributions.slice();
     for (const tile of tiles) {
-      if (tile instanceof MapTile)
+      if (tile instanceof MapTile) {
         // compare to the set of Bing attributions that we have not yet matched.
-        for (let iAttr = 0; iAttr < unmatchedSet.length; iAttr++) {
-          const attribution = unmatchedSet[iAttr];
+        for (const attribution of unmatchedSet) {
           if (attribution && attribution.matchesTile(tile, this._mapTilingScheme)) {
             matchingAttributions.push(attribution);
-            delete unmatchedSet[iAttr];
           }
         }
+      }
     }
     return matchingAttributions;
   }
@@ -190,7 +189,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
         if (tileData !== undefined)
           this._missingTileData = tileData.data as Uint8Array;
       });
-    } catch (error) {
+    } catch {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");
     }
   }

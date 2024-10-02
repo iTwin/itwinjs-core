@@ -89,7 +89,6 @@ function makeSource(props: SourceProps): TestJsonResponse {
   // Ensure _links is only defined if a url is provided through props.
   // We need to properly test cases where _links is undefined, because it may be undefined in the mesh export service response.
   if (props.href) {
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
     source._links = { mesh: { href: props.href } };
   }
   return source;

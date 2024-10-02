@@ -21,7 +21,7 @@ export namespace Primitives {
   /** ShortDate will be formatted as date only and will not include time */
   export type ShortDate = string | Date;
   /** Boolean type */
-  export type Boolean = boolean | string | {} | [];
+  export type Boolean = boolean | string | object | [];
   /** Float type */
   export type Float = number | string;
   /** Int type */

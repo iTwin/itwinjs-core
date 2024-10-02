@@ -68,7 +68,7 @@ class RpcHandler extends IpcHandler {
   public async request(info: InterceptedRpcRequest) {
     const invocation = RpcSessionInvocation.create(info);
     const fulfillment = await invocation.fulfillment;
-    return invocation.rejected ? Promise.reject(fulfillment.rawResult) : fulfillment.rawResult;
+    return invocation.rejected ? Promise.reject(fulfillment.rawResult) : fulfillment.rawResult; // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
   }
 }
 

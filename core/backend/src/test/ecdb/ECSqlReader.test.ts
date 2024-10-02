@@ -68,7 +68,6 @@ describe("ECSqlReader", (() => {
 
         reader = ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } });
         assert.isTrue(await reader.step());
-        // eslint-disable-next-line no-console
         assert.equal(reader.current.id, "0x1");
         assert.equal(reader.current.ecinstanceid, "0x1");
         assert.equal(reader.current.n, 20);
