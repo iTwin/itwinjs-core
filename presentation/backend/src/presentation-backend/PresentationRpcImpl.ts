@@ -243,7 +243,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     let timeout: NodeJS.Timeout;
     const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
-        reject();
+        reject(new Error());
       }, this._requestTimeout);
     });
 

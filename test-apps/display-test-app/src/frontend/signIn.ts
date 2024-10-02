@@ -19,7 +19,7 @@ export async function signIn(): Promise<boolean> {
 
     return new Promise<boolean>((resolve, reject) => {
       existingAuthClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(!!token));
-      existingAuthClient.signIn().catch((err) => reject(err));
+      existingAuthClient.signIn().catch((err: Error) => reject(err));
     });
   }
 
@@ -57,7 +57,7 @@ export async function signIn(): Promise<boolean> {
 
     return new Promise<boolean>((resolve, reject) => {
       authClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(!!token));
-      authClient.signIn().catch((err) => reject(err));
+      authClient.signIn().catch((err: Error) => reject(err));
     });
   }
 }

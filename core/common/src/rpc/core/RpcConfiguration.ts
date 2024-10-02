@@ -210,7 +210,7 @@ export class RpcDirectRequest extends RpcRequest {
         this.fulfillment = await this.protocol.fulfill(request);
         resolve(this.fulfillment.status);
       } catch (err) {
-        reject(err);
+        reject(err); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
       }
     });
   }

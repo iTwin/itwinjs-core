@@ -147,7 +147,7 @@ export class MobileHost {
     return new Promise<[AccessToken, string]>((resolve, reject) => {
       this.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
         if (error) {
-          reject(error);
+          reject(new Error(error));
         } else {
           resolve([tokenString ?? "", expirationDate ?? ""]);
         }

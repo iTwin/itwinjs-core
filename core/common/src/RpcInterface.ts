@@ -207,7 +207,7 @@ async function handleNotFound(request: InterceptedRequest, status: RpcManagedSta
         const response = await dispatch();
         resolve(response);
       } catch (err) {
-        reject(err);
+        reject(err); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
       }
     }, reject);
   });

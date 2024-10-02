@@ -104,7 +104,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
         else
           resolve(undefined);
       } catch (e) {
-        reject(e);
+        reject(e); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
       }
     };
 
