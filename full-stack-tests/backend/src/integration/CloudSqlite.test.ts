@@ -207,7 +207,7 @@ describe("CloudSqlite", () => {
     container.disconnect({detach: true});
   });
 
-  it.skip("should LogLevel.Trace set LogMask to ALL", async () => {
+  it.skip("should LogLevel.Trace set LogMask to ALL", async () => { // flaky, skipped until fixed.
     const testContainer0 = testContainers[0];
 
     const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
