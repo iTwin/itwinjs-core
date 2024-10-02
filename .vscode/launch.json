@@ -13,6 +13,19 @@
       "request": "attach",
       "processId": "${command:PickProcess}"
     },
+    {
+      "name": "Debug Current Vitest File",
+      "presentation": {
+        "group": "__TOP__"
+      },
+      "type": "node",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "program": "${workspaceFolder}/common/temp/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "smartStep": true,
+      "console": "integratedTerminal"
+    },
     // CORE TESTS
     {
       "name": "Backend Tests (Integration)",
