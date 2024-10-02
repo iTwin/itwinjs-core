@@ -5,8 +5,7 @@
 
 import {
   BriefcaseConnection,
-  calculateEcefToDbTransformAtLocation,
-  FeatureSymbology, HitDetail, IModelApp, IModelConnection, SceneContext, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
+  FeatureSymbology, HitDetail, IModelApp, IModelConnection, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { Transform } from "@itwin/core-geometry";
@@ -30,7 +29,7 @@ class Reference extends TileTreeReference {
 
   protected override getSymbologyOverrides() { return this._provider.ovrs; }
   protected override computeTransform(tree: TileTree): Transform {
-    if (this._provider.wantTransform && !this._transform) {
+    if (!this._transform) {
       this._provider.computeTransform(tree).then((tf) => {
         this._provider.viewport.invalidateScene();
         this._transform = tf;
@@ -39,47 +38,21 @@ class Reference extends TileTreeReference {
 
     return this._transform instanceof Transform ? this._transform : tree.iModelTransform;
   }
-
-  public override addToScene(context: SceneContext): void {
-    if (this._provider.wantTransform) {
-      return super.addToScene(context);
-    }
-
-    // We only need to override this so that we can apply our symbology overrides.
-    this._provider.view.forEachTileTreeRef((ref) => {
-      const tree = ref.treeOwner.load();
-      if (!tree) {
-        return;
-      }
-
-      const args = ref.createDrawArgs(context);
-      if (!args) {
-        return;
-      }
-
-      tree.draw(args);
-
-      args.graphics.symbologyOverrides = this._provider.ovrs;
-      const branch = context.createBranch(args.graphics, args.location);
-      context.outputGraphic(branch);
-    });
-  }
 }
 
 class Provider implements TiledGraphicsProvider {
   public readonly view: ViewState;
   public readonly ovrs: FeatureSymbology.Overrides;
   public readonly viewport: Viewport;
-  private readonly _fromViewport: Transform | undefined;
+  public readonly fromViewport: Transform;
   private readonly _refs: Reference[];
 
   public get iModel() { return this.view.iModel; }
-  public get wantTransform() { return undefined !== this._fromViewport; }
 
-  private constructor(view: ViewState, vp: Viewport, transform: Transform | undefined) {
+  private constructor(view: ViewState, vp: Viewport, transform: Transform) {
     this.view = view;
     this.viewport = vp;
-    this._fromViewport = transform;
+    this.fromViewport = transform;
 
     // These overrides ensure that all of the categories and subcategories in the secondary iModel are displayed.
     // Any symbology overrides applied to the viewport are ignored.
@@ -97,23 +70,11 @@ class Provider implements TiledGraphicsProvider {
     }
   }
 
-  public static async create(attachedIModel: IModelConnection, vp: Viewport, wantTransform: boolean): Promise<Provider> {
+  public static async create(attachedIModel: IModelConnection, vp: Viewport): Promise<Provider> {
     const creator = new ViewCreator3d(attachedIModel);
     const view = await creator.createDefaultView();
 
-    let transform;
-    if (wantTransform) {
-      const primaryEcef = await calculateEcefToDbTransformAtLocation(vp.iModel.projectExtents.center, vp.iModel);
-      const secondaryEcef = await calculateEcefToDbTransformAtLocation(attachedIModel.projectExtents.center, attachedIModel);
-      const invSecondaryEcef = secondaryEcef?.inverse();
-      if (primaryEcef && secondaryEcef && invSecondaryEcef) {
-        const primaryCenter = primaryEcef.multiplyPoint3d(vp.iModel.projectExtents.center);
-        const secondaryCenter = secondaryEcef.multiplyPoint3d(attachedIModel.projectExtents.center);
-        const primaryToSecondaryEcef = Transform.createTranslation(secondaryCenter.minus(primaryCenter));
-        transform = primaryEcef.multiplyTransformTransform(primaryToSecondaryEcef);
-        transform = transform.multiplyTransformTransform(invSecondaryEcef);
-      }
-    }
+    const transform = Transform.createIdentity();
     
     return new Provider(view, vp, transform);
   }
@@ -134,7 +95,7 @@ class Provider implements TiledGraphicsProvider {
 const providersByViewport = new Map<Viewport, Provider>();
 
 /** A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport. */
-export async function toggleExternalTiledGraphicsProvider(vp: Viewport, wantTransform: boolean): Promise<void> {
+export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise<void> {
   const existing = providersByViewport.get(vp);
   if (undefined !== existing) {
     vp.dropTiledGraphicsProvider(existing);
@@ -150,7 +111,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport, wantTran
   let iModel;
   try {
     iModel = await BriefcaseConnection.openFile( { fileName, key: fileName });
-    const provider = await Provider.create(iModel, vp, wantTransform);
+    const provider = await Provider.create(iModel, vp);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);
   } catch (err: any) {
@@ -168,7 +129,7 @@ export class ToggleSecondaryIModelTool extends Tool {
       return false;
     }
 
-    await toggleExternalTiledGraphicsProvider(vp, false);
+    await toggleExternalTiledGraphicsProvider(vp);
     return true;
   }
 }
