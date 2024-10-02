@@ -87,7 +87,7 @@ export class TileRequestChannelStatistics {
       const val = this[key];
       if (typeof val === "number") {
         assert(typeof stats[key] === "number");
-        (stats[key] as number) += val;
+        (stats[key] as number) += val; // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
       }
     }
 

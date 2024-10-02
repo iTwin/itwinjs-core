@@ -220,7 +220,7 @@ export namespace PropertyStore {
     }
   }
 
-  const defaultDbName = "PropertyDb" as const;
+  const defaultDbName = "PropertyDb";
 
   export interface CreateNewContainerProps {
     scope: BlobContainer.Scope;
