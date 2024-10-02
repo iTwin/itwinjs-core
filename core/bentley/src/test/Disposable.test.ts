@@ -93,9 +93,9 @@ describe("Disposable", () => {
         disposed = true;
       });
       const result = using(disposable, async (_r) => {
-        return new Promise<void>((_resolve: () => void, reject: () => void) => {
+        return new Promise<void>((_resolve: () => void, reject: (e: Error) => void) => {
           setTimeout(() => {
-            reject();
+            reject(new Error());
             assert.isFalse(disposed);
           }, 0);
         });
