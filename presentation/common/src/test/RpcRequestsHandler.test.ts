@@ -231,7 +231,7 @@ describe("RpcRequestsHandler", () => {
   describe("requests forwarding to PresentationRpcInterface", () => {
     let handler: RpcRequestsHandler;
     let rpcInterfaceMock: moq.IMock<PresentationRpcInterface>;
-    let defaultGetClientForInterfaceImpl: <T extends RpcInterface>(def: RpcInterfaceDefinition<T>) => T; // eslint-disable-line deprecation/deprecation
+    let defaultGetClientForInterfaceImpl: <T extends RpcInterface>(def: RpcInterfaceDefinition<T>) => T; // eslint-disable-line @typescript-eslint/no-deprecated
 
     before(() => {
       rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
@@ -297,7 +297,7 @@ describe("RpcRequestsHandler", () => {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
         paging: { start: 1, size: 2 },
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
       };
       const result = { items: [createRandomECInstancesNodeJSON()], total: 1 };
@@ -319,7 +319,7 @@ describe("RpcRequestsHandler", () => {
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           clientId,
           rulesetOrId: handlerOptions.rulesetOrId,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
         };
         const result = createTestContentDescriptor({ fields: [] }).toJSON();

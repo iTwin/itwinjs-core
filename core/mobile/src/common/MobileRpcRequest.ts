@@ -9,7 +9,7 @@
 import { RpcRequest, RpcRequestFulfillment, RpcSerializedValue } from "@itwin/core-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export class MobileRpcRequest extends RpcRequest {

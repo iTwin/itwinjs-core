@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @beta */
 export class RpcRoutingToken {

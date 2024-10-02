@@ -8,7 +8,7 @@ import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
 
 /** Display Test App RPC interface. */
-export class DtaRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export class DtaRpcInterface extends RpcInterface { // eslint-disable-line @typescript-eslint/no-deprecated
   /** The immutable name of the interface. */
   public static readonly interfaceName = "SVTRpcInterface";
 

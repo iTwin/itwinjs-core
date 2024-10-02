@@ -10,7 +10,7 @@ import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelper
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 describe("RelationshipRule tests", () => {
   let schema: Schema;

@@ -8,7 +8,7 @@
 import { SerializedRpcActivity } from "./RpcInvocation";
 import { RpcRequest } from "./RpcRequest";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** Interface to enable passing application-specific context with each RPC request.
  * @internal

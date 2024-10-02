@@ -1299,7 +1299,7 @@ export class Geometry {
    * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
    * @deprecated in 4.x. Use cloneArray.
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {
     if (array === undefined)
       return undefined;

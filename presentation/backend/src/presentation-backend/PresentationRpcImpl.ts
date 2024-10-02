@@ -278,7 +278,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getPagedNodes(
     token: IModelRpcProps,
     requestOptions: Paged<HierarchyRpcRequestOptions>,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<PagedResponse<NodeJSON>> {
     return this.makeRequest(token, "getPagedNodes", requestOptions, async (options) => {
       options = enforceValidPageSize({
@@ -289,7 +289,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
       return {
         total: count,
@@ -314,11 +314,11 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getNodePaths(
     token: IModelRpcProps,
     requestOptions: FilterByInstancePathsHierarchyRpcRequestOptions,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.makeRequest(token, "getNodePaths", requestOptions, async (options) => {
       const result = await this.getManager(requestOptions.clientId).getDetail().getNodePaths(options);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return result.map(NodePathElement.toJSON);
     });
   }
@@ -326,11 +326,11 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getFilteredNodePaths(
     token: IModelRpcProps,
     requestOptions: FilterByTextHierarchyRpcRequestOptions,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (options) => {
       const result = await this.getManager(requestOptions.clientId).getDetail().getFilteredNodePaths(options);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return result.map(NodePathElement.toJSON);
     });
   }
@@ -451,7 +451,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getPagedDistinctValues(
     token: IModelRpcProps,
     requestOptions: DistinctValuesRpcRequestOptions,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
     return this.makeRequest(token, "getPagedDistinctValues", requestOptions, async (options) => {
       options = enforceValidPageSize({
@@ -461,7 +461,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       const response = await this.getManager(requestOptions.clientId).getDetail().getPagedDistinctValues(options);
       return {
         ...response,
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         items: response.items.map(DisplayValueGroup.toJSON),
       };
     });
@@ -572,11 +572,11 @@ const getValidPageSize = (size: number | undefined, maxPageSize: number) => {
   return requestedSize === 0 || requestedSize > maxPageSize ? maxPageSize : requestedSize;
 };
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
   if (!json) {
     return undefined;
   }
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return NodeKey.fromJSON(json);
 };

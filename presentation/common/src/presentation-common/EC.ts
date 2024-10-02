@@ -49,7 +49,7 @@ export namespace InstanceKey {
    * @deprecated in 3.x. Use [[InstanceKey]].
    */
   // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(key: InstanceKey): InstanceKeyJSON {
     return { ...key };
   }
@@ -59,7 +59,7 @@ export namespace InstanceKey {
    * @deprecated in 3.x. Use [[InstanceKey]].
    */
   // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: InstanceKeyJSON) {
     return { ...json };
   }
@@ -95,7 +95,7 @@ export namespace ClassInfo {
    * @deprecated in 3.x. Use [[ClassInfo]].
    */
   // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(info: ClassInfo): ClassInfoJSON {
     return { ...info };
   }
@@ -105,7 +105,7 @@ export namespace ClassInfo {
    * @deprecated in 3.x. Use [[ClassInfo]].
    */
   // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: ClassInfoJSON): ClassInfo {
     return { ...json };
   }
@@ -240,7 +240,7 @@ export namespace NavigationPropertyInfo {
  * A serialized version of [[NavigationPropertyInfo]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   classInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
@@ -307,7 +307,7 @@ export namespace PropertyInfo {
  * A serialized version of [[PropertyInfo]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   classInfo: TClassInfoJSON;
   name: string;
@@ -434,7 +434,7 @@ export namespace RelatedClassInfo {
  * A serialized version of [[RelatedClassInfo]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   sourceClassInfo: TClassInfoJSON;
   targetClassInfo: TClassInfoJSON;
@@ -453,7 +453,7 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
 export type RelatedClassInfoWithOptionalRelationship = PartialBy<RelatedClassInfo, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
 /** @public */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<
   RelatedClassInfoJSON<TClassInfoJSON>,
   "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship"
@@ -517,7 +517,7 @@ export type RelationshipPath = RelatedClassInfo[];
  * Serialized [[RelationshipPath]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 /** @public */

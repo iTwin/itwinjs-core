@@ -20,7 +20,7 @@ export interface UiSyncEventArgs {
  * @public
  * @deprecated in 4.2.x Use [[UiSyncEvent]] from @itwin/appui-react.
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class UiSyncEvent extends BeUiEvent<UiSyncEventArgs> { }
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
@@ -32,7 +32,7 @@ export class UiEventDispatcher {
   private _syncEventTimerId: number | undefined;
   private _eventIds: Set<string>;
   private _eventIdAdded;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _uiSyncEvent: UiSyncEvent;
   private _timeoutPeriod;
   private _secondaryTimeoutPeriod;
@@ -40,7 +40,7 @@ export class UiEventDispatcher {
   constructor() {
     this._eventIds = new Set<string>();
     this._eventIdAdded = false;
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._uiSyncEvent = new UiSyncEvent();
     this._timeoutPeriod = 100;
     this._secondaryTimeoutPeriod = this._timeoutPeriod / 2;
@@ -73,7 +73,7 @@ export class UiEventDispatcher {
   }
 
   /** Return UiSyncEvent so callers can register an event callback. */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public get onSyncUiEvent(): UiSyncEvent {
     return this._uiSyncEvent;
   }

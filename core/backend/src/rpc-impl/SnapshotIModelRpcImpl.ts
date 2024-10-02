@@ -12,12 +12,12 @@ import {
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** The backend implementation of SnapshotIModelRpcInterface.
  * @internal
  */
-export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIModelRpcInterface { // eslint-disable-line deprecation/deprecation
+export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIModelRpcInterface { // eslint-disable-line @typescript-eslint/no-deprecated
   public static register() { RpcManager.registerImpl(SnapshotIModelRpcInterface, SnapshotIModelRpcImpl); }
 
   /** Ask the backend to open a snapshot iModel from a file name that is resolved by the backend. */

@@ -75,7 +75,7 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     public constructor(key?: string) { this.key = key; }
 
     /** Obtain an immutable instance of a RenderMaterial with all default properties. */
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     public static readonly defaults = new Params();
 
     /** A value from 0.0 (fully-transparent) to 1.0 (fully-opaque) controlling the transparency of surfaces to which this material is applied;
@@ -87,9 +87,9 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     }
 
     /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     public static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const materialParams = new Params();
       materialParams.key = key;
       materialParams.diffuseColor = diffuseColor;
@@ -102,5 +102,5 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
   }
 }
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 Object.freeze(RenderMaterial.Params.defaults);

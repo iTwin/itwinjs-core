@@ -8,7 +8,7 @@ import { Enumeration, PrimitiveType, Schema, SchemaContext } from "@itwin/ecsche
 import * as Rules from "../../../Validation/ECRules";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 describe("Enumeration rule tests", () => {
   let schema: Schema;

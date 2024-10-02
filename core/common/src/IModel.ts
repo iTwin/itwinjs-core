@@ -168,7 +168,7 @@ export interface CloudContainerUri {
 /** Options to open a [SnapshotDb]($backend).
  * @public
  */
-export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line deprecation/deprecation
+export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line @typescript-eslint/no-deprecated
   /**
    * The "base" name that can be used for creating temporary files related to this Db.
    * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
@@ -188,7 +188,7 @@ export type StandaloneOpenOptions = OpenDbKey;
 /** Options that can be supplied when creating snapshot iModels.
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
   /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
    * These database views can often be useful for interoperability workflows.
@@ -205,7 +205,7 @@ export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotI
 /** Options that can be supplied when creating standalone iModels.
  * @internal
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
   /** If present, file will allow local editing, but cannot be used to create changesets */
   readonly allowEdit?: string;

@@ -47,14 +47,14 @@ export type ContentUpdateInfo = typeof UPDATE_FULL;
  * @public
  * @deprecated in 3.x. Use [[PartialHierarchyModification]]
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON;
 
 /**
  * Information about a hierarchy change: insertion, deletion or node update.
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
 
 /** @public */
@@ -64,23 +64,23 @@ export namespace PartialHierarchyModification {
    * Serialize given object to JSON.
    * @deprecated in 3.x. Use [[PartialHierarchyModification]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(obj: PartialHierarchyModification): PartialHierarchyModificationJSON {
     switch (obj.type) {
       case "Insert":
         return {
           type: "Insert",
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           parent: obj.parent === undefined ? undefined : NodeKey.toJSON(obj.parent),
           position: obj.position,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           node: Node.toJSON(obj.node),
         };
 
       case "Update":
         return {
           type: "Update",
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           target: NodeKey.toJSON(obj.target),
           changes: Node.toPartialJSON(obj.changes),
         };
@@ -88,7 +88,7 @@ export namespace PartialHierarchyModification {
       case "Delete":
         return {
           type: "Delete",
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           parent: obj.parent === undefined ? undefined : NodeKey.toJSON(obj.parent),
           position: obj.position,
         };
@@ -99,23 +99,23 @@ export namespace PartialHierarchyModification {
    * Deserialize given object from JSON
    * @deprecated in 3.x. Use [[PartialHierarchyModification]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: PartialHierarchyModificationJSON): PartialHierarchyModification {
     switch (json.type) {
       case "Insert":
         return {
           type: "Insert",
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           parent: json.parent === undefined ? undefined : NodeKey.fromJSON(json.parent),
           position: json.position,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           node: Node.fromJSON(json.node),
         };
 
       case "Update":
         return {
           type: "Update",
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           target: NodeKey.fromJSON(json.target),
           changes: Node.fromPartialJSON(json.changes),
         };
@@ -123,7 +123,7 @@ export namespace PartialHierarchyModification {
       case "Delete":
         return {
           type: "Delete",
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           parent: json.parent === undefined ? undefined : NodeKey.fromJSON(json.parent),
           position: json.position,
         };
@@ -152,10 +152,10 @@ export interface NodeInsertionInfo {
  */
 export interface NodeInsertionInfoJSON {
   type: "Insert";
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   parent?: NodeKeyJSON;
   position: number;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   node: NodeJSON;
 }
 
@@ -179,7 +179,7 @@ export interface NodeDeletionInfo {
 export interface NodeDeletionInfoJSON {
   type: "Delete";
   /** Parent of the deleted node */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   parent?: NodeKeyJSON;
   /** Position of the deleted node among its siblings in the initial, not updated tree */
   position: number;
@@ -204,9 +204,9 @@ export interface NodeUpdateInfo {
  */
 export interface NodeUpdateInfoJSON {
   type: "Update";
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   target: NodeKeyJSON;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   changes: PartialNodeJSON;
 }
 
@@ -216,7 +216,7 @@ export interface NodeUpdateInfoJSON {
  * @deprecated in 3.x. Use [[HierarchyCompareInfo]].
  */
 export interface HierarchyCompareInfoJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   changes: PartialHierarchyModificationJSON[];
   continuationToken?: {
     prevHierarchyNode: string;
@@ -244,11 +244,11 @@ export namespace HierarchyCompareInfo {
    * Serialize given object to JSON.
    * @deprecated in 3.x. Use [[HierarchyCompareInfo]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(obj: HierarchyCompareInfo): HierarchyCompareInfoJSON {
     return {
       ...obj,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       changes: obj.changes.map((change) => PartialHierarchyModification.toJSON(change)),
     };
   }
@@ -257,11 +257,11 @@ export namespace HierarchyCompareInfo {
    * Deserialize given object from JSON
    * @deprecated in 3.x. Use [[HierarchyCompareInfo]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: HierarchyCompareInfoJSON): HierarchyCompareInfo {
     return {
       ...json,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       changes: json.changes.map((change) => PartialHierarchyModification.fromJSON(change)),
     };
   }

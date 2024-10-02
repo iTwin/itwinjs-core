@@ -80,10 +80,10 @@ export interface Node {
  * @deprecated in 3.x. Use [[Node]].
  */
 export interface NodeJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   key: NodeKeyJSON;
   // TODO: rename to `label`
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   labelDefinition: LabelDefinitionJSON;
   description?: string;
   /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
@@ -121,7 +121,7 @@ export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
  * @public
  * @deprecated in 3.x. Use [[PartialNode]].
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 
 type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);
@@ -132,7 +132,7 @@ export namespace Node {
    * Serialize given [[Node]] to JSON
    * @deprecated in 3.x. Use [[Node]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(node: Node): NodeJSON {
     const { label, ...baseNode } = node;
     return {
@@ -142,7 +142,7 @@ export namespace Node {
   }
 
   /** @internal */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toPartialJSON(node: PartialNode): PartialNodeJSON {
     if (node.key === undefined) {
       return node;
@@ -159,7 +159,7 @@ export namespace Node {
    * Deserialize [[Node]] from JSON
    * @deprecated in 3.x. Use [[Node]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: NodeJSON | string): Node {
     if (typeof json === "string") {
       return JSON.parse(json, reviver);
@@ -167,14 +167,14 @@ export namespace Node {
     const { labelDefinition, ...baseJson } = json;
     return {
       ...baseJson,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       key: NodeKey.fromJSON(json.key),
       label: labelDefinition,
     };
   }
 
   /** @internal */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromPartialJSON(json: PartialNodeJSON): PartialNode {
     if (json.key === undefined) {
       return json;
@@ -183,7 +183,7 @@ export namespace Node {
     const { key, labelDefinition, ...baseJson } = json;
     return {
       ...baseJson,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       key: NodeKey.fromJSON(key),
       label: labelDefinition,
     };
@@ -195,7 +195,7 @@ export namespace Node {
    * @internal
    */
   export function reviver(key: string, value: any): any {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return key === "" ? fromJSON(value) : value;
   }
 
@@ -205,12 +205,12 @@ export namespace Node {
    * @returns Deserialized nodes list
    * @internal
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function listFromJSON(json: NodeJSON[] | string): Node[] {
     if (typeof json === "string") {
       return JSON.parse(json, listReviver);
     }
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return json.map((m) => fromJSON(m));
   }
 

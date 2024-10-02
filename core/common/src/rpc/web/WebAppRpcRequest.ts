@@ -17,7 +17,7 @@ import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
@@ -249,7 +249,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private setupTextTransport(parameters: RpcSerializedValue) {
     if (this.operation.policy.allowResponseCaching(this)) {
-      const encodedBody = btoa(parameters.objects); // eslint-disable-line deprecation/deprecation
+      const encodedBody = btoa(parameters.objects); // eslint-disable-line @typescript-eslint/no-deprecated
       if (encodedBody.length <= WebAppRpcRequest.maxUrlComponentSize) {
         this._request.method = "get";
         this._request.body = undefined;

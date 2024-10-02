@@ -196,7 +196,7 @@ class XMLHttpRequestProxy {
       this._xhrMethod = method;
       this._xhrUrl = url;
       if (username) {
-        this.setRequestHeader("Authorization", `Basic ${btoa(`${username}:${password}`)}`); // eslint-disable-line deprecation/deprecation
+        this.setRequestHeader("Authorization", `Basic ${btoa(`${username}:${password}`)}`); // eslint-disable-line @typescript-eslint/no-deprecated
       }
     }
   }

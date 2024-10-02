@@ -169,7 +169,7 @@ class Material extends RenderMaterial {
     return { isAtlas: false, material };
   }
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public constructor(params: RenderMaterial.Params, imdl?: Imdl.SurfaceMaterialParams) {
     super(params);
 
@@ -188,7 +188,7 @@ class Material extends RenderMaterial {
   }
 
   public static create(args: MaterialParams): Material {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const params = new RenderMaterial.Params();
     params.alpha = args.alpha;
     if (args.diffuse) {
@@ -1067,7 +1067,7 @@ class Parser {
     if (!materialJson)
       return undefined;
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const materialParams = new RenderMaterial.Params(key);
     materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
     if (materialJson.diffuse !== undefined)
@@ -1094,7 +1094,7 @@ class Parser {
     if (undefined !== materialJson.textureMapping)
       materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return new Material(materialParams);
   }
 

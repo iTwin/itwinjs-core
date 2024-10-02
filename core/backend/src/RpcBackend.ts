@@ -13,7 +13,7 @@ import { WebAppRpcLoggingBackend } from "./rpc/web/logging";
 import { parseRequest } from "./rpc/web/request";
 import { sendResponse } from "./rpc/web/response";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 let initialized = false;
 /** @internal */

@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** Describes available options for RPC response caching.
  * @public

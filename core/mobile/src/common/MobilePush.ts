@@ -10,7 +10,7 @@ import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, Rpc
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 const PUSH = "__push__";
 

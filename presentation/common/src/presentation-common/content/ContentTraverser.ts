@@ -734,7 +734,7 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
   const convertedItem = new Item(
     item.primaryKeys,
     item.label,
-    item.imageId, // eslint-disable-line deprecation/deprecation
+    item.imageId, // eslint-disable-line @typescript-eslint/no-deprecated
     item.classInfo,
     { [nextField.name]: nextFieldValues.raw },
     { [nextField.name]: nextFieldValues.display },
@@ -819,7 +819,7 @@ function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<
   const convertedItem = new Item(
     item.primaryKeys,
     item.label,
-    item.imageId, // eslint-disable-line deprecation/deprecation
+    item.imageId, // eslint-disable-line @typescript-eslint/no-deprecated
     item.classInfo,
     { [fieldName]: converted.raw },
     { [fieldName]: converted.display },
