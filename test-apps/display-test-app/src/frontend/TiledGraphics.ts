@@ -72,10 +72,14 @@ class Provider implements TiledGraphicsProvider {
     const creator = new ViewCreator3d(attachedIModel);
     const view = await creator.createDefaultView();
 
-    const attachedEcefToWorld = attachedIModel.getEcefTransform().inverse();
-    const transform = attachedEcefToWorld ? vp.iModel.getEcefTransform().multiplyTransformTransform(attachedEcefToWorld) : Transform.createIdentity();
-    
-    return new Provider(view, vp, transform);
+    let transform;
+    const ecefTransform = attachedIModel.ecefLocation?.getTransform();
+    const worldTf = vp.iModel.getEcefTransform().inverse();
+    if (worldTf && ecefTransform) {
+      transform = worldTf.multiplyTransformTransform(ecefTransform).inverse();
+    }
+
+    return new Provider(view, vp, transform ?? Transform.createIdentity());
   }
 
   public computeTransform(tree: TileTree): Transform {
