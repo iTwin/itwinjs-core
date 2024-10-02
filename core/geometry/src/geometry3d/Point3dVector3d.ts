@@ -87,7 +87,7 @@ export class XYZ implements XYAndZ {
     return defaultValue;
   }
   /**
-   * Look for (in order) an x coordinate present as:
+   * Look for (in order) a y coordinate present as:
    * * arg.y
    * * arg[1]
    */
@@ -99,7 +99,7 @@ export class XYZ implements XYAndZ {
     return defaultValue;
   }
   /**
-   * Look for (in order) an x coordinate present as:
+   * Look for (in order) a z coordinate present as:
    * * arg.z
    * * arg[2]
    */

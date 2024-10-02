@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { BSplineSurface3d, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect, WeightStyle } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
@@ -162,7 +162,7 @@ describe("BSplineSurface", () => {
       testBSplineSurface(ck, surfaceAHw);
 
     ck.checkpoint("BSplineSurface.Hello");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Wrapped", () => {
@@ -191,7 +191,7 @@ describe("BSplineSurface", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "Wrapped");
     ck.checkpoint("BSplineSurface.Wrapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PseudoTorusExample", () => {
@@ -223,7 +223,7 @@ describe("BSplineSurface", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "PseudoTorusExample");
     ck.checkpoint("BSplineSurface.Wrapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Cones", () => {
@@ -248,7 +248,7 @@ describe("BSplineSurface", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "createCone");
     ck.checkpoint("BSplineSurface.Wrapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   function roundTripBSplineSurface(ck: Checker, surface: BSplineSurface3d | BSplineSurface3dH) {
@@ -298,7 +298,7 @@ describe("BSplineSurface", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "LegacyClosureRoundTrip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BSplineSurface3dCoverage", () => {
@@ -346,7 +346,7 @@ describe("BSplineSurface", () => {
     ck.testUndefined(BSplineSurface3d.createGrid(polesFlat, uOrder, undefined, vNumPoles + 1, undefined), "createGrid with vOrder too large yields undefined surface");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "BSplineSurface3dCoverage");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BSplineSurface3dHCoverage", () => {
@@ -409,6 +409,6 @@ describe("BSplineSurface", () => {
     ck.testUndefined(BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, uOrder, undefined, vNumPoles + 1, undefined), "createGrid with vOrder too large yields undefined surface");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "BSplineSurface3dHCoverage");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

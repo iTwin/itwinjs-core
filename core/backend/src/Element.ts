@@ -12,8 +12,8 @@ import {
   ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
-  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps,
-  SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps,
+  SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
@@ -1337,6 +1337,14 @@ export class PhysicalPartition extends InformationPartitionElement {
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
   public static override get className(): string { return "SpatialLocationPartition"; }
+}
+
+/** A SheetIndexPartition element establishes a [[SheetIndex]] modeling perspective for its parent [[Subject]].
+ * A SheetIndexPartition is always sub-modeled by a [[SheetIndexModel]].
+ * @beta
+ */
+export class SheetIndexPartition extends InformationPartitionElement {
+  public static override get className(): string { return "SheetIndexPartition"; }
 }
 
 /** Group Information is an abstract base class for modeling entities whose main purpose is to reference a group of related elements.

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { AxisIndex, AxisOrder, Geometry, StandardViewIndex } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { InverseMatrixState, Matrix3d, PackedMatrix3dOps } from "../../geometry3d/Matrix3d";
@@ -130,7 +130,7 @@ describe("Matrix3d.Construction", () => {
     const ck = new bsiChecker.Checker();
     testCreateProperties(ck);
     ck.checkpoint("Matrix3d.Construction");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -154,7 +154,7 @@ describe("Matrix3d.Inverse", () => {
     );
     checkInverse(ck, matrixA);
     ck.checkpoint("Matrix3d.Inverse");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -206,7 +206,7 @@ describe("Matrix3d.checkPointArrays", () => {
     const pointsA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
     checkPointArrays(ck, pointsA);
     ck.checkpoint("Point3dArray.checkPointArrays");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -225,7 +225,7 @@ describe("Matrix3d.isAlmostEqualAllowZRotation", () => {
     // thisMatrix and otherMatrix have the same column Z. Also their column X
     // and Y are differing only by a rotation of 180 degrees around column Z.
     const output: boolean = thisMatrix.isAlmostEqualAllowZRotation(otherMatrix);
-    expect(output).equal(true);
+    expect(output).toBe(true);
   });
 });
 
@@ -287,7 +287,7 @@ describe("Matrix3d.factorPerpendicularColumns", () => {
       }
     }
     ck.checkpoint("Matrix3d.factorPerpendicularColumns");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -323,7 +323,7 @@ describe("Matrix3d.symmetricEigenvalues", () => {
       }
     }
     ck.checkpoint("Matrix3d.symmetricEigenvalues");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -346,7 +346,7 @@ describe("Matrix3d.directDots", () => {
     ck.testExactNumber(matrix.columnYMagnitudeSquared(), product.at(1, 1));
     ck.testExactNumber(matrix.columnZMagnitudeSquared(), product.at(2, 2));
     ck.checkpoint("Matrix3d.directDots");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -389,7 +389,7 @@ describe("Matrix3d.cachedInverse", () => {
     // when you clone a matrix, its inverse is also copied.
     ck.testExactNumber(0, Matrix3d.numComputeCache, "B numComputeCache");
     ck.testExactNumber(numInvert, Matrix3d.numUseCache, "B numUseCache");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -441,7 +441,7 @@ describe("Matrix3d.CachedInverse", () => {
       ),
     );
     ck.checkpoint("Matrix3d.CachedInverse");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -478,7 +478,7 @@ describe("Matrix3d.SingularMatrix", () => {
       }
     }
     ck.checkpoint("Matrix3d.SingularMatrix");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -498,7 +498,7 @@ describe("Matrix3d.ColumnAccess", () => {
       ck.testCoordinate(columnZ.dotProduct(vectorQ), matrix.dotColumnZ(vectorQ));
     }
     ck.checkpoint("Matrix3d.ColumnAccess");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -518,7 +518,7 @@ describe("Matrix3d.RowAccess", () => {
       ck.testCoordinate(rowZ.dotProduct(vectorQ), matrix.dotRowZ(vectorQ));
     }
     ck.checkpoint("Matrix3d.RowAccess");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -547,7 +547,7 @@ describe("AxisOrder.ShiftAxis", () => {
       ck.testExactNumber(axis0, Geometry.cyclic3dAxis(axis2 + shift));
     }
     ck.checkpoint("AxisOrder.ShiftAxis");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("AxisOrder.AssembleColumns", () => {
     const vector0 = Vector3d.create(1000, 2, 5);
@@ -569,7 +569,7 @@ describe("AxisOrder.ShiftAxis", () => {
       ck.testVector3d(vector2, retVector2);
     }
     ck.checkpoint("AxisOrder.AssembleColumns");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -602,7 +602,7 @@ describe("Matrix3d.Factors", () => {
       }
     }
     ck.checkpoint("Matrix3d.RigidScale");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Matrix3d.Quaternion", () => {
@@ -622,7 +622,7 @@ describe("Matrix3d.Factors", () => {
       ck.testMatrix3d(rotationMatrix, quatMatrix, "quat matrix is same as rotation matrix");
     }
     ck.checkpoint("Matrix3d.Quaternion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Matrix3d.AxisAndAngleOfRotation", () => {
@@ -638,7 +638,7 @@ describe("Matrix3d.Factors", () => {
       }
     }
     ck.checkpoint("Matrix3d.AxisAndAngleOfRotation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -655,7 +655,7 @@ describe("Matrix3d.BadInputCases", () => {
     ck.testTrue(failure3.isDiagonal, "createDirectionalScale fails with 000 direction");
 
     ck.checkpoint("Matrix3d.BadInputCases");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -690,7 +690,7 @@ describe("Matrix3d.AxisAndAngleOfRotation", () => {
     }
     ck.testLT(maxDiff12, 1.0e-15);
     ck.checkpoint("Matrix3d.AxisAndAngleOfRotationMaxDiff");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // rotation by 180 degrees is a special case to invert.
@@ -722,7 +722,7 @@ describe("Matrix3d.AxisAndAngleOfRotation", () => {
       }
     }
     ck.checkpoint("Matrix3d.AxisAndAngleOfRotationPI");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -810,7 +810,7 @@ describe("Matrix3d.RotateVector", () => {
     testRotateVectorAroundAxis(Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), Angle.createDegrees(-49.0), ck);
     testRotateVectorAroundAxis(Vector3d.create(1, 2, 4), Vector3d.create(5, -2, 1), Angle.createDegrees(25.2), ck);
     ck.checkpoint("testRotateVectorAroundAxis");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Matrix3d.testRotateVectorToVector", () => {
@@ -845,7 +845,7 @@ describe("Matrix3d.RotateVector", () => {
     testRotateVectorToVector(vectorA, negativeScaledVectorA, ck);
 
     ck.checkpoint("Matrix3d.testRotateVectorToVector");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Matrix3d.RotateAroundAxis", () => {
@@ -885,7 +885,7 @@ describe("Matrix3d.RotateVector", () => {
       );
     }
     ck.checkpoint("Matrix3d.RotateAroundAxis");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -929,7 +929,7 @@ describe("Matrix3d.RowColumn", () => {
       "sum square of `matrix - matrixTranspose` is equal to sum skew squares of matrix",
     );
     ck.checkpoint("Matrix3d.RowColumn");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -947,7 +947,7 @@ describe("Matrix3d.DotRows", () => {
     ck.testCoordinate(vector.dotProduct(vectorZ), matrix.dotRowZXYZ(vector.x, vector.y, vector.z));
 
     ck.checkpoint("Matrix3d.DotRows");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -979,7 +979,7 @@ describe("Matrix3d.SignedPermutation", () => {
       }
     }
     ck.checkpoint("Matrix3d.SignedPermutation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -990,7 +990,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
       const matrix = Matrix3d.createStandardWorldToView(viewIndex);
       ck.testTrue(matrix.isRigid());
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardTopViewedAxes", () => {
@@ -998,7 +998,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Top, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitY(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardBottomViewedAxes", () => {
@@ -1006,7 +1006,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Bottom, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitY(-1), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardFrontViewedAxes", () => {
@@ -1014,7 +1014,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Front, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardBackViewedAxes", () => {
@@ -1022,7 +1022,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Back, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(-1), Vector3d.unitZ(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardRightViewedAxes", () => {
@@ -1030,7 +1030,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Right, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitY(), Vector3d.unitZ(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardLeftViewedAxes", () => {
@@ -1038,7 +1038,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Left, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitY(-1), Vector3d.unitZ(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardIsoViewedAxes", () => {
@@ -1046,7 +1046,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Iso, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), -1, 1)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardRightIsoViewedAxes", () => {
@@ -1054,7 +1054,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.RightIso, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), 1, 1)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardTopRigidHeadsUp", () => {
@@ -1062,7 +1062,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Top, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitZ());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   /**
@@ -1074,7 +1074,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   //   const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Bottom, true);
   //   const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitZ(-1))!;
   //   ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-  //   expect(ck.getNumErrors()).equals(0);
+  //   expect(ck.getNumErrors()).toBe(0);
   // });
 
   it("StandardFrontRigidHeadsUp", () => {
@@ -1082,7 +1082,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Front, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitY(-1));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardBackRigidHeadsUp", () => {
@@ -1090,7 +1090,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Back, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitY());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardRightRigidHeadsUp", () => {
@@ -1098,7 +1098,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Right, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitX());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardLeftRigidHeadsUp", () => {
@@ -1106,7 +1106,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Left, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitX(-1));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardIsoRigidHeadsUp", () => {
@@ -1114,7 +1114,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Iso, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.create(-1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardRightIsoRigidHeadsUp", () => {
@@ -1122,7 +1122,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.RightIso, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.create(1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardTopRigidViewAxesZTowardsEye", () => {
@@ -1130,7 +1130,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Top, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(0, 0, 1);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardBottomRigidViewAxesZTowardsEye", () => {
@@ -1138,7 +1138,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Bottom, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(0, 0, -1);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardFrontRigidViewAxesZTowardsEye", () => {
@@ -1146,7 +1146,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Front, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(0, -1, 0);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardBackRigidViewAxesZTowardsEye", () => {
@@ -1154,7 +1154,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Back, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(0, 1, 0);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardRightRigidViewAxesZTowardsEye", () => {
@@ -1162,7 +1162,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Right, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(1, 0, 0);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardLeftRigidViewAxesZTowardsEye", () => {
@@ -1170,7 +1170,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Left, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(-1, 0, 0);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardIsoRigidViewAxesZTowardsEye", () => {
@@ -1178,7 +1178,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Iso, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(-1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StandardRightIsoRigidViewAxesZTowardsEye", () => {
@@ -1186,7 +1186,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.RightIso, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1215,7 +1215,7 @@ describe("Matrix3d.DirectionalScale", () => {
         ck.testTrue(vector.isPerpendicularTo(planeNormal, true), "vector perp to planeNormal");
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1252,7 +1252,7 @@ describe("Matrix3d.Multiply", () => {
       ck.testVector3d(v6, v);
       ck.testXYZ(v6, matrix.multiplyInverseXYZAsPoint3d(v4.x, v4.y, v4.z)!);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Matrix3d.MultiplyXYZToFloat64Array", () => {
@@ -1281,7 +1281,7 @@ describe("Matrix3d.Multiply", () => {
         ck.testXYZ(resultAW, Vector3d.createFrom(resultBW), "XYZPlusMatrixTimesCoordinatesToFloat64Array");
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1301,7 +1301,7 @@ describe("Matrix3d.AxisOrderConstructions", () => {
       frame.axisOrderCrossProductsInPlace(axisOrder);
       ck.testTrue(sign * frame.determinant() > 0.0);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1330,7 +1330,7 @@ describe("Matrix3d.CloneAndPerturbation", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1356,7 +1356,7 @@ describe("Matrix3d.JSON", () => {
     const matrixE = Matrix3d.fromJSON([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     ck.testMatrix3d(matrixA, matrixE);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1374,7 +1374,7 @@ describe("Matrix3d.Transpose", () => {
       matrixATT.transpose(matrixATT);
       ck.testMatrix3d(matrixATT, matrixA, "ATT = A");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1420,7 +1420,7 @@ describe("Matrix3d.SkewFactorization", () => {
       matrixD.computeCachedInverse(true);
       ck.testNumberArray(matrixC.inverseCoffs, matrixD.inverseCoffs, "matrixC inverse = matrixD inverse");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1435,13 +1435,13 @@ describe("Matrix3d.InverseVariants", () => {
       const matrix2 = Matrix3d.createCapture(coffs, inverseCoffs);
       const matrix3 = Matrix3d.createCapture(new Float64Array(coffs), inverseCoffs);
       ck.testMatrix3d(matrix, matrix1);
-      expect(matrix1.inverseState).equals(InverseMatrixState.unknown);
+      expect(matrix1.inverseState).toBe(InverseMatrixState.unknown);
       ck.testMatrix3d(matrix, matrix2);
-      expect(matrix2.inverseState).equals(InverseMatrixState.inverseStored);
+      expect(matrix2.inverseState).toBe(InverseMatrixState.inverseStored);
       ck.testMatrix3d(matrix, matrix3);
-      expect(matrix3.inverseState).equals(InverseMatrixState.inverseStored);
+      expect(matrix3.inverseState).toBe(InverseMatrixState.inverseStored);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Matrix3d.Singular", () => {
@@ -1449,7 +1449,7 @@ describe("Matrix3d.InverseVariants", () => {
     const matrixA = Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(13))!;
     const matrixB = Matrix3d.createZero();
     ck.testUndefined(matrixA.multiplyMatrixMatrixInverse(matrixB), "singular matrix trapped at multiplication");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1525,7 +1525,7 @@ describe("Matrix3d.SnapToCube", () => {
           snapVectorToCubeFeatures(p2);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1772,7 +1772,7 @@ describe("Matrix3d.MatrixProduct", () => {
       if (result)
         result.setZero();
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1812,7 +1812,7 @@ describe("Matrix3d.CloneRigid", () => {
     );
     ck.testUndefined(Matrix3d.createRigidFromMatrix3d(matrixD), "expect no rigid from matrix with near-parallel columns");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1829,7 +1829,7 @@ describe("Matrix3d.SetColumns", () => {
     const theMatrix = Matrix3d.createIdentity();
     theMatrix.setColumns(vectorX, vectorY);
     ck.testMatrix3d(theMatrix, expectedMatrix, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1845,7 +1845,7 @@ describe("Matrix3d.SetRow", () => {
     const theMatrix = Matrix3d.createIdentity();
     theMatrix.setRow(0, vector);
     ck.testMatrix3d(theMatrix, expectedMatrix, "matrixes are equal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1857,7 +1857,7 @@ describe("Matrix3d.CreateDirectionalScale", () => {
     const expectedDirectionScale = Vector3d.create(1, 0, -1);
     const matrix = Matrix3d.createDirectionalScale(direction, scale);
     const returnedDirectionScale = matrix.multiplyVector(vector);
-    expect(expectedDirectionScale).to.deep.equal(returnedDirectionScale);
+    expect(expectedDirectionScale).toEqual(returnedDirectionScale);
   });
 });
 

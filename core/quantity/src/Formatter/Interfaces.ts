@@ -27,6 +27,9 @@ export interface FormatProps {
   readonly scientificType?: string;
 
   /** conditionally required. */
+  readonly ratioType?: string;
+
+  /** conditionally required. */
   readonly stationOffsetSize?: number;
   readonly stationSeparator?: string;
 

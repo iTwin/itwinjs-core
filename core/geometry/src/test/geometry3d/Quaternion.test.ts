@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
@@ -38,7 +38,7 @@ describe("MatrixQuatMatrix", () => {
       const roundTrip = Matrix3d.createFromQuaternion(quaternion);
       ck.testTrue(matrix.isAlmostEqual(roundTrip));
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("QuatMatrixQuat", () => {
@@ -59,7 +59,7 @@ describe("MatrixQuatMatrix", () => {
 
     const matrixA = Matrix3d.createFromQuaternion(Point4d.create(0, 0, 0, 0));
     ck.testTrue(matrixA.isIdentity, "0000 quat is identity");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -193,7 +193,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 2;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineLineMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLineCoincident", () => {
     const ck = new Checker();
@@ -207,7 +207,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineLineCoincident");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLineStringCoincident", () => {
     const ck = new Checker();
@@ -221,7 +221,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineLineStringCoincident");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineStringLineStringCoincident", () => {
     const ck = new Checker();
@@ -259,7 +259,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 3;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineStringLineStringCoincident");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcArcCoincident", () => {
     const ck = new Checker();
@@ -277,7 +277,7 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ArcArcCoincident");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineArcMapped", () => {
     const ck = new Checker();
@@ -308,7 +308,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 20;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineArcMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineStringArcMapped", () => {
     const ck = new Checker();
@@ -339,7 +339,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 20;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineStringArcMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLineStringMapped", () => {
     const ck = new Checker();
@@ -380,7 +380,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 7;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineLineStringMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcArcMapped", () => {
     const ck = new Checker();
@@ -404,7 +404,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 10;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ArcArcMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineBsplineMapped", () => {
     const ck = new Checker();
@@ -437,7 +437,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 5;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineBsplineMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineStringBsplineMapped", () => {
     const ck = new Checker();
@@ -470,7 +470,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 7;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineStringBsplineMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcBsplineMapped", () => {
     const ck = new Checker();
@@ -507,7 +507,7 @@ describe("CurveCurveIntersectXY", () => {
       dy += 7;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ArcBsplineMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineBsplineMapped", () => {
     const ck = new Checker();
@@ -577,7 +577,7 @@ describe("CurveCurveIntersectXY", () => {
       dyOuter += 100.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineBsplineMapped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   function captureAndTestIntersection(
     allGeometry: GeometryQuery[], ck: Checker, dx: number, dy: number,
@@ -765,7 +765,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, false, true, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPrimitiveVsPathLineSegment");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionPrimitiveVsPathLineString", () => {
     const ck = new Checker();
@@ -944,7 +944,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, false, true, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPrimitiveVsPathLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionPrimitiveVsPathArc", () => {
     const ck = new Checker();
@@ -1120,7 +1120,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, bspline5, false, true, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPrimitiveVsPathArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionLoopVsPrimitive", () => {
     const ck = new Checker();
@@ -1181,7 +1181,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, loop, lineString5, true, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionLoopVsPrimitive");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionCurveChainVsPrimitive", () => {
     const ck = new Checker();
@@ -1215,7 +1215,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain, lineString5, true, true, 1);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionCurveChainVsPrimitive");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionPathVsPath", () => {
     const ck = new Checker();
@@ -1259,7 +1259,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, path1, path2, false, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPathVsPath");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionPathVsLoop", () => {
     const ck = new Checker();
@@ -1312,7 +1312,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, loop, false, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPathVsLoop");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionPathVsCurveChain", () => {
     const ck = new Checker();
@@ -1422,7 +1422,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, path, curveChain2, false, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionPathVsCurveChain");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionLoopVsLoop", () => {
     const ck = new Checker();
@@ -1462,7 +1462,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, loop1, loop2, false, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionLoopVsLoop");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionLoopVsCurveChain", () => {
     const ck = new Checker();
@@ -1535,7 +1535,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, false, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionLoopVsCurveChain");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionCurveChainVsCurveChain", () => {
     const ck = new Checker();
@@ -1587,7 +1587,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, curveChain1, curveChain2, false, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "intersectionCurveChainVsCurveChain");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionSingleChild", () => {
     const ck = new Checker();
@@ -1622,7 +1622,7 @@ describe("CurveCurveIntersectXY", () => {
     captureAndTestIntersection(allGeometry, ck, dx, dy, loop, curveChain2, false, false, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersect", "intersectionSingleChild");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("IntersectXYWithTolerance", () => {
     const ck = new Checker();
@@ -1649,7 +1649,7 @@ describe("CurveCurveIntersectXY", () => {
       GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsLoose, 0.05, dx);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "IntersectXYWithTolerance");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLine", () => {
     const ck = new Checker();
@@ -1670,7 +1670,7 @@ describe("CurveCurveIntersectXY", () => {
     ck.testExactNumber(i1.y, expectedIntersectionXY.y);
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineLine");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLineString1", () => {
     const ck = new Checker();
@@ -1690,7 +1690,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineLineString1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLineString2", () => {
     const ck = new Checker();
@@ -1711,7 +1711,7 @@ describe("CurveCurveIntersectXY", () => {
     ck.testExactNumber(i1.y, expectedIntersectionXY.y);
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineLineString2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineArc", () => {
     const ck = new Checker();
@@ -1734,7 +1734,7 @@ describe("CurveCurveIntersectXY", () => {
     ck.testTightNumber(i1.y, expectedIntersectionXY.y);
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LinePath", () => {
     const ck = new Checker();
@@ -1762,7 +1762,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LinePath");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLoop", () => {
     const ck = new Checker();
@@ -1792,7 +1792,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineLoop");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcArc", () => {
     const ck = new Checker();
@@ -1817,7 +1817,7 @@ describe("CurveCurveIntersectXY", () => {
     ck.testTightNumber(i1.y, expectedIntersectionXY.y);
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ArcArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineStringLineString", () => {
     const ck = new Checker();
@@ -1837,7 +1837,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineStringLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcLineString", () => {
     const ck = new Checker();
@@ -1860,7 +1860,7 @@ describe("CurveCurveIntersectXY", () => {
     ck.testTightNumber(i1.y, expectedIntersectionXY.y);
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ArcLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineLine", () => {
     const ck = new Checker();
@@ -1889,7 +1889,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineLine");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineLineString", () => {
     const ck = new Checker();
@@ -1918,7 +1918,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineArc", () => {
     const ck = new Checker();
@@ -1949,7 +1949,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineBspline", () => {
     const ck = new Checker();
@@ -1987,7 +1987,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "BsplineBspline");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PathPath", () => {
     const ck = new Checker();
@@ -2025,7 +2025,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "PathPath");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LoopLoop", () => {
     const ck = new Checker();
@@ -2063,7 +2063,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.05);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LoopLoop");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineUnionRegion", () => {
     const ck = new Checker();
@@ -2092,7 +2092,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.5);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineUnionRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineParityRegion", () => {
     const ck = new Checker();
@@ -2121,7 +2121,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.5);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineParityRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ParityRegionUnionRegion", () => {
     const ck = new Checker();
@@ -2152,7 +2152,7 @@ describe("CurveCurveIntersectXY", () => {
       ck.testPoint3dXY(i1, i2);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ParityRegionUnionRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineStringBagOfCurves", () => {
     const ck = new Checker();
@@ -2181,7 +2181,7 @@ describe("CurveCurveIntersectXY", () => {
     }
     GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 0.1);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineStringBagOfCurves");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ChainArcBSpline", () => {
@@ -2285,6 +2285,6 @@ describe("CurveCurveIntersectXY", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ChainArcBSpline");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

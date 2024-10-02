@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { AxisOrder } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -100,7 +100,7 @@ describe("OrderedRotationAngles", () => {
     testMultiAngleEquivalence(ck, 10, 0, 0, true);
     testMultiAngleEquivalence(ck, 0, 10, 0, true);
     testMultiAngleEquivalence(ck, 0, 0, 10, true);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OrderedRotationAngles.TwoRotationsColumnBased", () => {
@@ -108,7 +108,7 @@ describe("OrderedRotationAngles", () => {
     testMultiAngleEquivalence(ck, 10, 20, 0, true);
     testMultiAngleEquivalence(ck, 0, 10, 20, true);
     testMultiAngleEquivalence(ck, 20, 0, 10, true);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OrderedRotationAngles.ThreeRotationsColumnBased", () => {
@@ -116,7 +116,7 @@ describe("OrderedRotationAngles", () => {
     testMultiAngleEquivalence(ck, 10, 20, 30, true);
     testMultiAngleEquivalence(ck, 50, 10, 20, true);
     testMultiAngleEquivalence(ck, 20, 40, 10, true);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OrderedRotationAngles.SingleRotationRowBased", () => {
@@ -124,7 +124,7 @@ describe("OrderedRotationAngles", () => {
     testMultiAngleEquivalence(ck, 10, 0, 0, false);
     testMultiAngleEquivalence(ck, 0, 10, 0, false);
     testMultiAngleEquivalence(ck, 0, 0, 10, false);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OrderedRotationAngles.TwoRotationsRowBased", () => {
@@ -132,7 +132,7 @@ describe("OrderedRotationAngles", () => {
     testMultiAngleEquivalence(ck, 10, 20, 0, false);
     testMultiAngleEquivalence(ck, 0, 10, 20, false);
     testMultiAngleEquivalence(ck, 20, 0, 10, false);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OrderedRotationAngles.ThreeRotationsRowBased", () => {
@@ -140,7 +140,7 @@ describe("OrderedRotationAngles", () => {
     testMultiAngleEquivalence(ck, 10, 20, 30, false);
     testMultiAngleEquivalence(ck, 50, 10, 20, false);
     testMultiAngleEquivalence(ck, 20, 40, 10, false);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -193,7 +193,7 @@ describe("OrderedRotationAngles", () => {
             if (ck.testDefined(anglesB))
               testEqualOrderedRotationAngles(ck, anglesA, anglesB);
 
-            expect(ck.getNumErrors()).equals(0);
+            expect(ck.getNumErrors()).toBe(0);
           }
         }
       }
@@ -322,7 +322,7 @@ describe("OrderedRotationAngles", () => {
     expectedMatrix = rY.multiplyMatrixMatrix(rZ, expectedMatrix).multiplyMatrixMatrix(rX, expectedMatrix);
     ck.testMatrix3d(matrix, expectedMatrix);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -448,7 +448,7 @@ describe("OrderedRotationAngles", () => {
     expectedMatrix = rY.multiplyMatrixMatrix(rZ, expectedMatrix).multiplyMatrixMatrix(rX, expectedMatrix).transpose();
     ck.testMatrix3d(matrix, expectedMatrix);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -574,7 +574,7 @@ describe("OrderedRotationAngles", () => {
     expectedMatrix = rX.multiplyMatrixMatrix(rZ, expectedMatrix).multiplyMatrixMatrix(rY, expectedMatrix);
     ck.testMatrix3d(matrix, expectedMatrix);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -628,7 +628,7 @@ describe("OrderedRotationAngles", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("OrderedRotationAnglesVersusYawPitchRollWithNonDefaultRotation", () => {
       const ck = new Checker();
@@ -681,7 +681,7 @@ describe("OrderedRotationAngles", () => {
           }
         }
       }
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });
 
@@ -766,7 +766,7 @@ describe("OrderedRotationAngles", () => {
     if (ck.testDefined(angles))
       testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -841,6 +841,6 @@ describe("OrderedRotationAngles", () => {
     OrderedRotationAngles.createRadians(x, y, z, AxisOrder.XZY, undefined, expectedAngles);
     testEqualOrderedRotationAngles(ck, angles, expectedAngles);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

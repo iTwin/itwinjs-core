@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -82,7 +82,7 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     planeF.setFromJSON({});
     planeF.setFromJSON();
     planeD.clone(planeF);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("altitude", () => {
@@ -94,7 +94,7 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     const pointB = planeAU.altitudeToPoint(a);
     ck.testCoordinate(a, planeAU.altitude(pointB), "altitude match");
     ck.testUndefined(Plane3dByOriginAndUnitNormal.createXYZUVW(3, 2, 1, 0, 0, 0));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("nulls", () => {
@@ -108,7 +108,7 @@ describe("Plane3dByOriginAndUnitNormal", () => {
       0, 1, 0, 3,
       0, 0, 0, 1));
     ck.testUndefined(plane1, "singular transform of plane");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("assortedCreate", () => {
     const ck = new Checker();
@@ -129,7 +129,7 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     const planeP = Plane3dByOriginAndUnitNormal.createXYAngle(1, 2, angle);
     Plane3dByOriginAndUnitNormal.createXYAngle(1, 2, angle, planeB);
     ck.testTrue(planeP.isAlmostEqual(planeB), "createXYAngle into result");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

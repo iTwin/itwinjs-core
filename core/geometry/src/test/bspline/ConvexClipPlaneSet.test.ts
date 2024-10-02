@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
 import { BooleanClipNode } from "../../clipping/BooleanClipNode";
 import { Clipper } from "../../clipping/ClipUtils";
@@ -69,7 +69,7 @@ describe("ConvexClipPlaneSet", () => {
       }
     }
     ck.checkpoint("ConvexClipPlaneSet.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("UnionOfConvexSets", () => {
     const ck = new Checker();
@@ -90,7 +90,7 @@ describe("ConvexClipPlaneSet", () => {
     setC.computePlanePlanePlaneIntersectionsInAllConvexSets(points, range, undefined, false);
     ck.testExactNumber(16, points.length, "intersection points in 2 boxes");
     setC.setInvisible(true);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // allow XOR etc as property names
   /* eslint-disable @typescript-eslint/naming-convention */
@@ -132,6 +132,6 @@ describe("ConvexClipPlaneSet", () => {
     ck.testUndefined(BooleanClipFactory.parseToClipper({ NOR: [1] }));
     ck.testUndefined(BooleanClipFactory.anyClipperToJSON(jsonA as Clipper));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

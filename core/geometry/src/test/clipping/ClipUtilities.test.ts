@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { ClipPrimitive } from "../../clipping/ClipPrimitive";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector } from "../../clipping/ClipVector";
@@ -80,7 +80,7 @@ describe("ParityRegionSweep", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "TriangleClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -145,7 +145,7 @@ describe("ClipUtilities", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rangeLoopsA, xy0.x, xy0.y);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ConvexClipPlaneSetComplement");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -224,7 +224,7 @@ describe("ClipUtilities", () => {
     ck.testCoordinate(len, expectedXYLengthSqr);
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineSegment");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("ClipLineString", () => {
       const ck = new Checker();
@@ -253,7 +253,7 @@ describe("ClipUtilities", () => {
       ck.testCoordinate(len, expectedXYLengthSqr);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLineString");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("ClipArc", () => {
       const ck = new Checker();
@@ -272,7 +272,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipArc");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });
 
@@ -304,7 +304,7 @@ describe("ClipUtilities", () => {
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipPath");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("ClipLoop1", () => {
       const ck = new Checker();
@@ -333,7 +333,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLoop1");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("ClipLoop2", () => {
       const ck = new Checker();
@@ -359,13 +359,13 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
-      expect(clippedCurve.length).equals(1);
+      expect(clippedCurve.length).toBe(1);
       const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
       const expectedArea = (6 * 16) + (8 * 8 * Math.PI / 2);
       ck.testCoordinate(area, expectedArea);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipLoop2");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
   it("ClipUtilities.LocalRangesIntersect", () => {
     const ck = new Checker();
@@ -516,7 +516,7 @@ describe("ClipUtilities", () => {
       z += delta10;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "LocalRangesIntersect");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -546,7 +546,7 @@ describe("ClipUtilities", () => {
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionRegion1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("ClipUnionRegion2", () => {
       const ck = new Checker();
@@ -572,13 +572,13 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
-      expect(clippedCurve.length).equals(1);
+      expect(clippedCurve.length).toBe(1);
       const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
       const expectedArea = (4 * 10) + (6 * 4) + (4 * 10);
       ck.testCoordinate(area, expectedArea);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionRegion2");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("ClipParityRegion1", () => {
       const ck = new Checker();
@@ -605,7 +605,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipParityRegion1");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("ClipParityRegion2", () => {
       const ck = new Checker();
@@ -631,13 +631,13 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
-      expect(clippedCurve.length).equals(1);
+      expect(clippedCurve.length).toBe(1);
       const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
       const expectedArea = (14 * 10) - 8;
       ck.testCoordinate(area, expectedArea);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipParityRegion2");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });
 
@@ -673,7 +673,7 @@ describe("ClipUtilities", () => {
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBagOfCurves1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("ClipBagOfCurves2", () => {
       const ck = new Checker();
@@ -697,13 +697,13 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
-      expect(clippedCurve.length).equals(2);
+      expect(clippedCurve.length).toBe(2);
       const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion))!;
       const expectedArea = (14 * 7 / 2);
       ck.testCoordinate(area, expectedArea);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipBagOfCurves2");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("BagOfCurvesInsideClip1", () => {
       const ck = new Checker();
@@ -736,7 +736,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesInsideClip1");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("BagOfCurvesInsideClip2", () => {
       const ck = new Checker();
@@ -760,13 +760,13 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
-      expect(clippedCurve.length).equals(2);
+      expect(clippedCurve.length).toBe(2);
       const area = RegionOps.computeXYArea((clippedCurve[1] as AnyRegion))!;
       const expectedArea = 14 * 7;
       ck.testCoordinate(area, expectedArea);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesInsideClip2");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("BagOfCurvesOutsideClip1", () => {
       const ck = new Checker();
@@ -805,7 +805,7 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip1");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("BagOfCurvesOutsideClip2", () => {
       const ck = new Checker();
@@ -829,11 +829,11 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
       // sanity tests
-      expect(clippedCurve.length).equals(1);
-      expect(clippedCurve[0].children?.length).equals(0);
+      expect(clippedCurve.length).toBe(1);
+      expect(clippedCurve[0].children?.length).toBe(0);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip2");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });
 
@@ -874,7 +874,7 @@ describe("ClipUtilities", () => {
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range2, shift);
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionForBagOfCurves1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("ClipUnionForBagOfCurves2", () => {
       const ck = new Checker();
@@ -903,12 +903,12 @@ describe("ClipUtilities", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range1, shift);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range2, shift);
       // sanity tests
-      expect(clippedCurve.length).equals(2);
+      expect(clippedCurve.length).toBe(2);
       const area = RegionOps.computeXYArea((clippedCurve[0] as AnyRegion))!;
       const expectedArea = (2 * 10) + (6 * 10);
       ck.testCoordinate(area, expectedArea);
       // save all geometries
       GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipUnionForBagOfCurves2");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });

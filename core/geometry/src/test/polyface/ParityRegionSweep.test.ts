@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -91,7 +91,7 @@ describe("ParityRegionSweep", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "ParityRegionSweep");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TriangulationWithEdgeIncidence2", () => {
     const ck = new Checker();
@@ -154,7 +154,7 @@ describe("ParityRegionSweep", () => {
       x0A += 40 * a;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "TriangulationWithEdgeIncidence2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("bowTieTriangulate", () => {
@@ -162,7 +162,7 @@ describe("ParityRegionSweep", () => {
     const points = [Point3d.create(0, 0), Point3d.create(5, 0), Point3d.create(5, 5), Point3d.create(1, -1)];
     const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
     ck.testUndefined(graph, "bow tie graph should fail triangulation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("simpleHoleTriangulate", () => {
@@ -183,7 +183,7 @@ describe("ParityRegionSweep", () => {
     GraphChecker.captureAnnotatedGraph(allGeometry, holeGraph, x0, y0 + a);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "simpleHoleTriangulate");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // cspell:word Karolis
@@ -233,7 +233,7 @@ describe("ParityRegionSweep", () => {
     ck.testExactNumber(otherClusteredEdgeCount, expectedOtherClusteredEdgeCount, "linearSweeps have expected other clustered edge count");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "KarolisRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

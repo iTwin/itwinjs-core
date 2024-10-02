@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
@@ -86,7 +86,7 @@ describe("FrameBuilder", () => {
       }
     }
     ck.checkpoint("FrameBuilder");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BsplineCurve", () => {
@@ -119,7 +119,7 @@ describe("FrameBuilder", () => {
         ck.testTransform(frameA, frameB, "Frame from linestring versus bspline");
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("InterpolationCurve", () => {
@@ -150,7 +150,7 @@ describe("FrameBuilder", () => {
       if (ck.testDefined(frameA) && ck.testDefined(frameB))
         ck.testTransform(frameA, frameB, "Frame from linestring versus interpolation curve");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("GenericCurve", () => {
@@ -165,7 +165,7 @@ describe("FrameBuilder", () => {
     if (ck.testDefined(frame))
       ck.testTransform(localToWorld, frame, "Frame from spiral ctor versus frenet");
     GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "GenericCurve");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("HelloVectors", () => {
@@ -202,7 +202,7 @@ describe("FrameBuilder", () => {
 
     }
     ck.checkpoint("FrameBuilder");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("HelloWorldB", () => {
     const ck = new Checker();
@@ -233,7 +233,7 @@ describe("FrameBuilder", () => {
       }
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("NonPlanarCurves", () => {
@@ -264,7 +264,7 @@ describe("FrameBuilder", () => {
     }
     ck.testDefined(curvesToPlane(LineSegment3d.createXYZXYZ(1, 2, 4, 5, 2, 3)), "test CurvePrimitive input");
     GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "NonPlanarCurves");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

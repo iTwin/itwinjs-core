@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import { PerpParallelOptions } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -38,7 +38,7 @@ describe("Point2d", () => {
     const p0 = Point2d.createFrom(undefined);
     ck.testExactNumber(0, p0.maxAbs());
     ck.checkpoint("Point2d.zeros");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Diffs", () => {
@@ -63,7 +63,7 @@ describe("Point2d", () => {
     ck.testCoordinate(pointDist * pointDist, pointA3d.distanceSquaredXY(pointB3d), "point3d.distanceXY");
 
     ck.checkpoint("Point2d.Diffs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Diffs1", () => {
@@ -192,7 +192,7 @@ describe("Point2d", () => {
       }
     }
     ck.checkpoint("Point3d.Diffs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("3dXY", () => {
@@ -209,7 +209,7 @@ describe("Point2d", () => {
     ck.testTrue(pointC3d.isAlmostEqualXY(pointC2d), "separately interpolated x,y");
 
     ck.checkpoint("Point2d.3dXY");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc", () => {
@@ -246,7 +246,7 @@ describe("Point2d", () => {
     ck.testCoordinate(fTangent, gTangent2, "project to 2d line");
 
     ck.checkpoint("Point2d.Misc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MiscA", () => {
@@ -274,7 +274,7 @@ describe("Point2d", () => {
     ck.testExactNumber(0, b.maxAbs());
     a.freeze();
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MiscB", () => {
@@ -291,7 +291,7 @@ describe("Point2d", () => {
     ck.testFalse(a.isParallelTo(b, false));
     ck.testFalse(a.isParallelTo(c));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MiscC", () => {
@@ -305,7 +305,7 @@ describe("Point2d", () => {
     const defaultFraction = 101.5;
     ck.testExactNumber(defaultFraction, b.fractionOfProjectionToLine(a, a, defaultFraction));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MiscD", () => {
@@ -327,7 +327,7 @@ describe("Point2d", () => {
     const r = q.scale(-1.0);
     ck.testUndefined(Vector2d.createOffsetBisector(q, r, 2.0), "undefined bisector for opposite normals");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Point2dArrayCarrier", () => {
@@ -356,7 +356,7 @@ describe("Point2d", () => {
     ck.testExactNumber(carrier.getXAtUncheckedPointIndex(3), 0);
     ck.testExactNumber(carrier.getYAtUncheckedPointIndex(3), 1);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -367,8 +367,8 @@ describe("Vector2d.setAT", () => {
     const newY: number = 6;
     point.setAt(0, newX);
     point.setAt(1, newY);
-    expect(point.x).equal(newX);
-    expect(point.y).equal(newY);
+    expect(point.x).toBe(newX);
+    expect(point.y).toBe(newY);
   });
 });
 
@@ -380,7 +380,7 @@ describe("Vector2d.createOffsetBisector", () => {
     const offset: number = 3;
     const expectedBisector: Vector2d = Vector2d.create(0, 3 * sqrt2);
     const outputBisector: Vector2d = Vector2d.createOffsetBisector(unitPerpA, unitPerpB, offset)!;
-    expect(outputBisector).to.deep.equal(expectedBisector);
+    expect(outputBisector).toEqual(expectedBisector);
   });
 });
 
@@ -389,21 +389,21 @@ describe("Vector2d.isParallelTo", () => {
     const thisVector: Vector2d = Vector2d.create(1, 2);
     const other: Vector2d = Vector2d.create(0, 0);
     const output: boolean = thisVector.isParallelTo(other);
-    expect(output).equal(false);
+    expect(output).toBe(false);
   }),
     it("Vector2d.isParallelToTrueWithGivenTolerances", () => {
       const thisVector: Vector2d = Vector2d.create(1, 2);
       const other: Vector2d = Vector2d.create(1.01, 2.01);
       const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
       const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
-      expect(output).equal(true);
+      expect(output).toBe(true);
     }),
     it("Vector2d.isParallelToFalseWithGivenTolerances", () => {
       const thisVector: Vector2d = Vector2d.create(1, 2);
       const other: Vector2d = Vector2d.create(1.01, 2.01);
       const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
       const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
-      expect(output).equal(false);
+      expect(output).toBe(false);
     });
 });
 
@@ -412,20 +412,20 @@ describe("Vector2d.isPerpendicularTo", () => {
     const thisVector: Vector2d = Vector2d.create(1, 2);
     const other: Vector2d = Vector2d.create(0, 0);
     const output: boolean = thisVector.isPerpendicularTo(other);
-    expect(output).equal(false);
+    expect(output).toBe(false);
   }),
     it("Vector2d.isPerpendicularToTrueWithGivenTolerances", () => {
       const thisVector: Vector2d = Vector2d.create(1, 2);
       const other: Vector2d = Vector2d.create(-2.01, 1.01);
       const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
       const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
-      expect(output).equal(true);
+      expect(output).toBe(true);
     }),
     it("Vector2d.isPerpendicularToFalseWithGivenTolerances", () => {
       const thisVector: Vector2d = Vector2d.create(1, 2);
       const other: Vector2d = Vector2d.create(-2.01, 1.01);
       const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
       const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
-      expect(output).equal(false);
+      expect(output).toBe(false);
     });
 });

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
@@ -81,7 +81,7 @@ describe("CurveFactory", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsOnLineString");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FilletArcDegenerate", () => {
     const ck = new Checker();
@@ -95,7 +95,7 @@ describe("CurveFactory", () => {
       ck.testDefined(data, "Degenerated arc data");
       ck.testUndefined(data.arc, "Degenerate arc -- expect no arc in data");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("appendToArcInPlace", () => {
     const ck = new Checker();
@@ -141,7 +141,7 @@ describe("CurveFactory", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "appendToArcInPlace");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FilletsInLinestring", () => {
     const ck = new Checker();
@@ -171,7 +171,7 @@ describe("CurveFactory", () => {
     const chain2 = CurveFactory.createFilletsInLineString(lineString0, radii, true)!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0, 0.0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 /**
@@ -233,7 +233,7 @@ describe("PipeConnections", () => {
       }
       GeometryCoreTestIO.saveGeometry(allGeometry, "PipeConnections", filename);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createMiteredPipeSections", () => {
@@ -302,7 +302,7 @@ describe("PipeConnections", () => {
       y0 = z0 = 0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredPipeSections");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createArcPointTangentPoint", () => {
@@ -335,7 +335,7 @@ describe("PipeConnections", () => {
       x0 += 20.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createArcPointTangentPoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("createRectangleXY", () => {
     const ck = new Checker();
@@ -368,7 +368,7 @@ describe("PipeConnections", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createRectangleXY");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createMiteredSweep", () => {
@@ -441,7 +441,7 @@ describe("PipeConnections", () => {
       x0Out += outDelta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredSweep");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createMiteredSweepStadiumExample", () => {
@@ -521,7 +521,7 @@ describe("PipeConnections", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredSweepStadiumExample");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
