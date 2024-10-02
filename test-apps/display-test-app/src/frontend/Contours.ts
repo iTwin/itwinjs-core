@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, dispose, IDisposable } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, dispose, IDisposable } from "@itwin/core-bentley";
 import {
   ColorInput,
   ColorInputProps, ComboBox, ComboBoxEntry, ComboBoxProps, createButton, createColorInput, createComboBox, createLabeledNumericInput,
@@ -13,7 +13,7 @@ import {
   TextBoxProps,
   updateSliderValue,
 } from "@itwin/frontend-devtools";
-import { ColorDef, ContourDisplay, LinePixels } from "@itwin/core-common";
+import { ColorDef, Contour, ContourDisplay, ContourDisplayProps, ContourGroupProps, LinePixels } from "@itwin/core-common";
 import { Viewport, ViewState3d } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -28,7 +28,7 @@ export class ContoursSettings implements IDisposable {
   private readonly _parent: HTMLElement;
   private readonly _element: HTMLElement;
   private readonly _subCatTextBox: TextBox;
-  private _currentTerrainProps: ContourDisplay.TerrainProps = {};
+  private _currentTerrainProps: ContourGroupProps = {};
   private _currentContourIndex = 0;
   private _minorInterval: LabeledNumericInput;
   private _majorIntervalCount: LabeledNumericInput;
@@ -41,7 +41,7 @@ export class ContoursSettings implements IDisposable {
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._currentTerrainProps.contourDef = {};
-    this._currentTerrainProps.subCategories = [];
+    this._currentTerrainProps.subCategories = "";
 
     this._vp = vp;
     this._parent = parent;
@@ -151,7 +151,7 @@ export class ContoursSettings implements IDisposable {
     this._parent.removeChild(this._element);
   }
 
-  private getContourDisplayProps(view: ViewState3d): ContourDisplay.SettingsProps {
+  private getContourDisplayProps(view: ViewState3d): ContourDisplayProps {
     const contours =  view.displayStyle.settings.contours;
     return contours.toJSON();
   }
@@ -161,16 +161,20 @@ export class ContoursSettings implements IDisposable {
     return Number.isNaN(n) ? undefined : n;
   }
 
-  private getTerrainProps(): ContourDisplay.TerrainProps {
+  private getTerrainProps(): ContourGroupProps {
     return {
-      subCategories: this._subCatTextBox.textbox.value.split(","),
+      subCategories: CompressedId64Set.sortAndCompress(this._subCatTextBox.textbox.value.split(",")),
       contourDef:{
-        majorColor: ColorDef.tryComputeTbgrFromString(this._majorColor.input.value),
-        minorColor: ColorDef.tryComputeTbgrFromString(this._minorColor.input.value),
-        majorPixelWidth: this.tryParseFloat(this._majorWidth.slider.value),
-        minorPixelWidth: this.tryParseFloat(this._minorWidth.slider.value),
-        majorPattern: this.tryParseFloat(this._majorLineStyle.select.value),
-        minorPattern: this.tryParseFloat(this._minorLineStyle.select.value),
+        majorStyle: {
+          color: ColorDef.tryComputeTbgrFromString(this._majorColor.input.value),
+          pixelWidth: this.tryParseFloat(this._majorWidth.slider.value),
+          pattern: this.tryParseFloat(this._majorLineStyle.select.value),
+        },
+        minorStyle: {
+          color: ColorDef.tryComputeTbgrFromString(this._minorColor.input.value),
+          pixelWidth: this.tryParseFloat(this._minorWidth.slider.value),
+          pattern: this.tryParseFloat(this._minorLineStyle.select.value),
+        },
         majorIntervalCount: this.tryParseFloat(this._majorIntervalCount.input.value),
         minorInterval: this.tryParseFloat(this._minorInterval.input.value),
       },
@@ -180,14 +184,15 @@ export class ContoursSettings implements IDisposable {
   private loadContourDef(index: number) {
     this._currentContourIndex = index;
     assert(this._vp.view.is3d());
-    this._subCatTextBox.textbox.value = this._vp.view.displayStyle.settings.contours.terrains[index]?.subCategories?.join(",") ?? "";
-    const curContourDef =  this._vp.view.displayStyle.settings.contours.terrains[index]?.contourDef ?? ContourDisplay.Contour.fromJSON({});
-    this._majorColor.input.value = curContourDef.majorColor.toHexString();
-    this._minorColor.input.value = curContourDef.minorColor.toHexString();
-    updateSliderValue(this._majorWidth, curContourDef.majorPixelWidth.toString());
-    updateSliderValue(this._minorWidth, curContourDef.minorPixelWidth.toString());
-    this._majorLineStyle.select.value = curContourDef.majorPattern.toString();
-    this._minorLineStyle.select.value = curContourDef.minorPattern.toString();
+    const subCats = this._vp.view.displayStyle.settings.contours.groups[index]?.subCategories;
+    this._subCatTextBox.textbox.value = (subCats ? [...subCats] : []).join(",") ?? "";
+    const curContourDef =  this._vp.view.displayStyle.settings.contours.groups[index]?.contourDef ?? Contour.fromJSON({});
+    this._majorColor.input.value = curContourDef.majorStyle.color.toHexString();
+    this._minorColor.input.value = curContourDef.minorStyle.color.toHexString();
+    updateSliderValue(this._majorWidth, curContourDef.majorStyle.pixelWidth.toString());
+    updateSliderValue(this._minorWidth, curContourDef.minorStyle.pixelWidth.toString());
+    this._majorLineStyle.select.value = curContourDef.majorStyle.pattern.toString();
+    this._minorLineStyle.select.value = curContourDef.minorStyle.pattern.toString();
     this._majorIntervalCount.input.value = curContourDef.majorIntervalCount.toString();
     this._minorInterval.input.value = curContourDef.minorInterval.toString();
   }
@@ -196,10 +201,10 @@ export class ContoursSettings implements IDisposable {
     const view = this._vp.view;
     assert(view.is3d());
     const contoursJson = this.getContourDisplayProps(view);
-    if (undefined === contoursJson.terrains)
-      contoursJson.terrains = [];
-    contoursJson.terrains[this._currentContourIndex] = this.getTerrainProps();
-    view.displayStyle.settings.contours = ContourDisplay.Settings.fromJSON(contoursJson);
+    if (undefined === contoursJson.groups)
+      contoursJson.groups = [];
+    contoursJson.groups[this._currentContourIndex] = this.getTerrainProps();
+    view.displayStyle.settings.contours = ContourDisplay.fromJSON(contoursJson);
 
     this.sync();
   }
@@ -208,10 +213,10 @@ export class ContoursSettings implements IDisposable {
     const view = this._vp.view;
     assert(view.is3d());
     const contoursJson = this.getContourDisplayProps(view);
-    if (undefined === contoursJson.terrains)
-      contoursJson.terrains = [];
-    contoursJson.terrains[this._currentContourIndex] = undefined;
-    view.displayStyle.settings.contours = ContourDisplay.Settings.fromJSON(contoursJson);
+    if (undefined === contoursJson.groups)
+      contoursJson.groups = [];
+    contoursJson.groups[this._currentContourIndex] = undefined;
+    view.displayStyle.settings.contours = ContourDisplay.fromJSON(contoursJson);
     this.loadContourDef(this._currentContourIndex);
 
     this.sync();

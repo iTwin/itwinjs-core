@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ColorDef, ContourDisplay, LinePixels } from "@itwin/core-common";
+import { ColorDef, Contour, ContourDisplay, LinePixels } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
@@ -48,11 +48,11 @@ export class ContourUniforms {
 
   private readonly _contourDefsSize = Math.ceil(ContourUniforms.maxContourDefs * 1.5);
   private readonly _contourDefs = new Float32Array(this._contourDefsSize * 4);
-  private _contourDisplay?: ContourDisplay.Settings;
+  private _contourDisplay?: ContourDisplay;
 
   public syncKey = 0;
 
-  public get contourDisplay(): ContourDisplay.Settings | undefined {
+  public get contourDisplay(): ContourDisplay | undefined {
     return this._contourDisplay;
   }
 
@@ -117,12 +117,12 @@ export class ContourUniforms {
            (If just 1 contour def remains then it takes 2 vec4 uniforms, of which 1.5 is actually used.)
     */
 
-    for (let index = 0, len = this.contourDisplay.terrains.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
-      const contourDef = this.contourDisplay.terrains[index]?.contourDef ?? ContourDisplay.Contour.fromJSON({});;
+    for (let index = 0, len = this.contourDisplay.groups.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
+      const contourDef = this.contourDisplay.groups[index]?.contourDef ?? Contour.fromJSON({});;
       const even = (index & 1) === 0;
       const colorDefsNdx = (even ? index * 1.5 : (index - 1) * 1.5 + 2) * 4;
-      this.packColor (colorDefsNdx, contourDef.majorColor, contourDef.minorColor);
-      this.packPatWidth (colorDefsNdx, convertLinePixelsToIndexInShader(contourDef.majorPattern), convertLinePixelsToIndexInShader(contourDef.minorPattern), contourDef.majorPixelWidth, contourDef.minorPixelWidth);
+      this.packColor (colorDefsNdx, contourDef.majorStyle.color, contourDef.minorStyle.color);
+      this.packPatWidth (colorDefsNdx, convertLinePixelsToIndexInShader(contourDef.majorStyle.pattern), convertLinePixelsToIndexInShader(contourDef.minorStyle.pattern), contourDef.majorStyle.pixelWidth, contourDef.minorStyle.pixelWidth);
       const intervalsPairNdx = (Math.floor(index * 0.5) * 3 + 1) * 4;
       this.packIntervals (intervalsPairNdx, even, contourDef.minorInterval, contourDef.majorIntervalCount);
     }

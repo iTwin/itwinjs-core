@@ -97,10 +97,10 @@ export class BatchUniforms {
   }
 
   public get wantContourLines(): boolean {
-    const contours: ContourDisplay.Settings | undefined = this._target.plan.contours;
-    if (contours && contours.terrains !== undefined && contours.terrains.length) {
-      for (let index = 0, len = contours.terrains.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
-        if (undefined !== contours.terrains[index]?.subCategories)
+    const contours: ContourDisplay | undefined = this._target.plan.contours;
+    if (contours && contours.groups !== undefined && contours.groups.length) {
+      for (let index = 0, len = contours.groups.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
+        if (undefined !== contours.groups[index]?.subCategories)
           return true;
       }
     }

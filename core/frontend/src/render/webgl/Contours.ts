@@ -58,7 +58,7 @@ const scratchPackedFeature = PackedFeature.createWithIndex();
 export class Contours implements WebGLDisposable {
   public readonly target: Target;
   private readonly _options: BatchOptions;
-  public readonly contours?: ContourDisplay.Settings;
+  public readonly contours?: ContourDisplay;
   private _lut?: Texture2DHandle;
   private _lutWidth = 0;
 
@@ -90,17 +90,19 @@ export class Contours implements WebGLDisposable {
 
   private _update(map: RenderFeatureTable, lut: Texture2DHandle) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
-    const contours: ContourDisplay.Settings | undefined = this.target.plan.contours;
+    const contours: ContourDisplay | undefined = this.target.plan.contours;
     this.buildLookupTable(updater, map, contours!);
     lut.update(updater);
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: ContourDisplay.Settings) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: ContourDisplay) {
+    // if (undefined === contours)
+    //   contours = ContourDisplay.fromJSON();
     // setup an efficient way to compare feature subcategories with lists in terrains
     const subCatMap = new Id64.Uint32Map<number>();
     // NB: index also has to be a max of 14 - has to fit in 4 bits with value 15 reserved for no terrain def
-    for (let index = 0, len = contours.terrains.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
-      const subCats = contours.terrains[index]?.subCategories;
+    for (let index = 0, len = contours.groups.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
+      const subCats = contours.groups[index]?.subCategories;
       if (subCats !== undefined) {
         for (const subCat of subCats)
           subCatMap.setById(subCat, index);
