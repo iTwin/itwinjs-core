@@ -23,7 +23,7 @@ function orderTest(socket: { handle(channel: string, listener: (event: any, ...a
 }
 
 export function setupIpcTestElectron() {
-  orderTest(require("electron").ipcMain); // eslint-disable-line @typescript-eslint/no-var-requires
+  orderTest(require("electron").ipcMain); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 }
 
 export async function setupIpcTest(before = async () => { }, socketOverride?: IpcWebSocketBackend) {

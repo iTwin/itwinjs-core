@@ -125,7 +125,7 @@ function getCount(imodel: IModelDb, className: string) {
 
 describe("PerformanceElementsTests", () => {
   const reporter = new Reporter();
-  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-var-requires
+  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 
   before(async () => {
     // Create all of the seed iModels
@@ -330,7 +330,7 @@ describe("PerformanceElementsTests", () => {
 describe("PerformanceElementsTests2d", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d");
   const reporter = new Reporter();
-  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-var-requires
+  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))

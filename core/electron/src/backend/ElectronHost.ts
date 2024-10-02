@@ -271,7 +271,7 @@ export class ElectronHost {
       throw new Error("Not running under Electron");
 
     if (!this.isValid) {
-      this._electron = require("electron");
+      this._electron = require("electron"); // eslint-disable-line @typescript-eslint/no-require-imports
       this._ipc = new ElectronIpc();
       const app = this.app;
       if (!app.isReady())
