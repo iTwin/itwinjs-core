@@ -727,7 +727,8 @@ describe("Formatting tests:", () => {
       await format.fromJSON(unitsProvider, formatData).catch(() => { });
       if (formatData.hasOwnProperty("precision"))
         assert.isTrue(format.precision === formatData.precision);
-      assert.isTrue(formatTypeToString(format.type).toUpperCase() === formatData.type.toUpperCase());
+      //assert.isTrue(formatTypeToString(format.type).toUpperCase() === formatData.type.toUpperCase());
+      assert.isTrue(format.type.toUpperCase() === formatData.type.toUpperCase());
       if (formatData.hasOwnProperty("uomSeparator"))
         assert.isTrue(format.uomSeparator === formatData.uomSeparator);
       for (const traitStr of formatData.formatTraits) {
@@ -742,7 +743,8 @@ describe("Formatting tests:", () => {
       }
 
       const jsonData = format.toJSON();
-      assert.isTrue(jsonData.type.toUpperCase() === formatTypeToString(format.type).toUpperCase());
+      //assert.isTrue(jsonData.type.toUpperCase() === formatTypeToString(format.type).toUpperCase());
+      assert.isTrue(jsonData.type.toUpperCase() === format.type.toUpperCase());
       if (formatData.hasOwnProperty("showSignOption")) {
         assert.isTrue(formatData.showSignOption!.toUpperCase() === jsonData.showSignOption!.toUpperCase());
       }

@@ -72,6 +72,8 @@ export enum FractionalPrecision {
   Two = 2,
   Four = 4,
   Eight = 8,
+
+
   Sixteen = 16,
   ThirtyTwo = 32,
   SixtyFour = 64,
@@ -101,39 +103,39 @@ export enum DecimalPrecision {
  *  @beta */
 export enum FormatType {
   /** Decimal display (ie 2.125) */
-  Decimal,
+  Decimal = "decimal",
   /** Fractional display (ie 2-1/8) */
-  Fractional,
+  Fractional = "fractional",
   /** Scientific Notation (ie 1.04e3) */
-  Scientific,
+  Scientific = "scientific",
   /** Civil Engineering Stationing (ie 1+00). */
-  Station,
+  Station = "station",
   /** Bearing angle e.g. N05:00:00E. Requires provided quantities to be of the angle phenomenon */
-  Bearing,
+  Bearing = "bearing",
   /** Azimuth angle e.g. 45°30'00". Requires provided quantities to be of the angle phenomenon */
-  Azimuth,
+  Azimuth = "azimuth",
 }
 
 /** required if type is scientific
  * @beta */
 export enum ScientificType {
   /** Non-zero value left of decimal point (ie 1.2345e3) */
-  Normalized,
+  Normalized = "normalized",
   /** Zero value left of decimal point (ie 0.12345e4) */
-  ZeroNormalized,
+  ZeroNormalized = "zeronormalized",
 }
 
 /** Determines how the sign of values are displayed
  * @beta */
 export enum ShowSignOption {
   /** Never show a sign even if the value is negative. */
-  NoSign,
+  NoSign = "nosign",
   /** Only show a sign when the value is negative. */
-  OnlyNegative,
+  OnlyNegative = "onlynegative",
   /** Always show a sign whether the value is positive or negative. */
-  SignAlways,
+  SignAlways = "signalways",
   /** Only show a sign when the value is negative but use parentheses instead of a negative sign. For example, -10 is formatted as `(10)`. */
-  NegativeParentheses,
+  NegativeParentheses = "negativeparentheses",
 }
 
 // parse and toString methods
