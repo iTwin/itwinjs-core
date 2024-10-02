@@ -28,6 +28,7 @@ class Reference extends TileTreeReference {
   public override getToolTipPromise(hit: HitDetail) { return this._ref.getToolTipPromise(hit); }
 
   protected override getSymbologyOverrides() { return this._provider.ovrs; }
+
   protected override computeTransform(tree: TileTree): Transform {
     if (!this._transform) {
       this._transform = this._provider.computeTransform(tree);
@@ -38,6 +39,10 @@ class Reference extends TileTreeReference {
     }
 
     return this._transform instanceof Transform ? this._transform : tree.iModelTransform;
+  }
+
+  protected override getTransformToIModel() {
+    return this._provider.fromViewport;
   }
 }
 
@@ -75,7 +80,8 @@ class Provider implements TiledGraphicsProvider {
     const creator = new ViewCreator3d(attachedIModel);
     const view = await creator.createDefaultView();
 
-    const transform = Transform.createIdentity();
+    const attachedEcefToWorld = attachedIModel.getEcefTransform().inverse();
+    const transform = attachedEcefToWorld ? vp.iModel.getEcefTransform().multiplyTransformTransform(attachedEcefToWorld) : Transform.createIdentity();
     
     return new Provider(view, vp, transform);
   }
