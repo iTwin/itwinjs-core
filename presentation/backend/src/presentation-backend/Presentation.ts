@@ -141,7 +141,7 @@ export class Presentation {
         Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
     });
 
-    if (this._initProps.enableSchemasPreload) {
+    if (this._initProps.enableSchemasPreload) { // eslint-disable-line @typescript-eslint/no-deprecated
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
     }
   }

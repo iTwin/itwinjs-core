@@ -3186,8 +3186,8 @@ export class SnapshotDb extends IModelDb {
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
-    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
+    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() }); // eslint-disable-line @typescript-eslint/no-deprecated
+    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   public static override findByKey(key: string): SnapshotDb {
