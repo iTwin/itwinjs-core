@@ -23,6 +23,6 @@ describe("AkimaCurve3d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, 0, 0, 0);
     testGeometryQueryRoundTrip(ck, curve);
     GeometryCoreTestIO.saveGeometry(allGeometry, "AkimaCurve3d", "HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

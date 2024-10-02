@@ -43,7 +43,7 @@ describe("DeepCompare", () => {
     ck.testFalse(compareObj.compare(originalObject, toTestObject), "array length change - testing both");
 
     ck.checkpoint("DeepCompare.BasicTests");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

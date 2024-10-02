@@ -163,7 +163,7 @@ describe("RecursiveClipSets", () => {
 
     Checker.clearGeometry("RecursiveClipSets.test1", outDir);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Test2", () => {
@@ -191,7 +191,7 @@ describe("RecursiveClipSets", () => {
 
     Checker.clearGeometry("RecursiveClipSets.test2", outDir);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Test3", () => {
@@ -229,7 +229,7 @@ describe("RecursiveClipSets", () => {
     testClipper(points, rootClone);
     Checker.clearGeometry("RecursiveClipSets.test3", outDir);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("HullAndInlets", () => {
@@ -273,7 +273,7 @@ describe("RecursiveClipSets", () => {
     x0 += 100;
 
     Checker.clearGeometry("HullAndInlets", outDir);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("LineClip0", () => {
@@ -283,7 +283,7 @@ describe("RecursiveClipSets", () => {
     for (const perpendicularFactor of [-1.0, 1.0]) {
       for (const generatorFunction of [
         (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.nonConvexQuadSimpleFractal(numRecursion,_perpendicularFactor),
+        (numRecursion: number, _perpendicularFactor: number) => Sample.nonConvexQuadSimpleFractal(numRecursion, _perpendicularFactor),
         (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(numRecursion, _perpendicularFactor),
         (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
         (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(numRecursion, _perpendicularFactor),
@@ -390,7 +390,7 @@ describe("RecursiveClipSets", () => {
     }
 
     Checker.clearGeometry("RecursiveClipSets.LineClip0", outDir);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PolygonClipA", () => {
@@ -420,7 +420,7 @@ describe("RecursiveClipSets", () => {
       x0 += dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, outDir, "PolygonClipA");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolygonClipB", () => {
     const ck = new Checker();
@@ -473,7 +473,7 @@ describe("RecursiveClipSets", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, outDir, "PolygonClipB");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
