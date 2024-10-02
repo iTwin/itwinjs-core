@@ -2049,7 +2049,7 @@ export enum ChangeFlag {
     NeverDrawn = 2,
     None = 0,
     Overrides = 268435319,
-    ViewedCategories = 4,// eslint-disable-line no-shadow
+    ViewedCategories = 4,
     ViewedCategoriesPerModel = 64,
     ViewedModels = 8,
     ViewState = 128

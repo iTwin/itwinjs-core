@@ -468,7 +468,7 @@ export const Diagnostics: {
             messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
-        code: string;
+        code: string; /** EC-1306: Required message parameters: class name, property name, navigation relationship.fullName */
         diagnosticType: DiagnosticType;
     };
     SchemaRefAliasMustBeUnique: {
@@ -481,7 +481,7 @@ export const Diagnostics: {
             messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
         };
-        code: string;
+        code: string; /** EC-1306: Required message parameters: class name, property name, navigation relationship.fullName */
         diagnosticType: DiagnosticType;
     };
     ReferenceCyclesNotAllowed: {
@@ -494,7 +494,7 @@ export const Diagnostics: {
             messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
         };
-        code: string;
+        code: string; /** EC-1306: Required message parameters: class name, property name, navigation relationship.fullName */
         diagnosticType: DiagnosticType;
     };
     BaseClassIsSealed: {
@@ -595,7 +595,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: DiagnosticType;
+            readonly diagnosticType: DiagnosticType; /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
@@ -607,7 +607,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: DiagnosticType;
+            readonly diagnosticType: DiagnosticType; /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
@@ -619,7 +619,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: DiagnosticType;
+            readonly diagnosticType: DiagnosticType; /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string, string, string] | undefined;
             category: DiagnosticCategory;
@@ -631,7 +631,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: DiagnosticType;
+            readonly diagnosticType: DiagnosticType; /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
@@ -643,7 +643,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: DiagnosticType;
+            readonly diagnosticType: DiagnosticType; /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
@@ -655,7 +655,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: DiagnosticType;
+            readonly diagnosticType: DiagnosticType; /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
             category: DiagnosticCategory;
@@ -667,7 +667,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: DiagnosticType;
+            readonly diagnosticType: DiagnosticType; /** EC-1300: Required message parameters: childClass.FullName, property name, baseClass.FullName, base value type, child value type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string] | undefined;
             category: DiagnosticCategory;
@@ -739,9 +739,9 @@ export enum DiagnosticType {
     // (undocumented)
     CustomAttributeContainer = 4,
     // (undocumented)
-    None = 0,// eslint-disable-line @typescript-eslint/no-shadow
+    None = 0,
     // (undocumented)
-    Property = 3,// eslint-disable-line @typescript-eslint/no-shadow
+    Property = 3,
     // (undocumented)
     RelationshipConstraint = 5,
     // (undocumented)
