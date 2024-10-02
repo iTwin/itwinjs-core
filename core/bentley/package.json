@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "4.10.0-dev.6",
+  "version": "4.10.0-dev.11",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",
@@ -17,9 +17,9 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=core-bentley",
-    "test": "mocha",
+    "test": "vitest --run",
     "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
-    "cover": "nyc npm -s test",
+    "cover": "vitest --run --coverage",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
@@ -37,17 +37,12 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
     "@opentelemetry/api": "1.0.4",
-    "@types/chai": "4.3.1",
-    "@types/chai-as-promised": "^7",
-    "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
+    "@vitest/coverage-istanbul": "^2.1.0",
     "eslint": "^8.56.0",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "vitest": "^2.1.0"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
