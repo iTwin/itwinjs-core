@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   ContextRealityModel, ContextRealityModelProps, ContextRealityModels, ContextRealityModelsContainer,
 } from "../ContextRealityModel";
@@ -31,6 +31,7 @@ describe("ContextRealityModel", () => {
     expect(m.classifiers.size).to.equal(0);
     expect(m.appearanceOverrides).to.be.undefined;
     expect(m.planarClipMaskSettings).to.be.undefined;
+    expect(m.invisible).to.be.false;
 
     m = makeModel({
       rdSourceKey: {
@@ -50,6 +51,7 @@ describe("ContextRealityModel", () => {
         rdsUrl: "rdsUrl", containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
       },
       planarClipMask: { mode: PlanarClipMaskMode.Priority },
+      invisible: false,
     });
     expect(m.rdSourceKey).not.to.be.undefined;
     expect(m.url).to.equal("b");
@@ -60,6 +62,7 @@ describe("ContextRealityModel", () => {
     expect(m.classifiers).not.to.be.undefined;
     expect(m.orbitGtBlob).not.to.be.undefined;
     expect(m.planarClipMaskSettings).not.to.be.undefined;
+    expect(m.invisible).not.to.be.undefined;
   });
 
   it("synchronizes JSON", () => {
@@ -378,7 +381,7 @@ describe("ContextRealityModels", () => {
   });
 
   describe("model changed events", () => {
-    type ModelChangeEvent = [string, "mask" | "appearance"];
+    type ModelChangeEvent = [string, "mask" | "appearance" | "invisible"];
     const events: ModelChangeEvent[] = [];
     let models: ContextRealityModels;
 
@@ -387,6 +390,7 @@ describe("ContextRealityModels", () => {
       models = new ContextRealityModels({ contextRealityModels: [{tilesetUrl: "a"}, {tilesetUrl: "b"}] });
       models.onPlanarClipMaskChanged.addListener((model) => events.push([model.url, "mask"]));
       models.onAppearanceOverridesChanged.addListener((model) => events.push([model.url, "appearance"]));
+      models.onInvisibleChanged.addListener((model) => events.push([model.url, "invisible"]));
     });
 
     function expectEvents(expected: ModelChangeEvent[]): void {
@@ -398,13 +402,17 @@ describe("ContextRealityModels", () => {
       models.models[0].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1 });
       models.models[1].appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
       models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 2 });
+      models.models[1].invisible = true;
       models.models[0].appearanceOverrides = undefined;
+      models.models[0].invisible = true;
 
       expectEvents([
         [ "a", "mask" ],
         [ "b", "appearance" ],
         [ "b", "mask" ],
+        [ "b", "invisible" ],
         [ "a", "appearance" ],
+        [ "a", "invisible" ],
       ]);
     });
 
@@ -430,14 +438,17 @@ describe("ContextRealityModels", () => {
       const m0 = models.replace(models.models[0], { tilesetUrl: "aa" });
       const m1 = models.update(models.models[1], { name: "bb" });
       const m2 = models.add({ tilesetUrl: "c" });
+      const m3 = models.add({ tilesetUrl: "d" });
 
       m0.appearanceOverrides = undefined;
       m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 3 });
       m2.planarClipMaskSettings = undefined;
+      m3.invisible = true;
       expectEvents([
         [ "aa", "appearance" ],
         [ "b", "appearance" ],
         [ "c", "mask" ],
+        [ "d", "invisible" ],
       ]);
     });
   });

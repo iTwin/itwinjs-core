@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveExtendMode } from "../../curve/CurveExtendMode";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -118,8 +119,8 @@ describe("CurveChainWithDistanceIndex", () => {
       const ray1 = path.fractionToPointAndUnitTangent(1);
       ray0.direction.scaleInPlace(-offsetDist);
       ray1.direction.scaleInPlace(offsetDist);
-      const detail0 = path.closestPoint(ray0.fractionToPoint(1), true)!;
-      const detail1 = path.closestPoint(ray1.fractionToPoint(1), true)!;
+      const detail0 = path.closestPoint(ray0.fractionToPoint(1), [CurveExtendMode.OnCurve, CurveExtendMode.None])!;
+      const detail1 = path.closestPoint(ray1.fractionToPoint(1), [CurveExtendMode.None, CurveExtendMode.OnCurve])!;
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, [detail0.point, detail1.point], 0.1, x0);
 
       const path0 = path.clonePartialCurve(detail0.fraction, 1)!;
@@ -133,7 +134,7 @@ describe("CurveChainWithDistanceIndex", () => {
       ck.testPoint3d(detail1.point, path1.endPoint(), "Point projected off path end equals end of clonedPartialCurve at projection fraction");
       ck.testPoint3d(detail1.point, path.fractionToPoint(detail1.fraction), "Point projected off path end equals fractionToPoint at projection fraction");
 
-      x0 += path.range().xLength() + 1;
+      x0 += path.range().xLength() + 2;
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClonePartialFromExtendedClosestPointDetailFraction");
