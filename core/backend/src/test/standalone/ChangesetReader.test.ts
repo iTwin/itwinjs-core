@@ -186,7 +186,7 @@ describe("Changeset Reader API", async () => {
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schema]);
     rwIModel.saveChanges("user 1: schema changeset");
-    if ("push changes") {
+    if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
       await rwIModel.pushChanges({ description: "push schema changeset", accessToken: adminToken });
@@ -205,7 +205,7 @@ describe("Changeset Reader API", async () => {
       drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     rwIModel.saveChanges("user 1: create drawing partition");
-    if ("push changes") {
+    if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
       await rwIModel.pushChanges({ description: "user 1: create drawing partition", accessToken: adminToken });
@@ -257,7 +257,7 @@ describe("Changeset Reader API", async () => {
 
     rwIModel.saveChanges("user 1: data");
 
-    if ("test local changes") {
+    if (true || "test local changes") {
       const reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
@@ -335,7 +335,7 @@ describe("Changeset Reader API", async () => {
     await updatedElements();
 
     const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
-    if ("updated element") {
+    if (true || "updated element") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
@@ -362,7 +362,7 @@ describe("Changeset Reader API", async () => {
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "Old");
     }
-    if ("updated element when no classId") {
+    if (true || "updated element when no classId") {
       const otherDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: otherDb, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
@@ -394,7 +394,7 @@ describe("Changeset Reader API", async () => {
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "Old");
     }
-    if ("test changeset file") {
+    if (true || "test changeset file") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
@@ -466,7 +466,7 @@ describe("Changeset Reader API", async () => {
       });
       adaptor.dispose();
     }
-    if ("test ChangesetAdaptor.acceptClass()") {
+    if (true || "test ChangesetAdaptor.acceptClass()") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       adaptor.acceptClass("TestDomain.Test2dElement");
@@ -479,7 +479,7 @@ describe("Changeset Reader API", async () => {
       assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
       adaptor.dispose();
     }
-    if ("test ChangesetAdaptor.adaptor()") {
+    if (true || "test ChangesetAdaptor.adaptor()") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       adaptor.acceptOp("Updated");
@@ -730,7 +730,7 @@ describe("Changeset Reader API", async () => {
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
     const changesets = (await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir })).slice(1);
 
-    if ("Grouping changeset [2,3,4] should not contain TestDomain:Test2dElement as insert+update+delete=noop") {
+    if (true || "Grouping changeset [2,3,4] should not contain TestDomain:Test2dElement as insert+update+delete=noop") {
       const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
@@ -748,7 +748,7 @@ describe("Changeset Reader API", async () => {
       expect(instances[0].classFullName).to.eq("BisCore:DrawingModel");
     }
 
-    if ("Grouping changeset [3,4] should contain update+delete=delete TestDomain:Test2dElement") {
+    if (true || "Grouping changeset [3,4] should contain update+delete=delete TestDomain:Test2dElement") {
       const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.slice(1).map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
@@ -780,7 +780,7 @@ describe("Changeset Reader API", async () => {
       });
     }
     const groupCsFile = path.join(KnownTestLocations.outputDir, "changeset_grouping.ec");
-    if ("Grouping changeset [2,3] should contain insert+update=insert TestDomain:Test2dElement") {
+    if (true || "Grouping changeset [2,3] should contain insert+update=insert TestDomain:Test2dElement") {
       const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.slice(0, 2).map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
@@ -813,7 +813,7 @@ describe("Changeset Reader API", async () => {
 
       reader.writeToFile({ fileName: groupCsFile, containsSchemaChanges: false, overwriteFile: true });
     }
-    if ("writeToFile() test") {
+    if (true || "writeToFile() test") {
       const reader = SqliteChangesetReader.openFile({ fileName: groupCsFile, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];

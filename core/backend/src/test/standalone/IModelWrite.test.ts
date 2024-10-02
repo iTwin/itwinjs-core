@@ -414,7 +414,7 @@ describe("IModelWriteTest", () => {
     await rwIModel.importSchemaStrings([schema]);
     rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     rwIModel.saveChanges("user 1: schema changeset");
-    if ("push changes") {
+    if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
       await rwIModel.pushChanges({ description: "push schema changeset", accessToken: adminToken });
@@ -483,9 +483,9 @@ describe("IModelWriteTest", () => {
     CodeService.createForIModel = async () => {
       throw new CodeService.Error("MissingCode", 0x10000 + 1, " ");
     };
-    const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
+    const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    let firstNonRootElement = {id:undefined, codeValue: "test"};
+    let firstNonRootElement = { id: undefined, codeValue: "test" };
     briefcaseDb.withPreparedStatement("SELECT * from Bis.Element LIMIT 1 OFFSET 1", (stmt: ECSqlStatement) => {
       if (stmt.step() === DbResult.BE_SQLITE_ROW) {
         firstNonRootElement = stmt.getRow();
@@ -496,8 +496,8 @@ describe("IModelWriteTest", () => {
     expect(() => briefcaseDb.saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not.throw();
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect error from verifyCode
-    let newProps = { id: firstNonRootElement.id, code: {...Code.createEmpty(), value:firstNonRootElement.codeValue}, classFullName: undefined, model: undefined };
-    await briefcaseDb.locks.acquireLocks({exclusive: firstNonRootElement.id});
+    let newProps = { id: firstNonRootElement.id, code: { ...Code.createEmpty(), value: firstNonRootElement.codeValue }, classFullName: undefined, model: undefined };
+    await briefcaseDb.locks.acquireLocks({ exclusive: firstNonRootElement.id });
     expect(() => briefcaseDb.elements.updateElement(newProps)).to.throw(CodeService.Error);
     // make change to the briefcaseDb that will invoke verifyCode with a null(empty) code, e.g., update an element with a null(empty) code
     // expect no error from verifyCode
@@ -508,12 +508,12 @@ describe("IModelWriteTest", () => {
     CodeService.createForIModel = async () => {
       throw new CodeService.Error("NoCodeIndex", 0x10000 + 1, " ");
     };
-    const briefcaseDb2 = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
+    const briefcaseDb2 = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     briefcaseDb2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    await briefcaseDb2.locks.acquireLocks({exclusive: firstNonRootElement.id});
+    await briefcaseDb2.locks.acquireLocks({ exclusive: firstNonRootElement.id });
     // expect no error from verifyCode for empty code
     expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
-    newProps = { id: firstNonRootElement.id, code: {...Code.createEmpty(), value:firstNonRootElement.codeValue}, classFullName: undefined, model: undefined };
+    newProps = { id: firstNonRootElement.id, code: { ...Code.createEmpty(), value: firstNonRootElement.codeValue }, classFullName: undefined, model: undefined };
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect no error from verifyCode
     expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
@@ -552,7 +552,7 @@ describe("IModelWriteTest", () => {
     rwIModel2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     rwIModel.saveChanges("user 1: schema changeset");
-    if ("push changes") {
+    if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
       await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
@@ -605,7 +605,7 @@ describe("IModelWriteTest", () => {
     assert.equal(3902, rwIModel[_nativeDb].getChangesetSize());
     rwIModel.saveChanges("user 1: data changeset");
 
-    if ("push changes") {
+    if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
       await rwIModel.pushChanges({ description: "10 instances of test2dElement", accessToken: adminToken });
@@ -629,7 +629,7 @@ describe("IModelWriteTest", () => {
     }
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
-    if ("user pull/merge") {
+    if (true || "user pull/merge") {
       // pull and merge changes
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
@@ -654,7 +654,7 @@ describe("IModelWriteTest", () => {
       assert.equal(13, rwIModel[_nativeDb].getChangesetSize());
       rwIModel2.saveChanges("user 2: data changeset");
 
-      if ("push changes") {
+      if (true || "push changes") {
         // Push the changes to the hub
         const prePushChangeSetId = rwIModel2.changeset.id;
         await rwIModel2.pushChanges({ accessToken: userToken, description: "10 instances of test2dElement" });
@@ -684,7 +684,7 @@ describe("IModelWriteTest", () => {
     await rwIModel.importSchemaStrings([schemaV2]);
     assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
     rwIModel.saveChanges("user 1: schema changeset2");
-    if ("push changes") {
+    if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
       await rwIModel.pushChanges({ accessToken: adminToken, description: "schema changeset" });
@@ -711,7 +711,7 @@ describe("IModelWriteTest", () => {
     assert.equal(6279, rwIModel[_nativeDb].getChangesetSize());
     rwIModel.saveChanges("user 1: data changeset");
 
-    if ("push changes") {
+    if (true || "push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
       await rwIModel.pushChanges({ accessToken: adminToken, description: "10 instances of test2dElement" });
@@ -755,7 +755,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
 
-    if ("user pull/merge") {
+    if (true || "user pull/merge") {
       // pull and merge changes
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
