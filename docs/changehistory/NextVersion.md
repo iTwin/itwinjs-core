@@ -93,6 +93,9 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 
 - Add support for unit inversion during unit conversion
 
+- Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
+- The previous applies to azimuthBase as well, if provided.
+
 ## API deprecations
 
 ### @itwin/appui-abstract
