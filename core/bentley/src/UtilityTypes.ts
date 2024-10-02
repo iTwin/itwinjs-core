@@ -72,7 +72,7 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
  * @public
  */
 export type NonFunctionPropertyNamesOf<T> = {
-  [K in keyof T]: T[K] extends Function ? never : K;
+  [K in keyof T]: T[K] extends (...args: any) => any ? never : K;
 }[keyof T];
 
 /** Produces a type consisting of all of the public properties of `T` except for those of type `function`.
@@ -111,7 +111,7 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
 /** The members of `T` that are functions and no other properties
  * @public
  */
-export type PickMethods<T> = { [P in keyof T]: T[P] extends Function ? T[P] : never; };
+export type PickMethods<T> = { [P in keyof T]: T[P] extends (...args: any) => any ? T[P] : never; };
 
 /** The members of `T` that are functions that do not return a Promise
  * @public
