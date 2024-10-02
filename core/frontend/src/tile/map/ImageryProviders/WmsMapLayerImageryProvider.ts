@@ -188,7 +188,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     const infoFormats = this._capabilities?.featureInfoFormats;
     if (!doToolTips || undefined === infoFormats)
       return;
-    let formatString = infoFormats.find((format) => format === "text/html");
+    let formatString: string | undefined = infoFormats.find((format) => format === "text/html");
     if (!formatString)
       formatString = infoFormats[0];
 
