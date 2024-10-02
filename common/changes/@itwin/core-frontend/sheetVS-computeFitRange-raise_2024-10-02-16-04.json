@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Removed Internal tag for SheetViewState.computeFitRange",
+      "comment": "",
       "type": "none"
     }
   ],
