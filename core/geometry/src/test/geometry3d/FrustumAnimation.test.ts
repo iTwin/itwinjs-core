@@ -116,7 +116,7 @@ describe("FrustumAnimation", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.General");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PureRotation", () => {
@@ -175,7 +175,7 @@ describe("FrustumAnimation", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.PureRotation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -222,6 +222,6 @@ describe("FrustumSwing", () => {
       ck.testPoint3d(pointA.interpolate(f, pointB), data.eye);
     }
     // GeometryCoreTestIO.saveGeometry(allGeometry, "FrustumSwing", "MoveLinear");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

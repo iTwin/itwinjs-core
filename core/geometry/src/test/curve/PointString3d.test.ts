@@ -78,7 +78,7 @@ describe("PointString3d", () => {
     const lsC = PointString3d.createFloat64Array(xyz);
     ck.testTrue(lsA.isAlmostEqual(lsC), "createFloat64Array");
     ck.checkpoint("PointString3d.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("reverseInPlace", () => {
       const ck = new Checker();
@@ -99,6 +99,6 @@ describe("PointString3d", () => {
       ck.testPoint3d(ls0.pointAt(1)!, ls1.pointAt(1)!);
       ck.testPoint3d(ls0.pointAt(2)!, ls1.pointAt(2)!);
       ck.testPoint3d(ls0.pointAt(3)!, ls1.pointAt(3)!);
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });
