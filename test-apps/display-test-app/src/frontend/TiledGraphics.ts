@@ -13,7 +13,7 @@ import { Transform } from "@itwin/core-geometry";
 class Reference extends TileTreeReference {
   private readonly _ref: TileTreeReference;
   private readonly _provider: Provider;
-  private _transform?: Promise<Transform> | Transform;
+  private _transform?: Transform;
 
   public constructor(ref: TileTreeReference, provider: Provider) {
     super();
@@ -30,18 +30,10 @@ class Reference extends TileTreeReference {
   protected override getSymbologyOverrides() { return this._provider.ovrs; }
 
   protected override computeTransform(tree: TileTree): Transform {
-    if (!this._transform) {
-      this._transform = this._provider.computeTransform(tree);
-      this._transform.then((tf) => {
-        this._provider.viewport.invalidateScene();
-        this._transform = tf;
-      })
-    }
-
-    return this._transform instanceof Transform ? this._transform : tree.iModelTransform;
+    return this._transform ?? (this._transform = this._provider.computeTransform(tree));
   }
 
-  protected override getTransformToIModel() {
+  public override getTransformToIModel() {
     return this._provider.fromViewport;
   }
 }
@@ -86,16 +78,15 @@ class Provider implements TiledGraphicsProvider {
     return new Provider(view, vp, transform);
   }
 
-  public async computeTransform(tree: TileTree): Promise<Transform> {
-    const ecefTransform = await tree.getEcefTransform();
-    if (ecefTransform) {
-      const worldTf = this.viewport.iModel.getEcefTransform().inverse();
-      if (worldTf) {
-        return worldTf.multiplyTransformTransform(ecefTransform);
-      }
+  public computeTransform(tree: TileTree): Transform {
+    if (!tree.iModel.ecefLocation) {
+      return tree.iModelTransform;
     }
 
-    return tree.iModelTransform;
+    const dbToEcef = tree.iModel.ecefLocation.getTransform();
+    const ecefTransform = dbToEcef.multiplyTransformTransform(tree.iModelTransform);
+    const worldTf = this.viewport.iModel.getEcefTransform().inverse();
+    return worldTf ? worldTf.multiplyTransformTransform(ecefTransform, ecefTransform) : tree.iModelTransform;
   }
 }
 
