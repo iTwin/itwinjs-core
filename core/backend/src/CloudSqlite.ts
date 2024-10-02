@@ -989,8 +989,8 @@ export namespace CloudSqlite {
     }
 
     /** get a method member, by name, from the database object. Throws if not a Function. */
-    private getDbMethod(methodName: string): Function {
-      const fn = (this._cloudDb as any)[methodName] as Function;
+    private getDbMethod(methodName: string): (...args: any[]) => any {
+      const fn = (this._cloudDb as any)[methodName];
       if (typeof fn !== "function")
         throw new Error(`illegal method name ${methodName}`);
       return fn;

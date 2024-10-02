@@ -307,7 +307,7 @@ class ElectronDialogHandler extends IpcHandler {
   public get channelName() { return electronIpcStrings.dialogChannel; }
   public async callDialog(method: DialogModuleMethod, ...args: any) {
     const dialog = ElectronHost.electron.dialog;
-    const dialogMethod = dialog[method] as Function;
+    const dialogMethod = dialog[method] as (...args: any[]) => any;
     if (typeof dialogMethod !== "function")
       throw new IModelError(IModelStatus.FunctionNotFound, `illegal electron dialog method`);
 
@@ -315,7 +315,7 @@ class ElectronDialogHandler extends IpcHandler {
   }
 }
 
-function debounce(func: Function, ms: number = 200) {
+function debounce(func: (...args: any[]) => any, ms: number = 200) {
   let timeout: NodeJS.Timeout;
   return function (this: any, ...args: any[]) {
     clearTimeout(timeout);
