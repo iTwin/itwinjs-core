@@ -123,7 +123,7 @@ export class ElectronHost {
     // However, if the file doesn't exist, it's fine to return an invalid path here - the request will just fail with net::ERR_FILE_NOT_FOUND
     try {
       assetPath = fs.realpathSync(assetPath);
-    } catch (error) {
+    } catch {
       // // eslint-disable-next-line no-console
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }

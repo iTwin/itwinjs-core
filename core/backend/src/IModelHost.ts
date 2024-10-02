@@ -380,7 +380,7 @@ export class IModelHost {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }

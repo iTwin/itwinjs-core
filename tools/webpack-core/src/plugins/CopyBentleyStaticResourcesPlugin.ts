@@ -76,7 +76,7 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
       let subDirectoryNames: string[];
       try {
         subDirectoryNames = await fs.readdir(basePath);
-      } catch (err: any) {
+      } catch {
         return;
       }
       for (const thisSubDir of subDirectoryNames) {

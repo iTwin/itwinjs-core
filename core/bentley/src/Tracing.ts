@@ -165,7 +165,7 @@ export class Tracing {
               error: isError,
               loggerCategory: category,
             });
-        } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
+        } catch { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
 
         const spanContext = Tracing._openTelemetry.trace.getSpan(oTelContext)?.spanContext();
         base(category, message, {

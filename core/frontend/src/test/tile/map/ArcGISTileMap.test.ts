@@ -323,7 +323,7 @@ describe("ArcGISTileMap", () => {
           resolve();
         }
 
-      } catch (err: any) {
+      } catch {
         reject();
       }
     });

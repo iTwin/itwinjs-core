@@ -30,7 +30,7 @@ const dtaWebMain = (async () => {
         key: fs.readFileSync(serverConfig.keyFile),
         cert: fs.readFileSync(serverConfig.certFile),
       };
-    } catch (_err) { }
+    } catch { }
   }
 
   if (serverConfig === undefined)

@@ -1278,7 +1278,7 @@ export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document
 
     const parser = new Parser(imdlDoc, binaryData, options, featureTable, stream);
     return parser.parse();
-  } catch (_) {
+  } catch {
     return TileReadStatus.InvalidTileData;
   }
 }

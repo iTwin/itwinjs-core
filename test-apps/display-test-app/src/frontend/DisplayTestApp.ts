@@ -229,7 +229,7 @@ const dtaFrontendMain = async () => {
           const response = await fetch(`${url}tileset.json`);
           await response.json();
           return url;
-        } catch (_) {
+        } catch {
           // No tileset available.
           return undefined;
         }

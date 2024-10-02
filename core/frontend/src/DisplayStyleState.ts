@@ -123,7 +123,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const script = RenderSchedule.Script.fromJSON(scriptProps);
       if (script)
         newState = new RenderSchedule.ScriptReference(this.id, script);
-    } catch (_) {
+    } catch {
       // schedule state is undefined.
     }
 
@@ -150,7 +150,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
           if (script)
             newState = new RenderSchedule.ScriptReference(timelineId, script);
         }
-      } catch (_) {
+      } catch {
         // schedule state is undefined.
       }
     }
@@ -168,7 +168,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     try {
       const omitScriptElementIds = !IModelApp.tileAdmin.enableFrontendScheduleScripts;
       return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds } }) as RenderTimelineProps;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

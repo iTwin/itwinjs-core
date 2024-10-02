@@ -109,7 +109,7 @@ export class DisplayPerfTestApp {
           await response.json();
           runner.curConfig.urlStr = urlStr;
           return url;
-        } catch (_) {
+        } catch {
           runner.curConfig.urlStr = `${urlStr}tileset.json - Not found`;
           // No tileset available.
           return undefined;

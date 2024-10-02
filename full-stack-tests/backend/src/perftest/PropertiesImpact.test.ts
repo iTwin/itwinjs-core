@@ -165,7 +165,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         try {
           const elId = minId + elementIdIncrement * i;
           perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-        } catch (err) {
+        } catch {
           assert.isTrue(false);
         }
       }
@@ -236,7 +236,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         editElem.setUserProperties("geom", geometryStream);
         try {
           perfimodel.elements.updateElement(editElem);
-        } catch (_err) {
+        } catch {
           assert.fail("Element.update failed");
         }
       }
@@ -473,7 +473,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         try {
           const elId = minId + elementIdIncrement * i;
           perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-        } catch (err) {
+        } catch {
           assert.isTrue(false);
         }
       }
@@ -498,7 +498,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         try {
           const elId = minId + elementIdIncrement * i;
           perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-        } catch (err) {
+        } catch {
           assert.isTrue(false);
         }
       }
@@ -594,7 +594,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         editElem.setUserProperties("geom", geometryStream);
         try {
           perfimodel.elements.updateElement(editElem);
-        } catch (_err) {
+        } catch {
           assert.fail("Element.update failed");
         }
       }
@@ -635,7 +635,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         editElem.setUserProperties("geom", geometryStream);
         try {
           perfimodel.elements.updateElement(editElem);
-        } catch (_err) {
+        } catch {
           assert.fail("Element.update failed");
         }
       }

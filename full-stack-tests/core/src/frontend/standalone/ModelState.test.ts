@@ -156,7 +156,7 @@ describe("ModelState", () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       await imodel2.views.getThumbnail("0x25");
-    } catch (_err) {
+    } catch {
       return;
     } // thumbnail doesn't exist
     assert.fail("getThumbnail should not return");

@@ -190,7 +190,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
         if (tileData !== undefined)
           this._missingTileData = tileData.data as Uint8Array;
       });
-    } catch (error) {
+    } catch {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");
     }
   }
