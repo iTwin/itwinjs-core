@@ -58,7 +58,7 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
    * callback if a cleanup function is returned by the backendInitModule export;
    * empty object if nothing is exported by the backendInitModule
    */
-  let cleanUpCallback: undefined | (() => Promise<void>) | {};
+  let cleanUpCallback: undefined | (() => Promise<void>) | object;
   if (config.backendInitModule)
     cleanUpCallback = await require(config.backendInitModule);
 
