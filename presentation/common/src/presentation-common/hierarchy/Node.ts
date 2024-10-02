@@ -121,7 +121,6 @@ export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
  * @public
  * @deprecated in 3.x. Use [[PartialNode]].
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 
 type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);

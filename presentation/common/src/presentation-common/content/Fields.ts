@@ -86,7 +86,6 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
  * JSON representation of a [[Field]]
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type FieldJSON<TClassInfoJSON = ClassInfoJSON> =
   | BaseFieldJSON
   | PropertiesFieldJSON<TClassInfoJSON>

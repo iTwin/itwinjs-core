@@ -453,7 +453,6 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
 export type RelatedClassInfoWithOptionalRelationship = PartialBy<RelatedClassInfo, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
 /** @public */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<
   RelatedClassInfoJSON<TClassInfoJSON>,
   "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship"
@@ -517,7 +516,6 @@ export type RelationshipPath = RelatedClassInfo[];
  * Serialized [[RelationshipPath]]
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 /** @public */

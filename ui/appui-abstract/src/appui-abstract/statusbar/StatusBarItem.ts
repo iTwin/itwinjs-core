@@ -47,7 +47,7 @@ export enum StatusBarLabelSide {
  * @deprecated in 3.6. Please use `CommonStatusBarItem["id"]` from @itwin/appui-react.
  * @public
  */
-export type StatusBarItemId = CommonStatusBarItem["id"]; // eslint-disable-line @typescript-eslint/no-deprecated
+export type StatusBarItemId = CommonStatusBarItem["id"];
 
 /** Describes the data needed to insert a button into the status bar.
  * @deprecated in 3.6. Use [CommonStatusBarItem]($appui-react) instead.

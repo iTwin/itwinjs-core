@@ -12,8 +12,6 @@
 import { assert, BeEvent, BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "../../IModelError";
 
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 /** @internal */
 export type RpcPushMessageListener<T> = (message: T) => void;
 

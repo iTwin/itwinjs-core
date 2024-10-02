@@ -23,7 +23,7 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class KindOfQuantity extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.KindOfQuantity; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.KindOfQuantity;
   protected _relativeError: number = 1.0;
   protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;

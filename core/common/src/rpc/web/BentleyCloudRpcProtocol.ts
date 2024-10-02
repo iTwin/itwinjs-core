@@ -17,8 +17,6 @@ import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 import { SerializedRpcActivity } from "../core/RpcInvocation";
 
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 enum AppMode {
   MilestoneReview = "1",
 }

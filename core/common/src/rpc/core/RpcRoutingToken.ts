@@ -6,8 +6,6 @@
  * @module RpcInterface
  */
 
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 /** @beta */
 export class RpcRoutingToken {
   private static _next = -1;

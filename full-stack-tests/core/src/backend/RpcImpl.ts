@@ -23,7 +23,7 @@ async function initializeContainer(containerId: string) {
   await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
 }
 
-export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // eslint-disable-line @typescript-eslint/no-deprecated
+export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }

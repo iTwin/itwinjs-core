@@ -54,7 +54,6 @@ export type PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDelet
  * Information about a hierarchy change: insertion, deletion or node update.
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
 
 /** @public */

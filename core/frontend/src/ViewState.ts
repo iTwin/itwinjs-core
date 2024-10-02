@@ -335,7 +335,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined { // eslint-disable-line @typescript-eslint/no-deprecated
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     return this.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 

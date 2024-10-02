@@ -20,7 +20,6 @@ export interface UiSyncEventArgs {
  * @public
  * @deprecated in 4.2.x Use [[UiSyncEvent]] from @itwin/appui-react.
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class UiSyncEvent extends BeUiEvent<UiSyncEventArgs> { }
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs

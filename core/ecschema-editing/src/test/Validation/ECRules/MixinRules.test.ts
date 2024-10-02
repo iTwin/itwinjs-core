@@ -9,8 +9,6 @@ import { MutableEntityClass } from "../../../Editing/Mutable/MutableEntityClass"
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 import * as Rules from "../../../Validation/ECRules";
 
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 describe("Mixin Rule Tests", () => {
   let schema: Schema;
 

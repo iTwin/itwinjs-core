@@ -165,7 +165,7 @@ describe("ArcGisSymbologyRenderer", () => {
     expect(fakeContext.fillStyle).to.eq(refSymbol.color!.toRgbaString());
 
     // Now set proper attribute
-    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    // eslint-disable-next-line quote-props
     provider.setActiveFeatureAttributes({"LU_2014": "Urban/Built-up"});
     provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
     refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[1].symbol as any);
@@ -190,7 +190,7 @@ describe("ArcGisSymbologyRenderer", () => {
     expect(fakeContext.strokeStyle).to.eq(refSymbol.outline!.color!.toRgbaString());
 
     // Now set proper attribute
-    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    // eslint-disable-next-line quote-props
     provider.setActiveFeatureAttributes({"LU_2014": "Urban/Built-up"});
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
     refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[1].symbol as any);
@@ -215,7 +215,7 @@ describe("ArcGisSymbologyRenderer", () => {
     expect(fakeContext.strokeStyle).to.eq(refSymbol.color.toRgbaString());
 
     // Now set proper attribute
-    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    // eslint-disable-next-line quote-props
     provider.setActiveFeatureAttributes({"LU_2014": "Urban/Built-up"});
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
     refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[1].symbol as any);
@@ -249,7 +249,7 @@ describe("ArcGisSymbologyRenderer", () => {
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
 
     // Now set proper attribute
-    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    // eslint-disable-next-line quote-props
     provider.setActiveFeatureAttributes({"WEAPON": "gun"});
     provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
     refSymbol = EsriPMS.fromJSON(rendererDef.uniqueValueInfos[2].symbol as any);
@@ -302,7 +302,7 @@ describe("ArcGisSymbologyRenderer", () => {
     contextMock.setup((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
 
     // Now set proper attribute
-    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    // eslint-disable-next-line quote-props
     provider.setActiveFeatureAttributes({"WEAPON": "gun"});
 
     // Make sure appropriate context methods are called.
@@ -451,7 +451,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const provider = await TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisClassBreaksSymbologyRenderer;
 
     // Now set proper attribute
-    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    // eslint-disable-next-line quote-props
     provider.setActiveFeatureAttributes({"magnitude": 5.1});
 
     let pms = provider.symbol as EsriPMS;
@@ -480,7 +480,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const provider = await TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef) as ArcGisClassBreaksSymbologyRenderer;
 
     // Now set proper attribute
-    // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
+    // eslint-disable-next-line quote-props
     provider.setActiveFeatureAttributes({"magnitude": 5.1});
 
     let pms = provider.symbol as EsriPMS;

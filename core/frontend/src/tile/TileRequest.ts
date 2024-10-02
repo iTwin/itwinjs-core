@@ -196,7 +196,7 @@ export class TileRequest {
 }
 
 /** @public */
-export namespace TileRequest { // eslint-disable-line no-redeclare
+export namespace TileRequest {
   /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type.
    * [[Tile.requestContent]] produces a response of this type; it is then converted to a [[Tile.ResponseData]] from which [[Tile.readContent]]
    * can produce a [[RenderGraphic]].

@@ -1541,7 +1541,7 @@ export class RenderTimeline extends InformationRecordElement {
   protected override collectReferenceIds(ids: EntityReferenceSet): void {
     super.collectReferenceIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
-    script?.discloseIds(ids); // eslint-disable-line @typescript-eslint/no-deprecated
+    script?.discloseIds(ids);
   }
 
   /** @alpha */

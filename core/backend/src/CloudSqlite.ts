@@ -736,7 +736,6 @@ export namespace CloudSqlite {
       if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
         return await operation();
       containerInternal.writeLockHeldBy = args.user;
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       const val = await operation(); // wait for work to finish or fail
       containerInternal.releaseWriteLock();
       containerInternal.writeLockHeldBy = undefined;

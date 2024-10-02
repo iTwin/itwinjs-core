@@ -94,7 +94,6 @@ class Cancellable<T> {
 
   public constructor(task: Promise<T>) {
     this.promise = new Promise((resolve, reject) => {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       this.cancel = () => resolve(undefined);
       task.then(resolve, reject);
     });

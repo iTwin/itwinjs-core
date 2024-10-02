@@ -11,8 +11,6 @@ import {
 import { ChangeType, SchemaChanges } from "../../Validation/SchemaChanges";
 import { SchemaCompareDiagnostics } from "../../Validation/SchemaCompareDiagnostics";
 
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 describe("SchemaChanges tests", () => {
   let schema: Schema;
   beforeEach(async () => {
