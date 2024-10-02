@@ -32,7 +32,7 @@ async function waitFor<T>(check: () => Promise<T> | T, timeout: number = 5000): 
       return res instanceof Promise ? await res : res;
     } catch (e) {
       lastError = e;
-      await BeDuration.wait(0);
+      await BeDuration.wait(2);
     }
   } while (timer.current.milliseconds < timeout);
   throw lastError;
@@ -239,8 +239,13 @@ describe("CloudSqlite", () => {
     expect(dirtyBlockLogMsg).to.be.true;
     // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
     // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
-    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("enters DELETE state")));
-    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("leaves DELETE state")));
+    const assertFoundMessage = (message: string) => {
+      const found = logInfo.getCalls().some((call) => call.args[1].includes(message));
+      if (!found)
+        throw new Error(`Expected ${message} to be found in logInfo calls.`);
+    };
+    await waitFor(() => assertFoundMessage("enters DELETE state"));
+    await waitFor(() => assertFoundMessage("leaves DELETE state"));
     logTrace.resetHistory();
     logInfo.resetHistory();
 
