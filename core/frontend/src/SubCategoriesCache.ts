@@ -178,7 +178,7 @@ export class SubCategoriesCache {
 /** This namespace and the types within it are exported strictly for use in tests.
  * @internal
  */
-export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
+export namespace SubCategoriesCache {
   export type Result = SubCategoryResultRow[];
 
   export class Request {

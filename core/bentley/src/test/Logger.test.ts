@@ -14,7 +14,7 @@ let outwarn: any[];
 let outinfo: any[];
 let outtrace: any[];
 
-/* eslint-disable no-template-curly-in-string, @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 function callLoggerConfigLevels(cfg: any, expectRejection: boolean) {
   try {

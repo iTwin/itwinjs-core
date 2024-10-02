@@ -10,8 +10,6 @@ import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
 import { ProcessDetector } from "@itwin/core-bentley";
 
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 interface MobileAddon {
   notifyListening: (port: number) => void;
   registerDeviceImpl: () => void;

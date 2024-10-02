@@ -56,7 +56,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       });
 
       // expose interfaces using a direct call mechanism
-      TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);// eslint-disable-line @typescript-eslint/no-deprecated
+      TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
       const roWrite = RobotWorldWriteRpcInterface.getClient();
       const roRead = RobotWorldReadRpcInterface.getClient();
 

@@ -226,7 +226,6 @@ export class Parser {
       skipCodes.push(uomSeparatorToIgnore);
     }
 
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < str.length; i++) {
       const charCode = str.charCodeAt(i);
       if (Parser.isDigitOrDecimalSeparator(charCode, format)) {

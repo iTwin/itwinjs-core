@@ -17,7 +17,6 @@ import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs
 // eslint-disable-next-line @itwin/import-within-package
 import { version } from "../../../../../core/backend/package.json";
 /** @public */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const ITWINJS_CORE_VERSION = version as string;
 const CORE_MAJ_MIN = `${ITWINJS_CORE_VERSION.split(".")[0]}.${ITWINJS_CORE_VERSION.split(".")[1]}.x`;
 

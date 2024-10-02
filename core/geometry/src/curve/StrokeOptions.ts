@@ -10,8 +10,6 @@
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
-
 /**
  * Tolerance blob for various stroking methods.
  *

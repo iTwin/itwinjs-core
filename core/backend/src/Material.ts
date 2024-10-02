@@ -204,7 +204,7 @@ export class RenderMaterialElement extends DefinitionElement {
 }
 
 /** @public */
-export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
+export namespace RenderMaterialElement {
   /** Parameters used to construct a [[RenderMaterial]].
    * The persistent JSON representation - [RenderMaterialAssetProps]($common) - is quite verbose and unwieldy. This representation simplifies it somewhat.
    * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.

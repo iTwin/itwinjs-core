@@ -266,7 +266,6 @@ export class PresentationManager implements IDisposable {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onUpdate = (_evt: Event, report: UpdateInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(report);

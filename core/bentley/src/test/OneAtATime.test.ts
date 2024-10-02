@@ -40,7 +40,7 @@ describe("OneAtATime test", () => {
     expect(operation.request(200, "hello")).rejects.with.toBeInstanceOf(AbandonedError); // aborts previous, becomes pending
     let count = await operation.request(200, "hello"); // aborts previous, becomes pending, eventually is run
     assert.equal(count, 2); // only the first and last complete
-    // eslint-disable-next-line no-console
+    // // eslint-disable-next-line no-console
     // console.log(await operation.request(10, "hello"));
     // then, just try the whole thing again
     expect(operation.request(10, "hello")).rejects; // try calling a function that throws

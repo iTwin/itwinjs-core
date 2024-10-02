@@ -8,7 +8,6 @@
  */
 
 import { Point2d, Vector2d, XY } from "./Point2dVector2d";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { XAndY } from "./XYZProps";
 
 /**

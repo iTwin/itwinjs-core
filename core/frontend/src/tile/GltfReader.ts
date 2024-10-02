@@ -42,8 +42,6 @@ import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../render/GraphicTemplate";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 
-/* eslint-disable no-restricted-syntax */
-
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 

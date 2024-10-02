@@ -13,7 +13,7 @@ import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
 import { XAndY } from "./geometry3d/XYZProps";
 import { Point4d } from "./geometry4d/Point4d";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 /**
  * Enumeration of the 6 possible orderings of XYZ axis order

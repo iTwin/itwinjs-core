@@ -124,7 +124,6 @@ describe("Item", () => {
         createTestContentItem({ values: { a: "b" }, displayValues: { a: "B" } }),
         createTestContentItem({ values: { c: "d" }, displayValues: { c: "D" } }),
       ];
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(Item.listFromJSON(JSON.stringify(items))).to.matchSnapshot();
     });
   });

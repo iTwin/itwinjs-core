@@ -411,7 +411,7 @@ export class MarkupSelected {
   public sizeChanged() {
     this.clearEditors();
     if (this.elements.size === 1)
-      this.handles = new Handles(this, this.elements.values().next().value!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      this.handles = new Handles(this, this.elements.values().next().value!);
     this.onChanged.raiseEvent(this);
   }
   /** Add a new element to the SS */
@@ -446,7 +446,7 @@ export class MarkupSelected {
   public groupAll(undo: UndoManager) {
     if (this.size < 2)
       return;
-    const first = this.elements.values().next().value!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    const first = this.elements.values().next().value!;
     const parent = first.parent() as Container;
     const group = parent.group();
 

@@ -49,7 +49,6 @@ export namespace NodeKey {
   /** Checks if the supplied key is an [[ECInstancesNodeKey]] */
   export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey;
   /** Checks if the supplied key is an [[ECInstancesNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isInstancesNodeKey(key: NodeKeyJSON): key is ECInstancesNodeKeyJSON;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isInstancesNodeKey(key: NodeKey | NodeKeyJSON) {
@@ -59,7 +58,6 @@ export namespace NodeKey {
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]] */
   export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isClassGroupingNodeKey(key: NodeKeyJSON): key is ECClassGroupingNodeKeyJSON;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isClassGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
@@ -69,7 +67,6 @@ export namespace NodeKey {
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]] */
   export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isPropertyGroupingNodeKey(key: NodeKeyJSON): key is ECPropertyGroupingNodeKeyJSON;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isPropertyGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
@@ -79,7 +76,6 @@ export namespace NodeKey {
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]] */
   export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isLabelGroupingNodeKey(key: NodeKeyJSON): key is LabelGroupingNodeKeyJSON;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isLabelGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
@@ -89,7 +85,6 @@ export namespace NodeKey {
   /** Checks if the supplied key is a grouping node key */
   export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
   /** Checks if the supplied key is a grouping node key. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isGroupingNodeKey(key: NodeKey | NodeKeyJSON) {

@@ -33,7 +33,6 @@ export interface IDisposable {
  * @public
  */
 export function isIDisposable(obj: unknown): obj is IDisposable {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   return !!obj && (obj instanceof Object) && !!(obj as IDisposable).dispose && (typeof (obj as IDisposable).dispose === "function");
 }
 

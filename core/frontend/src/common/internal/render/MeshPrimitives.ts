@@ -287,7 +287,7 @@ export class Mesh {
   }
 }
 
-export namespace Mesh { // eslint-disable-line no-redeclare
+export namespace Mesh {
   export class Features {
     public readonly table: FeatureTable;
     public indices: number[] = [];

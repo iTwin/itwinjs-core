@@ -241,8 +241,8 @@ describe("RpcInterface", () => {
       });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined") // eslint-disable-line @typescript-eslint/no-deprecated
-        return btoa(id); // eslint-disable-line @typescript-eslint/no-deprecated
+      if (typeof (btoa) !== "undefined")
+        return btoa(id);
       return Buffer.from(id, "binary").toString("base64");
     };
 

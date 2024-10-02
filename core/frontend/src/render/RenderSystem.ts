@@ -53,7 +53,6 @@ import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "./GraphicTemplate";
 
-/* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
@@ -954,7 +953,7 @@ export abstract class RenderSystem implements IDisposable {
  * @see [[IModelApp.renderSystem]].
  * @public
  */
-export namespace RenderSystem { // eslint-disable-line no-redeclare
+export namespace RenderSystem {
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
    *
    * @public

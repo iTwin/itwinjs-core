@@ -226,7 +226,6 @@ describe("Class Registry - generated classes", () => {
     derivedNavProp: RelatedElementProps;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TestAspectWithNavProp extends ElementAspectProps {
     navProp: RelatedElement;
   }
@@ -320,7 +319,6 @@ describe("Class Registry - generated classes", () => {
   it("should only generate automatic collectReferenceIds implementations for generated classes", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     class GeneratedTestElementWithNavProp extends imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp") {
       constructor(props: TestElementWithNavPropProps) {
         super(props, imodel);
@@ -342,7 +340,7 @@ describe("Class Registry - generated classes", () => {
       },
     } as TestElementWithNavPropProps);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/dot-notation
+    // eslint-disable-next-line @typescript-eslint/dot-notation
     assert.isDefined(GeneratedTestElementWithNavProp.prototype["collectReferenceIds"]);
     expect(
       [...elemWithNavProp.getReferenceIds()],
@@ -359,14 +357,12 @@ describe("Class Registry - generated classes", () => {
 
   it("should not override collectReferenceIds for BisCore schema classes", async () => {
     // AnnotationFrameStyle is an example of an unregistered bis class without an implementation of collectReferenceIds
-    // eslint-disable-next-line @typescript-eslint/dot-notation
     assert.isTrue(imodel.getJsClass("BisCore:AnnotationFrameStyle").prototype.hasOwnProperty("collectReferenceIds"));
   });
 
   it("should get references from its bis superclass", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     class GeneratedTestElementWithNavProp extends imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp") {
       constructor(props: ElementProps) {
         super(props, imodel);
@@ -425,7 +421,6 @@ describe("Class Registry - generated classes", () => {
       element: { id: modelTestEntityIds[1] },
     } as TestAspectWithNavProp);
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     class GeneratedTestModelWithNavProp extends imodel.getJsClass<typeof Model>("TestGeneratedClasses:TestModelWithNavProp") {
       constructor(props: TestModelWithNavPropProps) {
         super(props, imodel);
@@ -514,7 +509,6 @@ describe("Class Registry - generated classes", () => {
 
     const testElementWithNavPropCollectReferencesSpy = sinon.spy(ActualTestElementWithNavProp.prototype, "collectReferenceIds");
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     class ActualDerivedWithNavProp extends imodel.getJsClass<typeof Element>(DerivedWithNavProp.classFullName) {
       constructor(props: DerivedWithNavPropProps) {
         super(props, imodel);
@@ -569,7 +563,7 @@ describe("Class Registry - generated classes", () => {
       },
     } as DerivedWithNavPropProps);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/dot-notation
+    // eslint-disable-next-line @typescript-eslint/dot-notation
     assert.isDefined(ActualDerivedWithNavProp.prototype["collectReferenceIds"]);
     // This demonstrates that if a non-generated class has a registered non-biscore base, it will not get a generated impl,
     expect(
@@ -617,7 +611,6 @@ describe("Class Registry - generated classes", () => {
     const ActualDerived4 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived4");
     const ActualDerived5 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived5");
     const ActualDerived6 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived6");
-    /* eslint-enable @typescript-eslint/no-redeclare */
 
     expect(ActualTestElementWithNavProp.isGeneratedClass).to.be.true;
     expect(ActualDerivedWithNavProp.isGeneratedClass).to.be.true;
@@ -732,7 +725,6 @@ describe("Class Registry - generated classes", () => {
           ActualDerivedWithNavProp,
           Derived2,
           Derived4,
-          // eslint-disable-next-line @typescript-eslint/dot-notation
         ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation
       ),
     );

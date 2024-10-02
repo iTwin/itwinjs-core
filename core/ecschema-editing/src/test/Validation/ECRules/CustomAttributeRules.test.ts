@@ -13,8 +13,6 @@ import * as Rules from "../../../Validation/ECRules";
 import { toArray } from "../../TestUtils/DiagnosticHelpers";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 describe("CustomAttribute Rules Tests", () => {
   let testSchema: Schema;
   let context: SchemaContext;

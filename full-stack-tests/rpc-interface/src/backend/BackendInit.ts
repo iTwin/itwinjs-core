@@ -8,8 +8,6 @@ import * as path from "path";
 import { exposeBackendCallbacks } from "../common/SideChannels";
 import * as fs from "fs";
 
-/* eslint-disable no-console */
-
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))

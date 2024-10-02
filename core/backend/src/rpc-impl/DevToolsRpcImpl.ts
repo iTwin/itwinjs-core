@@ -12,7 +12,7 @@ import { DevTools, DevToolsStatsFormatter } from "../DevTools";
 /** The backend implementation of WipRpcInterface.
  * @internal
  */
-export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterface { // eslint-disable-line @typescript-eslint/no-deprecated
+export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterface {
   public static register() { RpcManager.registerImpl(DevToolsRpcInterface, DevToolsRpcImpl); }
 
   // Returns true if the backend received the ping

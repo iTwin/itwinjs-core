@@ -8,8 +8,6 @@ import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } 
 import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 
-/* eslint-disable @typescript-eslint/indent */
-
 export interface Backend {
   version: string;
   location: string;

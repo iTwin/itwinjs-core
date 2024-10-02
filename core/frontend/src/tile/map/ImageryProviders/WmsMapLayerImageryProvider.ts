@@ -30,7 +30,6 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _allLayersRange?: MapCartoRectangle;
   private _subLayerRanges = new Map<string, MapCartoRectangle>();
   private _baseUrl: string;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private _crsSupport: WmsCrsSupport|undefined;
 
   constructor(settings: ImageMapLayerSettings) {

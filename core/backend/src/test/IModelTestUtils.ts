@@ -177,7 +177,7 @@ export class HubWrappers {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line @typescript-eslint/no-deprecated
+        if (!(error instanceof RpcPendingResponse))
           throw error;
       }
     }
@@ -219,7 +219,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs));
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line @typescript-eslint/no-deprecated
+        if (!(error instanceof RpcPendingResponse))
           throw error;
       }
     }

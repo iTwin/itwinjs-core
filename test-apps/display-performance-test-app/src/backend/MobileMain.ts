@@ -8,8 +8,6 @@ import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
-/* eslint-disable no-console */
-
 export function getRpcInterfaces() {
   return [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
 }

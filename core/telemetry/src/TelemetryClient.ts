@@ -56,7 +56,7 @@ export class TelemetryEvent {
 
 /** @internal */
 export interface TelemetryClient {
-  postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>; // eslint-disable-line @typescript-eslint/no-deprecated
+  postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
 
 /** @internal */
@@ -67,7 +67,7 @@ export class TelemetryManager {
     this._clients = new Set<TelemetryClient>(clients);
   }
 
-  public async postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void> { // eslint-disable-line @typescript-eslint/no-deprecated
+  public async postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void> {
     const postPerClient = async (subClient: TelemetryClient) => {
       try {
         await subClient.postTelemetry(requestContext, telemetryEvent);

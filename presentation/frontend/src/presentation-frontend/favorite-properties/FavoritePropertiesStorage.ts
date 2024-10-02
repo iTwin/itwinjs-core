@@ -210,7 +210,6 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     return this._impl;
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onConnectivityStatusChanged = (args: { status: InternetConnectivityStatus }) => {
     // istanbul ignore else
     if (args.status === InternetConnectivityStatus.Online) {
