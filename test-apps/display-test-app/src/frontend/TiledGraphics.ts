@@ -30,7 +30,8 @@ class Reference extends TileTreeReference {
   protected override getSymbologyOverrides() { return this._provider.ovrs; }
   protected override computeTransform(tree: TileTree): Transform {
     if (!this._transform) {
-      this._provider.computeTransform(tree).then((tf) => {
+      this._transform = this._provider.computeTransform(tree);
+      this._transform.then((tf) => {
         this._provider.viewport.invalidateScene();
         this._transform = tf;
       })
