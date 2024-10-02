@@ -551,7 +551,7 @@ export class IModelApp {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await this.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }

@@ -121,7 +121,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();
-      } catch (e: unknown) {
+      } catch {
         // must be offline
       }
     }
@@ -150,8 +150,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
       const version = semver.maxSatisfying(versions, range, { loose: true, includePrerelease: props.includePrerelease });
       if (version)
         return `${dbName}:${version}`;
-    } catch (e: unknown) {
-    }
+    } catch { }
     throwWorkspaceDbLoadError(`No version of '${dbName}' available for "${range}"`, props);
   }
 

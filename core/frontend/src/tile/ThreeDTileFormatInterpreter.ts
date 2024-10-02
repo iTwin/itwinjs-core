@@ -101,7 +101,7 @@ export class ThreeDTileFormatInterpreter  {
           Logger.logTrace(loggerCategory, "RealityData ecefToWorld", () => ({ ...ecefToWorld }));
         }
       }
-    } catch (e) {
+    } catch {
       Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - cannot interpret json`);
       // return first 1024 char from the json
       const getMetaData: LoggingMetaData = () => {

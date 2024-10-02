@@ -129,11 +129,11 @@ export class SchemaUnitProvider implements UnitsProvider {
     try {
       try {
         foundUnit = await this.findUnitByDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
-      } catch (err) {
+      } catch {
         // If there is no Unit with display label that matches label, then check for alternate display labels that may match
         foundUnit = await this.findUnitByAltDisplayLabel(findLabel, findSchema, findPhenomenon, findUnitSystem);
       }
-    } catch (err) {
+    } catch {
       throw new BentleyError(BentleyStatus.ERROR, "Cannot find unit with label", () => {
         return { unitLabel };
       });

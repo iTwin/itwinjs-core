@@ -62,8 +62,7 @@ export class ViewStateHydrator {
       try {
         const modelProps = this._imodel.models.getModelJson({ id });
         modelJsonArray.push(modelProps);
-      } catch (error) {
-      }
+      } catch { }
     }
 
     response.modelSelectorStateModels = modelJsonArray;
@@ -85,9 +84,8 @@ export class ViewStateHydrator {
     const attachmentProps: ViewAttachmentProps[] = [];
     for (const id of decompressedIds) {
       try {
-        attachmentProps.push(this._imodel.elements.getElementJson({ id }) );
-      } catch (error) {
-      }
+        attachmentProps.push(this._imodel.elements.getElementJson({ id }));
+      } catch { }
     }
 
     const promises = [];

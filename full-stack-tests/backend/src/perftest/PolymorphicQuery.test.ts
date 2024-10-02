@@ -223,7 +223,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           totalTime = totalTime + elapsedTime;
-        } catch (err) {
+        } catch {
           assert.isTrue(false);
         }
       }
@@ -259,7 +259,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           parentTime = elapsedTime;
         else
           totalTime = totalTime + elapsedTime;
-      } catch (err) {
+      } catch {
         assert.isTrue(false);
       }
     }

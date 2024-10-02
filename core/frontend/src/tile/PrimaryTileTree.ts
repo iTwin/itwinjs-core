@@ -87,7 +87,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
         if (lo <= hi)
           elevation = (lo + hi) / 2;
       }
-    } catch (_err) {
+    } catch {
       //
     }
 

@@ -63,7 +63,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     try {
       metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
 
-    } catch (_e) {
+    } catch {
     }
     if (metadata && metadata.accessTokenRequired) {
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);

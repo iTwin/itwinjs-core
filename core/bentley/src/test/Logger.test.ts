@@ -20,7 +20,7 @@ function callLoggerConfigLevels(cfg: any, expectRejection: boolean) {
   try {
     Logger.configureLevels(cfg);
     assert.isFalse(expectRejection, "should have rejected config as invalid");
-  } catch (err) {
+  } catch {
     assert.isTrue(expectRejection, "should not have rejected config as invalid");
   }
 }

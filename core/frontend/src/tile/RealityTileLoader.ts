@@ -186,7 +186,7 @@ export abstract class RealityTileLoader {
         content = await reader.read();
         if (content.containsPointCloud)
           this._containsPointClouds = true;
-      } catch (_err) {
+      } catch {
         // Failure to load should prevent us from trying to load children
         content.isLeaf = true;
       }

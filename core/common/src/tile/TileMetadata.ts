@@ -177,7 +177,7 @@ class Parser {
     let parsedContentId: ContentIdSpec;
     try {
       parsedContentId = ContentIdProvider.create(true, options).specFromId(contentId);
-    } catch (e) {
+    } catch {
       this.reject("Invalid content Id");
     }
 

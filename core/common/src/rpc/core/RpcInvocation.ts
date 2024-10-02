@@ -289,7 +289,7 @@ export class RpcInvocation {
       if (impl[CURRENT_INVOCATION] === this) {
         impl[CURRENT_INVOCATION] = undefined;
       }
-    } catch (_err) { }
+    } catch { }
 
     return fulfillment;
   }

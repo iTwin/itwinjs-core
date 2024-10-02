@@ -999,7 +999,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.renderSystem.frameBufferStack.execute(this._fbo, true, false, () => {
       try {
         context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
-      } catch (e) {
+      } catch {
         didSucceed = false;
       }
     });

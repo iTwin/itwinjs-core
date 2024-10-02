@@ -21,7 +21,7 @@ export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);
   try {
     fs.unlinkSync(newPath);
-  } catch (_err) {
+  } catch {
   }
   fs.copyFileSync(pathToCopy, newPath);
   return newPath;

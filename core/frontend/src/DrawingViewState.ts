@@ -402,7 +402,7 @@ export class DrawingViewState extends ViewState2d {
 
         break;
       }
-    } catch (_ex) {
+    } catch {
       // The version of BisCore ECSchema in the iModel is probably too old to contain the SectionDrawing ECClass.
     }
 

@@ -947,7 +947,7 @@ describe("iModel", () => {
     editElem.asAny.location = loc2;
     try {
       imodel4.elements.updateElement(editElem.toJSON());
-    } catch (_err) {
+    } catch {
       assert.fail("Element.update failed");
     }
     const afterUpdateElemFetched = imodel4.elements.getElement(editElem.id);
@@ -2254,7 +2254,7 @@ describe("iModel", () => {
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
       return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true, false);
-    } catch (e) {
+    } catch {
       return false;
     }
   }

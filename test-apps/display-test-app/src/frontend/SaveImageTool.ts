@@ -65,7 +65,7 @@ export class SaveImageTool extends Tool {
           "image/png": blob,
         }),
       ]);
-    } catch (_) {
+    } catch {
       alert("Failed to copy to clipboard");
     }
 

@@ -206,7 +206,7 @@ export class MobileHost {
       this.onOrientationChanged.addListener(() => {
         try {
           MobileHost.notifyMobileFrontend("notifyOrientationChanged");
-        } catch (_ex) { } // Ignore: frontend is not currently connected
+        } catch { } // Ignore: frontend is not currently connected
       });
       this.onWillTerminate.addListener(() => {
         MobileHost.notifyMobileFrontend("notifyWillTerminate");

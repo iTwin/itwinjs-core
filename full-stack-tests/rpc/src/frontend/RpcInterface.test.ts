@@ -104,7 +104,7 @@ describe("RpcInterface", () => {
     try {
       await TestRpcInterface2.getClient().op1(1);
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
 
@@ -173,7 +173,7 @@ describe("RpcInterface", () => {
     try {
       await RpcManager.getClientForInterface(LocalInterface).op();
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
     initializeLocalInterface();
@@ -182,7 +182,7 @@ describe("RpcInterface", () => {
     try {
       await RpcManager.getClientForInterface(LocalInterface).op();
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
     initializeLocalInterface();
@@ -539,7 +539,7 @@ describe("RpcInterface", () => {
     try {
       await TestRpcInterface.getClient().op15();
       assert(true);
-    } catch (err) {
+    } catch {
       assert(false);
     } finally {
       RpcConfiguration.requestContext.serialize = backupFn;

@@ -108,7 +108,7 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
   try {
     const ecefRange = await RealityModelTileUtils.rangeFromUrl(url);
     range = iModelDb.getEcefTransform().inverse()!.multiplyRange(ecefRange);
-  } catch (err) {
+  } catch {
     range = projectExtents;
     range.low.z = -200.0;
     range.high.z = 200.0;

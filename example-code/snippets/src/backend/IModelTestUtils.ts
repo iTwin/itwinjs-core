@@ -43,7 +43,7 @@ export class IModelTestUtils {
     let stat: IModelJsFsStats | undefined;
     try {
       stat = IModelJsFs.lstatSync(name);
-    } catch (err) {
+    } catch {
       stat = undefined;
     }
     return stat;

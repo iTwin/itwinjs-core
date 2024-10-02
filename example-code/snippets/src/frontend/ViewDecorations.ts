@@ -233,7 +233,7 @@ export class IncidentMarkerDemo {
   private async loadOne(src: string) {
     try {
       return await imageElementFromUrl(src); // note: "return await" is necessary inside try/catch
-    } catch (err) {
+    } catch {
       const msg = `Could not load image ${src}`;
       Logger.logError("IncidentDemo", msg);
       console.log(msg); // eslint-disable-line no-console
@@ -411,7 +411,7 @@ export async function displayGltfAsset(iModel: IModelConnection): Promise<boolea
     });
 
     return true;
-  } catch (_) {
+  } catch {
     return false;
   }
 }
