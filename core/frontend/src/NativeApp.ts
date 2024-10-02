@@ -54,7 +54,7 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  * @public
  */
 export interface NativeAppOpts extends IpcAppOptions {
-  nativeApp?: {};
+  nativeApp?: object;
 }
 
 /**

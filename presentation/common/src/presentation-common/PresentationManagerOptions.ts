@@ -270,7 +270,7 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
  * Request options used for selection scope related requests
  * @public
  */
-export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.
@@ -319,7 +319,7 @@ export interface PageOptions {
  * A wrapper type that injects [[PageOptions]] into supplied type
  * @public
  */
-export type Paged<TOptions extends {}> = TOptions & {
+export type Paged<TOptions extends object> = TOptions & {
   /** Optional paging parameters */
   paging?: PageOptions;
 };
@@ -328,7 +328,7 @@ export type Paged<TOptions extends {}> = TOptions & {
  * A wrapper type that injects priority into supplied type.
  * @public
  */
-export type Prioritized<TOptions extends {}> = TOptions & {
+export type Prioritized<TOptions extends object> = TOptions & {
   /** Optional priority */
   priority?: number;
 };
@@ -347,7 +347,7 @@ export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent 
  * A wrapper type that injects cancelEvent into supplied type.
  * @public
  */
-export type WithCancelEvent<TOptions extends {}> = TOptions & {
+export type WithCancelEvent<TOptions extends object> = TOptions & {
   /** Event which is triggered when the request is canceled */
   cancelEvent?: BeEvent<() => void>;
 };

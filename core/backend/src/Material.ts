@@ -265,5 +265,5 @@ export namespace RenderMaterialElement {
  * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
  * @public
  */
-export interface RenderMaterialElementParams extends RenderMaterialElement.Params { // eslint-disable-line @typescript-eslint/no-deprecated, @typescript-eslint/no-empty-interface
+export interface RenderMaterialElementParams extends RenderMaterialElement.Params { // eslint-disable-line @typescript-eslint/no-deprecated, @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
 }
