@@ -17,7 +17,7 @@ describe("PolyfaceData", () => {
     ck.testFalse(PolyfaceData.isValidFacetStartIndexArray([2, 1]), "Facet start index must have leading 0");
     ck.testFalse(PolyfaceData.isValidFacetStartIndexArray([0, 4, 7, 6]), "Facet start index must be sorted");
     ck.testTrue(PolyfaceData.isValidFacetStartIndexArray([0, 4, 6, 12]), "Facet start index is valid");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolyfaceData.Compress", () => {
     const ck = new Checker();
@@ -52,7 +52,7 @@ describe("PolyfaceData", () => {
     ck.testExactNumber(0, pf.faceCount);
     ck.testExactNumber(2, pf.facetCount);
     ck.testExactNumber(6, pf.pointCount);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolyfaceData.reverseIndices", () => {
     const ck = new Checker();
@@ -112,7 +112,7 @@ describe("PolyfaceData", () => {
     ck.testExactNumber(polyface0.data.pointIndex[9], 1);
     ck.testExactNumber(polyface0.data.pointIndex[10], 4);
     ck.testExactNumber(polyface0.data.pointIndex[11], 5);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolyfaceData.reverseIndicesSingleFacet", () => {
     const ck = new Checker();
@@ -186,6 +186,6 @@ describe("PolyfaceData", () => {
     ck.testExactNumber(polyface0.data.pointIndex[9], 5);
     ck.testExactNumber(polyface0.data.pointIndex[10], 1);
     ck.testExactNumber(polyface0.data.pointIndex[11], 4);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -130,7 +130,7 @@ describe("Angle.AlmostEqual", () => {
     ck.testFalse(Angle.createRadians(1.0e-20).isExactZero);
 
     ck.checkpoint("End Angle.AlmostEqual");
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -141,7 +141,7 @@ describe("Angle.Adjust", () => {
     source.testAdjust(ck);
 
     ck.checkpoint("End Angle.Adjust");
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Trig", () => {
@@ -155,7 +155,7 @@ describe("Angle.Adjust", () => {
     }
 
     ck.checkpoint("Angle.Trig");
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("fullPeriodAdjust", () => {
@@ -170,7 +170,7 @@ describe("Angle.Adjust", () => {
         ck.testTrue(Angle.adjustRadians0ToLessThan2Pi(angle) < Angle.pi2Radians, "expect 2pi never to be returned");
       }
     }
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -191,7 +191,7 @@ describe("AngleSweep", () => {
     source.testFractions(AngleSweep.createStartSweep(Angle.createRadians(0), Angle.createDegrees(360)), ck);
 
     ck.checkpoint("AngleSweeps.TestFractions");
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("Caps", () => {
       const ck = new Checker();
@@ -213,7 +213,7 @@ describe("AngleSweep", () => {
       testSweep(ck, negativeSweep, false, false, -180);
 
       ck.checkpoint("AngleSweeps.Caps");
-      expect(ck.getNumErrors()).toEqual(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("Hello", () => {
       const ck = new Checker();
@@ -227,7 +227,7 @@ describe("AngleSweep", () => {
       ck.testTrue(sweep.isAlmostEqualNoPeriodShift(sweep1));
 
       ck.checkpoint("AngleSweeps.Hello");
-      expect(ck.getNumErrors()).toEqual(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });
 
@@ -248,7 +248,7 @@ describe("SmallNumbers", () => {
     for (let x = 1.e-15; x < 0.001; x *= 10.0) {
       ck.testTrue(Geometry.isSmallMetricDistance(x) === Geometry.isSmallMetricDistanceSquared(x * x));
     }
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -277,7 +277,7 @@ describe("MiscAngles", () => {
       ck.testCoordinate(alphaTrue, radiansPositive, { degrees, adjust: true });
       ck.testCoordinate(alphaFalse, degrees <= 180.0 ? radians : Angle.adjustRadiansMinusPiPlusPi(radians), { degrees, adjust: false });
     }
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("InverseInterpolate", () => {
     const ck = new Checker();
@@ -304,7 +304,7 @@ describe("MiscAngles", () => {
         ck.testCoordinate(x, xx, "inverse interpolate");
       }
     }
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DegreesRoundTrip", () => {
@@ -325,7 +325,7 @@ describe("MiscAngles", () => {
     }
     ck.testLT(errorRangeB.maxAbs(), 1.0e-15, " degrees round trip error range through Angle logic");
     ck.testLT(errorRangeC.maxAbs(), 1.0e-15, " degrees round trip error range through direct multiply");
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DegreesAdjusts", () => {
@@ -353,7 +353,7 @@ describe("MiscAngles", () => {
           degrees,
         );
       }
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("defaults", () => {
@@ -421,7 +421,7 @@ describe("MiscAngles", () => {
     f.freeze();
     expect(() => f.setDegrees(20)).toThrow();
 
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SmallSweep", () => {
@@ -430,7 +430,7 @@ describe("MiscAngles", () => {
     const sweep = AngleSweep.createStartEndRadians(0.14859042783429374, 0.14859042783429377);
     const f = sweep.radiansToPositivePeriodicFraction(3.2901830814240864, defaultFraction);
     ck.testCoordinate(f, defaultFraction);
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Angle.toJson", () => {
@@ -445,7 +445,7 @@ describe("MiscAngles", () => {
         ck.testAngleNoShift(thetaA, thetaB);
         ck.testAngleNoShift(thetaA, thetaC);
       }
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Angle.fromJSON", () => {
@@ -465,7 +465,7 @@ describe("MiscAngles", () => {
       ck.testAngleNoShift(angleA, angleRa);
       ck.testAngleNoShift(angleA, angleDe);
     }
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Angle.fromJSON", () => {
@@ -484,7 +484,7 @@ describe("MiscAngles", () => {
     ck.testExactNumber(0, Angle.adjustRadians0To2Pi((undefined as unknown) as number));
     ck.testExactNumber(0, Angle.adjustRadiansMinusPiPlusPi((undefined as unknown) as number));
 
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("AngleSweep.fromJSON", () => {
@@ -498,7 +498,7 @@ describe("MiscAngles", () => {
     ck.testTrue(sweepA.isAlmostEqualNoPeriodShift(sweepD));
     const sweepZ = AngleSweep.fromJSON(undefined);
     ck.testTrue(sweepZ.isFullCircle);
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("FractionalSweep", () => {
@@ -584,7 +584,7 @@ describe("MiscAngles", () => {
     const nearlyEmptySweep = AngleSweep.createStartEndRadians(1, 1 + 1.5 * Geometry.smallAngleRadians);
     if (ck.testFalse(nearlyEmptySweep.isEmpty, "sweep barely greater than smallAngleRadians is non-empty"))
       sweepTest(nearlyEmptySweep);
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -682,7 +682,7 @@ describe("Angle.HalfAngle", () => {
       ck.testCoordinate(c, Math.cos(2.0 * trig.radians));
       ck.testCoordinate(s, Math.sin(2.0 * trig.radians));
     }
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("Angle.NE", () => {
       const ck = new Checker();
@@ -693,7 +693,7 @@ describe("Angle.HalfAngle", () => {
       const rSin2A = r * Math.sin(angle);
       const trig = Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
       ck.testAngleNoShift(Angle.createRadians(halfAngle), Angle.createRadians(trig.radians));
-      expect(ck.getNumErrors()).toEqual(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("Angle.SE", () => {
       const ck = new Checker();
@@ -704,7 +704,7 @@ describe("Angle.HalfAngle", () => {
       const rSin2A = r * Math.sin(angle);
       const trig = Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
       ck.testAngleNoShift(Angle.createRadians(halfAngle), Angle.createRadians(trig.radians));
-      expect(ck.getNumErrors()).toEqual(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("Angle.NW", () => {
       const ck = new Checker();
@@ -715,7 +715,7 @@ describe("Angle.HalfAngle", () => {
       const rSin2A = r * Math.sin(angle);
       const trig = Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
       ck.testAngleNoShift(Angle.createRadians(halfAngle), Angle.createRadians(trig.radians));
-      expect(ck.getNumErrors()).toEqual(0);
+      expect(ck.getNumErrors()).toBe(0);
     }),
     it("Angle.SW", () => {
       const ck = new Checker();
@@ -726,7 +726,7 @@ describe("Angle.HalfAngle", () => {
       const rSin2A = r * Math.sin(angle);
       const trig = Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
       ck.testAngleNoShift(Angle.createRadians(halfAngle), Angle.createRadians(trig.radians));
-      expect(ck.getNumErrors()).toEqual(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });
 
@@ -760,20 +760,20 @@ describe("Angle.isAlmostEqualAllowPeriodShift", () => {
     const thisAngle: Angle = Angle.createRadians(1);
     const otherAngle: Angle = Angle.createRadians(1 + Angle.pi2Radians + 1e-15);
     const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(otherAngle);
-    expect(output).equal(true);
+    expect(output).toBe(true);
   }),
     it("Angle.isAlmostEqualAllowPeriodShiftFalse", () => {
       const thisAngle: Angle = Angle.createRadians(1);
       const otherAngle: Angle = Angle.createRadians(Angle.pi2Radians);
       const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(otherAngle);
-      expect(output).equal(false);
+      expect(output).toBe(false);
     }),
     it("Angle.isAlmostEqualAllowPeriodShiftTrueWithDefaultTolerance", () => {
       const thisAngle: Angle = Angle.createRadians(1);
       const otherAngle: Angle = Angle.createRadians(0.9 + Angle.pi2Radians);
       const radianTol: number = 0.2;
       const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(otherAngle, radianTol);
-      expect(output).equal(true);
+      expect(output).toBe(true);
     });
 });
 
@@ -782,20 +782,20 @@ describe("Angle.isAlmostEqualNoPeriodShift", () => {
     const thisAngle: Angle = Angle.createRadians(1);
     const otherAngle: Angle = Angle.createRadians(1 + 1e-15);
     const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(otherAngle);
-    expect(output).equal(true);
+    expect(output).toBe(true);
   }),
     it("Angle.isAlmostEqualNoPeriodShiftFalse", () => {
       const thisAngle: Angle = Angle.createRadians(1);
       const otherAngle: Angle = Angle.createRadians(1 + Angle.pi2Radians + 1e-15);
       const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(otherAngle);
-      expect(output).equal(false);
+      expect(output).toBe(false);
     }),
     it("Angle.isAlmostEqualNoPeriodShiftTrueWithDefaultTolerance", () => {
       const thisAngle: Angle = Angle.createRadians(1);
       const otherAngle: Angle = Angle.createRadians(0.9);
       const radianTol: number = 0.2;
       const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(otherAngle, radianTol);
-      expect(output).equal(true);
+      expect(output).toBe(true);
     });
 });
 
@@ -1004,7 +1004,7 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
     // for visualization in MicroStation
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc0, arc0full, uSeg0, vSeg0, perpSeg, arc1, uSeg1, vSeg1]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Angle", "SquareEllipseAxes");
-    expect(ck.getNumErrors()).toEqual(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1013,6 +1013,6 @@ describe("Angle.radiansBetweenVectorsXYZ", () => {
     const radians = Angle.radiansBetweenVectorsXYZ(1 / 2, Math.sqrt(3) / 2, 0, -1 / 2, Math.sqrt(3) / 2, 0);
     const angle = Angle.createRadians(radians);
     const expectedRadian: number = 60;
-    expect(Geometry.isAlmostEqualOptional(angle.degrees, expectedRadian, Geometry.smallAngleRadians)).equal(true);
+    expect(Geometry.isAlmostEqualOptional(angle.degrees, expectedRadian, Geometry.smallAngleRadians)).toBe(true);
   });
 });
