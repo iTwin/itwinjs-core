@@ -156,7 +156,7 @@ describe("ConvexPolygon2d", () => {
     }
 
     ck.checkpoint("ConvexHullQueries");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------------
@@ -188,7 +188,7 @@ describe("ConvexPolygon2d", () => {
     checkHullChords(hull, 2, ck);
 
     ck.checkpoint("ConvexHullQueriesConstruction");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------------
@@ -251,7 +251,7 @@ describe("ConvexPolygon2d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [GrowableXYZArray.create(hull.points), GrowableXYZArray.create(hull1.points), GrowableXYZArray.create(hull2.points)]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "ConvexPolygon2d", "OffsetInPlace");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Ray2d", () => {
@@ -303,7 +303,7 @@ describe("ConvexPolygon2d", () => {
     ray3 = ray0.cwPerpendicularRay(ray1);
     checkResultArgIsUsed("cwPerpendicularRay", ray1, ray3, ray0.origin, Vector2d.create(4, -1));
     ck.checkpoint("Ray2d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ConvexPolygon2dEmptyCases", () => {
@@ -321,6 +321,6 @@ describe("ConvexPolygon2d", () => {
       const rayRange = hull1.clipRay(highRay);
       ck.testTrue(rayRange.isNull);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

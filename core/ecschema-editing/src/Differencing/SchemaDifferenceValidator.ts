@@ -100,7 +100,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * Shared base-class validation for all types of ClassItemDifference union.
    */
   private async visitBaseClassDifference(entry: AnyClassItemDifference, targetClassItem: ECClass) {
-    if (entry.difference.baseClass === undefined && targetClassItem.baseClass !== undefined) {
+    if ("baseClass" in entry.difference && entry.difference.baseClass === undefined && targetClassItem.baseClass !== undefined) {
       return this.addConflict({
         code: ConflictCode.RemovingBaseClass,
         schemaType: targetClassItem.schemaItemType,

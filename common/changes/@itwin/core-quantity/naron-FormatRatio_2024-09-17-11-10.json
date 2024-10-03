@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Ratio format type support and inverted units",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

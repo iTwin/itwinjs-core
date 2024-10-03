@@ -90,7 +90,7 @@ describe("PlaneEvaluator", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
