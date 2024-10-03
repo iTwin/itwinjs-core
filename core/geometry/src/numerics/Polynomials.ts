@@ -1092,15 +1092,15 @@ export class PowerPolynomial {
     return this.degreeKnownEvaluate(coff, degree, x);
   }
   /**
-   * Accumulate `coffQ*scale` into `coffP`.
-   * * Both are treated as full degree (the length of `coffP` must be at least length of `coffQ`).
+   * Accumulate `coffQ*scaleQ` into `coffP`.
+   * * The length of `coffP` must be at least length of `coffQ`.
    * * Returns degree of result as determined by comparing trailing coefficients to zero.
    */
-  public static accumulate(coffP: Float64Array, coffQ: Float64Array, scale: number): number {
+  public static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number {
     let degreeP = coffP.length - 1;
     const degreeQ = coffQ.length - 1;
     for (let i = 0; i <= degreeQ; i++)
-      coffP[i] += scale * coffQ[i];
+      coffP[i] += scaleQ * coffQ[i];
     while (degreeP >= 0 && coffP[degreeP] === 0.0)
       degreeP--;
     return degreeP;
@@ -1122,25 +1122,25 @@ export class TrigPolynomial {
 
   // see itwinjs-core\core\geometry\internaldocs\unitCircleEllipseIntersection.md
   // on how below variables are derived.
-  /** Standard Basis coefficients for rational sine numerator. */
+  /** Standard Basis coefficients for the numerator of the y-coordinate y(t) = S(t)/W(t) in the rational semicircle parameterization. */
   public static readonly S = Float64Array.from([0.0, 2.0, -2.0]);
-  /** Standard Basis coefficients for rational cosine numerator. */
+  /** Standard Basis coefficients for the numerator of the x-coordinate x(t) = C(t)/W(t) in the rational semicircle parameterization. */
   public static readonly C = Float64Array.from([1.0, -2.0]);
-  /** Standard Basis coefficients for rational weight denominator. */
+  /** Standard Basis coefficients for the denominator of x(t) and y(t) in the rational semicircle parameterization. */
   public static readonly W = Float64Array.from([1.0, -2.0, 2.0]);
-  /** Standard Basis coefficients for cosine*weight numerator. */
+  /** Standard Basis coefficients for C(t) * W(t). */
   public static readonly CW = Float64Array.from([1.0, -4.0, 6.0, -4.0]);
-  /** Standard Basis coefficients for sine*weight numerator. */
+  /** Standard Basis coefficients forS(t) * W(t). */
   public static readonly SW = Float64Array.from([0.0, 2.0, -6.0, 8.0, -4.0]);
-  /** Standard Basis coefficients for sine*cosine numerator. */
+  /** Standard Basis coefficients for S(t) * C(t). */
   public static readonly SC = Float64Array.from([0.0, 2.0, -6.0, 4.0]);
-  /** Standard Basis coefficients for sine^2 numerator. */
+  /** Standard Basis coefficients for S(t) * S(t). */
   public static readonly SS = Float64Array.from([0.0, 0.0, 4.0, -8.0, 4.0]);
-  /** Standard Basis coefficients for cosine^2 numerator. */
+  /** Standard Basis coefficients for C(t) * C(t). */
   public static readonly CC = Float64Array.from([1.0, -4.0, 4.0]);
-  /** Standard Basis coefficients for weight^2 denominator. */
+  /** Standard Basis coefficients for W(t) * W(t). */
   public static readonly WW = Float64Array.from([1.0, -4.0, 8.0, -8.0, 4.0]);
-  /** Standard Basis coefficients for cosine^2 - sine^2 numerator. */
+  /** Standard Basis coefficients for C(t) * C(t) - S(t) * S(t). */
   public static readonly CCminusSS = Float64Array.from([1.0, -4.0, 0.0, 8.0, -4.0]);
 
   /**
@@ -1178,7 +1178,6 @@ export class TrigPolynomial {
     if (degree === -1) {
       // Umm. Dunno. Nothing there.
     } else {
-      // status = true;
       if (degree === 0) {
         // p(t) is a nonzero constant
         // No roots, but not degenerate.
@@ -1295,7 +1294,7 @@ export class TrigPolynomial {
     return status;
   }
   /**
-   * Compute intersections of unit circle `x^2 + y^2 = w^2` (in homogenous coordinates) with the ellipse
+   * Compute intersections of unit circle `x^2 + y^2 = w^2` (in homogeneous coordinates) with the ellipse
    * `F(t) = (cx + ux cos(t) + vx sin(t), cy + uy cos(t) + vy sin(t)) / (cw + uw cos(t) + vw sin(t))`.
    * @param cx center x
    * @param cy center y
@@ -1893,5 +1892,4 @@ export class ImplicitLineXY {
     this.ax += scale * ax;
     this.ay += scale * ay;
   }
-
 }
