@@ -103,39 +103,39 @@ export enum DecimalPrecision {
  *  @beta */
 export enum FormatType {
   /** Decimal display (ie 2.125) */
-  Decimal = "decimal",
+  Decimal = "Decimal",
   /** Fractional display (ie 2-1/8) */
-  Fractional = "fractional",
+  Fractional = "Fractional",
   /** Scientific Notation (ie 1.04e3) */
-  Scientific = "scientific",
+  Scientific = "Scientific",
   /** Civil Engineering Stationing (ie 1+00). */
-  Station = "station",
+  Station = "Station",
   /** Bearing angle e.g. N05:00:00E. Requires provided quantities to be of the angle phenomenon */
-  Bearing = "bearing",
+  Bearing = "Bearing",
   /** Azimuth angle e.g. 45°30'00". Requires provided quantities to be of the angle phenomenon */
-  Azimuth = "azimuth",
+  Azimuth = "Azimuth",
 }
 
 /** required if type is scientific
  * @beta */
 export enum ScientificType {
   /** Non-zero value left of decimal point (ie 1.2345e3) */
-  Normalized = "normalized",
+  Normalized = "Normalized",
   /** Zero value left of decimal point (ie 0.12345e4) */
-  ZeroNormalized = "zeronormalized",
+  ZeroNormalized = "ZeroNormalized",
 }
 
 /** Determines how the sign of values are displayed
  * @beta */
 export enum ShowSignOption {
   /** Never show a sign even if the value is negative. */
-  NoSign = "nosign",
+  NoSign = "NoSign",
   /** Only show a sign when the value is negative. */
-  OnlyNegative = "onlynegative",
+  OnlyNegative = "OnlyNegative",
   /** Always show a sign whether the value is positive or negative. */
-  SignAlways = "signalways",
+  SignAlways = "SignAlways",
   /** Only show a sign when the value is negative but use parentheses instead of a negative sign. For example, -10 is formatted as `(10)`. */
-  NegativeParentheses = "negativeparentheses",
+  NegativeParentheses = "NegativeParentheses",
 }
 
 // parse and toString methods
@@ -151,11 +151,6 @@ export function parseScientificType(scientificType: string, formatName: string):
   }
 }
 
-/**  @beta   */
-// export function scientificTypeToString(scientificType: ScientificType): string {
-//   return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
-// }
-
 /** @beta    */
 export function parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
   switch (showSignOption.toLowerCase()) {
@@ -167,16 +162,6 @@ export function parseShowSignOption(showSignOption: string, formatName: string):
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'showSignOption' attribute.`);
   }
 }
-
-/**  @beta  */
-// export function showSignOptionToString(showSign: ShowSignOption): string {
-//   switch (showSign) {
-//     case ShowSignOption.NegativeParentheses: return "NegativeParentheses";
-//     case ShowSignOption.NoSign: return "NoSign";
-//     case ShowSignOption.OnlyNegative: return "OnlyNegative";
-//     case ShowSignOption.SignAlways: return "SignAlways";
-//   }
-// }
 
 /**  @beta  */
 export function parseFormatTrait(formatTraitsString: string, formatName: string): FormatTraits {
@@ -262,18 +247,6 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
 }
-
-/** @beta    */
-// export function formatTypeToString(type: FormatType): string {
-//   switch (type) {
-//     case FormatType.Decimal: return "Decimal";
-//     case FormatType.Scientific: return "Scientific";
-//     case FormatType.Station: return "Station";
-//     case FormatType.Fractional: return "Fractional";
-//     case FormatType.Bearing: return "Bearing";
-//     case FormatType.Azimuth: return "Azimuth";
-//   }
-// }
 
 /**  @beta    */
 export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision {
