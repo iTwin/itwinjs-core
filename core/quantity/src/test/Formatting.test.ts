@@ -5,7 +5,6 @@
 import { assert, expect } from "chai";
 import { QuantityError } from "../Exception";
 import { Format } from "../Formatter/Format";
-//import { DecimalPrecision, FormatTraits, formatTypeToString, parseFormatTrait } from "../Formatter/FormatEnums";
 import { DecimalPrecision, FormatTraits, parseFormatTrait } from "../Formatter/FormatEnums";
 import { CustomFormatProps, FormatProps } from "../Formatter/Interfaces";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
