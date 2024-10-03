@@ -585,6 +585,7 @@ importers:
       typemoq: ^2.1.0
       typescript: ~5.3.3
       vite-multiple-assets: ^1.3.1
+      vite-plugin-static-copy: 1.0.6
       vitest: ^2.1.0
       webpack: ^5.76.0
       wms-capabilities: 0.4.0
@@ -630,6 +631,7 @@ importers:
       typemoq: 2.1.0
       typescript: 5.3.3
       vite-multiple-assets: 1.3.1
+      vite-plugin-static-copy: 1.0.6
       vitest: 2.1.1_@vitest+browser@2.1.1
       webpack: 5.76.0
 
@@ -13723,6 +13725,18 @@ packages:
     transitivePeerDependencies:
       - rollup
       - supports-color
+    dev: true
+
+  /vite-plugin-static-copy/1.0.6:
+    resolution: {integrity: sha512-3uSvsMwDVFZRitqoWHj0t4137Kz7UynnJeq1EZlRW7e25h2068fyIZX4ORCCOAkfp1FklGxJNVJBkBOD+PZIew==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    peerDependencies:
+      vite: ^5.0.0
+    dependencies:
+      chokidar: 3.5.3
+      fast-glob: 3.3.2
+      fs-extra: 11.2.0
+      picocolors: 1.1.0
     dev: true
 
   /vite/5.4.6:

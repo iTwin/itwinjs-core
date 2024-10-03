@@ -6,8 +6,8 @@ import { describe, expect, it } from "vitest";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "./test-worker";
 
-describe.skip("WorkerProxy", () => {
-  const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");
+describe("WorkerProxy", () => {
+  const createWorker = () => createWorkerProxy<TestWorker>("/test-worker.js");
   it("terminates", () => {
     const worker = createWorker();
     expect(worker.isTerminated).toBe(false);

@@ -239,7 +239,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const response = await fetch(`${window.location.origin}/assets/wms_capabilities/continents.xml`);
+    const response = await fetch(`/assets/wms_capabilities/continents.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 
@@ -291,7 +291,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const response = await fetch(`${window.location.origin}/assets/wms_capabilities/mapproxy_111.xml`);
+    const response = await fetch(`/assets/wms_capabilities/mapproxy_111.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 
@@ -326,7 +326,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const response = await fetch(`${window.location.origin}/assets/wms_capabilities/mapproxy_130.xml`);
+    const response = await fetch(`/assets/wms_capabilities/mapproxy_130.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 

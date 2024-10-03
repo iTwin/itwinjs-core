@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import { DynamicPublicDirectory } from "vite-multiple-assets";
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const dirAssets = ["./src/public", "./src/test/public"];
 export default defineConfig({
@@ -20,7 +21,15 @@ export default defineConfig({
     }
   },
   plugins: [
-    DynamicPublicDirectory(dirAssets)
+    DynamicPublicDirectory(dirAssets),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'lib/test/test-worker.js', // Path to the transpiled JavaScript file
+          dest: '.' // Destination directory in the public folder
+        }
+      ]
+    })
   ],
   resolve: {
     alias: {
