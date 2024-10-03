@@ -110,6 +110,8 @@ describe("XmlParser", () => {
         modifier: "None",
         baseClass: "TestSchema.TestBaseClass",
         appliesTo: "AnotherClass",
+        originalECXmlMajorVersion: 3,
+        originalECXmlMinorVersion: 1,
       };
 
       const actualProps = parser.parseCustomAttributeClass(itemElement);
@@ -276,6 +278,8 @@ describe("XmlParser", () => {
         description: "Test description",
         modifier: "Abstract",
         baseClass: "TestSchema.TestBaseStructClass",
+        originalECXmlMajorVersion: 3,
+        originalECXmlMinorVersion: 1,
       } as EntityClassProps;
 
       const actualProps = parser.parseStructClass(itemElement);
@@ -711,6 +715,8 @@ describe("XmlParser", () => {
         baseClass: undefined,
         description: undefined,
         label: undefined,
+        originalECXmlMajorVersion: 3,
+        originalECXmlMinorVersion: 1,
       } as MixinProps;
 
       const actualProps = parser.parseMixin(itemElement);
@@ -1482,6 +1488,8 @@ describe("XmlParser", () => {
         baseClass: undefined,
         description: undefined,
         label: undefined,
+        originalECXmlMajorVersion: 3,
+        originalECXmlMinorVersion: 1,
       };
 
       const actualProps = parser.parseRelationshipClass(itemElement);

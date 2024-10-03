@@ -278,14 +278,7 @@ export class SchemaReadHelper<T = unknown> {
     switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
         schemaItem = await (schema as MutableSchema).createEntityClass(name);
-        try {
-          await this.loadEntityClass(schemaItem, schemaItemObject);
-        } catch (err: any) {
-          if (err.errorNumber === ECObjectsStatus.NewerSchemaVersion)
-            await (schema as MutableSchema).deleteClass(name);
-          else
-            throw err;
-        }
+        await this.loadEntityClass(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.StructClass:
         schemaItem = await (schema as MutableSchema).createStructClass(name);
@@ -363,14 +356,7 @@ export class SchemaReadHelper<T = unknown> {
     switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
         schemaItem = (schema as MutableSchema).createEntityClassSync(name);
-        try {
-          this.loadEntityClassSync(schemaItem, schemaItemObject);
-        } catch (err: any) {
-          if (err.errorNumber === ECObjectsStatus.NewerSchemaVersion)
-            (schema as MutableSchema).deleteClassSync(name);
-          else
-            throw err;
-        }
+        this.loadEntityClassSync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.StructClass:
         schemaItem = (schema as MutableSchema).createStructClassSync(name);

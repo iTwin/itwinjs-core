@@ -35,7 +35,6 @@ export class XmlParser extends AbstractParser<Element> {
   private _schemaAlias: string;
   private _schemaVersion?: string;
   private _xmlNamespace?: string;
-  private _ecXmlVersion?: ECXmlVersion;
   private _currentItemFullName?: string;
   private _schemaItems: Map<string, [string, Element]>;
   private _mapIsPopulated: boolean;
@@ -70,6 +69,8 @@ export class XmlParser extends AbstractParser<Element> {
     this._schemaItems = new Map<string, [string, Element]>();
     this._mapIsPopulated = false;
   }
+
+  public get getECXmlVersion(): ECXmlVersion | undefined { return this._ecXmlVersion; }
 
   public parseSchema(): SchemaProps {
     const schemaMetadata = this._rawSchema.documentElement;
@@ -200,8 +201,6 @@ export class XmlParser extends AbstractParser<Element> {
     const entityClassProps = {
       ...classProps,
       mixins,
-      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
-      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
     };
 
     return entityClassProps;
@@ -823,6 +822,8 @@ export class XmlParser extends AbstractParser<Element> {
       ...itemProps,
       modifier,
       baseClass,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
     };
   }
 

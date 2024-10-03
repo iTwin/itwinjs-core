@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { SchemaItemType } from "../../ECObjects";
+import { ECClassModifier, SchemaItemType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { AnySchemaItem } from "../../Interfaces";
 import { ECClass, StructClass } from "../../Metadata/Class";
@@ -17,7 +17,7 @@ import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaKey } from "../../SchemaKey";
 
-import { Constant, CustomAttributeClass, Enumeration, Format, KindOfQuantity, Phenomenon, PropertyCategory, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
+import { Constant, CustomAttributeClass, Enumeration, Format, KindOfQuantity, Phenomenon, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -864,32 +864,34 @@ describe("Schema", () => {
     describe("Schema with newer ECXml version and unknowns", async () => {
       let _schema: Schema;
       let _xmlReader: SchemaReadHelper<Document>;
+      let _context: SchemaContext;
 
       beforeEach(async () => {
-        const context = new SchemaContext();
-        _xmlReader = new SchemaReadHelper(XmlParser, context);
-        _schema = new Schema(context);
+        _context = new SchemaContext();
+        _xmlReader = new SchemaReadHelper(XmlParser, _context);
       });
 
       async function deserializeXML(schemaXml: string) {
+        _schema = new Schema(_context);
         try {
           await _xmlReader.readSchema(_schema, new DOMParser().parseFromString(schemaXml));
         } catch (err: any) {
-          assert(false, `The schema should have been deserialized by ignoring the unknowns. Instead error was thrown: ${err.message}`);
+          assert(false, `The schema should have been deserialized, instead error was thrown: ${err.message}`);
         }
       }
       function deserializeXMLSync(schemaXml: string) {
+        _schema = new Schema(_context);
         try {
           _xmlReader.readSchemaSync(_schema, new DOMParser().parseFromString(schemaXml));
         } catch (err: any) {
-          assert(false, `The schema should have been deserialized by ignoring the unknowns. Instead error was thrown: ${err.message}`);
+          assert(false, `The schema should have been deserialized, instead error was thrown: ${err.message}`);
         }
       }
       async function deserializeJSON(schemaJSON: string) {
         try {
           _schema = await Schema.fromJson(schemaJSON, _schema.context);
         } catch (err: any) {
-          assert(false, `The schema should have been deserialized by ignoring the unknowns. Instead error was thrown: ${err.message}`);
+          assert(false, `The schema should have been deserialized, instead error was thrown: ${err.message}`);
         }
       }
 
@@ -897,33 +899,61 @@ describe("Schema", () => {
         try {
           _schema = Schema.fromJsonSync(schemaJSON, _schema.context);
         } catch (err: any) {
-          assert(false, `The schema should have been deserialized by ignoring the unknowns. Instead error was thrown: ${err.message}`);
+          assert(false, `The schema should have been deserialized, instead error was thrown: ${err.message}`);
         }
       }
 
-      function testScenario() {
-        assert.isTrue(_schema !== undefined);
-        const validClass = _schema.getItemSync("ValidClass");
-        expect(validClass).to.not.be.undefined;
-        expect(_schema.getItemSync("UnknownItem")).to.be.undefined;
-      }
+      it("Schema XML with unknown class modifier", async () => {
+        await new SchemaReadHelper(XmlParser, _context).readSchema(new Schema(_context), new DOMParser().parseFromString(`<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="CoreCustomAttributes" alias="CoreCA" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+            <ECCustomAttributeClass typeName="IsMixin" description="Applied to abstract ECEntityClasses which serve as secondary base classes for normal ECEntityClasses." displayLabel="Is Mixin" appliesTo="EntityClass" modifier="Sealed" >
+              <ECProperty propertyName="AppliesToEntityClass" typeName="string" description="This mixin may only be applied to entity classes which derive from this class.  Class Name should be fully specified as 'alias:ClassName'" />
+            </ECCustomAttributeClass>
+          </ECSchema>`));
 
-      it.only("Schema XML with unknown class modifier", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
           <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
+            <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
             <ECEntityClass typeName="ValidClass" description="Test Entity Class" />
-            <ECEntityClass typeName="UnknownItem" description="Test Entity Class" modifier="UnknownModifier" />
+            <ECEntityClass typeName="UnknownEntityClass" description="Test Entity Class" modifier="UnknownModifier" />
+            <ECStructClass typeName="UnknownStructClass" description="Test Entity Class" modifier="UnknownModifier" />
+            <ECRelationshipClass typeName="UnknownRelationshipClass" strength="referencing" modifier="UnknownModifier">
+              <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+                <Class class="ValidClass"/>
+              </Source>
+              <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+                <Class class="ValidClass"/>
+              </Target>
+            </ECRelationshipClass>
+            <ECEntityClass typeName="UnknownMixinClass" description="Test Entity Class" modifier="UnknownModifier">
+              <ECCustomAttributes>
+                <IsMixin>
+                  <AppliesToEntityClass>ValidClass</AppliesToEntityClass>
+                </IsMixin>
+              </ECCustomAttributes>
+            </ECEntityClass>
           </ECSchema>`;
 
+        async function testScenario() {
+          assert.isTrue(_schema !== undefined);
+          expect(await _schema.getItem("ValidClass")).to.not.be.undefined;
+
+          for (const className of [`UnknownEntityClass`, `UnknownStructClass`, `UnknownRelationshipClass`, `UnknownMixinClass`]) {
+            const unknownItem = await _schema.getItem(className) as EntityClass | StructClass | RelationshipClass | CustomAttributeClass | Mixin;
+            expect(unknownItem).to.not.be.undefined;
+            expect(unknownItem.modifier).to.eql(ECClassModifier.None);
+          }
+        }
+
         await deserializeXML(schemaXml);
-        testScenario();
+        await testScenario();
         await testSerialization(_schema, false, unsupportedVersionError);
 
         deserializeXMLSync(schemaXml);
-        testScenario();
+        await testScenario();
         await testSerialization(_schema, false, unsupportedVersionError);
       });
-      it.only("Schema JSON with unknown class modifier", async () => {
+      it("Schema JSON with unknown class modifier", async () => {
         const schemaJson = {
           $schema: `https://dev.bentley.com/json_schemas/ec/${Schema.currentECXmlMajorVersion}${Schema.currentECXmlMinorVersion + 1}/ecschema`,
           name: "TestSchema",
@@ -931,52 +961,46 @@ describe("Schema", () => {
           alias: "ts",
           items: {
             ValidClass:  { schemaItemType: "EntityClass", name: "ValidClass" },
-            UnknownItem: { schemaItemType: "EntityClass", name: "UnknownItem", modifier: "UnknownModifier" },
+            UnknownEntityClass: { schemaItemType: "EntityClass", name: "UnknownEntityClass", modifier: "UnknownModifier" },
+            UnknownStructClass: { schemaItemType: "StructClass", name: "UnknownStructClass", modifier: "UnknownModifier" },
+            UnknownRelationshipClass: { schemaItemType: "RelationshipClass", name: "UnknownRelationshipClass", strength: "Referencing", strengthDirection: "Forward", modifier: "UnknownModifier",
+              source: { multiplicity: "(0..*)", roleLabel: "refers to", polymorphic: true,
+                constraintClasses: [ "TestSchema.ValidClass" ],
+              },
+              target: { multiplicity: "(0..*)", roleLabel: "Target RoleLabel", polymorphic: true,
+                constraintClasses: [ "TestSchema.ValidClass" ],
+              },
+            },
+            UnknownMixinClass: {
+              schemaItemType: "Mixin",
+              appliesTo: "TestSchema.ValidClass",
+              modifier: "UnknownModifier",
+            },
+            UnknownCustomAttributeClass: {
+              schemaItemType: "CustomAttributeClass",
+              appliesTo: "AnyClass, Schema, AnyProperty",
+              modifier: "UnknownModifier",
+            },
           },
         };
 
+        async function testScenario() {
+          assert.isTrue(_schema !== undefined);
+          expect(await _schema.getItem("ValidClass")).to.not.be.undefined;
+
+          for (const className of [`UnknownEntityClass`, `UnknownStructClass`, `UnknownRelationshipClass`, `UnknownMixinClass`]) {
+            const unknownItem = await _schema.getItem(className) as EntityClass | StructClass | RelationshipClass | CustomAttributeClass | Mixin;
+            expect(unknownItem).to.not.be.undefined;
+            expect(unknownItem.modifier).to.eql(ECClassModifier.None);
+          }
+        }
+
         await deserializeJSON(JSON.stringify(schemaJson));
-        testScenario();
+        await testScenario();
         await testSerialization(_schema, false, unsupportedVersionError);
 
         deserializeJSONSync(JSON.stringify(schemaJson));
-        testScenario();
-        await testSerialization(_schema, false, unsupportedVersionError);
-      });
-
-      it.only("Schema XML with unknown Schema Item Type", async () => {
-        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
-            <ECEntityClass typeName="ValidClass" description="Test Entity Class" />
-            <UnknownItem typeName="UnknownItem" unknownAttribute="unknownAttr" />
-          </ECSchema>`;
-
-        await deserializeXML(schemaXml);
-        testScenario();
-        await testSerialization(_schema, false, unsupportedVersionError);
-
-        deserializeXMLSync(schemaXml);
-        testScenario();
-        await testSerialization(_schema, false, unsupportedVersionError);
-      });
-      it.only("Schema JSON with unknown Schema Item Type", async () => {
-        const schemaJson = {
-          $schema: `https://dev.bentley.com/json_schemas/ec/${Schema.currentECXmlMajorVersion}${Schema.currentECXmlMinorVersion + 1}/ecschema`,
-          name: "TestSchema",
-          version: "1.0.0",
-          alias: "ts",
-          items: {
-            ValidClass:  { schemaItemType: "EntityClass", name: "ValidClass" },
-            UnknownItem: { schemaItemType: "UnknownItem", name: "UnknownItem" },
-          },
-        };
-
-        await deserializeJSON(JSON.stringify(schemaJson));
-        testScenario();
-        await testSerialization(_schema, false, unsupportedVersionError);
-
-        deserializeJSONSync(JSON.stringify(schemaJson));
-        testScenario();
+        await testScenario();
         await testSerialization(_schema, false, unsupportedVersionError);
       });
     });

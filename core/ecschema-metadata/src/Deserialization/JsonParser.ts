@@ -28,7 +28,6 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   private _rawSchema: UnknownObject;
   private _schemaName?: string;
   private _currentItemFullName?: string;
-  private _ecXmlVersion?: ECXmlVersion;
 
   constructor(rawSchema: Readonly<unknown>) {
     super();
@@ -40,6 +39,8 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     this._schemaName = rawSchema.name as string | undefined;
     this._ecXmlVersion = JsonParser.parseJSUri(rawSchema.$schema as string);
   }
+
+  public get getECXmlVersion(): ECXmlVersion | undefined { return this._ecXmlVersion; }
 
   public static parseJSUri(uri: string): ECXmlVersion | undefined {
     if (uri === undefined)
@@ -278,7 +279,11 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this._currentItemFullName} is missing the required 'appliesTo' attribute.`);
     if (typeof (jsonObj.appliesTo) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this._currentItemFullName} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
-    return (jsonObj as unknown) as MixinProps;
+    return {
+      ...jsonObj,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
+    } as unknown as MixinProps;
   }
 
   /**
@@ -292,12 +297,20 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this._currentItemFullName} is missing the required 'appliesTo' attribute.`);
     if (typeof (jsonObj.appliesTo) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The CustomAttributeClass ${this._currentItemFullName} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
-    return (jsonObj as unknown) as CustomAttributeClassProps;
+    return {
+      ...jsonObj,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
+    } as unknown as CustomAttributeClassProps;
   }
 
   public parseStructClass(jsonObj: UnknownObject): StructClassProps {
     this.checkClassProps(jsonObj);
-    return jsonObj as StructClassProps;
+    return {
+      ...jsonObj,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
+    } as unknown as StructClassProps;
   }
 
   public parseUnitSystem(jsonObj: UnknownObject): UnitSystemProps {
@@ -334,7 +347,11 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid target constraint. It should be of type 'object'.`);
     this.checkRelationshipConstraintProps(jsonObj.target, false);
 
-    return (jsonObj as unknown) as RelationshipClassProps;
+    return {
+      ...jsonObj,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
+    } as unknown as RelationshipClassProps;
   }
 
   /**
