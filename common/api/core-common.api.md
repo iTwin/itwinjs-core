@@ -1788,62 +1788,88 @@ export interface ContextRealityModelsContainer {
 }
 
 // @public
-export namespace ContourDisplay {
-    export class Contour {
-        static compare(lhs: Contour, rhs: Contour): number;
-        // (undocumented)
-        static readonly defaults: Contour;
-        // (undocumented)
-        equals(other: Contour): boolean;
-        // (undocumented)
-        static fromJSON(json?: ContourProps): Contour;
-        readonly majorColor: ColorDef;
-        readonly majorIntervalCount: number;
-        readonly majorPattern: LinePixels;
-        readonly majorPixelWidth: number;
-        readonly minorColor: ColorDef;
-        readonly minorInterval: number;
-        readonly minorPattern: LinePixels;
-        readonly minorPixelWidth: number;
-        // (undocumented)
-        toJSON(): ContourProps;
-    }
-    export interface ContourProps {
-        majorColor?: ColorDefProps;
-        majorIntervalCount?: number;
-        majorPattern?: LinePixels;
-        majorPixelWidth?: number;
-        minorColor?: ColorDefProps;
-        minorInterval?: number;
-        minorPattern?: LinePixels;
-        minorPixelWidth?: number;
-    }
-    export class Settings {
-        // (undocumented)
-        equals(other: Settings): boolean;
-        // (undocumented)
-        static fromJSON(json?: SettingsProps): Settings;
-        readonly terrains: (Terrain | undefined)[];
-        // (undocumented)
-        toJSON(): SettingsProps;
-    }
-    export interface SettingsProps {
-        terrains?: (TerrainProps | undefined)[];
-    }
-    export class Terrain {
-        readonly contourDef: Contour;
-        // (undocumented)
-        equals(other: Terrain | undefined): boolean;
-        // (undocumented)
-        static fromJSON(json?: TerrainProps): Terrain;
-        readonly subCategories: Id64String[];
-        // (undocumented)
-        toJSON(): TerrainProps;
-    }
-    export interface TerrainProps {
-        contourDef?: ContourProps;
-        subCategories?: Id64String[];
-    }
+export class Contour {
+    static compare(lhs: Contour, rhs: Contour): number;
+    // (undocumented)
+    static readonly defaults: Contour;
+    // (undocumented)
+    equals(other: Contour): boolean;
+    // (undocumented)
+    static fromJSON(json?: ContourProps): Contour;
+    readonly majorIntervalCount: number;
+    readonly majorStyle: ContourStyle;
+    readonly minorInterval: number;
+    readonly minorStyle: ContourStyle;
+    readonly showGeometry: boolean;
+    // (undocumented)
+    toJSON(): ContourProps;
+}
+
+// @public
+export class ContourDisplay {
+    // (undocumented)
+    equals(other: ContourDisplay): boolean;
+    // (undocumented)
+    static fromJSON(json?: ContourDisplayProps): ContourDisplay;
+    readonly groups: (ContourGroup | undefined)[];
+    // (undocumented)
+    toJSON(): ContourDisplayProps;
+}
+
+// @public
+export interface ContourDisplayProps {
+    groups?: (ContourGroupProps | undefined)[];
+}
+
+// @public
+export class ContourGroup {
+    readonly contourDef: Contour;
+    // (undocumented)
+    equals(other: ContourGroup | undefined): boolean;
+    // (undocumented)
+    static fromJSON(json?: ContourGroupProps): ContourGroup;
+    get subCategories(): OrderedId64Iterable;
+    // (undocumented)
+    toJSON(): ContourGroupProps;
+}
+
+// @public
+export interface ContourGroupProps {
+    contourDef?: ContourProps;
+    subCategories?: CompressedId64Set;
+}
+
+// @public
+export interface ContourProps {
+    majorIntervalCount?: number;
+    majorStyle?: ContourStyleProps;
+    minorInterval?: number;
+    minorStyle?: ContourStyleProps;
+    showGeometry?: boolean;
+}
+
+// @public
+export class ContourStyle {
+    readonly color: ColorDef;
+    static compare(lhs: ContourStyle, rhs: ContourStyle): number;
+    // (undocumented)
+    equals(other: ContourStyle): boolean;
+    // (undocumented)
+    static fromJSON(json?: ContourStyleProps): ContourStyle;
+    readonly pattern: LinePixels;
+    readonly pixelWidth: number;
+    // (undocumented)
+    toJSON(): ContourStyleProps;
+}
+
+// @public
+export interface ContourStyleProps {
+    // (undocumented)
+    color?: ColorDefProps;
+    // (undocumented)
+    pattern?: LinePixels;
+    // (undocumented)
+    pixelWidth?: number;
 }
 
 // @public
@@ -2191,8 +2217,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
-    get contours(): ContourDisplay.Settings;
-    set contours(contours: ContourDisplay.Settings);
+    get contours(): ContourDisplay;
+    set contours(contours: ContourDisplay);
     get environment(): Environment;
     set environment(environment: Environment);
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
@@ -2222,7 +2248,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     ao?: AmbientOcclusion.Props;
-    contours?: ContourDisplay.SettingsProps;
+    contours?: ContourDisplayProps;
     environment?: EnvironmentProps;
     hline?: HiddenLine.SettingsProps;
     lights?: LightSettingsProps;
@@ -2326,7 +2352,7 @@ export class DisplayStyleSettings {
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
-    readonly onContoursChanged: BeEvent<(newContours: ContourDisplay.Settings) => void>;
+    readonly onContoursChanged: BeEvent<(newContours: ContourDisplay) => void>;
     readonly onEnvironmentChanged: BeEvent<(newEnv: Readonly<Environment>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
