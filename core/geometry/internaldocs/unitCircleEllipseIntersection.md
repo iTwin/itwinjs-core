@@ -74,7 +74,7 @@ The first matrix of scalars encapsulates the Bezier coefficients of the $C$, $S$
 - **Curves and Surfaces for CAGD: A Practical Guide**, Gerald Farin, 4th Edition, Section 13.8 (Control Vectors)
 
 The transformation of equation $(1)$ from trigonometric basis to power polynomial basis is performed by the substitution:
-$$\begin{equation}x(t) := \cos\theta = \frac{C(t)}{W(t)},\space\space\space y(t) := \sin\theta = \frac{S(t)}{W(t)}\end{equation}$$
+$$\begin{equation}\cos\theta = \frac{C(t)}{W(t)} := x(t),\space\space\space \sin\theta = \frac{S(t)}{W(t)} := y(t)\end{equation}$$
 
 The method `TrigPolynomial.solveUnitCircleImplicitQuadricIntersection` takes the coefficients of the trigonometric polynomial in $(1)$, and internally applies the transformation $(2)$ to compute its power basis coefficients. The transformed polynomial $P(t)$ has degree at most 4. We currently prefer the power basis because we have polynomial root finders for degrees 2, 3, and 4 implemented by classical formulae. In the future we may use a Bezier polynomial solver that handles any degree, and has the advantage of superior numerical stability of the Bernstein-Bezier basis.
 
