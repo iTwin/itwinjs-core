@@ -58,7 +58,7 @@ export type AnyDb = IModelDb | ECDb;
 */
 export interface SqliteChangesetReaderArgs {
   /** db from which schema will be read. It should be close to changeset.*/
-  readonly db?: AnyDb;
+  readonly db: AnyDb;
   /** invert the changeset operations */
   readonly invert?: true;
   /** do not check if column of change match db schema instead ignore addition columns */
@@ -91,7 +91,7 @@ export class SqliteChangesetReader implements IDisposable {
   private _changeIndex = 0;
   protected constructor(
     /** db from where sql schema will be read */
-    public readonly db?: AnyDb,
+    public readonly db: AnyDb,
   ) { }
 
   /**
@@ -110,7 +110,7 @@ export class SqliteChangesetReader implements IDisposable {
    * @param args - The arguments for opening the changeset group. Requires an open db.
    * @returns The SqliteChangesetReader instance.
    */
-  public static openGroup(args: { readonly changesetFiles: string[] } & MarkRequired<SqliteChangesetReaderArgs, "db">): SqliteChangesetReader {
+  public static openGroup(args: { readonly changesetFiles: string[] } & SqliteChangesetReaderArgs): SqliteChangesetReader {
     if (args.changesetFiles.length === 0) {
       throw new Error("changesetFiles must contain at least one file.");
     }
@@ -373,9 +373,6 @@ export class SqliteChangesetReader implements IDisposable {
     const columns = this._schemaCache.get(tableName);
     if (columns)
       return columns;
-
-    if (!this.db)
-      throw new Error("getColumns() require db context to be provided.");
 
     return this.db.withPreparedSqliteStatement("SELECT [name] FROM PRAGMA_TABLE_INFO(?) ORDER BY [cid]", (stmt) => {
       stmt.bindString(1, tableName);
