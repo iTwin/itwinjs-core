@@ -22,6 +22,7 @@ export class ContourUniforms {
 
   private readonly _contourDefsSize = Math.ceil(ContourUniforms.maxContourDefs * 1.5);
   private readonly _contourDefs = new Float32Array(this._contourDefsSize * 4);
+  private _displayContours?: boolean;
   private _contourDisplay?: ContourDisplay;
 
   public syncKey = 0;
@@ -59,11 +60,13 @@ export class ContourUniforms {
   public update(target: Target): void {
     const plan = target.plan;
 
-    if (this.contourDisplay && plan.contours && this.contourDisplay.equals(plan.contours)) {
+    if (this.contourDisplay && plan.contours && this.contourDisplay.equals(plan.contours) && this._displayContours === plan.displayContours) {
       return;
     }
 
     desync(this);
+
+    this._displayContours = plan.displayContours;
 
     this._contourDisplay = plan.contours;
     if (!this.contourDisplay)
@@ -105,5 +108,10 @@ export class ContourUniforms {
   public bindcontourDefs(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform4fv(this._contourDefs);
+  }
+
+  public bindDisplayContours(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform1i(this._displayContours ? 1 : 0);
   }
 }

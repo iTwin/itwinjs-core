@@ -5,8 +5,9 @@
 
 import { assert, CompressedId64Set, dispose, IDisposable } from "@itwin/core-bentley";
 import {
+  CheckBox,
   ColorInput,
-  ColorInputProps, ComboBox, ComboBoxEntry, ComboBoxProps, createButton, createColorInput, createComboBox, createLabeledNumericInput,
+  ColorInputProps, ComboBox, ComboBoxEntry, ComboBoxProps, createButton, createCheckBox, createColorInput, createComboBox, createLabeledNumericInput,
   createSlider, createTextBox, LabeledNumericInput, Slider,
   SliderProps,
   TextBox,
@@ -38,6 +39,7 @@ export class ContoursSettings implements IDisposable {
   private _majorColor: ColorInput;
   private _minorWidth: Slider;
   private _majorWidth: Slider;
+  private _checkbox: CheckBox;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._currentTerrainProps.contourDef = {};
@@ -53,6 +55,17 @@ export class ContoursSettings implements IDisposable {
     this._element.style.overflowY = "none";
     const width = winSize.width * 0.98;
     this._element.style.width = `${width}px`;
+
+    this._checkbox = createCheckBox({
+      parent: this._element,
+      name: "Display contours in the viewport",
+      id: "cbx_toggleDisplayContours",
+      handler: (checkbox) => {
+        assert(this._vp.view.is3d());
+        this._vp.view.displayStyle.settings.displayContours = checkbox.checked;
+        this.sync();
+      },
+    });
 
     const _comboDiv = document.createElement("div");
     const entries: ComboBoxEntry[] = [
@@ -145,6 +158,9 @@ export class ContoursSettings implements IDisposable {
     parent.appendChild(this._element);
 
     this.loadContourDef(this._currentContourIndex);
+
+    assert(this._vp.view.is3d());
+    this._checkbox.checkbox.checked = this._vp.view.displayStyle.settings.displayContours;
   }
 
   public dispose(): void {
@@ -218,6 +234,8 @@ export class ContoursSettings implements IDisposable {
     contoursJson.groups[this._currentContourIndex] = undefined;
     view.displayStyle.settings.contours = ContourDisplay.fromJSON(contoursJson);
     this.loadContourDef(this._currentContourIndex);
+    assert(this._vp.view.is3d());
+    this._checkbox.checkbox.checked = this._vp.view.displayStyle.settings.displayContours;
 
     this.sync();
   }

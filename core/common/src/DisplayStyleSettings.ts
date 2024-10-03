@@ -163,6 +163,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   thematic?: ThematicDisplayProps;
   /** See [[DisplayStyle3dSettings.contours]]. */
   contours?: ContourDisplayProps;
+  /** See [[DisplayStyle3dSettings.displayContours]]. */
+  displayContours?: boolean;
   /** See [[DisplayStyle3dSettings.hiddenLineSettings]]. */
   hline?: HiddenLine.SettingsProps;
   /** See [[DisplayStyle3dSettings.ambientOcclusionSettings]]. */
@@ -1082,6 +1084,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _lights: LightSettings;
   private _environment: Environment;
   private _planProjections?: Map<string, PlanProjectionSettings>;
+  private _displayContours: boolean;
 
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
 
@@ -1093,6 +1096,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     super(jsonProperties, options);
     this._thematic = ThematicDisplay.fromJSON(this._json3d.thematic);
     this._contours = ContourDisplay.fromJSON(this._json3d.contours);
+    this._displayContours = this._json3d.displayContours ? this._json3d.displayContours : false;
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
     this._solarShadows = SolarShadowSettings.fromJSON(this._json3d.solarShadows);
@@ -1171,6 +1175,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }
 
     props.contours = this.contours.toJSON();
+    props.displayContours = this.displayContours;
 
     return props;
   }
@@ -1205,6 +1210,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (overrides.contours)
       this.contours = ContourDisplay.fromJSON(overrides.contours);
 
+    if (overrides.displayContours)
+      this._displayContours = overrides.displayContours;
+
     this.onOverridesApplied.raiseEvent(overrides);
   }
 
@@ -1228,6 +1236,19 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onContoursChanged.raiseEvent(contours);
     this._contours = contours;
     this._json3d.contours = contours.toJSON();
+  }
+
+  /** If true, contours will be displayed based on this settings' [[ContourDisplay]] object.
+   * Default: false.
+   * @see [[contours]]
+   */
+  public get displayContours(): boolean { return this._displayContours; }
+  public set displayContours(display: boolean) {
+    if (display === this.displayContours)
+      return;
+
+    this._displayContours = display;
+    this._json3d.displayContours = display;
   }
 
   /** The settings that control how visible and hidden edges are displayed.  */

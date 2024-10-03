@@ -44,7 +44,7 @@ vec4 unpackAndNormalize2BytesVec4(vec4 f, bool upper) {
 
 const applyContours = `
   int contourNdx = int(v_contourNdx + 0.5);
-  if (contourNdx > 14) // 15 => no contours
+  if (!u_displayContours || contourNdx > 14) // 15 => no contours
 #if 1
     return baseColor;
 #else // debug for contourNdx map
@@ -135,6 +135,13 @@ float computeWorldHeight(vec4 rawPosition) {
       params.target.uniforms.contours.bindcontourDefs(uniform);
     });
   });
+
+  builder.addUniform("u_displayContours", VariableType.Boolean, (prog) => {
+    prog.addProgramUniform("u_displayContours", (uniform, params) => {
+      params.target.uniforms.contours.bindDisplayContours(uniform);
+    });
+  });
+
   builder.frag.addFunction(unpack2BytesVec4);
   builder.frag.addFunction(unpackAndNormalize2BytesVec4);
   builder.frag.set(FragmentShaderComponent.ApplyContours, applyContours);

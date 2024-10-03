@@ -71,6 +71,7 @@ export interface RenderPlan {
   readonly globalViewTransition: number;
   readonly isGlobeMode3D: boolean;
   readonly backgroundMapOn: boolean;
+  readonly displayContours: boolean;
   readonly upVector: Vector3d;
   readonly lights?: LightSettings;
   readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
@@ -95,6 +96,7 @@ export function createEmptyRenderPlan(): RenderPlan {
     globalViewTransition: 0,
     isGlobeMode3D: false,
     backgroundMapOn: false,
+    displayContours: false,
     upVector: Vector3d.unitZ(),
     whiteOnWhiteReversal: WhiteOnWhiteReversalSettings.fromJSON(),
   };
@@ -131,6 +133,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
   const contours = (style.is3d() && style.settings.contours.groups.length > 0) ? style.settings.contours : undefined;
+  const displayContours = (style.is3d() && style.settings.displayContours) ? true :  false;
   const shouldDisplayAtmosphere = (style.is3d() && GlobeMode.Ellipsoid === view.globeMode && vp.iModel.isGeoLocated && style.viewFlags.backgroundMap) ? (vp.view as ViewState3d).getDisplayStyle3d().environment.displayAtmosphere : false;
   const atmosphere = shouldDisplayAtmosphere ? (vp.view as ViewState3d).getDisplayStyle3d().environment.atmosphere : undefined;
 
@@ -182,6 +185,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     globalViewTransition,
     isGlobeMode3D,
     backgroundMapOn,
+    displayContours,
     upVector,
     lights,
     whiteOnWhiteReversal: vp.displayStyle.settings.whiteOnWhiteReversal,
