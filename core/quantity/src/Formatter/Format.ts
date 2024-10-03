@@ -10,9 +10,9 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import {
-  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
-  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, ScientificType,
-  scientificTypeToString, ShowSignOption, showSignOptionToString,
+  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision,
+  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
+  parseShowSignOption, ScientificType, ShowSignOption,
 } from "./FormatEnums";
 import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
@@ -427,16 +427,19 @@ export class Format extends BaseFormat {
 
     if (this.customProps)
       return {
-        type: formatTypeToString(this.type),
+        //type: formatTypeToString(this.type),
+        type: this.type,
         precision: this.precision,
         roundFactor: this.roundFactor,
         minWidth: this.minWidth,
-        showSignOption: showSignOptionToString(this.showSignOption),
+        //showSignOption: showSignOptionToString(this.showSignOption),
+        showSignOption: this.showSignOption,
         formatTraits: formatTraitsToArray(this.formatTraits),
         decimalSeparator: this.decimalSeparator,
         thousandSeparator: this.thousandSeparator,
         uomSeparator: this.uomSeparator,
-        scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
+        //scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
+        scientificType: this.scientificType ? this.scientificType : undefined,
         stationOffsetSize: this.stationOffsetSize,
         stationSeparator: this.stationSeparator,
         azimuthBase: this.azimuthBase,
@@ -448,16 +451,19 @@ export class Format extends BaseFormat {
       } as CustomFormatProps;
 
     return {
-      type: formatTypeToString(this.type),
+      //type: formatTypeToString(this.type),
+      type: this.type,
       precision: this.precision,
       roundFactor: this.roundFactor,
       minWidth: this.minWidth,
-      showSignOption: showSignOptionToString(this.showSignOption),
+      //showSignOption: showSignOptionToString(this.showSignOption),
+      showSignOption: this.showSignOption,
       formatTraits: formatTraitsToArray(this.formatTraits),
       decimalSeparator: this.decimalSeparator,
       thousandSeparator: this.thousandSeparator,
       uomSeparator: this.uomSeparator,
-      scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
+      //scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
+      scientificType: this.scientificType ? this.scientificType : undefined,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       azimuthBase: this.azimuthBase,

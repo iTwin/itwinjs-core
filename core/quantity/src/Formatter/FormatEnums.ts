@@ -152,9 +152,9 @@ export function parseScientificType(scientificType: string, formatName: string):
 }
 
 /**  @beta   */
-export function scientificTypeToString(scientificType: ScientificType): string {
-  return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
-}
+// export function scientificTypeToString(scientificType: ScientificType): string {
+//   return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
+// }
 
 /** @beta    */
 export function parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption {
@@ -169,14 +169,14 @@ export function parseShowSignOption(showSignOption: string, formatName: string):
 }
 
 /**  @beta  */
-export function showSignOptionToString(showSign: ShowSignOption): string {
-  switch (showSign) {
-    case ShowSignOption.NegativeParentheses: return "NegativeParentheses";
-    case ShowSignOption.NoSign: return "NoSign";
-    case ShowSignOption.OnlyNegative: return "OnlyNegative";
-    case ShowSignOption.SignAlways: return "SignAlways";
-  }
-}
+// export function showSignOptionToString(showSign: ShowSignOption): string {
+//   switch (showSign) {
+//     case ShowSignOption.NegativeParentheses: return "NegativeParentheses";
+//     case ShowSignOption.NoSign: return "NoSign";
+//     case ShowSignOption.OnlyNegative: return "OnlyNegative";
+//     case ShowSignOption.SignAlways: return "SignAlways";
+//   }
+// }
 
 /**  @beta  */
 export function parseFormatTrait(formatTraitsString: string, formatName: string): FormatTraits {
@@ -264,16 +264,16 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
 }
 
 /** @beta    */
-export function formatTypeToString(type: FormatType): string {
-  switch (type) {
-    case FormatType.Decimal: return "Decimal";
-    case FormatType.Scientific: return "Scientific";
-    case FormatType.Station: return "Station";
-    case FormatType.Fractional: return "Fractional";
-    case FormatType.Bearing: return "Bearing";
-    case FormatType.Azimuth: return "Azimuth";
-  }
-}
+// export function formatTypeToString(type: FormatType): string {
+//   switch (type) {
+//     case FormatType.Decimal: return "Decimal";
+//     case FormatType.Scientific: return "Scientific";
+//     case FormatType.Station: return "Station";
+//     case FormatType.Fractional: return "Fractional";
+//     case FormatType.Bearing: return "Bearing";
+//     case FormatType.Azimuth: return "Azimuth";
+//   }
+// }
 
 /**  @beta    */
 export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision {
