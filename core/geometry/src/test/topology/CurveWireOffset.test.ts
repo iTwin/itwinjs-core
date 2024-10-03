@@ -67,7 +67,7 @@ function testCurveOffset(allPaths: AnyCurve[],
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "CurveOffset", caseName);
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 }
 
 describe("CurveOffset", () => {
@@ -210,7 +210,7 @@ describe("CurveOffset", () => {
       x0 += 10;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveOffset", "TrivialPath");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

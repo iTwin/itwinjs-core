@@ -61,6 +61,6 @@ describe("FacetFaceData", () => {
     ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceB, 2, 3));
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddPolyface");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

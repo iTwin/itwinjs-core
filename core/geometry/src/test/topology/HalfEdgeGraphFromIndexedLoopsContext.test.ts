@@ -42,7 +42,7 @@ describe("HalfEdgeGraphFromIndexedLoopsContext", () => {
     if (Checker.noisy.halfEdgeGraphFromIndexedLoops)
       GraphChecker.dumpGraph(builder.graph, formatNodeForDump);
     checkCounts(ck, builder.graph, "After third insertLoop", expectedVertices, expectedEdges, expectedFaces);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
