@@ -4885,7 +4885,7 @@ export class PolylineOps {
 
 // @internal
 export class PowerPolynomial {
-    static accumulate(coffP: Float64Array, coffQ: Float64Array, scale: number): number;
+    static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number;
     static degreeKnownEvaluate(coff: Float64Array, degree: number, x: number): number;
     static evaluate(coff: Float64Array, x: number): number;
     static zero(coff: Float64Array): void;
