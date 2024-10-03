@@ -9814,6 +9814,8 @@ export namespace RenderMemory {
         // @internal (undocumented)
         addConsumer(type: ConsumerType, numBytes: number): void;
         // @internal (undocumented)
+        addContours(numBytes: number): void;
+        // @internal (undocumented)
         addEdgeTable(numBytes: number): void;
         // @internal (undocumented)
         addFeatureOverrides(numBytes: number): void;
@@ -9903,7 +9905,7 @@ export interface RenderPlan {
     // (undocumented)
     readonly clipStyle: ClipStyle;
     // (undocumented)
-    readonly contours?: ContourDisplay.Settings;
+    readonly contours?: ContourDisplay;
     // (undocumented)
     readonly ellipsoid?: RenderPlanEllipsoid;
     // (undocumented)
