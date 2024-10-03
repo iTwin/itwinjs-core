@@ -2,6 +2,12 @@
   "name": "@itwin/core-telemetry",
   "entries": [
     {
+      "version": "4.9.3",
+      "tag": "@itwin/core-telemetry_v4.9.3",
+      "date": "Thu, 03 Oct 2024 19:15:45 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.9.2",
       "tag": "@itwin/core-telemetry_v4.9.2",
       "date": "Wed, 02 Oct 2024 15:14:43 GMT",
