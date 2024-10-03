@@ -1,6 +1,13 @@
 # Change Log - @itwin/frontend-tiles
 
-This log was last generated on Wed, 02 Oct 2024 15:14:43 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Oct 2024 19:15:45 GMT and should not be manually modified.
+
+## 4.9.3
+Thu, 03 Oct 2024 19:15:45 GMT
+
+### Updates
+
+- Improve performance by querying for no more than 5 exports.
 
 ## 4.9.2
 Wed, 02 Oct 2024 15:14:43 GMT
