@@ -133,12 +133,13 @@ export class SqliteChangesetReader implements IDisposable {
   /**
    * Open local changes in iModel.
    * @param args iModel and other options.
+   * @param args.db must be of type {@link IModelDb}
    * @returns SqliteChangesetReader instance
    */
-  public static openLocalChanges(args: { iModel: IModelJsNative.DgnDb, includeInMemoryChanges?: true } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+  public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, 'db'> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
-    reader._nativeReader.openLocalChanges(args.iModel, args.includeInMemoryChanges ?? false, args.invert ?? false);
+    reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false);
     return reader;
   }
   /** check if schema check is disabled or not */
