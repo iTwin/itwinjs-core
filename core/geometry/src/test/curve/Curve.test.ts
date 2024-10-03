@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -694,7 +694,7 @@ describe("Curves", () => {
     const ck = new Checker();
     ExerciseCurve.testManyCurves(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DistanceIndexClonePartial", () => {
@@ -799,7 +799,7 @@ describe("Curves", () => {
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "CurveChainWithDistanceIndex");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DistanceIndexMismatches", () => {
@@ -842,7 +842,7 @@ describe("Curves", () => {
     ck.checkpoint("CurvePrimitive.DistanceIndexMismatches");
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "CurveChainWithDistanceIndex");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DistanceIndexClosestPoint", () => {
     const ck = new Checker();
@@ -885,7 +885,7 @@ describe("Curves", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "DistanceIndexClosestPoint");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -932,7 +932,7 @@ describe("CurvePrimitive.Newton", () => {
       }
     }
     ck.checkpoint("CurvePrimitive.Newton");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -969,7 +969,7 @@ describe("CurvePrimitive.TransitionSpiral", () => {
     ck.testCoordinate(c.curveLength(), trapezoidSum, "spiral length versus trapezoid sum");
 
     ck.checkpoint("CurvePrimitive.TransitionSpiral");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1029,7 +1029,7 @@ describe("Samples", () => {
     testSamples(ck, Sample.createSimpleIndexedPolyfaces(1));
     testSamples(ck, Sample.createClipPlanes());
     ck.checkpoint("Samples");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1087,7 +1087,7 @@ describe("Linestring3dSpecials", () => {
     }
     GeometryCoreTestIO.saveGeometry(geometry, "Linestring3d", "fractionToFrenetFrame");
     ck.checkpoint("Linestring3dSpecials.FrenetFrame");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("appendPlaneIntersections", () => {
@@ -1140,7 +1140,7 @@ describe("Linestring3dSpecials", () => {
     }
 
     ck.checkpoint("Linestring3d.appendPlaneIntersections");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1166,7 +1166,7 @@ describe("CoordinateXYZ", () => {
     }
 
     ck.checkpoint("CoordinateXYZ.Hello");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1220,7 +1220,7 @@ describe("IsomorphicCurves", () => {
       }
     }
     ck.checkpoint("IsomorphicCurves.Hello");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 });
@@ -1247,7 +1247,7 @@ describe("CylindricalRange", () => {
         ck.testLE(e, 2.0 * options.chordTol);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 describe("GeometryQuery", () => {
@@ -1264,7 +1264,7 @@ describe("GeometryQuery", () => {
     ck.testFalse(pathA.isAlmostEqual(pathC));
     ck.testTrue(pathC.isAlmostEqual(pathC));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CurvePrimitive", () => {
@@ -1274,6 +1274,6 @@ describe("GeometryQuery", () => {
     const path = Path.create(LineSegment3d.createXYXY(1, 2, 3, 4));
     ck.testUndefined(path.getChild(-1));
     ck.testUndefined(path.getChild(3));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

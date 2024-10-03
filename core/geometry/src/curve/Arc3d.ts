@@ -1076,7 +1076,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     };
   }
   /** Return the arc definition with center, two vectors, and angle sweep, optionally transformed. */
-  public toTransformedVectors(transform?: Transform): { center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep: AngleSweep } {
+  public toTransformedVectors(
+    transform?: Transform,
+  ): { center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep: AngleSweep } {
     return transform ? {
       center: transform.multiplyPoint3d(this._center),
       vector0: transform.multiplyVector(this._matrix.columnX()),
@@ -1091,7 +1093,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       };
   }
   /** Return the arc definition with center, two vectors, and angle sweep, transformed to 4d points. */
-  public toTransformedPoint4d(matrix: Matrix4d): { center: Point4d, vector0: Point4d, vector90: Point4d, sweep: AngleSweep } {
+  public toTransformedPoint4d(
+    matrix: Matrix4d,
+  ): { center: Point4d, vector0: Point4d, vector90: Point4d, sweep: AngleSweep } {
     return {
       center: matrix.multiplyPoint3d(this._center, 1.0),
       vector0: matrix.multiplyPoint3d(this._matrix.columnX(), 0.0),
@@ -1223,11 +1227,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /** Compute the center and vectors of another arc as local coordinates within this arc's frame. */
   public otherArcAsLocalVectors(other: Arc3d): ArcVectors | undefined {
     const otherOrigin = this._matrix.multiplyInverseXYZAsPoint3d(
-      other.center.x - this.center.x, other.center.y - this.center.y, other.center.z - this.center.z);
+      other.center.x - this.center.x,
+      other.center.y - this.center.y,
+      other.center.z - this.center.z,
+    );
     const otherVector0 = this._matrix.multiplyInverse(other.vector0);
     const otherVector90 = this._matrix.multiplyInverse(other.vector90);
     if (otherOrigin && otherVector0 && otherVector90) {
-      return { center: otherOrigin, vector0: otherVector0, vector90: otherVector90, sweep: this.sweep.clone() };
+      return {
+        center: otherOrigin,
+        vector0: otherVector0,
+        vector90: otherVector90,
+        sweep: this.sweep.clone(),
+      };
     }
     return undefined;
   }

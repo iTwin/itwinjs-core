@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -404,7 +404,7 @@ describe("VUGraph", () => {
     }
     GraphChecker.exerciseMaskMethods(ck, graph);
     graph.decommission();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SimpleQueries", () => {
     const ck = new Checker();
@@ -417,7 +417,7 @@ describe("VUGraph", () => {
     GeometryCoreTestIO.consoleLog("nodeToIdXYString:", HalfEdge.nodeToIdXYString(fp));
     GeometryCoreTestIO.consoleLog("nodeToIdMaskXY:", HalfEdge.nodeToIdMaskXY(fp));
     GeometryCoreTestIO.consoleLog("nodeToMaskString:", HalfEdge.nodeToMaskString(fp));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("NullFaceGraph", () => {
     const ck = new Checker();
@@ -471,7 +471,7 @@ describe("VUGraph", () => {
 
     if (ck.getNumErrors() !== 0)
       logGraph(graph, "NullFace and mask string tests");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("HorizontalScanFraction", () => {
     const ck = new Checker();
@@ -490,7 +490,7 @@ describe("VUGraph", () => {
     ck.testTrue(Number.isFinite(fm as number) && Geometry.isSameCoordinate(f, fm as number));
     const f0 = HalfEdge.horizontalScanFraction(y1Edge, y0);
     ck.testTrue(Number.isFinite(f0 as number) && Geometry.isSameCoordinate(0, f0 as number));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CoordinatesOnEdges", () => {
     const ck = new Checker();
@@ -504,7 +504,7 @@ describe("VUGraph", () => {
       ck.testPoint2d(pointA, pointB, "intersection xy");
     }
     ck.testUndefined(HalfEdge.transverseIntersectionFractions(edgeA, edgeA), "identical edges");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("InSector", () => {
     const ck = new Checker();
@@ -587,7 +587,7 @@ describe("VUGraph", () => {
     ck.testTrue(HalfEdge.nodeToMaskString(edgeQ0) === "N");
     ck.testUndefined(HalfEdge.horizontalScanFraction01(edgeQ0, 20.0), " no crossing of horizontal edge");
     ck.testExactNumber(0.5, HalfEdge.horizontalScanFraction01(edge90, 0.5)!, "scan crossing on simple vertical edge");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("isMaskedAroundFace", () => {
     const ck = new Checker();
@@ -658,7 +658,7 @@ describe("VUGraph", () => {
       },
     );
     ck.testExactNumber(numNodes, 0, "early exit because the only face loop contains edgeB");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("NodeXYZUV", () => {
     const ck = new Checker();
@@ -683,7 +683,7 @@ describe("VUGraph", () => {
     ck.testExactNumber(1, markupA.classifyU(pointU0.x - 3 * epsilon, tol));
     ck.testExactNumber(-1, markupA.classifyU(pointU0.x + 2 * epsilon, tol));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("MovingPosition", () => {
     const ck = new Checker();
@@ -746,7 +746,7 @@ describe("VUGraph", () => {
     const pointZ2 = Point3d.create(0.5, 0, 0);
     moveAndMark(ck, outputManager, context, walker, pointZ2, undefined);
     outputManager.saveToFile("Graph", "MovingPosition");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 function markPosition(out: OutputManager, p: HalfEdgePositionDetail | undefined) {

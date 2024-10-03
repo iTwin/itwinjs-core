@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "4.10.0-dev.8",
+  "version": "4.10.0-dev.12",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -60,8 +60,8 @@
     "typescript": "~5.3.3"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.8",
-    "@itwin/core-quantity": "workspace:^4.10.0-dev.8"
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.12",
+    "@itwin/core-quantity": "workspace:^4.10.0-dev.12"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

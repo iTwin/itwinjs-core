@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, it } from "vitest";
 import { flatbuffers } from "flatbuffers";
 import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
@@ -61,7 +61,7 @@ it("HelloWorld", () => {
   ck.testExactNumber(5, oSegmentA!.point1Y());
   ck.testExactNumber(6, oSegmentA!.point1Z());
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloVariantGeometry", () => {
@@ -75,7 +75,7 @@ it("HelloVariantGeometry", () => {
   for (const curve of [...bCurves, ...hCurves]) {
     testGeometryQueryRoundTrip(ck, curve);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloCurveVector", () => {
@@ -86,7 +86,7 @@ it("HelloCurveVector", () => {
   for (const cv of cvs) {
     testGeometryQueryRoundTrip(ck, cv);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloAkimaCurve", () => {
@@ -100,7 +100,7 @@ it("HelloAkimaCurve", () => {
     AkimaCurve3d.create({ fitPoints: circlePoints6 })!,
   ];
   testGeometryQueryRoundTrip(ck, curve);
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloMesh", () => {
@@ -109,7 +109,7 @@ it("HelloMesh", () => {
   for (const mesh of meshes) {
     testGeometryQueryRoundTrip(ck, mesh);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloSubdivisionSurface", () => {
@@ -127,7 +127,7 @@ it("HelloSubdivisionSurface", () => {
   tg1.doubleData = [0.5];
   testGeometryQueryRoundTrip(ck, mesh);
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 it("HelloSpirals", () => {
   const ck = new Checker();
@@ -138,7 +138,7 @@ it("HelloSpirals", () => {
     Transform.createOriginAndMatrix(Point3d.create(1, 2, 3), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(-10))),
     "bloss");
   testGeometryQueryRoundTrip(ck, clothoid);
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function compareFlatBuffers(a1: Uint8Array, a2: Uint8Array): boolean {
@@ -238,7 +238,7 @@ it("HelloSolidPrimitive", () => {
     s.tryTransformInPlace(transform);
     testGeometryQueryRoundTrip(ck, s);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloBSplineSurface", () => {
@@ -252,7 +252,7 @@ it("HelloBSplineSurface", () => {
     // s.tryTransformInPlace(transform);
     // testGeometryQueryRoundTrip(ck, s);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 const arcBytes = new Uint8Array([
   98, 103, 48, 48, 48, 49, 102, 98, 8, 0, 0, 0, 0, 0, 0, 0, 234, 254, 255, 255, 0, 0, 0, 15, 12, 0, 0, 0, 0, 0, 6, 0, 8, 0, 4, 0, 6, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 1,
@@ -318,7 +318,7 @@ it("HelloNativeBytes", () => {
 
     }
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function geometryTypes(g: GeometryQuery | GeometryQuery[] | undefined): any {
@@ -350,5 +350,5 @@ it("PolyfaceAuxData", () => {
     );
     testGeometryQueryRoundTrip(ck, p);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });

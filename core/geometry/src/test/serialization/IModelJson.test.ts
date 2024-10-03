@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
@@ -179,7 +179,7 @@ describe("CreateIModelJsonSamples", () => {
     exerciseIModelJSonArray(ck, Sample.createSmoothCurvePrimitives(numSample), true, false);
 
     // GeometryCoreTestIO.consoleLog(allIModelJsonSamples);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   // exercise the secondary ArcBy3Points property, with various point formats . ..
@@ -200,7 +200,7 @@ describe("CreateIModelJsonSamples", () => {
       ck.testPoint3d(point2, point12, "end point");
       ck.testCoordinate(arc.center.distance(point0), arc.center.distance(point1));
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // make a mesh with identical normals present redundantly.
@@ -304,7 +304,7 @@ describe("CreateIModelJsonSamples", () => {
       }
     }
     ck.checkpoint("BSIJSON.ParseIMJS");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -317,8 +317,8 @@ describe("BoxProps", () => {
 
   function expectBoxOrigin(inputProps: BoxProps, expectedOrigin: number): void {
     const box = parseBox(inputProps)!;
-    expect(box).not.to.be.undefined;
-    expect(box.getBaseOrigin().x).to.equal(expectedOrigin);
+    expect(box).toBeDefined();
+    expect(box.getBaseOrigin().x).toBe(expectedOrigin);
   }
 
   it("accepts either origin or baseOrigin", () => {
@@ -335,28 +335,28 @@ describe("BoxProps", () => {
   });
 
   it("requires either origin or baseOrigin", () => {
-    expect(parseBox({ baseX: 123 } as BoxProps)).to.be.undefined;
+    expect(parseBox({ baseX: 123 } as BoxProps)).toBeUndefined();
   });
 
   it("outputs both origin and baseOrigin", () => {
     const box = parseBox({ origin: [1, 2, 3], baseX: 4 })!;
-    expect(box).not.to.be.undefined;
+    expect(box).toBeDefined();
 
     const solidProps = new IModelJson.Writer().handleBox(box);
     const props = solidProps.box!;
-    expect(props).not.to.be.undefined;
+    expect(props).toBeDefined();
 
-    expect(props.origin).not.to.be.undefined;
+    expect(props.origin).toBeDefined();
     const origin = Point3d.fromJSON(props.origin);
-    expect(origin.x).to.equal(1);
-    expect(origin.y).to.equal(2);
-    expect(origin.z).to.equal(3);
+    expect(origin.x).toBe(1);
+    expect(origin.y).toBe(2);
+    expect(origin.z).toBe(3);
 
-    expect(props.baseOrigin).not.to.be.undefined;
+    expect(props.baseOrigin).toBeDefined();
     const baseOrigin = Point3d.fromJSON(props.baseOrigin);
-    expect(baseOrigin?.x).to.equal(1);
-    expect(baseOrigin?.y).to.equal(2);
-    expect(baseOrigin?.z).to.equal(3);
+    expect(baseOrigin?.x).toBe(1);
+    expect(baseOrigin?.y).toBe(2);
+    expect(baseOrigin?.z).toBe(3);
   });
 });
 
@@ -373,6 +373,6 @@ describe("ParseCurveCollections", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParseCurveCollection", "BSplinePathRegression");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { randomInt } from "crypto";
 import * as fs from "fs";
 import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
@@ -176,7 +176,7 @@ it("Polyface.HelloWorld", () => {
     exercisePolyface(ck, pf, true);
   }
   ck.checkpoint("Polyface.HelloWorld");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.Compress", () => {
@@ -226,7 +226,7 @@ it("Polyface.Compress", () => {
   loops = PolyfaceQuery.indexedPolyfaceToLoops(polyface);
   ck.testCoordinate(loops.sumLengths(), 4 + 2 * Math.sqrt(2), "after compress loops length");
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.Box", () => {
@@ -268,7 +268,7 @@ it("Polyface.Box", () => {
   polyfaceB.data.pointIndex[0] -= 1;
   ck.testTrue(polyface.isAlmostEqual(polyfaceB), "index change undo");
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.RaggedBoxVolume", () => {
@@ -304,7 +304,7 @@ it("Polyface.RaggedBoxVolume", () => {
   ck.testFalse(MomentData.areEquivalentPrincipalAxes(
     volumeB.positiveProjectedFacetAreaMoments, volumeB.negativeProjectedFacetAreaMoments), "Expect mismatched moments",
   );
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.RaggedBoxMisMatch", () => {
@@ -356,7 +356,7 @@ it("Polyface.RaggedBoxMisMatch", () => {
       "Expect mismatched moments",
     );
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function writeMeshes(
@@ -507,7 +507,7 @@ function writeAllMeshes(
   for (let i = 0; i < options.length; i++) {
     writeMeshes(ck, geometry, name, checkClosure, options[i], 0, y0 + i * dy);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 }
 
 type GeometryData = GeometryQuery | GeometryQuery[];
@@ -659,7 +659,7 @@ describe("Polyface.Facets", () => {
     }
     GeometryCoreTestIO.consoleLog({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Moments", () => {
@@ -708,7 +708,7 @@ describe("Polyface.Facets", () => {
     ck.testCoordinate(iY, ryB * ryB * volumeB, "box Y moment");
     ck.testCoordinate(iZ, rzB * rzB * volumeB, "box Z moment");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -781,7 +781,7 @@ describe("Polyface.Faces", () => {
     ck.testExactNumber(3, polyface.faceCount);
     verifyFaceData(ck, polyface, false);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Add grid w/ params, normals", () => {
@@ -879,7 +879,7 @@ describe("Polyface.Faces", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddCoordinateFacets");
   });
 });
@@ -919,7 +919,7 @@ it("PartialSawToothTriangulation", () => {
     x0 += dy;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PartialSawToothTriangulation");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("facets from sweep contour with holes", () => {
@@ -957,7 +957,7 @@ it("facets from sweep contour with holes", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, builder1.claimPolyface(), x1, y1);
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ParityRegion");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function createGridMeshByCoordinates(
@@ -1006,7 +1006,7 @@ it("LargeMeshCompression", () => {
   const allGeometry: GeometryQuery[] = [];
   allGeometry.push(createGridMeshByCoordinates(100, 100, 0.0, false, false, false));
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "LargeMeshCompression");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 class UVSinusoidalSurface implements UVSurface {
@@ -1087,7 +1087,7 @@ it("SolidPrimitiveBoundary", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SolidPrimitiveBoundary");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("UVGridSurface", () => {
@@ -1105,7 +1105,7 @@ it("UVGridSurface", () => {
   surface.transform.origin.set(10, 0, 0);
   allGeometry.push(createMeshByUVSurface(surface, 4, 6, true, true, true));
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "UVGridSurface");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddTriangleFan", () => {
@@ -1131,7 +1131,7 @@ it("AddTriangleFan", () => {
   const polyface = builder.claimPolyface();
   allGeometry.push(polyface);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddTriangleFan");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddSweptLineStrings", () => {
@@ -1144,7 +1144,7 @@ it("AddSweptLineStrings", () => {
   const mesh = builder.claimPolyface();
   ck.testExactNumber(4, mesh.facetCount);
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddTriangles", () => {
@@ -1191,7 +1191,7 @@ it("AddTriangles", () => {
   const polyface = builder.claimPolyface();
   allGeometry.push(polyface);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddTriangles");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function buildWrappedVertexCrossProducts(points: Point3d[]): Vector3d[] {
@@ -1244,7 +1244,7 @@ it("AddQuads", () => {
   const polyface = builder.claimPolyface();
   allGeometry.push(polyface);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddQuads");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddPolyface", () => {
@@ -1277,7 +1277,7 @@ it("AddPolyface", () => {
   GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceB, 0, 0, 0);
   GeometryCoreTestIO.captureGeometry(allGeometry, mergedPolyface, 0, 10, 0);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddPolyface");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddSweptIndexedPolyface", () => {
@@ -1345,7 +1345,7 @@ it("AddSweptIndexedPolyface", () => {
   GeometryCoreTestIO.captureGeometry(allGeometry, sweptPolyface4, 0, 3 * size, 0);
   GeometryCoreTestIO.captureGeometry(allGeometry, badPolyface, 0, 4.5 * size, 0);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddSweptPolyface");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("EmptyPolyface", () => {
@@ -1356,7 +1356,7 @@ it("EmptyPolyface", () => {
   ck.testTrue(emptyPolyface.isSameGeometryClass(emptyPolyface));
   ck.testUndefined(PolyfaceQuery.computePrincipalAreaMoments(emptyPolyface), "Expect moment failure in empty polyface");
   ck.testUndefined(PolyfaceQuery.computePrincipalVolumeMoments(emptyPolyface), "Expect moment failure in empty polyface");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.VisitorParamQueries", () => {
@@ -1406,7 +1406,7 @@ it("Polyface.VisitorQueryFailures", () => {
   ck.testUndefined(PolyfaceQuery.computeFacetUnitNormal(visitor, -1), "invalid vertex index");
   const rangeLengths = PolyfaceQuery.collectRangeLengthData(polyface);
   ck.testTrue(rangeLengths.xSums.count > 0, "rangeLengths sums exist");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.IndexValidation", () => {
@@ -1424,7 +1424,7 @@ it("Polyface.IndexValidation", () => {
   ck.testTrue(Polyface.areIndicesValid(indices, 0, 3, data, 10), "validate indices");
   ck.testTrue(Polyface.areIndicesValid(undefined, 0, 3, undefined, 10), "both of indices and data can be undefined");
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 // disable naming to allow exact names from synchro mesh
@@ -1486,7 +1486,7 @@ it("Synchro", () => {
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceWithParamsAndNormals, numVertexX, numVertexY);
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "Synchro");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("SmallSynchroMesh", () => {
@@ -1511,7 +1511,7 @@ it("SmallSynchroMesh", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "082020BFromSynchro");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("synchroPolyface", () => {
@@ -1554,7 +1554,7 @@ it("synchroPolyface", () => {
     polyfaceB.twoSided = polyfaceA.twoSided;
     ck.testTrue(polyfaceA.isAlmostEqual(polyfaceB), "Compare polyfaces");
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 /** This is the Synchro mesh structure, as deduced by looking at prior code to transfer to polyface. */
 interface SynchroMesh {
@@ -1815,7 +1815,7 @@ describe("SphericalMeshData", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Create");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Triangulate", () => {
@@ -1919,7 +1919,7 @@ describe("SphericalMeshData", () => {
     sectorsWithSameNormalAtVertexShareUVParamAndColor(ck, mesh1.data);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Triangulate");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -2024,6 +2024,6 @@ describe("PolyfaceVisitor", () => {
     testMesh(myMesh, 28, toIso, Angle.createDegrees(0.01), undefined);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceVisitor", "SubsetConstructor");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

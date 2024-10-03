@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { IndexedCollectionInterval, IndexedXYZCollectionInterval } from "../../geometry3d/IndexedCollectionInterval";
 import * as bsiChecker from "../Checker";
@@ -42,7 +42,7 @@ describe("IndexedXYZCollectionInterval", () => {
     fullInterval.advanceEnd();
     ck.testTrue(fullInterval.isNonEmpty, " verify restricted end");
     ck.testExactNumber(fullInterval.length, points.length, "advanceEnd capped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

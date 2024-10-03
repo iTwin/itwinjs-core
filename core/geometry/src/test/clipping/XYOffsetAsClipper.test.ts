@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
@@ -94,7 +94,7 @@ describe("OffsetByClip", () => {
       }
       y00 += 60.0;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "LongLineString");
   });
 
@@ -148,7 +148,7 @@ describe("OffsetByClip", () => {
     const zClipper = ClipUtilities.createXYOffsetClipFromLineString([], 1, 1, -1, -1);
     ck.testExactNumber(1, zClipper.convexSets.length);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "LongLineStringB");
   });
 
@@ -191,7 +191,7 @@ describe("OffsetByClip", () => {
         x00 += range.xLength() * 2;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "DiegoProblemCases");
   });
   // cspell:word arnoldas
@@ -275,7 +275,7 @@ describe("OffsetByClip", () => {
       }
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ArnoldasLaneClip");
   });
   it("ExcessEdgesAroundAnnulus", () => {
@@ -344,7 +344,7 @@ describe("OffsetByClip", () => {
         x0 += 30;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ExcessEdgesAroundAnnulus");
   });
 
@@ -389,7 +389,7 @@ describe("OffsetByClip", () => {
       }
       x0 += 10;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "NonXYClip");
   });
 
@@ -438,7 +438,7 @@ describe("OffsetByClip", () => {
         x0 += 25.0;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "InwardCornerClip");
   });
   it("IncompletePaste", () => {
@@ -497,7 +497,7 @@ describe("OffsetByClip", () => {
       x0 += 1;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "IncompletePaste");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("IncompletePasteWithDoublePoint", () => {
     const ck = new Checker();
@@ -564,7 +564,7 @@ describe("OffsetByClip", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "IncompletePasteWithDoublePoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

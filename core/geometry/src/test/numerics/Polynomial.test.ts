@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -71,7 +71,7 @@ describe("Bezier.HelloWorld", () => {
     testBezier(ck, bez5);
 
     ck.checkpoint("Order2Bezier");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("degenerateCases", () => {
     const ck = new Checker();
@@ -80,7 +80,7 @@ describe("Bezier.HelloWorld", () => {
     const data = nullTorus.xyzToThetaPhiDistance(Point3d.create(0, 0, 0));
     ck.testFalse(data.safePhi);
     ck.checkpoint("Bezier.degenerateCases");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("rootServices", () => {
     const ck = new Checker();
@@ -91,7 +91,7 @@ describe("Bezier.HelloWorld", () => {
     ck.testCoordinate(0, AnalyticRoots.mostDistantFromMean(undefined));
     ck.testLT(20, a);
     ck.checkpoint("Bezier.rootServices");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -129,7 +129,7 @@ describe("Cubic.Solutions", () => {
       }
     }
     ck.checkpoint("Cubic3Roots");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -175,7 +175,7 @@ describe("Quadrature.Gauss", () => {
     testQuadrature(ck, 0, 1, Quadrature.gaussX3Interval01, Quadrature.gaussW3Interval01, 3, 5);
     testQuadrature(ck, 0, 1, Quadrature.gaussX5Interval01, Quadrature.gaussW5Interval01, 5, 9);
     ck.checkpoint("Quadrature.Gauss");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -195,7 +195,7 @@ describe("TrigPolynomial.DegenerateLinear", () => {
       ck.testCoordinate(0, q, "Linear Trig Root");
     }
     ck.checkpoint("TrigPolynomial.DegenerateLinear");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -224,7 +224,7 @@ describe("Ellipse.Intersection", () => {
     }
 
     ck.checkpoint("Ellipse.Intersection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Ellipse.IntersectHomogeneous", () => {
@@ -258,7 +258,7 @@ describe("Ellipse.Intersection", () => {
     }
 
     ck.checkpoint("Ellipse.Intersection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -305,7 +305,7 @@ describe("ImplicitSurface", () => {
       ck.testExactNumber(0.0, thetaPhiC.thetaRadians);
     }
     ck.checkpoint("ImplicitSurface.Sphere");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Torus", () => {
@@ -356,7 +356,7 @@ describe("ImplicitSurface", () => {
       }
     }
     ck.checkpoint("ImplicitSurface.Torus");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -378,7 +378,7 @@ describe("PowerPolynomials", () => {
     ck.testCoordinate(0.0, quadratic.evaluateDerivative(vertexData.x0), "zero derivative at vertex");
     ck.testCoordinate(vertexData.y0, quadratic.evaluate(vertexData.x0), "zero derivative at vertex");
     ck.checkpoint("PowerPolynomials.Degree2PowerPolynomial");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Degree4PowerPolynomial", () => {
@@ -408,7 +408,7 @@ describe("PowerPolynomials", () => {
       }
     }
     ck.checkpoint("PowerPolynomials.Degree4PowerPolynomial");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DegenerateDegree4PowerPolynomial", () => {
@@ -440,7 +440,7 @@ describe("PowerPolynomials", () => {
 
     }
     ck.checkpoint("PowerPolynomials.DegenerateDegree4PowerPolynomial");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Degree3PowerPolynomial", () => {
@@ -467,7 +467,7 @@ describe("PowerPolynomials", () => {
       }
     }
     ck.checkpoint("PowerPolynomials.Degree3PowerPolynomial");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -496,7 +496,7 @@ describe("Ellipse.Perpendiculars", () => {
         }
       }
     ck.checkpoint("Ellipse.Perpendiculars");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -516,7 +516,7 @@ describe("LinearSystems", () => {
       ck.testCoordinate(fb, fractions.y, "fraction on line b");
     }
     ck.checkpoint("LinearSystems.lineSegment2dXYTransverseIntersection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("linearSystem2d", () => {
@@ -536,7 +536,7 @@ describe("LinearSystems", () => {
       ck.testCoordinate(y, result.y, " 2d linear y part");
     }
     ck.checkpoint("LinearSystems.lineSegment2dXYTransverseIntersection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("lineSegment3dXYTransverseIntersectionUnbounded", () => {
@@ -557,7 +557,7 @@ describe("LinearSystems", () => {
       ck.testPerpendicular(vectorAB, vectorB01);
     }
     ck.checkpoint("LinearSystems.lineSegment3dXYTransverseIntersectionUnbounded");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("cubeRoot", () => {
     const ck = new Checker();
@@ -570,7 +570,7 @@ describe("LinearSystems", () => {
       ck.testCoordinate(a, r0 * r0 * r0);
       ck.testCoordinate(-a, r1 * r1 * r1);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("spherePatch", () => {
@@ -615,7 +615,7 @@ describe("LinearSystems", () => {
         x0 += xStep;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "PatchRange");
   });
   it("RayIntersection", () => {
@@ -658,7 +658,7 @@ describe("LinearSystems", () => {
       }
       x0 += 6.0 * radius;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphereImplicit", "RayIntersection");
   });
   it("ImplicitLine", () => {
@@ -674,7 +674,7 @@ describe("LinearSystems", () => {
         ck.testCoordinate(0, lineA.evaluatePoint(pointsA[1]));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 

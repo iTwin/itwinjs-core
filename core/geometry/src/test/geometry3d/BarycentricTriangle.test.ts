@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -80,7 +80,7 @@ describe("BarycentricTriangle", () => {
     verifyTriangle(ck, BarycentricTriangle.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0));
     verifyTriangle(ck, BarycentricTriangle.createXYZXYZXYZ(1, 4, 2, 7, -2, 1.5, 2.2, 9.0, 10));
     ck.checkpoint("BarycentricTriangle.Create");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BarycentricTriangle.ClosestPoint", () => {
@@ -249,7 +249,7 @@ describe("BarycentricTriangle", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BarycentricTriangle", "closestPoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -369,6 +369,6 @@ describe("BarycentricTriangle.intersectRay3d", () => {
     intersectionPoint = triangle.intersectRay3d(ray);
     ck.testBoolean(intersectionPoint.isValid, false, "expect no intersection when ray direction is (0,0,0)");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
@@ -113,7 +113,7 @@ describe("Ray3d", () => {
       Ray3d.createWeightedDerivative(
         new Float64Array([1, 2, 3, 0]),
         new Float64Array([2, 1, 4, 0])));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Ray3d.ClosestApproach", () => {
     const ck = new Checker();
@@ -165,7 +165,7 @@ describe("Ray3d", () => {
       }
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Ray3d.ClipToRange", () => {
@@ -248,7 +248,7 @@ describe("Ray3d", () => {
     const range1d = Range1d.createXX(0, 1);
     ck.testTrue(ray2.intersectionWithRange3d(null3d).isNull, "ray intersect null range");
     ck.testFalse(range1d.clipLinearMapToInterval(0, 1, 3, 1), "range1d clipLinearMapToInterval with null interval");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Ray3d.IntersectWithPlane", () => {
@@ -270,7 +270,7 @@ describe("Ray3d", () => {
     const rayQ = Ray3d.createXYZUVW(95.87780347429201, -7.1369473762498234, 14.575798896766187,
       - 1, -4.61132646190051e-31, 4.567684502237405e-15);
     ck.testUndefined(rayQ.intersectionWithPlane(planeQ));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Ray3d.PlanePlaneIntersection", () => {
     const ck = new Checker();
@@ -285,7 +285,7 @@ describe("Ray3d", () => {
         ck.testCoordinate(0, planeB.altitude(xyz), "point on intersection is on planeB");
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -310,7 +310,7 @@ describe("Ray3d.isAlmostEqualPointSet", () => {
     ray2 = Ray3d.create(origin2, direction2);
     ck.testTrue(ray1.isAlmostEqualPointSet(ray2), "ray1 is parallel to ray2");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -497,7 +497,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     captureRay(allGeometry, ray, rotatedRay);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ray3d", "IntersectionWithTriangleAccuracy");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Ray3d.IntersectionWithTriangleAccuracyAndPerformanceTests", () => {
@@ -567,7 +567,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
       intersectionPoints2.length,
       "Ray3d and BarycentricTriangle classes return same number of intersection points",
     )) {
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }
     GeometryCoreTestIO.consoleLog(
       `${intersectionPoints1.length} intersection happened out of ${rays.length * triangles.length} shoots`,
@@ -578,7 +578,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
         intersectionPoints2[i],
         "intersection points calculated by Ray3d and BarycentricTriangle classes are equal",
       )) {
-        expect(ck.getNumErrors()).equals(0);
+        expect(ck.getNumErrors()).toBe(0);
       }
     }
     GeometryCoreTestIO.consoleLog(`Calls to Ray3d.intersectionWithTriangle (fast method) took ${timeByRay3d} milliseconds`);
@@ -618,7 +618,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
       rotatedIntersectionPoints.length,
       "original and rotated shots return same number of intersection points",
     )) {
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }
     for (let i = 0; i < intersectionPoints1.length; i++) {
       rotatedOriginalIntersectionPoint = rotationMatrix.multiplyPoint(intersectionPoints1[i]);
@@ -627,9 +627,9 @@ describe("Ray3d.IntersectionWithTriangle", () => {
         rotatedIntersectionPoints[i],
         "rotating original intersection points gives rotated intersection points",
       )) {
-        expect(ck.getNumErrors()).equals(0);
+        expect(ck.getNumErrors()).toBe(0);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

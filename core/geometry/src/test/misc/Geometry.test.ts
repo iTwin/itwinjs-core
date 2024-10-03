@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -18,9 +18,9 @@ describe("Geometry", () => {
     const ck = new Checker();
     const vector1 = new Vector3d(1, 2, 3);
 
-    expect(vector1.x).equals(1);
-    expect(vector1.y).equals(2);
-    expect(vector1.z).equals(3);
+    expect(vector1.x).toBe(1);
+    expect(vector1.y).toBe(2);
+    expect(vector1.z).toBe(3);
 
     const point2dA = Point2d.create(1, 2);
     const vector2dA = Vector2d.create(3, 7);
@@ -34,7 +34,7 @@ describe("Geometry", () => {
     ck.testCoordinate(point3dA.distance(point3dA), 0, "zero distance to self");
     ck.testCoordinate(vector3dA.magnitude(), point3dA.distance(point3dB), "magnitude and distance");
     ck.checkpoint("End Geometry.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("To/From JSON", () => {
@@ -116,7 +116,7 @@ describe("Geometry.solveTrigForm", () => {
     gc.testTrigForm(0.2, 0.3, 0.9);
     gc.testTrigForm(5, 1, 1);  // no solutions !!!
 
-    expect(gc.ck.getNumErrors()).equals(0);
+    expect(gc.ck.getNumErrors()).toBe(0);
   });
 });
 describe("Geometry.solveQuadratic", () => {
@@ -126,7 +126,7 @@ describe("Geometry.solveQuadratic", () => {
     gc.testQuadratic(-4, 12, -9); // one real root
     gc.testQuadratic(1, -3, 4); // imaginary root
 
-    expect(gc.ck.getNumErrors()).equals(0);
+    expect(gc.ck.getNumErrors()).toBe(0);
   });
 });
 describe("Geometry.modulo", () => {
@@ -144,7 +144,7 @@ describe("Geometry.modulo", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("AngleJSON", () => {
     const ck = new Checker();
@@ -163,7 +163,7 @@ describe("Geometry.modulo", () => {
       ck.testAngleAllowShift(theta, theta3, "JSON: strongly typed Angle object");
 
     }
-    expect(gc.ck.getNumErrors()).equals(0);
+    expect(gc.ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -182,7 +182,7 @@ describe("Vector3d.CrossProduct", () => {
     ck.testBoolean(true, frame.isRigid());
     ck.testCoordinate(W.magnitude(), U.magnitude() * V.magnitude() * U.angleTo(V).sin());
     ck.checkpoint("CrossProduct");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -211,7 +211,7 @@ describe("GeometryA", () => {
       ck.testExactNumber(1, Geometry.lexicalXYLessThan(d, c));
       ck.testExactNumber(0, Geometry.lexicalXYLessThan(c, c));
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // cspell:word kahan
   it("ErrorChecks", () => {
@@ -265,7 +265,7 @@ describe("GeometryA", () => {
 
     for (const f of [-1, 0, 0.5, 1, 2])
       ck.testTrue(Geometry.isIn01(f, false), "isIn01 with test suppressed)");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   /*
     it("Hypot", () => {

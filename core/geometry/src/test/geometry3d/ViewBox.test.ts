@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -262,7 +262,7 @@ describe("ViewWidget", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "StandardViews");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -285,5 +285,5 @@ it("StandardViewsByXYZ", () => {
   }
 
   GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "FromXYZ");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });

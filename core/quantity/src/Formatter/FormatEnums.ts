@@ -114,6 +114,8 @@ export enum FormatType {
   Bearing = "Bearing",
   /** Azimuth angle e.g. 45°30'00". Requires provided quantities to be of the angle phenomenon */
   Azimuth = "Azimuth",
+  /** Ratio display e,g. 1:2 or 0.3:1.  */
+  Ratio = "Ratio",
 }
 
 /** required if type is scientific
@@ -123,6 +125,19 @@ export enum ScientificType {
   Normalized = "Normalized",
   /** Zero value left of decimal point (ie 0.12345e4) */
   ZeroNormalized = "ZeroNormalized",
+}
+
+/** required if type is ratio
+ * @beta */
+export enum RatioType {
+  /** One to N ratio (ie 1:N) */
+  OneToN = "OneToN",
+  /** N to One ratio (ie N:1) */
+  NToOne = "NToOne",
+  /**  the lesser value scales to 1. e.g. input 0.5 turns into 2:1 | input 2 turns into 1:2 */
+  ValueBased = "ValueBased",
+  /**  scales the input ratio to its simplest integer form using the greatest common divisor (GCD) of the values. e.g. 0.3 turns into 3:10 */
+  UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
 }
 
 /** Determines how the sign of values are displayed
@@ -149,6 +164,20 @@ export function parseScientificType(scientificType: string, formatName: string):
     default:
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'scientificType' attribute.`);
   }
+}
+
+/**  @beta   */
+export function parseRatioType(ratioType: string, formatName: string): RatioType {
+  const normalizedValue = ratioType.toLowerCase();
+  for (const key in RatioType) {
+    if (RatioType.hasOwnProperty(key)) {
+      const enumValue = RatioType[key as keyof typeof RatioType];
+      if (enumValue.toLowerCase() === normalizedValue) {
+        return enumValue as RatioType;
+      }
+    }
+  }
+  throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioType' attribute.`);
 }
 
 /** @beta    */
@@ -243,6 +272,7 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
     case "fractional": return FormatType.Fractional;
     case "bearing": return FormatType.Bearing;
     case "azimuth": return FormatType.Azimuth;
+    case "ratio": return FormatType.Ratio;
     default:
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
@@ -292,6 +322,7 @@ export function parsePrecision(precision: number, type: FormatType, formatName: 
     case FormatType.Decimal:
     case FormatType.Scientific:
     case FormatType.Station:
+    case FormatType.Ratio:
     case FormatType.Bearing:
     case FormatType.Azimuth:
       return parseDecimalPrecision(precision, formatName);
