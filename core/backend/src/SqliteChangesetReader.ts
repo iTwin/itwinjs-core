@@ -57,7 +57,7 @@ export type AnyDb = IModelDb | ECDb;
  * @beta
 */
 export interface SqliteChangesetReaderArgs {
-  /** db from which schema will be read. It should be close to changeset.*/
+  /** db from which schema will be read. It should be at or ahead of the latest changeset being opened.*/
   readonly db: AnyDb;
   /** invert the changeset operations */
   readonly invert?: true;
