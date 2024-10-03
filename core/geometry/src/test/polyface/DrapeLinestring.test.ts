@@ -65,7 +65,7 @@ it("DrapeLinestringAsPanels", async () => {
     _dy += 20.0;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringAsPanels");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("DrapeLinestringAsLines", async () => {
@@ -130,7 +130,7 @@ it("DrapeLinestringAsLines", async () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringAsLines");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("DrapeLinestringLargeMesh", async () => {
@@ -220,7 +220,7 @@ it("DrapeLinestringLargeMesh", async () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringLargeMesh");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("sweepLinestringToFacetsXYZingers", () => {
@@ -269,7 +269,7 @@ it("sweepLinestringToFacetsXYZingers", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringZingers5506");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("sweepLinestringToFacetsXYZVerticalMesh", () => {
@@ -332,7 +332,7 @@ it("sweepLinestringToFacetsXYZVerticalMesh", () => {
   }
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "sweepLinestringToFacetsXYZVerticalMesh");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("drapeLineStringAsLines2", () => {
@@ -361,5 +361,5 @@ it("drapeLineStringAsLines2", () => {
     ck.announceError("invalid inputs");
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "drapeLineStringAsLines2");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });

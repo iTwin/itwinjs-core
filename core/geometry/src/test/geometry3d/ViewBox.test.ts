@@ -262,7 +262,7 @@ describe("ViewWidget", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "StandardViews");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -285,5 +285,5 @@ it("StandardViewsByXYZ", () => {
   }
 
   GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "FromXYZ");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
