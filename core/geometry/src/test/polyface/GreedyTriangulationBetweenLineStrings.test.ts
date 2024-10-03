@@ -54,7 +54,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "zigzag");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("zigzagDuplicates", () => {
@@ -84,7 +84,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "zigzagDuplicates");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("quadQuad", () => {
@@ -125,7 +125,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
       x0 += 5.0 * dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "quadQuad");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("quadStar", () => {
@@ -167,7 +167,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
       x0 += 5.0 * dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "quadStar");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

@@ -81,7 +81,7 @@ describe("RegionBoolean", () => {
       y0 = 0.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SimpleSplits");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Holes", () => {
     const ck = new Checker();
@@ -123,7 +123,7 @@ describe("RegionBoolean", () => {
       x0 += 4 * delta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "Holes");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Overlaps", () => {
     const ck = new Checker();
@@ -191,7 +191,7 @@ describe("RegionBoolean", () => {
     }
     GeometryCoreTestIO.saveGeometry(badGeometry, "RegionBoolean", "Overlaps.BAD");
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "Overlaps");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("ParityRegionWithCoincidentEdges", () => {
@@ -214,7 +214,7 @@ describe("RegionBoolean", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithCoincidentEdges");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   interface CreateXYRegionsProps {
@@ -374,7 +374,7 @@ describe("RegionBoolean", () => {
     createXYRegions(region, { ck, allGeometry, x0, y0, z0, delta }, expected);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ParityRegionWithCoincidentBoundary");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // a 2-edge face that is NOT null
@@ -391,7 +391,7 @@ describe("RegionBoolean", () => {
     createXYRegions(banana, { ck, allGeometry }, expected);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "BananaRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ParityRegionWithBadBoundary", () => {
@@ -433,7 +433,7 @@ describe("RegionBoolean", () => {
       yBase += 100;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithBadBoundary");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SectioningExample", () => {
     const ck = new Checker();
@@ -474,7 +474,7 @@ describe("RegionBoolean", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExample");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SectioningExampleFile", () => {
     const ck = new Checker();
@@ -516,7 +516,7 @@ describe("RegionBoolean", () => {
       y0 += 100.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExampleFile");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SectioningLineStringApproach", () => {
     const ck = new Checker();
@@ -587,7 +587,7 @@ describe("RegionBoolean", () => {
       x0 += 100.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningLineStringApproach");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // In the input directories ...
@@ -619,7 +619,7 @@ describe("RegionBoolean", () => {
       GeometryCoreTestIO.consoleLog({ numOpen, numClosed });
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningLineStringApproach");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("NearTangencyUnion", () => {
@@ -733,7 +733,7 @@ describe("RegionBoolean", () => {
       y0 += yDelta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "BridgeEdgesAndDegenerateLoops");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // how to recover the constituent loops formed by a self-intersecting polygon
@@ -748,7 +748,7 @@ describe("RegionBoolean", () => {
     if (ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "one cw outer loop"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops);
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SelfIntersectingPolygon");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OverlappingArcs", () => {
@@ -815,7 +815,7 @@ describe("RegionBoolean", () => {
       y0 += delta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "OverlappingArcs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -858,7 +858,7 @@ describe("PlaneAltitudeRangeContext", () => {
     ck.testUndefined(lsLoop.projectedParameterRange(zero), "CurveCollection projection range is undefined for undefined plane");
     ck.testUndefined(linestring.projectedParameterRange(zero), "CurvePrimitive projection range is undefined for undefined plane");
     ck.testUndefined(PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(linestring.points, zero), "points projection range is undefined for undefined plane");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClosedCurve", () => {
@@ -914,7 +914,7 @@ describe("PlaneAltitudeRangeContext", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Curves", "ClosedCurveProjectionToRay");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1017,7 +1017,7 @@ function testSelectedTangencySubsets(
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", `NearTangencyUnion${outputFileSuffix}`);
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 }
 
 /**
@@ -1268,7 +1268,7 @@ describe("GeneralSweepBooleans", () => {
       y0 += 100;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "Rectangles");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("HighParityRectangles", () => {
     const ck = new Checker();
@@ -1293,7 +1293,7 @@ describe("GeneralSweepBooleans", () => {
       x0 += 50;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "HighParityRectangles");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Disjoints", () => {
     const ck = new Checker();
@@ -1306,7 +1306,7 @@ describe("GeneralSweepBooleans", () => {
     exerciseAreaBooleans([tallRectangleA], [lowRectangle, highRectangle], ck, allGeometry, 10, 0, false);
     exerciseAreaBooleans([tallRectangleB], [lowRectangle, highRectangle], ck, allGeometry, 20, 0, false);
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "Disjoints");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MBDisjointCover", () => {
@@ -1333,7 +1333,7 @@ describe("GeneralSweepBooleans", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "MBDisjointCover");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("HoleInA", () => {
     const ck = new Checker();
@@ -1348,7 +1348,7 @@ describe("GeneralSweepBooleans", () => {
       exerciseAreaBooleans([region], [rectangle2], ck, allGeometry, x0 += dx, 0, false);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "HoleInA");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FullCircle", () => {
     const ck = new Checker();
@@ -1384,7 +1384,7 @@ describe("GeneralSweepBooleans", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "FullCircle");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SharedEdgeElimination", () => {
@@ -1414,7 +1414,7 @@ describe("GeneralSweepBooleans", () => {
     const fixup3 = RegionOps.polygonBooleanXYToLoops(rectangleArray, RegionBinaryOpType.Union, []);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, fixup3, x0, y0, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "SharedEdgeElimination");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DocDemo", () => {
@@ -1451,7 +1451,7 @@ describe("GeneralSweepBooleans", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, diffB, xB, 30);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "DocDemo");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FacetPasting", () => {
     const ck = new Checker();
@@ -1463,7 +1463,7 @@ describe("GeneralSweepBooleans", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopB, 0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, 4, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "FacetPasting");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 

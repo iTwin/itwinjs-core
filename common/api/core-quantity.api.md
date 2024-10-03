@@ -54,12 +54,12 @@ export class BaseFormat {
     // (undocumented)
     protected _azimuthBaseUnit?: UnitProps;
     // (undocumented)
+    get azimuthClockwiseOrDefault(): boolean;
+    // (undocumented)
     get azimuthCounterClockwise(): boolean | undefined;
     set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined);
     // (undocumented)
     protected _azimuthCounterClockwise?: boolean;
-    // (undocumented)
-    get azimuthCounterClockwiseOrDefault(): boolean;
     // (undocumented)
     get decimalSeparator(): string;
     set decimalSeparator(decimalSeparator: string);

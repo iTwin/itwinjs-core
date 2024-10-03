@@ -15,6 +15,7 @@ Table of contents:
 - [Quantity](#quantity)
 - [API Deprecations](#api-deprecations)
   - [@itwin/appui-abstract](#itwinappui-abstract)
+  - [@itwin/core-backend](#itwincore-frontend)
   - [@itwin/core-frontend](#itwincore-frontend)
 
 ## Revert timeline changes
@@ -93,6 +94,9 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 
 - Add support for unit inversion during unit conversion
 
+- Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
+- The previous applies to azimuthBase as well, if provided.
+
 ## API deprecations
 
 ### @itwin/appui-abstract
@@ -100,6 +104,11 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 - `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
 
 - `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.
+
+### @itwin/core-backend
+
+- [IModelHost.snapshotFileNameResolver]($backend) and [FileNameResolver]($backend) have been deprecated. Make sure to provide resolved file path to [SnapshotConnection.openFile]($frontend).
+
 
 ### @itwin/core-frontend
 

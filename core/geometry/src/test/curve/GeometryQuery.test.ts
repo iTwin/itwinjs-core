@@ -123,7 +123,7 @@ describe("GeometryQuery", () => {
     const minimalHandler = new MinimalGeometryHandler();
     for (const g of geometry)
       g.dispatchToGeometryHandler(minimalHandler);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -144,7 +144,7 @@ describe("CylindricalRangeQuery", () => {
     const strokes = section.getStrokes();
     CylindricalRangeQuery.buildRotationalNormalsInLineStrings(strokes, Ray3d.createYAxis(), Vector3d.unitZ());
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StrokeCountChainCoverage", () => {
@@ -173,6 +173,6 @@ describe("CylindricalRangeQuery", () => {
     ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(parity0, parity2, range));
     ck.testFalse(StrokeCountSection.extendDistanceRangeBetweenStrokes(parity0, chain1, range));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

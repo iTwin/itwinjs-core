@@ -195,7 +195,7 @@ describe("ClipVector", () => {
     const parsedClipVector = ClipVector.fromJSON(clipJSON);
     ck.testTrue(clipVectorsAreEqual(clipVector012, parsedClipVector), "ClipVector is the same after roundtrip to and from JSON");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Point proximity and classification", () => {
@@ -261,7 +261,7 @@ describe("ClipVector", () => {
     ck.testFalse(intersectionClipVector.pointInside(Point3d.create(0.00011)), "Point inside one of two triangles fails pointInside check");
     ck.testFalse(intersectionClipVector.pointInside(Point3d.create(-0.00011)), "Point inside one of two triangles fails pointInside check");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Transformations and matrix multiplication", () => {
@@ -280,7 +280,7 @@ describe("ClipVector", () => {
     // TODO: Provide checks for correct application of an actual transform into a new coordinate system
 
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Extract boundary loops", () => {
@@ -319,54 +319,54 @@ describe("ClipVector", () => {
 
     // TODO: Attempt the same check, with member transforms in each of the ClipShapes s.t. the points are transformed as they are extracted
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("converts to compact string representation", () => {
     let cv = ClipVector.createEmpty();
-    expect(cv.toCompactString()).to.equal("_");
+    expect(cv.toCompactString()).toBe("_");
 
     let convexSet = ConvexClipPlaneSet.createPlanes([]);
     let primitive = ClipPrimitive.createCapture(convexSet, false);
     cv = ClipVector.createCapture([primitive]);
-    expect(cv.toCompactString()).to.equal("0___");
+    expect(cv.toCompactString()).toBe("0___");
     primitive = ClipPrimitive.createCapture(convexSet, true);
     cv = ClipVector.createCapture([primitive]);
-    expect(cv.toCompactString()).to.equal("1___");
+    expect(cv.toCompactString()).toBe("1___");
 
     const plane = ClipPlane.createNormalAndDistance(new Vector3d(0, 1, 0), -5, true, false)!;
-    expect(plane).not.to.be.undefined;
+    expect(plane).toBeDefined;
     convexSet = ConvexClipPlaneSet.createPlanes([plane]);
     primitive = ClipPrimitive.createCapture(convexSet);
     cv = ClipVector.createCapture([primitive]);
-    expect(cv.toCompactString()).to.equal("010_1_0_-5____");
+    expect(cv.toCompactString()).toBe("010_1_0_-5____");
 
     const planes = [plane];
     planes.push(ClipPlane.createNormalAndDistance(new Vector3d(0, 0, -1), 0.00000000005, true, true)!);
     convexSet = ConvexClipPlaneSet.createPlanes(planes);
     primitive = ClipPrimitive.createCapture(convexSet);
     cv = ClipVector.createCapture([primitive]);
-    expect(cv.toCompactString()).to.equal("010_1_0_-5_30_0_-1_5e-11____");
+    expect(cv.toCompactString()).toBe("010_1_0_-5_30_0_-1_5e-11____");
 
     const set2 = ConvexClipPlaneSet.createPlanes([ClipPlane.createNormalAndDistance(new Vector3d(1, 0, 0), 4, false, true)!]);
     cv = ClipVector.createCapture([primitive, ClipPrimitive.createCapture(set2, true)]);
-    expect(cv.toCompactString()).to.equal("010_1_0_-5_30_0_-1_5e-11___121_0_0_4____");
+    expect(cv.toCompactString()).toBe("010_1_0_-5_30_0_-1_5e-11___121_0_0_4____");
   });
 });
 
 describe("StringifiedClipVector", () => {
   it("creates from ClipVector", () => {
-    expect(StringifiedClipVector.fromClipVector(undefined)).to.be.undefined;
-    expect(StringifiedClipVector.fromClipVector(ClipVector.createEmpty())).to.be.undefined;
+    expect(StringifiedClipVector.fromClipVector(undefined)).toBeUndefined;
+    expect(StringifiedClipVector.fromClipVector(ClipVector.createEmpty())).toBeUndefined;
 
     const cv = ClipVector.createCapture([ClipPrimitive.createCapture(ConvexClipPlaneSet.createPlanes([]), false)]);
     const scv = StringifiedClipVector.fromClipVector(cv)!;
-    expect(scv).not.to.be.undefined;
-    expect(scv).to.equal(cv);
-    expect(scv.clipString).not.to.be.undefined;
-    expect(scv.clipString).to.equal(cv.toCompactString());
+    expect(scv).toBeDefined;
+    expect(scv).toEqual(cv);
+    expect(scv.clipString).toBeDefined;
+    expect(scv.clipString).toBe(cv.toCompactString());
 
-    expect(StringifiedClipVector.fromClipVector(cv)).to.equal(scv);
+    expect(StringifiedClipVector.fromClipVector(cv)).toEqual(scv);
   });
 
   it("OuterAndMask", () => {
@@ -438,7 +438,7 @@ describe("StringifiedClipVector", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMask");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("OuterAndMaskLargeCoordinateAndTransform", () => {
     const ck = new Checker();
@@ -506,7 +506,7 @@ describe("StringifiedClipVector", () => {
       x0 += 200.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMaskLargeCoordinateAndTransform");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("OuterAndMask", () => {
     const ck = new Checker();
@@ -572,7 +572,7 @@ describe("StringifiedClipVector", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMask");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ClipperInterfaces", () => {
     const ck = new Checker();
@@ -656,7 +656,7 @@ describe("StringifiedClipVector", () => {
         }
       */
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "ClipperInterfaces");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 

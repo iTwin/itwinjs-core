@@ -203,7 +203,7 @@ describe("BsplineCurve", () => {
       }
     }
     ck.checkpoint("End BsplineCurve.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("strokes", () => {
@@ -238,7 +238,7 @@ describe("BsplineCurve", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "strokes");
 
     ck.checkpoint("End BsplineCurve.strokes");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("KnotVector", () => {
@@ -258,7 +258,7 @@ describe("BsplineCurve", () => {
       ck.testCoordinate(leftKnotFromArray, leftKnotFromSpan, "left of span reproduces knots");
       ck.testCoordinate(knots.spanIndexToSpanLength(spanIndex), rightKnotFromSpan - leftKnotFromSpan, "span length");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DoubleKnots", () => {
@@ -282,7 +282,7 @@ describe("BsplineCurve", () => {
     curveRange.expandInPlace(0.00001);
     ck.testTrue(curveRange.containsRange(strokeRange));
     ck.testFalse(strokeRange.containsXYZ(0, 0, 0));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Circles", () => {
@@ -301,7 +301,7 @@ describe("BsplineCurve", () => {
       dx += 5.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "BCurveCircularArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BSplineCircleConversion", () => {
@@ -332,7 +332,7 @@ describe("BsplineCurve", () => {
     const g1 = IModelJson.Reader.parse(microstationStyleArc);
 
     GeometryCoreTestIO.saveGeometry([g1], "BsplineCurve", "CircleIMJson");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SaturateBspline", () => {
@@ -380,7 +380,7 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BezierCurve3d", "BsplineSaturation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("IntersectPlane", () => {
     const ck = new Checker();
@@ -413,7 +413,7 @@ describe("BsplineCurve", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "IntersectPlane");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BsplineCurve3dHCoverage", () => {
@@ -457,7 +457,7 @@ describe("BsplineCurve", () => {
         ck.testTrue(myPoleH.isAlmostEqualXYZW(myPole.x * w, myPole.y * w, myPole.z * w, w));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BsplineCurve3dCoverage", () => {
@@ -513,7 +513,7 @@ describe("BsplineCurve", () => {
         ck.testTrue(myPoleH.isAlmostEqualXYZW(myPole.x * w, myPole.y * w, myPole.z * w, w));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("WeightedCurveMatch", () => {
@@ -542,7 +542,7 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "WeightedCurveMatch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("WrappedCurves", () => {
@@ -601,7 +601,7 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "WeightedCurveMatch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StrokeWithKnotsA", () => {
@@ -616,7 +616,7 @@ describe("BsplineCurve", () => {
     options.chordTol = 0.01;
     const strokes = path.getPackedStrokes(options);
     GeometryCoreTestIO.consoleLog(prettyPrint(strokes!.getPoint3dArray()));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("StrokeWithKnotsB", () => {
     const ck = new Checker();
@@ -705,7 +705,7 @@ describe("BsplineCurve", () => {
       x0Out += 200;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "StrokeParabola");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   function roundTripBSplineCurve(ck: Checker, curve: BSplineCurve3dBase) {
@@ -752,7 +752,7 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "LegacyClosureRoundTrip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("KnotVectorCoverage", () => {
@@ -800,6 +800,6 @@ describe("BsplineCurve", () => {
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 0, 1), "unpack3d on invalid numPerRow");
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 1, 0), "unpack3d on invalid numPerBlock");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

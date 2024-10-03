@@ -82,7 +82,7 @@ describe("ChainCollector", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetCleanup", () => {
@@ -148,7 +148,7 @@ describe("ChainCollector", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PrimitiveOrder", () => {
     const ck = new Checker();
@@ -197,7 +197,7 @@ describe("ChainCollector", () => {
       x0 += xShift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", "PrimitiveOrder");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SmallInputs", () => {
@@ -239,7 +239,7 @@ describe("ChainCollector", () => {
       x0 += xShift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ChainCollector", "SmallInputs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -275,6 +275,6 @@ describe("ChainMerge", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, segments, 0, 0, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ChainMergeVariants");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
