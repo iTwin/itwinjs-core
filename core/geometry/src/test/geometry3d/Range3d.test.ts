@@ -174,7 +174,7 @@ describe("Range3d", () => {
     ck.testCoordinate(0, rangeQ.diagonal().magnitude(), "single point diagonal is 000");
 
     ck.checkpoint("Range3d.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     rangeQ.extend(new Point3d(20, 22, 54));
     const expected = new Float64Array(6);
     expected[0] = rangeQ.low.x;
@@ -216,7 +216,7 @@ describe("Range3d", () => {
     ck.testExactNumber(f64B[3], rangeA2d.high.y);
 
     ck.checkpoint("Range3d.With2d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("VariableArgs", () => {
@@ -236,7 +236,7 @@ describe("Range3d", () => {
     }
 
     ck.checkpoint("Range3d.VariableArgs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Distance", () => {
@@ -257,7 +257,7 @@ describe("Range3d", () => {
     }
 
     ck.checkpoint("Range3d.Distance");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // overlapping interval combinations
   //  ---------------------10-----------------20-----------------
@@ -341,7 +341,7 @@ describe("Range3d", () => {
       }
     }
     ck.checkpoint("Range3d.Containment1d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Containment1d", () => {
@@ -375,7 +375,7 @@ describe("Range3d", () => {
 
     }
     ck.checkpoint("Range3d.Containment1d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DiagonalContainment3d", () => {
@@ -416,7 +416,7 @@ describe("Range3d", () => {
       ck.testTrue(rangeN.isAlmostEqual(rangeB), "createFrom");
     }
     ck.checkpoint("Range3d.DiagonalContainment3d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DiagonalContainment2d", () => {
@@ -459,7 +459,7 @@ describe("Range3d", () => {
       ck.testTrue(rangeN.isAlmostEqual(rangeB), "createFrom");
     }
     ck.checkpoint("Range3d.DiagonalContainment2d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SineWaveRange", () => {
@@ -510,7 +510,7 @@ describe("Range3d", () => {
       y0 += 4.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Angle", "SineWaveRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MiscRange1d", () => {
@@ -535,7 +535,7 @@ describe("Range3d", () => {
 
     ck.checkpoint("Range3d.MiscRange1d");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SinglePointRanges", () => {
@@ -567,7 +567,7 @@ describe("Range3d", () => {
     ck.testCoordinate(twoDelta, r3.xLength(), "expand");
     ck.testCoordinate(twoDelta, r3.yLength(), "expand");
     ck.testCoordinate(twoDelta, r3.zLength(), "expand");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc3d", () => {
@@ -582,7 +582,7 @@ describe("Range3d", () => {
     const range1 = Range3d.fromJSON([Point3d.create(1, 2, 3), Point3d.create(6, 3, 2)]);
     ck.testRange3d(range0, range1);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc2d", () => {
@@ -596,7 +596,7 @@ describe("Range3d", () => {
 
     const range1 = Range2d.fromJSON({ low: [1, 2], high: [3, 6] });
     ck.testRange2d(range0, range1);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc1d", () => {
@@ -610,7 +610,7 @@ describe("Range3d", () => {
 
     const range1 = Range1d.fromJSON({ low: 1, high: 2 });
     ck.testRange1d(range0, range1);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("WorldToLocal3d", () => {
     const ck = new Checker();
@@ -636,7 +636,7 @@ describe("Range3d", () => {
     rangeA.localToWorldArrayInPlace(localPointsB);
     ck.testPoint3dArray(worldPoints, localPointsB);
     ck.checkpoint("Range3d.WorldToLocal3d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ScalarQueries3d", () => {
@@ -653,7 +653,7 @@ describe("Range3d", () => {
     const singlePointRange = Range3d.createXYZ(1, 2, 3);
     const singlePointNpcToWorld = singlePointRange.getNpcToWorldRangeTransform();
     ck.testTrue(singlePointNpcToWorld.matrix.isIdentity, "npcToWorld for single point has identity scales");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ScalarQueries2d", () => {
@@ -662,7 +662,7 @@ describe("Range3d", () => {
     const rangeB = Range2d.createXYXY(rangeA.xLow, rangeA.yLow, rangeA.xHigh, rangeA.yHigh);
     ck.testRange2d(rangeA, rangeB, "Range scalar queries");
     ck.testTrue(rangeA.containsPoint(rangeB.center));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("EnsureMinLengths", () => {
@@ -677,12 +677,12 @@ describe("Range3d", () => {
     ck.testTrue(rangeA.yLength() >= 2.0);
     ck.testTrue(rangeA.zLength() >= 2.0);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ZeroCases", () => {
     const ck = new Checker();
     ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DistanceToNullRange", () => {
     const ck = new Checker();
@@ -696,7 +696,7 @@ describe("Range3d", () => {
 
     ck.testExactNumber(0, null3.maxAbs(), "Range3d.null maxAbs is 0");
     ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Float64ArrayConstructors", () => {
     const ck = new Checker();
@@ -716,7 +716,7 @@ describe("Range3d", () => {
 
     r2.freeze();
     r3.freeze();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Reuse corners", () => {
     const ck = new Checker();
@@ -734,7 +734,7 @@ describe("Range3d", () => {
       ck.testPoint3d(cornerA[i], cornerB[i], "range.corners overwrites");
       ck.testTrue(range.containsPoint(cornerB[i]));
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CreateFromNull", () => {
     const ck = new Checker();
@@ -744,7 +744,7 @@ describe("Range3d", () => {
     ck.testTrue(r1.isNull);
     ck.testTrue(r2.isNull);
     ck.testTrue(r3.isNull);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SmallSweep", () => {
     const ck = new Checker();
@@ -752,6 +752,6 @@ describe("Range3d", () => {
     const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, sweep);
     const range = Range3d.createNull();
     arc.extendRange(range);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
