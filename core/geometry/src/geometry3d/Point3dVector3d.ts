@@ -1091,8 +1091,8 @@ export class Vector3d extends XYZ {
    * the plane of this vector and the target vector.
    * @param target Second vector which defines the plane of rotation.
    * @param result optional preallocated vector for result.
-   * @returns rotated vector, or undefined if the cross product of this and the the
-   * target cannot be normalized (i.e. if the target and this are colinear).
+   * @returns rotated vector, or undefined if the cross product of this and the target
+   * cannot be normalized (i.e. if the target and this are colinear).
    */
   public rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined {
     const normal = this.crossProduct(target).normalize();
