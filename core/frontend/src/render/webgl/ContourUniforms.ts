@@ -6,37 +6,11 @@
  * @module WebGL
  */
 
-import { ColorDef, Contour, ContourDisplay, LinePixels } from "@itwin/core-common";
+import { ColorDef, Contour, ContourDisplay } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
-
-function convertLinePixelsToIndexInShader(linePixels: LinePixels): number {
-  switch (linePixels) {
-    case LinePixels.Solid:
-    case LinePixels.Code0:
-      return 0;
-    case LinePixels.Code1:
-      return 1;
-    case LinePixels.Code2:
-      return 2;
-    case LinePixels.Code3:
-      return 3;
-    case LinePixels.Code4:
-      return 4;
-    case LinePixels.Code5:
-      return 5;
-    case LinePixels.Code6:
-      return 6;
-    case LinePixels.Code7:
-      return 7;
-    case LinePixels.HiddenLine:
-      return 8;
-    case LinePixels.Invisible:
-    default:
-      return 9;
-  }
-}
+import { LineCode } from "./LineCode";
 
 /** Maintains state for uniforms related to contour display.
  * @internal
@@ -122,7 +96,7 @@ export class ContourUniforms {
       const even = (index & 1) === 0;
       const colorDefsNdx = (even ? index * 1.5 : (index - 1) * 1.5 + 2) * 4;
       this.packColor (colorDefsNdx, contourDef.majorStyle.color, contourDef.minorStyle.color);
-      this.packPatWidth (colorDefsNdx, convertLinePixelsToIndexInShader(contourDef.majorStyle.pattern), convertLinePixelsToIndexInShader(contourDef.minorStyle.pattern), contourDef.majorStyle.pixelWidth, contourDef.minorStyle.pixelWidth);
+      this.packPatWidth (colorDefsNdx, LineCode.valueFromLinePixels(contourDef.majorStyle.pattern), LineCode.valueFromLinePixels(contourDef.minorStyle.pattern), contourDef.majorStyle.pixelWidth, contourDef.minorStyle.pixelWidth);
       const intervalsPairNdx = (Math.floor(index * 0.5) * 3 + 1) * 4;
       this.packIntervals (intervalsPairNdx, even, contourDef.minorInterval, contourDef.majorIntervalCount);
     }

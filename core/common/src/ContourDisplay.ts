@@ -217,20 +217,7 @@ export class ContourGroup {
       return false;
     if (!this.contourDef.equals(other.contourDef))
       return false;
-    let subCount = 0;
-    let otherSubCount = 0;
-    for (const subCategory of this.subCategories) {
-      subCount++;
-      let foundCount = 0;
-      for (const otherSubCategory of other.subCategories) {
-        otherSubCount++;
-        if (subCategory === otherSubCategory)
-          foundCount++;
-      }
-      if (0 === foundCount)
-        return false;
-    }
-    if (subCount !== otherSubCount)
+    if (this._subCategories !== other._subCategories)
       return false;
     return true;
   }
