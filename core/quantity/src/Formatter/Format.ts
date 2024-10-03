@@ -438,19 +438,16 @@ export class Format extends BaseFormat {
     const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
     const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
 
-
     const baseFormatProps: FormatProps = {
       type: this.type,
       precision: this.precision,
       roundFactor: this.roundFactor,
       minWidth: this.minWidth,
-      //showSignOption: showSignOptionToString(this.showSignOption),
       showSignOption: this.showSignOption,
       formatTraits: formatTraitsToArray(this.formatTraits),
       decimalSeparator: this.decimalSeparator,
       thousandSeparator: this.thousandSeparator,
       uomSeparator: this.uomSeparator,
-      //scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
       scientificType: this.scientificType ? this.scientificType : undefined,
       ratioType: this.ratioType,
       stationOffsetSize: this.stationOffsetSize,
