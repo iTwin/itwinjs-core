@@ -1130,7 +1130,7 @@ export class TrigPolynomial {
   public static readonly W = Float64Array.from([1.0, -2.0, 2.0]);
   /** Standard Basis coefficients for C(t) * W(t). */
   public static readonly CW = Float64Array.from([1.0, -4.0, 6.0, -4.0]);
-  /** Standard Basis coefficients forS(t) * W(t). */
+  /** Standard Basis coefficients for S(t) * W(t). */
   public static readonly SW = Float64Array.from([0.0, 2.0, -6.0, 8.0, -4.0]);
   /** Standard Basis coefficients for S(t) * C(t). */
   public static readonly SC = Float64Array.from([0.0, 2.0, -6.0, 4.0]);
