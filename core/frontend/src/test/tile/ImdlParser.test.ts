@@ -8,8 +8,10 @@ import { ImdlTimeline } from "../../common/imdl/ParseImdlDocument";
 import { acquireImdlParser, ImdlParser } from "../../tile/internal";
 import { IModelApp } from "../../IModelApp";
 
-describe.skip("acquireImdlParser", () => {
-  beforeAll(async () => IModelApp.startup());
+describe("acquireImdlParser", () => {
+  beforeAll(async () => {
+    await IModelApp.startup({ publicPath: "/"});
+  });
   afterAll(async () => IModelApp.shutdown());
 
   const model1Props: RS.ModelTimelineProps = { modelId: "0x1", elementTimelines: [] };
@@ -122,7 +124,9 @@ describe.skip("acquireImdlParser", () => {
 });
 
 describe("ImdlParser", () => {
-  beforeAll(async () => IModelApp.startup());
+  beforeAll(async () => {
+    await IModelApp.startup({ publicPath: "/"});
+  });
   afterAll(async () => IModelApp.shutdown());
 
   it("produces an error upon invalid tile header", async () => {

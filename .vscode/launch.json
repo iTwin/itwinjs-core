@@ -1111,6 +1111,8 @@
       "type": "chrome",
       "request": "attach",
       "name": "Attach to Vitest Browser",
+      "url": "http://localhost:5173",
+      "timeout": 30000,
       "port": 9229
     }
   ],

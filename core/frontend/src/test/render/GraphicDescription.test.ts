@@ -653,8 +653,8 @@ describe("GraphicDescriptionBuilder", () => {
     }
   });
 
-  describe.skip("Worker", () => {
-    const createWorker = () => createWorkerProxy<TestWorker>("./test-worker.js");
+  describe("Worker", () => {
+    const createWorker = () => createWorkerProxy<TestWorker>("/test-worker.js");
 
     it("throws on invalid context", async () => {
       const worker = createWorker();
