@@ -42,7 +42,7 @@ function makeRangeForOutput(range: Range3d, dx: number, dy: number, dz: number):
   const y1 = range.yHigh + dy;
   return Range3d.createXYZXYZ(x0, y0, dz, x1, y1, dz);
 }
-class ClosestPointOnCurvesHandler extends SingleTreeSearchHandler<CurvePrimitive>{
+class ClosestPointOnCurvesHandler extends SingleTreeSearchHandler<CurvePrimitive> {
   public spacePoint: Point3d;
   public minDistance: number;
   public closestPointData?: CurveLocationDetail;
@@ -104,7 +104,7 @@ class ClosestPointOnCurvesHandler extends SingleTreeSearchHandler<CurvePrimitive
   }
 }
 
-class ClosestApproachBetweenPointClustersHandler extends TwoTreeSearchHandler<Point3d>{
+class ClosestApproachBetweenPointClustersHandler extends TwoTreeSearchHandler<Point3d> {
   public minDistance: number;
   public closestPointInA?: Point3d;
   public closestPointInB?: Point3d;
@@ -226,7 +226,7 @@ describe("IndexedRangeHeap", () => {
     });
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "ClosestLineStringSearch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PointPointSearch", () => {
@@ -319,7 +319,7 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointPointSearch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PointCloudMultiSearch", () => {
@@ -386,7 +386,7 @@ describe("IndexedRangeHeap", () => {
           ck.testExactNumber(distanceSequence[0][j], distanceSequence[i][j], { distance0J: distanceSequence[0][j], i, j, distanceIJ: distanceSequence[i][j] });
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointCloudMultiSearch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PointCloudMultiSearch1", () => {
     const ck = new Checker();
@@ -449,7 +449,7 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointCloudMultiSearch1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PolylineMultiSearch", () => {
@@ -501,7 +501,7 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylineMultiSearch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolylineMultiSearch1", () => {
     const ck = new Checker();
@@ -553,7 +553,7 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylineMultiSearch1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PolyfaceMultiSearch", () => {
@@ -618,7 +618,7 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolyfaceMultiSearch1", () => {
     const ck = new Checker();
@@ -635,7 +635,7 @@ describe("IndexedRangeHeap", () => {
     // test and cover the trigger arrays
     const context = PolyfaceRangeTreeContext.createCapture(polyface, undefined, undefined, true);
     if (ck.testType(context, PolyfaceRangeTreeContext)) {
-      for (const maxDist of [.27, 0.2, 0.05] ) { // largest min dist is 0.2574
+      for (const maxDist of [.27, 0.2, 0.05]) { // largest min dist is 0.2574
         let numSingleton = 0;
         let numArray = 0;
         for (let u = 0; u <= 1.00001; u += 0.05) {
@@ -666,12 +666,12 @@ describe("IndexedRangeHeap", () => {
           }
         }
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyface, path], x0, y0, z0);
-        ck.show({numArray, numSingleton});
+        ck.show({ numArray, numSingleton });
         x0 += 2;
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolyfaceMultiSearch2", () => {
     const ck = new Checker();
@@ -749,7 +749,7 @@ describe("IndexedRangeHeap", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceMultiSearch2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolyfacePolyfaceSearch", () => {
     const ck = new Checker();
@@ -791,7 +791,7 @@ describe("IndexedRangeHeap", () => {
       testFraction: contextA.numFacetTest / (numFacetA * numFacetB),
     });
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfacePolyfaceSearch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolyfacePolyfaceSearch1", () => {
     const ck = new Checker();
@@ -812,7 +812,7 @@ describe("IndexedRangeHeap", () => {
 
     let numSingleton = 0;
     let numArray = 0;
-    for (const maxDist of [0.6, 0.53, 0.4] ) { // min dist is ~0.52
+    for (const maxDist of [0.6, 0.53, 0.4]) { // min dist is ~0.52
       const result = PolyfaceRangeTreeContext.searchForClosestApproach(contextA, contextB, maxDist);
       if (ck.testDefined(result, "two-tree search with maxDist succeeded")) {
         if (Array.isArray(result)) {
@@ -844,13 +844,13 @@ describe("IndexedRangeHeap", () => {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [result.detailA.point, result.detailB.point], x0);
           ++numSingleton;
         }
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyfaceA, polyfaceB], x0);
-      x0 += 3;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyfaceA, polyfaceB], x0);
+        x0 += 3;
       }
     }
-    ck.show({numArray, numSingleton});
+    ck.show({ numArray, numSingleton });
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfacePolyfaceSearch1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PolylinePolylineSearch", () => {
@@ -884,7 +884,7 @@ describe("IndexedRangeHeap", () => {
     // test and cover the trigger arrays
     let numSingleton = 0;
     let numArray = 0;
-    for (const maxDist of [0.5, 0.1, 0.02] ) { // min dist is ~0.025
+    for (const maxDist of [0.5, 0.1, 0.02]) { // min dist is ~0.025
       x0 += 20;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointsA, pointsB], x0);
       const result = LineString3dRangeTreeContext.searchForClosestApproach(contextA, contextB, maxDist);
@@ -916,7 +916,7 @@ describe("IndexedRangeHeap", () => {
         }
       }
     }
-    ck.show({numArray, numSingleton});
+    ck.show({ numArray, numSingleton });
 
     x0 += 20;
     const shiftB = Transform.createTranslationXYZ(0, 3, 4);
@@ -933,7 +933,7 @@ describe("IndexedRangeHeap", () => {
     // test and cover the trigger arrays
     numSingleton = 0;
     numArray = 0;
-    for (const maxDist of [0.5, 0.2, 0.02] ) { // min dist is ~0.13
+    for (const maxDist of [0.5, 0.2, 0.02]) { // min dist is ~0.13
       x0 += 20;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointsA, pointsB], x0);
       const result = Point3dArrayRangeTreeContext.searchForClosestApproach(contextA1, contextB1, maxDist);
@@ -965,10 +965,10 @@ describe("IndexedRangeHeap", () => {
         }
       }
     }
-    ck.show({numArray, numSingleton});
+    ck.show({ numArray, numSingleton });
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolylinePolylineSearch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PolyfaceRoundtrip", () => {
@@ -994,6 +994,6 @@ describe("IndexedRangeHeap", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PolyfaceRoundTrip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

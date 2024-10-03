@@ -26,7 +26,7 @@ function createSurfaceData(surface: BSplineSurface3dH): SerializationHelpers.BSp
   return { poles: surface.copyXYZToFloat64Array(false), dim: 3, weights: NumberArray.unpack2d(surface.copyWeightsToFloat64Array(), surface.numPolesUV(UVSelect.uDirection)), uParams, vParams };
 }
 
-function unpackPoles(poles: Float64Array | number[][] | number[][][], dim: number, weights?: Float64Array | number[][] | number[]): { xyz?: Float64Array, w?: Float64Array} {
+function unpackPoles(poles: Float64Array | number[][] | number[][][], dim: number, weights?: Float64Array | number[][] | number[]): { xyz?: Float64Array, w?: Float64Array } {
   let xyz: Float64Array | undefined;
   let w: Float64Array | undefined;
   if (dim === 3) {
@@ -41,7 +41,7 @@ function unpackPoles(poles: Float64Array | number[][] | number[][][], dim: numbe
     xyz = Point3dArray.packToFloat64Array(myPoles);
     w = NumberArray.pack(myWeights);
   }
-  return {xyz, w};
+  return { xyz, w };
 }
 
 function cloneSubArray(a?: Float64Array | number[] | number[][] | number[][][], numRow = 0, numCol = 0, dim = 1, iRow0 = 0, iRow1 = numRow, iCol0 = 0, iCol1 = numCol): Float64Array {
@@ -57,7 +57,7 @@ function cloneSubArray(a?: Float64Array | number[] | number[][] | number[][][], 
   const aSub = new Float64Array((iRow1 - iRow0) * (iCol1 - iCol0) * dim);
   let i = 0;
   for (let row = iRow0; row < iRow1; ++row)
-    for  (let col = iCol0; col < iCol1; ++col)
+    for (let col = iCol0; col < iCol1; ++col)
       for (let component = 0; component < dim; ++component)
         aSub[i++] = aPacked[(row * numCol + col) * dim + component];
   return aSub;
@@ -88,16 +88,16 @@ function almostEqualCurveData(data0: SerializationHelpers.BSplineCurveData, data
       return false;
   } else {  // differing closure means poles/weights should have counts that differ by degree
     if (!almostEqualSubArrays(unpacked0.xyz, unpacked1.xyz, 0, -degree * 3) &&
-        !almostEqualSubArrays(unpacked1.xyz, unpacked0.xyz, 0, -degree * 3))
+      !almostEqualSubArrays(unpacked1.xyz, unpacked0.xyz, 0, -degree * 3))
       return false;
     if (!almostEqualSubArrays(unpacked0.w, unpacked1.w, 0, -degree) &&
-        !almostEqualSubArrays(unpacked1.w, unpacked0.w, 0, -degree))
+      !almostEqualSubArrays(unpacked1.w, unpacked0.w, 0, -degree))
       return false;
   }
   // account for extraneous knots
   if (!NumberArray.isAlmostEqual(data0.params.knots, data1.params.knots) &&
-      !almostEqualSubArrays(data0.params.knots, data1.params.knots, 1, -1) &&
-      !almostEqualSubArrays(data1.params.knots, data0.params.knots, 1, -1))
+    !almostEqualSubArrays(data0.params.knots, data1.params.knots, 1, -1) &&
+    !almostEqualSubArrays(data1.params.knots, data0.params.knots, 1, -1))
     return false;
   return true;
 }
@@ -134,63 +134,63 @@ function almostEqualSurfaceData(data0: SerializationHelpers.BSplineSurfaceData, 
       return false;
   } else if (uClosed0 !== uClosed1 && vClosed0 === vClosed1) {
     if ((data0.uParams.numPoles - uDegree !== data1.uParams.numPoles) &&
-        (data0.uParams.numPoles !== data1.uParams.numPoles - uDegree))
+      (data0.uParams.numPoles !== data1.uParams.numPoles - uDegree))
       return false;
     if (data0.vParams.numPoles !== data1.vParams.numPoles)
       return false;
     const xyzFewerCols0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, undefined, undefined, -uDegree);
     const xyzFewerCols1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, undefined, undefined, -uDegree);
     if (!NumberArray.isAlmostEqual(xyzFewerCols0, unpacked1.xyz) &&
-        !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerCols1))
-        return false;
+      !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerCols1))
+      return false;
     const wFewerCols0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, undefined, undefined, -uDegree);
     const wFewerCols1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, undefined, undefined, -uDegree);
     if (!NumberArray.isAlmostEqual(wFewerCols0, unpacked1.w) &&
-        !NumberArray.isAlmostEqual(unpacked0.w, wFewerCols1))
-        return false;
+      !NumberArray.isAlmostEqual(unpacked0.w, wFewerCols1))
+      return false;
   } else if (uClosed0 === uClosed1 && vClosed0 !== vClosed1) {
     if (data0.uParams.numPoles !== data1.uParams.numPoles)
       return false;
     if ((data0.vParams.numPoles - vDegree !== data1.vParams.numPoles) &&
-        (data0.vParams.numPoles !== data1.vParams.numPoles - vDegree))
+      (data0.vParams.numPoles !== data1.vParams.numPoles - vDegree))
       return false;
     const xyzFewerRows0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, -vDegree);
     const xyzFewerRows1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, -vDegree);
     if (!NumberArray.isAlmostEqual(xyzFewerRows0, unpacked1.xyz) &&
-        !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerRows1))
+      !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerRows1))
       return false;
     const wFewerRows0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, -vDegree);
     const wFewerRows1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, -vDegree);
     if (!NumberArray.isAlmostEqual(wFewerRows0, unpacked1.w) &&
-        !NumberArray.isAlmostEqual(unpacked0.w, wFewerRows1))
+      !NumberArray.isAlmostEqual(unpacked0.w, wFewerRows1))
       return false;
   } else {  // both closures different
     if ((data0.uParams.numPoles - uDegree !== data1.uParams.numPoles) &&
-        (data0.uParams.numPoles !== data1.uParams.numPoles - uDegree))
+      (data0.uParams.numPoles !== data1.uParams.numPoles - uDegree))
       return false;
     if ((data0.vParams.numPoles - vDegree !== data1.vParams.numPoles) &&
-        (data0.vParams.numPoles !== data1.vParams.numPoles - vDegree))
+      (data0.vParams.numPoles !== data1.vParams.numPoles - vDegree))
       return false;
     const xyzFewerRowsAndCols0 = cloneSubArray(unpacked0.xyz, data0.vParams.numPoles, data0.uParams.numPoles, 3, undefined, -vDegree, undefined, -uDegree);
     const xyzFewerRowsAndCols1 = cloneSubArray(unpacked1.xyz, data1.vParams.numPoles, data1.uParams.numPoles, 3, undefined, -vDegree, undefined, -uDegree);
     if (!NumberArray.isAlmostEqual(xyzFewerRowsAndCols0, unpacked1.xyz) &&
-        !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerRowsAndCols1))
+      !NumberArray.isAlmostEqual(unpacked0.xyz, xyzFewerRowsAndCols1))
       return false;
     const wFewerRowsAndCols0 = cloneSubArray(unpacked0.w, data0.vParams.numPoles, data0.uParams.numPoles, 1, undefined, -vDegree, undefined, -uDegree);
     const wFewerRowsAndCols1 = cloneSubArray(unpacked1.w, data1.vParams.numPoles, data1.uParams.numPoles, 1, undefined, -vDegree, undefined, -uDegree);
     if (!NumberArray.isAlmostEqual(wFewerRowsAndCols0, unpacked1.w) &&
-        !NumberArray.isAlmostEqual(unpacked0.w, wFewerRowsAndCols1))
+      !NumberArray.isAlmostEqual(unpacked0.w, wFewerRowsAndCols1))
       return false;
   }
   // account for extraneous uKnots
   if (!NumberArray.isAlmostEqual(data0.uParams.knots, data1.uParams.knots) &&
-      !almostEqualSubArrays(data0.uParams.knots, data1.uParams.knots, 1, -1) &&
-      !almostEqualSubArrays(data1.uParams.knots, data0.uParams.knots, 1, -1))
+    !almostEqualSubArrays(data0.uParams.knots, data1.uParams.knots, 1, -1) &&
+    !almostEqualSubArrays(data1.uParams.knots, data0.uParams.knots, 1, -1))
     return false;
   // account for extraneous vKnots
   if (!NumberArray.isAlmostEqual(data0.vParams.knots, data1.vParams.knots) &&
-      !almostEqualSubArrays(data0.vParams.knots, data1.vParams.knots, 1, -1) &&
-      !almostEqualSubArrays(data1.vParams.knots, data0.vParams.knots, 1, -1))
+    !almostEqualSubArrays(data0.vParams.knots, data1.vParams.knots, 1, -1) &&
+    !almostEqualSubArrays(data1.vParams.knots, data0.vParams.knots, 1, -1))
     return false;
   return true;
 }
@@ -203,10 +203,10 @@ function createTestSurface(uPeriodic: boolean, vPeriodic: boolean): BSplineSurfa
   let vNumPoles = 4;
   const vDegree = 3;
   let poles3d = [
-    Point3d.create(5,0,-2), Point3d.create(0,5,-2), Point3d.create(-5,0,-2), Point3d.create(0,-5,-2),
-    Point3d.create(7,0,0), Point3d.create(0,7,0), Point3d.create(-7,0,0), Point3d.create(0,-7,0),
-    Point3d.create(5,0,2), Point3d.create(0,5,2), Point3d.create(-5,0,2), Point3d.create(0,-5,2),
-    Point3d.create(3,0,0), Point3d.create(0,3,0), Point3d.create(-3,0,0), Point3d.create(0,-3,0),
+    Point3d.create(5, 0, -2), Point3d.create(0, 5, -2), Point3d.create(-5, 0, -2), Point3d.create(0, -5, -2),
+    Point3d.create(7, 0, 0), Point3d.create(0, 7, 0), Point3d.create(-7, 0, 0), Point3d.create(0, -7, 0),
+    Point3d.create(5, 0, 2), Point3d.create(0, 5, 2), Point3d.create(-5, 0, 2), Point3d.create(0, -5, 2),
+    Point3d.create(3, 0, 0), Point3d.create(0, 3, 0), Point3d.create(-3, 0, 0), Point3d.create(0, -3, 0),
   ];
   let weights = [
     0.4, 0.6, 0.5, 0.7,
@@ -273,7 +273,7 @@ describe("SerializationHelpers", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     // create valid curve data
-    const unweightedPoles3d = [Point3d.create(1,-1,-1), Point3d.create(1,1,1), Point3d.create(-1,1,-1), Point3d.create(-1,-1,1)];
+    const unweightedPoles3d = [Point3d.create(1, -1, -1), Point3d.create(1, 1, 1), Point3d.create(-1, 1, -1), Point3d.create(-1, -1, 1)];
     const weights = [0.3, 0.5, 0.2, 0.7];
     unweightedPoles3d.push(unweightedPoles3d[0].clone()); // cover wraparound logic
     weights.push(weights[0]);
@@ -296,7 +296,7 @@ describe("SerializationHelpers", () => {
     const openCurve = BSplineCurve3dH.createUniformKnots(poles4d, 4);
     const closedCurve = BSplineCurve3dH.createPeriodicUniformKnots(poles4d, 3);
     if (ck.testType(openCurve, BSplineCurve3dH, "BSplineCurve3dH.createUniformKnots returned a homogeneous curve") &&
-        ck.testType(closedCurve, BSplineCurve3dH, "BSplineCurve3dH.createPeriodicUniformKnots returned a periodic homogeneous curve")) {
+      ck.testType(closedCurve, BSplineCurve3dH, "BSplineCurve3dH.createPeriodicUniformKnots returned a periodic homogeneous curve")) {
       for (const curve of [openCurve, closedCurve]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
         const origData = createCurveData(curve);
@@ -337,7 +337,7 @@ describe("SerializationHelpers", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "SerializationHelpers", "BSplineCurveCoverage");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BSplineSurfaceCoverage", () => {
@@ -381,7 +381,7 @@ describe("SerializationHelpers", () => {
             data = SerializationHelpers.cloneBSplineSurfaceData(origData);
             if (ck.testTrue(SerializationHelpers.Export.prepareBSplineSurfaceData(data, { jsonKnots: false }), "Export.prepareBSplineSurfaceData with !jsonKnots and number[] uKnots and vKnots succeeds"))
               ck.testTrue(almostEqualSurfaceData(data, origData), "Export.prepareBSplineSurfaceData with !jsonKnots and number[] uKnots and vKnots yields equivalent data");
-            }
+          }
           // test Import
           const importData = SerializationHelpers.cloneBSplineSurfaceData(exportData);
           if (ck.testTrue(SerializationHelpers.Import.prepareBSplineSurfaceData(importData), "Import.prepareBSplineSurfaceData on valid input succeeds"))
@@ -395,6 +395,6 @@ describe("SerializationHelpers", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "SerializationHelpers", "BSplineSurfaceCoverage");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
