@@ -103,7 +103,7 @@ describe("PolarData", () => {
 
     ck.testLE(0.00001, PolarData.defaultRadius, "PolarData static defined");
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolarData", "ConstraintSolver");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

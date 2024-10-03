@@ -37,19 +37,19 @@ Pictured below in order of decreasing error are some example approximations in b
 
 Approximation using `options.sampleMethod = EllipticalArcSampleMethod.UniformCurvature` and `options.numSamplesInQuadrant = 5`, yielding error 0.18:
 
-![Uniform Curvature](./assets/approximate-ellipse-uniform-curvature.jpg "Uniform Curvature")
+![Uniform Curvature](../assets/approximate-ellipse-uniform-curvature.jpg "Uniform Curvature")
 
 Approximation using `options.sampleMethod = EllipticalArcSampleMethod.UniformParameter` and `options.numSamplesInQuadrant = 5`, yielding error 0.12:
 
-![Uniform Parameter](./assets/approximate-ellipse-uniform-parameter.jpg "Uniform Parameter")
+![Uniform Parameter](../assets/approximate-ellipse-uniform-parameter.jpg "Uniform Parameter")
 
 Approximation using `options.sampleMethod = EllipticalArcSampleMethod.NonUniformCurvature`, `options.remapFunction = (x) => x*x`, and `options.numSamplesInQuadrant = 5`, yielding error 0.05:
 
-![Quadratic Curvature](./assets/approximate-ellipse-quadratic-curvature.jpg "Quadratic Curvature")
+![Quadratic Curvature](../assets/approximate-ellipse-quadratic-curvature.jpg "Quadratic Curvature")
 
 Approximation using `options.sampleMethod = EllipticalArcSampleMethod.AdaptiveSubdivision` and `options.maxError === 0.05`, yielding error 0.03:
 
-![Adaptive Subdivision](./assets/approximate-ellipse-adaptive-subdivision.jpg "Adaptive Subdivision")
+![Adaptive Subdivision](../assets/approximate-ellipse-adaptive-subdivision.jpg "Adaptive Subdivision")
 
 ### Triangulating points
 

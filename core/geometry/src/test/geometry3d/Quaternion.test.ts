@@ -38,7 +38,7 @@ describe("MatrixQuatMatrix", () => {
       const roundTrip = Matrix3d.createFromQuaternion(quaternion);
       ck.testTrue(matrix.isAlmostEqual(roundTrip));
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("QuatMatrixQuat", () => {
@@ -59,7 +59,7 @@ describe("MatrixQuatMatrix", () => {
 
     const matrixA = Matrix3d.createFromQuaternion(Point4d.create(0, 0, 0, 0));
     ck.testTrue(matrixA.isIdentity, "0000 quat is identity");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

@@ -18,8 +18,10 @@ describe("SnapshotConnection", () => {
   });
 
   it("SnapshotConnection properties", async () => {
+    /* eslint-disable deprecation/deprecation */
     const snapshotR1 = await SnapshotConnection.openRemote("test-key"); // file key resolved by BackendTestAssetResolver
     const snapshotR2 = await SnapshotConnection.openRemote("test2-key"); // file key resolved by BackendTestAssetResolver
+    /* eslint-enable deprecation/deprecation */
     const snapshotF1 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     assert.notEqual(snapshotR1.key, snapshotF1.key);

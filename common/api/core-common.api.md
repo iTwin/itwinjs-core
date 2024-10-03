@@ -9215,7 +9215,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // (undocumented)
     openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
-    // (undocumented)
+    // @deprecated (undocumented)
     openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
 }
 

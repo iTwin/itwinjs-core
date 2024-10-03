@@ -78,7 +78,7 @@ describe("PolygonOps", () => {
       x0 += b;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "SortOuterAndHoleLoopsXY.DeepNest");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -124,7 +124,7 @@ describe("PolygonOps", () => {
       x0 += 2.0 * b;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "SortOuterAndHoleLoopsXY.DeepAbuttingNest");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -176,7 +176,7 @@ describe("PolygonOps", () => {
       x0 += (numHole + 2) * a;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "SortOuterAndHoleLoopsXY.ManyHoles");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -214,7 +214,7 @@ describe("PolygonOps", () => {
     ck.testUndefined(degenerateA.getAnyInteriorPoint());
     ck.testUndefined(degenerateB.getAnyInteriorPoint());
     GeometryCoreTestIO.saveGeometry(allGeometry, "SortablePolygon", "LoopToPolygon");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   function testPolygonRayIntersection(ck: Checker, allGeometry: GeometryQuery[], polygon: Point3d[], x0?: number) {
@@ -305,7 +305,7 @@ describe("PolygonOps", () => {
     ck.testFalse(PolygonOps.intersectRay3d(triangle, parallelRay).isValid, "parallel ray intersection is invalid");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "intersectRay3d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("closestApproach", () => {
@@ -351,7 +351,7 @@ describe("PolygonOps", () => {
       x0 += 5;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "closestApproach");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Coverage", () => {
@@ -387,10 +387,10 @@ describe("PolygonOps", () => {
     ck.testPoint3d(pldPairB.detailA.point, pldPairC.detailB.point, "PolygonLocationDetailPair.swapDetails A");
     ck.testPoint3d(pldPairB.detailB.point, pldPairC.detailA.point, "PolygonLocationDetailPair.swapDetails B");
 
-    ck.testExactNumber(PolygonOps.sumTriangleAreasXY([Point3d.createZero(), Point3d.create(1,1,1)]), 0.0, "PolygonOps.sumTriangleAreasXY on degenerate polygon");
+    ck.testExactNumber(PolygonOps.sumTriangleAreasXY([Point3d.createZero(), Point3d.create(1, 1, 1)]), 0.0, "PolygonOps.sumTriangleAreasXY on degenerate polygon");
     let area = PolygonOps.sumTriangleAreasXY(polylineA);
     ck.testCoordinate(area, 0.5, "PolygonOps.sumTriangleAreasXY on triangle");
-    const dart = [Point3d.create(0,0), Point3d.create(-1,1), Point3d.create(-4,-4), Point3d.create(1,0)];
+    const dart = [Point3d.create(0, 0), Point3d.create(-1, 1), Point3d.create(-4, -4), Point3d.create(1, 0)];
     area = PolygonOps.sumTriangleAreasXY(dart);
     ck.testCoordinate(area, 6.0, "PolygonOps.sumTriangleAreasXY on concave poly");
     area = PolygonOps.sumTriangleAreasPerpendicularToUpVector(GrowableXYZArray.create(dart), Vector3d.createZero());
@@ -417,6 +417,6 @@ describe("PolygonOps", () => {
     closedDart = PolygonOps.ensureClosed(openDart);
     ck.testType(closedDart, GrowableXYZArray, "PolygonOps.ensureClosed returns new GrowableXYZArray if input open");
     ck.testExactNumber(closedDart.length, openDart.length + 1, "PolygonOps.ensureClosed returns poly of length + 1 if input open");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
