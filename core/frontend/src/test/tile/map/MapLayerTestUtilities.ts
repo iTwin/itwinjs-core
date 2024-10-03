@@ -15,14 +15,13 @@ export const createFakeTileResponse = (contentType: string, data?: Uint8Array) =
   return (test as Response );
 };
 
-export const fakeTextFetch = (text: string) => {
-  return vi.spyOn(globalThis, "fetch").mockImplementation(async function (_input: RequestInfo | URL, _init?: RequestInit) {
-    return Promise.resolve(({
-      text: async () => text,
-      ok: true,
-      status: 200,
-    } as unknown) as Response);
-  });
+// TODO: Once we've upgraded to TS 5.5 and later, remove the type annotation https://github.com/microsoft/TypeScript/issues/42873#issuecomment-1941449175
+export const fakeTextFetch = (text: string): any => {
+  return vi.spyOn(globalThis, "fetch").mockResolvedValue({
+    text: async () => text,
+    ok: true,
+    status: 200,
+  } as Response);
 };
 
 export const indexedArrayFromUrlParams = (urlParams: URLSearchParams):  {[key: string]: string} => {
