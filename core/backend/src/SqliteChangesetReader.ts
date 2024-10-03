@@ -5,8 +5,7 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable, MarkRequired } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -136,7 +135,7 @@ export class SqliteChangesetReader implements IDisposable {
    * @param args.db must be of type {@link IModelDb}
    * @returns SqliteChangesetReader instance
    */
-  public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, 'db'> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
+  public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false);
