@@ -126,13 +126,13 @@ async function init() {
 
   ECSchemaRpcImpl.register();
 
-  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
+  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver(); // eslint-disable-line deprecation/deprecation
   Logger.initializeToConsole();
   return shutdown;
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
-class BackendTestAssetResolver extends FileNameResolver {
+class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line deprecation/deprecation
   /** Resolve a base file name to a full path file name in the core/backend/lib/cjs/test/assets/ directory. */
   public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {

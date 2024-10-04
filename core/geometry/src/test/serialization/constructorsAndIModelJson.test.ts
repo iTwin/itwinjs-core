@@ -204,7 +204,7 @@ describe("constructorsAndImodelJson", () => {
         ck.testTrue(obj1.isAlmostEqual(obj2));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("taggedNumericData.json", () => {
     const ck = new Checker();
@@ -218,7 +218,7 @@ describe("constructorsAndImodelJson", () => {
           ck.testTrue(obj.isAlmostEqual(obj1), "json round trip");
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("MeshWithTag", () => {
     const ck = new Checker();
@@ -236,7 +236,7 @@ describe("constructorsAndImodelJson", () => {
     mesh.data.taggedNumericData = tagA;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, 0, y0, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TaggedNumericData", "TorusPipe");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TagLookup", () => {
     const ck = new Checker();

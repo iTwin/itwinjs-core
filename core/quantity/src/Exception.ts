@@ -24,6 +24,7 @@ export enum QuantityStatus {
   UnableToConvertParseTokensToQuantity = QUANTITY_ERROR_BASE + 7,
   UnsupportedUnit = QUANTITY_ERROR_BASE + 8,
   MissingRequiredProperty = QUANTITY_ERROR_BASE + 9,
+  InvertingZero = QUANTITY_ERROR_BASE + 10,
 }
 
 /** The error type thrown by this module. See [[QuantityStatus]] for `errorNumber` values.

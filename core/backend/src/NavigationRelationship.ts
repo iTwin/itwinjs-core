@@ -104,6 +104,26 @@ export class FolderContainsRepositories extends ElementOwnsChildElements {
   }
 }
 
+/** Relates a [[SheetIndexFolder]] to the [[SheetIndexEntry]]'s that it contains.
+ * @beta
+ */
+export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
+  public static override classFullName = "BisCore:SheetIndexFolderOwnsEntries";
+  public constructor(parentId: Id64String, relClassName: string = SheetIndexFolderOwnsEntries.classFullName) {
+    super(parentId, relClassName );
+  }
+}
+
+/** Relates a [[SheetIndex]] to the [SheetIndexEntry]]'s that it contains.
+ * @beta
+ */
+export class SheetIndexOwnsEntries extends ElementOwnsChildElements {
+  public static override classFullName = "BisCore:SheetIndexOwnsEntries";
+  public constructor(parentId: Id64String, relClassName: string = SheetIndexOwnsEntries.classFullName) {
+    super(parentId, relClassName );
+  }
+}
+
 /** Relates a [[GeometricElement2d]] to its [[TypeDefinitionElement]]
  * @public
  */
@@ -223,5 +243,25 @@ export class ExternalSourceAttachmentAttachesSource extends RelatedElement {
   public static classFullName = "BisCore:ExternalSourceAttachmentAttachesSource";
   public constructor(externalSourceId: Id64String, relClassName: string = ExternalSourceAttachmentAttachesSource.classFullName) {
     super({ id: externalSourceId, relClassName });
+  }
+}
+
+/** Relates a [[SheetReference]] and [[Sheet]] that it refers.
+ * @beta
+ */
+export class SheetReferenceRefersToSheet extends RelatedElement {
+  public static classFullName = "BisCore:SheetReferenceRefersToSheet";
+  public constructor(sheetId: Id64String, relClassName: string = SheetReferenceRefersToSheet.classFullName) {
+    super({ id: sheetId, relClassName });
+  }
+}
+
+/** Relates a [[SheetIndexReference]] to a [[SheetIndex]] it refers.
+ * @beta
+ */
+export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
+  public static classFullName = "BisCore:SheetIndexReferenceRefersToSheetIndex";
+  public constructor(sheetIndexId: Id64String, relClassName: string = SheetIndexReferenceRefersToSheetIndex.classFullName) {
+    super({ id: sheetIndexId, relClassName });
   }
 }
