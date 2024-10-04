@@ -64,7 +64,7 @@ describe("GrowableXYArray", () => {
       }
     }
     ck.checkpoint("GrowablePoint2dArray.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CloneExtractAndPop", () => {
     const ck = new Checker();
@@ -77,7 +77,7 @@ describe("GrowableXYArray", () => {
     const eps = 1.0e-16;  // ugh ..
     ck.testTrue(pointAXY.isAlmostEqual(pointBXY, eps));
     ck.testTrue(pointAXY.isAlmostEqual(pointD, eps));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
     const xyBuffer = pointAXY.float64Data();
     for (let i = 0; i < n; i++) {
@@ -91,7 +91,7 @@ describe("GrowableXYArray", () => {
       pointBXY.pop();
       ck.testExactNumber(Math.max(0, n - i), pointBXY.length);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Transfer", () => {
@@ -136,7 +136,7 @@ describe("GrowableXYArray", () => {
     ck.testFalse(GrowableXYArray.isAlmostEqual(pointA, pointG), "static isAlmostEqual");
     ck.testTrue(pointE.isAlmostEqual(pointF, 10 * eps));
     ck.testTrue(pointE.isAlmostEqual(pointG, 10 * eps));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Transform", () => {
@@ -170,7 +170,7 @@ describe("GrowableXYArray", () => {
     pointH1.scaleInPlace(factor);
     pointH2.multiplyMatrix3dInPlace(Matrix3d.createScale(factor, factor, factor));
     ck.testTrue(pointH1.isAlmostEqual(pointH2));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("AreaXY", () => {
     const ck = new Checker();
@@ -184,7 +184,7 @@ describe("GrowableXYArray", () => {
       const radians = Math.PI / n; // half the triangle angles
       ck.testCoordinate(areaA, n * r * r * Math.cos(radians) * Math.sin(radians));
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Wrap", () => {
@@ -217,7 +217,7 @@ describe("GrowableXYArray", () => {
       ck.testExactNumber(numWrap, numDup, "confirm numWrap duplicates");
     }
     ck.checkpoint("GrowablePoint2dArray.Wrap");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   /** Basic output testing on appendages, sorting, transforming of a known inverse, and testing recognition of plane proximity within correct tolerance */
@@ -254,7 +254,7 @@ describe("GrowableXYArray", () => {
 
     arr.resize(1);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("IndexedXYCollection", () => {
@@ -303,7 +303,7 @@ describe("GrowableXYArray", () => {
         "atVector2dIndex");
 
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("resizeAndBoundsChecks", () => {
@@ -371,7 +371,7 @@ describe("GrowableXYArray", () => {
     ck.testFalse(xyPoints.setAtCheckedPointIndex(100, spacePoint), "huge index for setAt");
     ck.testUndefined(xyPoints.vectorXAndYIndex(spacePoint, -5), "negative index for vectorXYAndZIndex");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("transferAndSet", () => {
@@ -431,7 +431,7 @@ describe("GrowableXYArray", () => {
     ck.testFalse(array1.transferFromGrowableXYArray(-1, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYArray(100, array0, 1), "invalid source index transferFromGrowable");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Compress", () => {
     const ck = new Checker();
@@ -455,7 +455,7 @@ describe("GrowableXYArray", () => {
     const n1 = data.length;
     data.compressAdjacentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LoadFromArray", () => {
     const ck = new Checker();
@@ -475,7 +475,7 @@ describe("GrowableXYArray", () => {
     ck.testUndefined(pointA.component(n, 0));
     ck.testUndefined(pointB.component(n, 0));
     ck.testUndefined(pointC.component(n, 0));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MethodsImplementedByInterface", () => {
@@ -516,16 +516,16 @@ describe("GrowableXYArray", () => {
 
   it("ctorCoverage", () => {
     const ck = new Checker();
-    const dataNumberArray2 = [1,2];
-    const dataNumberArray3 = [3,4,0];
-    const dataXAndYArray: XAndY[] = [{x: 5, y: 6}];
-    const dataFloatArray = new Float64Array([7,8]);
+    const dataNumberArray2 = [1, 2];
+    const dataNumberArray3 = [3, 4, 0];
+    const dataXAndYArray: XAndY[] = [{ x: 5, y: 6 }];
+    const dataFloatArray = new Float64Array([7, 8]);
 
     const a0 = GrowableXYArray.create(Math.PI);
     ck.testExactNumber(a0.length, 0, "create from one number yields empty array");
 
     const a1 = GrowableXYArray.create(dataNumberArray2, a0);
-    ck.testTrue (a0 === a1, "create from pre-allocated object returns same object");
+    ck.testTrue(a0 === a1, "create from pre-allocated object returns same object");
     if (ck.testExactNumber(a0.length, 1, "create from number array length 2: count")) {
       ck.testExactNumber(a0.getXAtUncheckedPointIndex(0), dataNumberArray2[0], "create from number array length 2: x-value");
       ck.testExactNumber(a0.getYAtUncheckedPointIndex(0), dataNumberArray2[1], "create from number array length 2: y-value");
@@ -564,13 +564,13 @@ describe("GrowableXYArray", () => {
       }
     }
 
-    const xyzArray = GrowableXYZArray.createArrayOfGrowableXYZArray([[[0,1,2]], [[3,4,5],[6,7,8]]]);
+    const xyzArray = GrowableXYZArray.createArrayOfGrowableXYZArray([[[0, 1, 2]], [[3, 4, 5], [6, 7, 8]]]);
     if (ck.testDefined(xyzArray, "variant XYZ input ctor: defined")) {
       ck.testExactNumber(xyzArray.length, 2, "variant XYZ input ctor: outer length");
       ck.testExactNumber(xyzArray[0].length, 1, "variant XYZ input ctor: first array length");
       ck.testExactNumber(xyzArray[1].length, 2, "variant XYZ input ctor: second array length");
       const a2 = GrowableXYArray.createFromGrowableXYZArray(xyzArray[0], undefined, a0);   // clears a0 first
-      ck.testTrue (a0 === a2, "create from pre-allocated object returns same object");
+      ck.testTrue(a0 === a2, "create from pre-allocated object returns same object");
       if (ck.testExactNumber(a0.length, 1, "create from GrowableXYZArray: count")) {
         ck.testExactNumber(a0.getXAtUncheckedPointIndex(0), xyzArray[0].getXAtUncheckedPointIndex(0), "create from GrowableXYZArray: x-value");
         ck.testExactNumber(a0.getYAtUncheckedPointIndex(0), xyzArray[0].getYAtUncheckedPointIndex(0), "create from GrowableXYZArray: y-value");
@@ -583,6 +583,6 @@ describe("GrowableXYArray", () => {
         ck.testExactNumber(a0.getYAtUncheckedPointIndex(2), xyzArray[1].getYAtUncheckedPointIndex(1), "pushFrom GrowableXYZArray: y-value 1");
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

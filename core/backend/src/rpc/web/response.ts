@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { Logger } from "@itwin/core-bentley";
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import {
   CommonLoggerCategory,
   HttpServerRequest,
@@ -157,7 +157,7 @@ function logResponse(request: SerializedRpcRequest, statusCode: number, resultOb
     path: request.path,
     operation: request.operation,
     statusCode,
-    errorObj: resultObj instanceof Error ? resultObj : undefined,
+    errorObj: resultObj instanceof Error ? BentleyError.getErrorProps(resultObj) : undefined,
   };
 
   if (statusCode < 400)

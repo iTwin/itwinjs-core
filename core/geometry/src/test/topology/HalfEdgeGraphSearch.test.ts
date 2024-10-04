@@ -65,7 +65,7 @@ describe("HalfEdgeGraphSearch", () => {
     ck.testExactNumber(connectedComponents[1].length, 2);
     ck.testExactNumber(connectedComponents[1][0].id, 10);
     ck.testExactNumber(connectedComponents[1][1].id, 15);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("collectConnectedComponentsSimpleMesh", () => {
     const ck = new Checker();
@@ -111,7 +111,7 @@ describe("HalfEdgeGraphSearch", () => {
     ck.testExactNumber(connectedComponents[0][1].id, 5);
     ck.testExactNumber(connectedComponents[1].length, 1);
     ck.testExactNumber(connectedComponents[1][0].id, 10);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   function getSampleMesh(): IndexedPolyface {
     const strokeOptions = new StrokeOptions();
@@ -148,7 +148,7 @@ describe("HalfEdgeGraphSearch", () => {
 
       GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSearch", "collectConnectedComponentsComplexMesh");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("pointInOrOnFaceXY.FaceIsAnEdgePointOn", () => {
     const ck = new Checker();
@@ -156,7 +156,7 @@ describe("HalfEdgeGraphSearch", () => {
     const node0 = graph.addEdgeXY(2, 2, 4, 2);
     const position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 3, 2)!;
     ck.testExactNumber(position, 0); // point is on
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("pointInOrOnFaceXY.FaceIsAnEdgePointOut", () => {
     const ck = new Checker();
@@ -164,7 +164,7 @@ describe("HalfEdgeGraphSearch", () => {
     const node0 = graph.addEdgeXY(2, 2, 4, 2);
     const position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 1, 2)!;
     ck.testExactNumber(position, -1); // point is out
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("pointInOrOnFaceXY.AllPositions", () => {
     const ck = new Checker();
@@ -188,7 +188,7 @@ describe("HalfEdgeGraphSearch", () => {
     ck.testExactNumber(position, 0); // point is on an edge
     position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 6, 0)!;
     ck.testExactNumber(position, -1); // point is out
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("collectExtendedBoundaryLoopsInGraph.BoundaryEdge", () => {
     const ck = new Checker();
@@ -240,7 +240,7 @@ describe("HalfEdgeGraphSearch", () => {
     ck.testExactNumber(boundaryLoops[0][1].id, 2);
     ck.testExactNumber(boundaryLoops[0][2].id, 6);
     ck.testExactNumber(boundaryLoops[0][3].id, 8);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("HalfEdgeGraphSearch.graphToPolyface", () => {
     const ck = new Checker();
@@ -286,6 +286,6 @@ describe("HalfEdgeGraphSearch", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
     GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSearch", "graphToPolyface");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

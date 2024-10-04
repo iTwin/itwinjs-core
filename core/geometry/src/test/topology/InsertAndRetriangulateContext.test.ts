@@ -143,7 +143,7 @@ describe("InsertAndRetriangulateContext", () => {
     ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to edge search");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "moveTo");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("insertAndRetriangulate", () => {
@@ -233,7 +233,7 @@ describe("InsertAndRetriangulateContext", () => {
       x0 += 10 * xStep;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "insertAndRetriangulate");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TriangulateInHull", () => {
     const ck = new Checker();
@@ -321,7 +321,7 @@ describe("InsertAndRetriangulateContext", () => {
     }
     // GeometryCoreTestIO.consoleLog("write file");
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "TriangulateInHull");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

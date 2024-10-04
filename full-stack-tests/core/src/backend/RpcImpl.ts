@@ -19,7 +19,7 @@ let saveAuthClient: AzuriteTest.AuthorizationClient;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, containerId });
+  const accessToken = await CloudSqlite.requestToken({ containerId });
   await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
 }
 

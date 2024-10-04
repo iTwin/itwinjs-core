@@ -758,7 +758,11 @@ public;class;ServerError
 public;class;ServerTimeoutError
 public;interface;SessionProps
 beta;interface;SheetBorderTemplateProps
+beta;interface;SheetIndexEntryProps
+beta;type;SheetIndexFolderProps
+beta;interface;SheetIndexReferenceProps
 public;interface;SheetProps
+beta;interface;SheetReferenceProps
 beta;interface;SheetTemplateProps
 internal;class;SilhouetteEdgeArgs
 public;class;SkyBox

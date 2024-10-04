@@ -36,7 +36,7 @@ describe("MaskManager", () => {
       grabList.length = 0;
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

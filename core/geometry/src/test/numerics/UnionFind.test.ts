@@ -72,6 +72,6 @@ describe("UnionFind", () => {
       ck.testLE(numLongPath1, numLongPath0, "Leaf queries can reduce number of long paths");
       ck.testExactNumber(0, numLongPath1, "Leaf queries eliminate long paths");    // is this really certain?
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

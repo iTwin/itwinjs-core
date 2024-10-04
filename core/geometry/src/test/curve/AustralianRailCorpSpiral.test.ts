@@ -59,7 +59,7 @@ describe("AustralianRailCorpSpiral", () => {
       GeometryCoreTestIO.consoleLog(distanceRoundTripErrorRange);
     }
     ck.checkpoint("AustralianRailCorpSpiral.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CzechDistanceApproximation", () => {
@@ -91,7 +91,7 @@ describe("AustralianRailCorpSpiral", () => {
         GeometryCoreTestIO.consoleLog(distanceRoundTripErrorRange);
       ck.testLT(distanceRoundTripErrorRange.length(), 1.e-12);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Coverage", () => {
     const ck = new Checker();
@@ -120,6 +120,6 @@ describe("AustralianRailCorpSpiral", () => {
     const phiC2 = AustralianRailCorpXYEvaluator.radiusAndAxisLengthToPhi(200, 14);
     ck.testTrue((phiC2 - phiC1) * (phiC1 - phiC0) > 0, "normal phi variation is monotone");
     ck.testFalse(evaluator.isAlmostEqual(undefined));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

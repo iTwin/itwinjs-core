@@ -187,7 +187,7 @@ describe("ClipNodes", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBooleans");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ClipManyBoxes", () => {
     const ck = new Checker();
@@ -208,7 +208,7 @@ describe("ClipNodes", () => {
     (clipperA as BooleanClipNode).toggleResult();
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBoxes");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -342,6 +342,6 @@ it("MichaelBCover", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "MichaelBCover");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 
 });
