@@ -132,7 +132,7 @@ export class SqliteChangesetReader implements IDisposable {
   /**
    * Open local changes in iModel.
    * @param args iModel and other options.
-   * @param args.db must be of type {@link IModelDb}
+   * @param args.db must be of type IModelDb
    * @returns SqliteChangesetReader instance
    */
   public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
