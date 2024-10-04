@@ -34,6 +34,9 @@ export class ECSqlInsertResult {
 export interface ECSqlRowArg {
   /** Determine row format. */
   rowFormat?: QueryRowFormat;
+  /**
+   * Determine if classIds are converted to class names.
+   */
   classIdsToClassNames?: boolean;
 }
 
@@ -347,6 +350,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       classIdsToClassNames: args.classIdsToClassNames,
       useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
       abbreviateBlobs: false,
+      // on 5.x this should be removed or set to false. It is only here to maintain compatibility with 4.x
       doNotConvertClassIdsToClassNamesWhenAliased: true,
     });
     return this.formatCurrentRow(resp, args.rowFormat);
