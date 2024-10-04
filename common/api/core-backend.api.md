@@ -5276,11 +5276,11 @@ export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 // @beta
 export class SqliteChangesetReader implements IDisposable {
     protected constructor(
-    db?: AnyDb | undefined);
+    db: AnyDb);
     get changeIndex(): number;
     close(): void;
     get columnCount(): number;
-    readonly db?: AnyDb | undefined;
+    readonly db: AnyDb;
     get disableSchemaCheck(): boolean;
     dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
@@ -5304,11 +5304,11 @@ export class SqliteChangesetReader implements IDisposable {
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     static openGroup(args: {
         readonly changesetFiles: string[];
-    } & MarkRequired<SqliteChangesetReaderArgs, "db">): SqliteChangesetReader;
-    static openLocalChanges(args: {
-        iModel: IModelJsNative.DgnDb;
-        includeInMemoryChanges?: true;
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & {
+        db: IModelDb;
+        includeInMemoryChanges?: true;
+    }): SqliteChangesetReader;
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
@@ -5321,7 +5321,7 @@ export class SqliteChangesetReader implements IDisposable {
 
 // @beta
 export interface SqliteChangesetReaderArgs {
-    readonly db?: AnyDb;
+    readonly db: AnyDb;
     readonly disableSchemaCheck?: true;
     readonly invert?: true;
 }
