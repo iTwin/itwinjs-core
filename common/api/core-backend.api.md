@@ -1852,6 +1852,7 @@ export class ECSqlInsertResult {
 
 // @public
 export interface ECSqlRowArg {
+    classIdsToClassNames?: boolean;
     rowFormat?: QueryRowFormat;
 }
 
@@ -1879,8 +1880,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
-    // @internal (undocumented)
-    formatCurrentRow(currentResp: any, rowFormat?: QueryRowFormat): any[] | object;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
     // @internal
