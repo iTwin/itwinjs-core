@@ -3,7 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
