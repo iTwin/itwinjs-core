@@ -145,9 +145,9 @@ export interface GraphicBranchOptions {
   hline?: HiddenLine.Settings;
   /** The iModel from which the graphics originate, if different than that associated with the view. */
   iModel?: IModelConnection;
-  /** If [[iModel]] is defined, a transform from the world coordinates of the iModel associated with the view to the world coordinates
-   * of [[iModel]].
-   * This is used for snapping.
+  /** An optional transform from the coordinate system of [[iModel]] to those of a different [[IModelConnection]].
+   * This is used by [[AccuSnap]] when displaying one iModel in the context of another iModel (i.e., the iModel associated
+   * with the [[Viewport]]).
    */
   transformFromIModel?: Transform;
   /** @internal */
