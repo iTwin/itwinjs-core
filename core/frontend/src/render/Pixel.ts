@@ -57,7 +57,7 @@ export namespace Pixel {
       iModel?: IModelConnection;
       tileId?: string;
       viewAttachmentId?: string;
-      transformToIModel?: Transform;
+      transformFromIModel?: Transform;
     }) {
       if (args?.feature)
         this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
@@ -69,7 +69,7 @@ export namespace Pixel {
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
       this.viewAttachmentId = args?.viewAttachmentId;
-      this.transformFromIModel = args?.transformToIModel;
+      this.transformFromIModel = args?.transformFromIModel;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -124,7 +124,7 @@ export namespace Pixel {
         tileId: this.tileId,
         isClassifier: this.isClassifier,
         sourceIModel: this.iModel,
-        transformToSourceIModel: this.transformFromIModel,
+        transformFromSourceIModel: this.transformFromIModel,
         viewAttachment,
       };
     }
@@ -163,7 +163,7 @@ export namespace Pixel {
      */
     sourceIModel?: IModelConnection;
     /** @internal */
-    transformToSourceIModel?: Transform;
+    transformFromSourceIModel?: Transform;
     /** @internal chiefly for debugging */
     tileId?: string;
     /** True if the hit originated from a reality model classifier.

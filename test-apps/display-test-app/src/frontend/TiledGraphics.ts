@@ -33,8 +33,8 @@ class Reference extends TileTreeReference {
     return this._transform ?? (this._transform = this._provider.computeTransform(tree));
   }
 
-  public override getTransformToIModel() {
-    return this._provider.fromViewport;
+  public override getTransformFromIModel() {
+    return this._provider.toViewport;
   }
 }
 
@@ -42,7 +42,7 @@ class Provider implements TiledGraphicsProvider {
   public readonly view: ViewState;
   public readonly ovrs: FeatureSymbology.Overrides;
   public readonly viewport: Viewport;
-  public readonly fromViewport: Transform;
+  public readonly toViewport: Transform;
   private readonly _refs: Reference[];
 
   public get iModel() { return this.view.iModel; }
@@ -50,7 +50,7 @@ class Provider implements TiledGraphicsProvider {
   private constructor(view: ViewState, vp: Viewport, transform: Transform) {
     this.view = view;
     this.viewport = vp;
-    this.fromViewport = transform;
+    this.toViewport = transform;
 
     // These overrides ensure that all of the categories and subcategories in the secondary iModel are displayed.
     // Any symbology overrides applied to the viewport are ignored.

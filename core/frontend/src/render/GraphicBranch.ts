@@ -149,7 +149,7 @@ export interface GraphicBranchOptions {
    * of [[iModel]].
    * This is used for snapping.
    */
-  transformToIModel?: Transform;
+  transformFromIModel?: Transform;
   /** @internal */
   frustum?: GraphicBranchFrustum;
   /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */

@@ -756,7 +756,7 @@ class PixelBuffer implements Pixel.Buffer {
       planarity,
       batchType: featureTable?.type,
       iModel,
-      transformToIModel,
+      transformFromIModel: transformToIModel,
       tileId,
       viewAttachmentId,
     });
