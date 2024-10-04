@@ -69,7 +69,7 @@ describe("YPR", () => {
         ck.testTrue(yprA.isAlmostEqual(data.angles!), "YPR Transform R/T");
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("GenerateRegression", () => {
@@ -86,7 +86,7 @@ describe("YPR", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("freeze", () => {
@@ -111,7 +111,7 @@ describe("YPR", () => {
     ypr2.setFromJSON(json0);
     ck.testTrue(ypr0.isAlmostEqual(ypr1));
     ck.testTrue(ypr0.isAlmostEqual(ypr2));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createFromMatrix3d", () => {
@@ -123,7 +123,7 @@ describe("YPR", () => {
       ck.testAngleNoShift(Angle.createDegrees(0), ypr.pitch);
       ck.testAngleNoShift(Angle.createDegrees(180), ypr.roll);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // cspell:word Dovydas
@@ -156,11 +156,11 @@ describe("YPR", () => {
     ); // drop least significant digit from matrix4 (less rigid)
 
     const matrices = [
-      {m: matrix1, nearRigid: true},
-      {m: matrix2, nearRigid: true},
-      {m: matrix3, nearRigid: false},
-      {m: matrix4, nearRigid: false},
-      {m: matrix5, nearRigid: false},
+      { m: matrix1, nearRigid: true },
+      { m: matrix2, nearRigid: true },
+      { m: matrix3, nearRigid: false },
+      { m: matrix4, nearRigid: false },
+      { m: matrix5, nearRigid: false },
     ];
 
     for (const t of matrices) {
@@ -191,7 +191,7 @@ describe("YPR", () => {
       const yprSame2 = Geometry.isSmallAngleRadians(result.maxDiffRadians(yprRigid2!));
       ck.testBoolean(t.nearRigid, yprSame1 && yprSame2, "ypr for matrix and rigid variants compare as expected");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -204,7 +204,7 @@ describe("YawPitchRollAngles", () => {
     if (ypr1)
       expect(ypr0.maxDiffRadians(ypr1)).lessThan(Geometry.smallAngleRadians);
     ck.checkpoint("YawPitchRollAngles.createFromMatrix3d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -213,13 +213,13 @@ describe("YawPitchRollAngles", () => {
     const ypr = YawPitchRollAngles.createDegrees(0, 0, 0);
     const expectedJson: any = {};
     const outputJson: YawPitchRollProps = ypr.toJSON();
-    expect(outputJson).to.deep.equal(expectedJson);
+    expect(outputJson).toEqual(expectedJson);
   }),
     it("NonZeroYPR", () => {
       const ypr = YawPitchRollAngles.createDegrees(10, 20, 30);
       const expectedJson: any = { pitch: 20, roll: 30, yaw: 10 };
       const outputJson: YawPitchRollProps = ypr.toJSON();
-      expect(outputJson).to.deep.equal(expectedJson);
+      expect(outputJson).toEqual(expectedJson);
     });
 });
 
@@ -229,6 +229,6 @@ describe("YawPitchRollAngles", () => {
     const ypr2 = YawPitchRollAngles.createDegrees(20, 50, 100);
     const expectedMax: number = 70; // which is 100 - 30
     const outputMax: number = ypr2.maxDiffDegrees(ypr1);
-    expect(expectedMax).equal(outputMax);
+    expect(expectedMax).toBe(outputMax);
   });
 });

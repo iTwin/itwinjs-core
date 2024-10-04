@@ -149,7 +149,7 @@ describe("Geometry4d.HelloWorld", () => {
     source.testSums(ck);
     source.testPoint4d(ck);
     ck.checkpoint("End Geometry4d.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DotProducts", () => {
@@ -163,7 +163,7 @@ describe("Geometry4d.HelloWorld", () => {
     const dotTarget = origin.dotVectorsToTargets(targetU, targetV);
     ck.testCoordinate(dot, dotTarget, "dotTarget");
     ck.checkpoint("Geometry4d.DotProducts");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Set", () => {
@@ -173,7 +173,7 @@ describe("Geometry4d.HelloWorld", () => {
     pointA.set();    // should become zero!!!
     ck.testPoint4d(pointA, pointZ, "implicit zero");
     ck.checkpoint("Set");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ResultInPlace", () => {
@@ -185,7 +185,7 @@ describe("Geometry4d.HelloWorld", () => {
     dataA.negate(dataB2);
     ck.testPoint4d(dataB1, dataB2, "negate, scale");
     ck.checkpoint("Set");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("NormalizeXYZW", () => {
@@ -198,7 +198,7 @@ describe("Geometry4d.HelloWorld", () => {
     const pointC = pointB.scale(alpha, pointC1);
     ck.testPoint4d(pointA, pointC, "scale steps");
     ck.checkpoint("NormalizeXYZW");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("AddScaled", () => {
@@ -214,7 +214,7 @@ describe("Geometry4d.HelloWorld", () => {
     ck.testPoint4d(pointAaBb, pointAaBbC0, "createAdd2Scaled");
     ck.testPoint4d(pointAaBb, pointC0ABb, "createAdd2Scaled");
     ck.checkpoint("Set");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -224,7 +224,7 @@ describe("Geometry4d.Hello3d", () => {
     const source = new Geometry4dTests(false);
     source.testNormalization(ck);
     ck.checkpoint("End Geometry4d.Hello3d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -270,7 +270,7 @@ describe("Geometry4d.BoxMap", () => {
       }
     }
     ck.checkpoint("Geometry4d.BoxMap");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -282,7 +282,7 @@ describe("Matrix4d", () => {
     zeroA.setFromJSON([[1], [2]]);
     ck.testMatrix4d(zero, zeroA, "setFromJSON defaults to zero matrix");
     ck.checkpoint("Matrix4d.set");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Multiply", () => {
@@ -372,7 +372,7 @@ describe("Matrix4d", () => {
       ck.testPoint4d(pointQ, point4dArray[i]);
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MultiplyAndRenormalize", () => {
@@ -396,7 +396,7 @@ describe("Matrix4d", () => {
       const Q14d = pointAQ4d[i].normalizeWeight()!;
       ck.testPoint4d(Point4d.createFromPointAndWeight(Q1, 1), Q14d);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // cspell:word ABAT
   it("addTranslationSandwichInPlace", () => {
@@ -441,7 +441,7 @@ describe("Matrix4d", () => {
         matrixE1.addTranslationSandwichInPlace(matrixB, ax, ay, az, scale);
         ck.testMatrix4d(matrixE, matrixE1, "addTranslationSandwichInPlace full test", prettyPrint(matrixB), xyz);
       }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc", () => {
@@ -463,7 +463,7 @@ describe("Matrix4d", () => {
         ck.testCoordinate(f * a, c);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Inverse", () => {
     const ck = new bsiChecker.Checker();
@@ -568,7 +568,7 @@ describe("Matrix4d", () => {
           matrixD.columnDotColumn(i, matrixC, j),
           matrixD.columnDotRow(i, matrixCT, j));
     ck.checkpoint("Matrix4d.Inverse");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -620,7 +620,7 @@ describe("Plane4dByOriginAndVectors", () => {
     ck.testPoint4d(vectorU, plane0.vectorU);
     ck.testPoint4d(vectorV, plane0.vectorV);
     ck.checkpoint("Plane4dByOriginAndVectors.Create");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Match3d", () => {
@@ -646,7 +646,7 @@ describe("Plane4dByOriginAndVectors", () => {
       Plane3dByOriginAndVectors.createXYPlane(),
       PlaneByOriginAndVectors4d.createXYPlane());
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -734,7 +734,7 @@ describe("Map4d", () => {
     verifySandwich(ck, rotationMap, scaleMap!);
     ck.testPointer(yzxFrustum, "yzxFrustum");
     ck.checkpoint("Map4d.Create");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // EDL Dec 7, 2017 This compose perspective transforms with different eye (convergence) points
   // and outputs graphics to show the effect of each on a unit box.
@@ -778,7 +778,7 @@ describe("Map4d", () => {
       const product = frustum.transform0.multiplyMatrixMatrix(frustum.transform1);
       ck.testTrue(product.isIdentity(), "vector frustum inverts");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Point4d properties", () => {
@@ -796,7 +796,7 @@ describe("Map4d", () => {
     pointB.w += 4;
     ck.testExactNumber(pointA.w + 4, pointB.w);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ProjectiveLineIntersection", () => {
@@ -817,7 +817,7 @@ describe("Map4d", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ProjectiveLineClosestPointXY", () => {
@@ -847,7 +847,7 @@ describe("Map4d", () => {
       }
     }
     ck.testTrue(badFraction === undefined);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CreateMap4dWithUndefinedTransform1", () => {
@@ -864,7 +864,7 @@ describe("Map4d", () => {
     const singularMap = Map4d.createTransform(singularTransform);
     ck.testPointer(map1, "Map4d computed its own inverse");
     ck.testUndefined(singularMap, "Map4d detected singular input");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 

@@ -209,7 +209,7 @@ describe("Range1dArray", () => {
     ck.testExactNumber(-1, compareRange1dLexicalLowHigh(Range1d.createXX(-1, 1), Range1d.createXX(0, 1)));
     ck.testExactNumber(1, compareRange1dLexicalLowHigh(Range1d.createXX(2, 3), Range1d.createXX(0, 2)));
     ck.testExactNumber(0, compareRange1dLexicalLowHigh(Range1d.createXX(2, 3), Range1d.createXX(2, 3)));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -230,7 +230,7 @@ describe("Range1dArray", () => {
     }
 
     ck.checkpoint("Range1dArray.UnionParitySimplification");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("IntersectDifferenceUnionParity", () => {
@@ -280,7 +280,7 @@ describe("Range1dArray", () => {
     ck.testTrue(Range1dArray.isSorted(range0, false), "Generated range array is reported as sorted.");
 
     ck.checkpoint("Range1dArray.IntersectDifferenceUnionParity");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("UnionParitySimplificationA", () => {
@@ -292,7 +292,7 @@ describe("Range1dArray", () => {
       testUnionSimplify(ck, allRanges);
       testParitySimplify(ck, allRanges);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SortTests", () => {
@@ -308,7 +308,7 @@ describe("Range1dArray", () => {
 
     ck.testTrue(Range1dArray.isSorted(noOverlap, false));
     ck.testTrue(Range1dArray.isSorted(noOverlap, true));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Test_isSorted", () => {
@@ -324,7 +324,7 @@ describe("Range1dArray", () => {
 
     ck.testTrue(Range1dArray.isSorted(noOverlap, false));
     ck.testTrue(Range1dArray.isSorted(noOverlap, true));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Test_booleans", () => {
@@ -356,7 +356,7 @@ describe("Range1dArray", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("TestSimple", () => {
@@ -403,7 +403,7 @@ describe("Range1dArray", () => {
         ck.testExactNumber(0, Range1dArray.countContainingRanges(forwardRangesForParity, x));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TestPointOverlap", () => {
     const ck = new Checker();
@@ -423,7 +423,7 @@ describe("Range1dArray", () => {
       ck.testExactNumber(1, forwardForParityB.length, "simplifySortParity(true) with abutting intervals compresses to single interval.");
 
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

@@ -4567,6 +4567,7 @@ export interface GraphicBranchOptions {
     iModel?: IModelConnection;
     // @internal
     secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
+    transformFromIModel?: Transform;
     // @internal
     viewAttachmentId?: Id64String;
 }
@@ -4897,6 +4898,8 @@ export class HitDetail {
     get testPoint(): Point3d;
     // @internal
     get tileId(): string | undefined;
+    // @internal (undocumented)
+    get transformFromSourceIModel(): Transform | undefined;
     // @beta
     get viewAttachment(): ViewAttachmentHitInfo | undefined;
     get viewport(): ScreenViewport;
@@ -4920,6 +4923,8 @@ export interface HitDetailProps {
     readonly testPoint: Point3d;
     // @internal
     readonly tileId?: string;
+    // @internal (undocumented)
+    readonly transformFromSourceIModel?: Transform;
     // @beta
     readonly viewAttachment?: ViewAttachmentHitInfo;
     readonly viewport: ScreenViewport;
@@ -8562,6 +8567,7 @@ export namespace Pixel {
             iModel?: IModelConnection;
             tileId?: string;
             viewAttachmentId?: string;
+            transformFromIModel?: Transform;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
@@ -8580,6 +8586,8 @@ export namespace Pixel {
         // @internal (undocumented)
         readonly tileId?: string;
         toHitProps(viewport: Viewport): Pixel.HitProps;
+        // @internal (undocumented)
+        readonly transformFromIModel?: Transform;
         readonly type: GeometryType;
         // @beta
         readonly viewAttachmentId?: Id64String;
@@ -8605,6 +8613,8 @@ export namespace Pixel {
         subCategoryId?: Id64String;
         // @internal
         tileId?: string;
+        // @internal (undocumented)
+        transformFromSourceIModel?: Transform;
         // @beta
         viewAttachment?: ViewAttachmentHitInfo;
     }
@@ -10942,7 +10952,7 @@ export class SheetViewState extends ViewState2d {
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
@@ -12286,6 +12296,8 @@ export interface TileDrawArgParams {
     now: BeTimePoint;
     parentsAndChildrenExclusive: boolean;
     symbologyOverrides: FeatureSymbology.Overrides | undefined;
+    // @alpha (undocumented)
+    transformFromIModel?: Transform;
     tree: TileTree;
     viewFlagOverrides: ViewFlagOverrides;
 }
@@ -12350,6 +12362,8 @@ export class TileDrawArgs {
     get tileSizeModifier(): number;
     // @internal
     readonly touchedTiles: Set<Tile>;
+    // @alpha (undocumented)
+    transformFromIModel?: Transform;
     readonly tree: TileTree;
     readonly viewClip?: ClipVector;
     get viewFlagOverrides(): ViewFlagOverrides;
@@ -12716,6 +12730,8 @@ export abstract class TileTreeReference {
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
     getToolTipPromise(hit: HitDetail): Promise<HTMLElement | string | undefined> | undefined;
+    // @beta (undocumented)
+    getTransformFromIModel(): Transform | undefined;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;

@@ -2579,7 +2579,7 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     static classFullName: string;
 }
 
-// @public
+// @public @deprecated
 export abstract class FileNameResolver {
     resolveFileName(inFileName: string): string;
     resolveKey(fileKey: string): string;
@@ -3410,6 +3410,7 @@ export class IModelHost {
     // @beta
     static get settingsSchemas(): SettingsSchemas;
     static shutdown(this: void): Promise<void>;
+    // @deprecated
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(options?: IModelHostOptions): Promise<void>;
     // @internal

@@ -94,6 +94,6 @@ describe("EmitStrokableParts", () => {
       c.emitStrokableParts(handler, options);
     }
     ck.checkpoint("EmitStrokableParts.MaxEdgeLength", { curves: curves.length });
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

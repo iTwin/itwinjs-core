@@ -110,7 +110,7 @@ describe("HalfEdgeGraphSpineContext", () => {
         x0 += xStep;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSpineContext", "SmallGraph");
   });
   it("XYBoundaryFiles", () => {

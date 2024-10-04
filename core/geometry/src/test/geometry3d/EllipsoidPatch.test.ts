@@ -100,7 +100,7 @@ describe("Ellipsoid", () => {
       x0 += 10.0 * xStep;  // extra gap per ellipsoid
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "PatchRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("IntersectRay", () => {
     const ck = new Checker();
@@ -207,7 +207,7 @@ describe("Ellipsoid", () => {
       x0 += 10.0 * xStep;  // extra gap per ellipsoid
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "IntersectRay");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("NoIntersections", () => {
     const ck = new Checker();
@@ -260,7 +260,7 @@ describe("Ellipsoid", () => {
       y0 += 50.0 * referenceSize;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "NoIntersections");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("IntersectRayOutsidePatch", () => {
@@ -322,7 +322,7 @@ describe("Ellipsoid", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "IntersectRayOutsidePatch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Singular", () => {
@@ -357,7 +357,7 @@ describe("Ellipsoid", () => {
     ck.testUndefined(ellipsoidB.constantLongitudeArc(southPole, emptyInterval), "null arc C");
     ck.testUndefined(ellipsoidB.constantLatitudeArc(realInterval, northPole), "null arc D");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("EarthLikeExample", () => {
@@ -392,7 +392,7 @@ describe("Ellipsoid", () => {
         Sphere.createCenterRadius(hit.surfaceDetail.point, 0.03));
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthLikeExample");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("NormalInversion", () => {
@@ -431,7 +431,7 @@ describe("Ellipsoid", () => {
           }
         }
       }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FrenetFrame", () => {
     const ck = new Checker();
@@ -474,7 +474,7 @@ describe("Ellipsoid", () => {
           }
         }
       }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ProjectSpacePoint", () => {
     const ck = new Checker();
@@ -542,7 +542,7 @@ describe("Ellipsoid", () => {
         }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "ProjectSpacePoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LocalToWorld", () => {
     const ck = new Checker();
@@ -553,7 +553,7 @@ describe("Ellipsoid", () => {
       const xyz1 = ellipsoid.localToWorld(uvw0);
       ck.testPoint3d(xyz0, xyz1, "world to local round trip", angles, xyz0, uvw0, xyz1);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SectionPlanes", () => {
@@ -609,7 +609,7 @@ describe("Ellipsoid", () => {
       x0 += xShift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "PlaneSections");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("GreatArc", () => {
     const ck = new Checker();
@@ -692,7 +692,7 @@ describe("Ellipsoid", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "GreatArcsSmallEllipsoids");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DegenerateGreatArc", () => {
     const ck = new Checker();
@@ -704,7 +704,7 @@ describe("Ellipsoid", () => {
     ck.testUndefined(section, "confirm great arc failure for identical points");
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "DegenerateGreatArc");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PathsOnEllipsoid", () => {
     const ck = new Checker();
@@ -760,7 +760,7 @@ describe("Ellipsoid", () => {
       x0 += 10;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "PathOptions");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Silhouette", () => {
     const ck = new Checker();
@@ -796,7 +796,7 @@ describe("Ellipsoid", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "Silhouette");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SilhouetteA", () => {
@@ -817,7 +817,7 @@ describe("Ellipsoid", () => {
     // expect failure for interior point ..
     const silhouetteInside = ellipsoid.silhouetteArc(Point4d.create(100, 100, 200, 1));
     ck.testUndefined(silhouetteInside);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "SilhouetteA");
   });
 
@@ -835,7 +835,7 @@ describe("Ellipsoid", () => {
     const pointA = ellipsoid.localToWorld({ x: 0.2, y: 0.5, z: 0.6 });    // definitely inside !
     const pointB = ellipsoid.localToWorld({ x: 1.2, y: 0.5, z: 0.6 });    // definitely outside !
     GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     ck.testTrue(ellipsoid.isPointOnOrInside(pointA));
     ck.testFalse(ellipsoid.isPointOnOrInside(pointB));
 
@@ -901,7 +901,7 @@ describe("Ellipsoid", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "ArcClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("EarthClip", () => {
@@ -932,7 +932,7 @@ describe("Ellipsoid", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("EarthPatchOffsetRange", () => {
@@ -954,7 +954,7 @@ describe("Ellipsoid", () => {
       ck.testTrue(range.zLength() < a * range20.zLength(), "z range");
     }
     // GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthPatchOffsetRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SphereOffsetPatchRange", () => {
@@ -992,7 +992,7 @@ describe("Ellipsoid", () => {
       GeometryCoreTestIO.consoleLog({ offset: offsetDistance, finalMaxDiffs: [maxDiff4, maxDiff10] });
     }
     // GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthPatchOffsetRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
