@@ -14,7 +14,7 @@ import {
   PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
   StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
-import { ECXmlVersion } from "./Helper";
+import { ECXmlVersion, SchemaReadHelper } from "./Helper";
 
 interface UnknownObject { readonly [name: string]: unknown }
 function isObject(x: unknown): x is UnknownObject {
@@ -213,8 +213,11 @@ export class JsonParser extends AbstractParser<UnknownObject> {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} does not have the required 'type' attribute.`);
         if (typeof (property.type) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. It should be of type 'string'.`);
-        if (!this.isValidPropertyType(property.type))
+        if (!this.isValidPropertyType(property.type)) {
+          if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion?.readVersion, this._ecXmlVersion?.writeVersion))
+            return;
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. '${property.type}' is not a valid type.`);
+        }
 
         yield [property.name, property.type, property];
       }
@@ -413,8 +416,12 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         (type === "integer") ||
         (type === "string");
     };
-    if (!isValidEnumerationType(jsonObj.type))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'type' attribute. It should be either "int" or "string".`);
+    if (!isValidEnumerationType(jsonObj.type)) {
+      if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion?.readVersion, this._ecXmlVersion?.writeVersion))
+        (jsonObj as any).type = "string";
+      else
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'type' attribute. It should be either "int" or "string".`);
+    }
 
     if (undefined !== jsonObj.isStrict) { // TODO: make required
       if (typeof (jsonObj.isStrict) !== "boolean")

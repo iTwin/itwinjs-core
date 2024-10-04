@@ -879,9 +879,13 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadPropertyTypes(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): Promise<void> {
 
-    const loadTypeName = async (typeName: string) => {
-      if (undefined === parsePrimitiveType(typeName))
+    const loadTypeName = async (typeName: string): Promise<ECObjectsStatus> => {
+      if (undefined === parsePrimitiveType(typeName)) {
+        if (SchemaReadHelper.isECXmlVersionNewer(this._parser.getECXmlVersion?.readVersion, this._parser.getECXmlVersion?.writeVersion))
+          return ECObjectsStatus.NewerSchemaVersion;
         await this.findSchemaItem(typeName);
+      }
+      return ECObjectsStatus.Success;
     };
 
     const lowerCasePropType = propType.toLowerCase();
@@ -889,7 +893,8 @@ export class SchemaReadHelper<T = unknown> {
     switch (lowerCasePropType) {
       case "primitiveproperty":
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
-        await loadTypeName(primPropertyProps.typeName);
+        if (await loadTypeName(primPropertyProps.typeName) === ECObjectsStatus.NewerSchemaVersion)
+          (primPropertyProps as any).typeName = "string";
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, primPropertyProps.typeName);
         return this.loadProperty(primProp, primPropertyProps, rawProperty);
 
@@ -901,7 +906,8 @@ export class SchemaReadHelper<T = unknown> {
 
       case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
-        await loadTypeName(primArrPropertyProps.typeName);
+        if (await loadTypeName(primArrPropertyProps.typeName) === ECObjectsStatus.NewerSchemaVersion)
+          (primArrPropertyProps as any).typeName = "string";
         const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, primArrPropertyProps.typeName);
         return this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
 
@@ -930,9 +936,13 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawProperty The serialized property data.
    */
   private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): void {
-    const loadTypeName = (typeName: string) => {
-      if (undefined === parsePrimitiveType(typeName))
+    const loadTypeName = (typeName: string): ECObjectsStatus => {
+      if (undefined === parsePrimitiveType(typeName)) {
+        if (SchemaReadHelper.isECXmlVersionNewer(this._parser.getECXmlVersion?.readVersion, this._parser.getECXmlVersion?.writeVersion))
+          return ECObjectsStatus.NewerSchemaVersion;
         this.findSchemaItemSync(typeName);
+      }
+      return ECObjectsStatus.Success;
     };
 
     const lowerCasePropType = propType.toLowerCase();
@@ -940,7 +950,8 @@ export class SchemaReadHelper<T = unknown> {
     switch (lowerCasePropType) {
       case "primitiveproperty":
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
-        loadTypeName(primPropertyProps.typeName);
+        if (loadTypeName(primPropertyProps.typeName) === ECObjectsStatus.NewerSchemaVersion)
+          (primPropertyProps as any).typeName = "string";
         const primProp = (classObj as MutableClass).createPrimitivePropertySync(propName, primPropertyProps.typeName);
         return this.loadPropertySync(primProp, primPropertyProps, rawProperty);
 
@@ -952,7 +963,8 @@ export class SchemaReadHelper<T = unknown> {
 
       case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
-        loadTypeName(primArrPropertyProps.typeName);
+        if (loadTypeName(primArrPropertyProps.typeName) === ECObjectsStatus.NewerSchemaVersion)
+          (primArrPropertyProps as any).typeName = "string";
         const primArrProp = (classObj as MutableClass).createPrimitiveArrayPropertySync(propName, primArrPropertyProps.typeName);
         return this.loadPropertySync(primArrProp, primArrPropertyProps, rawProperty);
 

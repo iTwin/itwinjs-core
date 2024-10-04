@@ -307,12 +307,16 @@ export class XmlParser extends AbstractParser<Element> {
     // TODO: This shouldn't be verified here.  It's for the deserialize method to handle.  The only reason it's currently done here so that the xml
     // value can be put in the correct type, number or string.
     let tempBackingType: PrimitiveType;
-    if (/int/i.test(enumType))
+    if (/int/i.test(enumType)) {
       tempBackingType = PrimitiveType.Integer;
-    else if (/string/i.test(enumType))
+    } else if (/string/i.test(enumType)) {
       tempBackingType = PrimitiveType.String;
-    else
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    } else {
+      if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion?.readVersion, this._ecXmlVersion?.writeVersion))
+        tempBackingType = PrimitiveType.String;
+      else
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    }
 
     let isStrictString: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
     if (isStrictString === undefined)
@@ -355,6 +359,8 @@ export class XmlParser extends AbstractParser<Element> {
       type: enumType,
       isStrict,
       enumerators,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
     };
   }
 

@@ -7,6 +7,7 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { SchemaReadHelper } from "../Deserialization/Helper";
 import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import {
@@ -120,9 +121,13 @@ export class RelationshipClass extends ECClass {
   public override fromJSONSync(relationshipClassProps: RelationshipClassProps) {
     super.fromJSONSync(relationshipClassProps);
 
-    const strength = parseStrength(relationshipClassProps.strength);
-    if (undefined === strength)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
+    let strength = parseStrength(relationshipClassProps.strength);
+    if (undefined === strength) {
+      if (SchemaReadHelper.isECXmlVersionNewer(relationshipClassProps.originalECXmlMajorVersion, relationshipClassProps.originalECXmlMinorVersion))
+        strength = StrengthType.Referencing;
+      else
+        throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
+    }
 
     const strengthDirection = parseStrengthDirection(relationshipClassProps.strengthDirection);
     if (undefined === strengthDirection)

@@ -323,6 +323,8 @@ describe("XmlParser", () => {
         enumerators,
         description: undefined,
         label: undefined,
+        originalECXmlMajorVersion: 3,
+        originalECXmlMinorVersion: 1,
       } as EnumerationProps;
 
       const actualProps = parser.parseEnumeration(itemElement);
