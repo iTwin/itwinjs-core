@@ -8,11 +8,8 @@ const path = require('path');
 const {globSync} = require('glob');
 const frontendLib = path.resolve(__dirname, '../../../lib/cjs');
 const Dotenv = require('dotenv-webpack');
-const copyExternalsPlugin =
-    require('@itwin/core-webpack-tools').CopyExternalsPlugin;
 
-function createConfig(shouldInstrument) {
-  const config = {
+module.exports = [{
     mode: 'development',
     entry:
         globSync(path.resolve(frontendLib, 'integration-test/**/*.test.js'), {
@@ -46,28 +43,6 @@ function createConfig(shouldInstrument) {
     },
     plugins: [
       new Dotenv(),
-      new copyExternalsPlugin(),
     ],
-  };
+  }];
 
-  if (shouldInstrument) {
-    config.output.filename = 'bundled-integration-tests.instrumented.js';
-    config.module.rules.push({
-      test: /\.(jsx?|tsx?)$/,
-      include: frontendLib,
-      exclude: path.join(frontendLib, 'test'),
-      use: {
-        loader: 'babel-loader',
-        options: {
-          plugins: ['babel-plugin-istanbul'],
-        },
-      },
-      enforce: 'post',
-    });
-  }
-
-  return config;
-}
-
-// Runs webpack once for each config in the export array
-module.exports = [createConfig(false), createConfig(true)]

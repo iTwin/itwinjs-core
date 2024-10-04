@@ -6,10 +6,10 @@
     "frontendDebugging": 9223
   },
   "mochaOptions": {
-    "timeout": 50000,
+    "timeout": 300000,
     "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporterOptions": {
-      "mochaFile": "lib/test/junit_results.xml"
+      "mochaFile": "lib/integration/junit_results.xml"
     }
   },
   "chromeOptions": {

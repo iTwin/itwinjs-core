@@ -8,7 +8,6 @@ export class TestContext {
   private constructor() { }
 
   public static async instance(): Promise<TestContext> {
-
     if (this._instance === undefined) {
       this._instance = new TestContext();
       await this._instance.initialize();
@@ -21,11 +20,12 @@ export class TestContext {
   }
 
   private async initialize() {
+    const urlPrefix = process.env.imjs_url_prefix || "";
     const oidcConfig = {
-      clientId: process.env.MES_OIDC_CLIENT_ID || "",
-      redirectUri: process.env.OIDC_REDIRECT || "",
-      scope: process.env.MES_OIDC_SCOPE || "",
-      authority: process.env.MES_OIDC_AUTH_URL || "",
+      clientId: process.env.mes_oidc_client_id || "",
+      redirectUri: process.env.mes_oidc_redirect || "",
+      scope: process.env.mes_oidc_scope || "",
+      authority: `https://${urlPrefix}ims.bentley.com`,
     };
 
     const user = {
@@ -37,7 +37,7 @@ export class TestContext {
     let numRetries = 0;
     while (numRetries < 3) {
       try {
-        this._accessToken = await getAccessTokenFromBackend( user, oidcConfig);
+        this._accessToken = await getAccessTokenFromBackend(user, oidcConfig);
       } catch (err) {
 
         if (numRetries === 2) {

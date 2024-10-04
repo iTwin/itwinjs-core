@@ -184,6 +184,6 @@ steps:
       - task: PublishTestResults@2
     displayName: "Publish Frontend Tiles Test Results"
     inputs:
-      testResultsFiles: extensions/frontend-tiles/lib/test/*_junit_results.xml
+      testResultsFiles: extensions/frontend-tiles/lib/integration/junit_results.xml
       testRunTitle: "Frontend Tiles Tests - ${{ parameters.nodeVersion }}"
     condition: succeededOrFailed()

@@ -33,7 +33,7 @@ describe("MeshExportServiceIntegrationTest", () => {
     const testContext = await TestContext.instance();
     accessToken = testContext.getAccessToken();
 
-    const iModelId = process.env.MES_IMODEL_ID || "";
+    const iModelId = process.env.mes_imodel_id || "";
     urlPrefix = process.env.imjs_url_prefix || "";
 
     await IModelApp.startup();
@@ -55,7 +55,7 @@ describe("MeshExportServiceIntegrationTest", () => {
     };
 
     // initiate mesh export
-    const response = await fetch(`https://qa-api.bentley.com/mesh-export/`, requestOptions);
+    const response = await fetch(`https://${urlPrefix}api.bentley.com/mesh-export/`, requestOptions);
     const result = JSON.parse(JSON.stringify(await response.json()));
     exportId = result.export.id;
   });
@@ -67,8 +67,7 @@ describe("MeshExportServiceIntegrationTest", () => {
     let tilesetUrl: any;
 
     // poll for export status
-    const start = Date.now();
-    while (Date.now() - start < 90000) {
+    while (!exportComplete) {
       const result = await getExport(exportId, accessToken, urlPrefix);
       const status = result.export.status;
 
@@ -77,20 +76,15 @@ describe("MeshExportServiceIntegrationTest", () => {
         tilesetUrl = new URL(result.export._links.mesh.href);
         tilesetUrl.pathname = `${tilesetUrl.pathname}/tileset.json`;
         exportComplete = true;
-        break;
       }
-    }
-
-    if (!exportComplete) {
-      throw new Error("Export did not complete in time");
     }
 
     if (!tilesetUrl) {
       throw new Error("Url is undefined");
     }
 
-    // obtain tileset from url
-    const tileset = JSON.parse(JSON.stringify(await (await fetch(tilesetUrl)).json()));
+    // fetch tileset url and convert it to json
+    const tileset = await (await fetch(tilesetUrl)).json();
 
     // obtain major tile version from the returned tileset (removing minor version from the string)
     const tilesetMajorTileVersion = tileset.asset.version.slice(0,4);
