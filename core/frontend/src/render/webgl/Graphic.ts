@@ -81,6 +81,7 @@ export class GraphicOwner extends Graphic {
 export interface BatchContext {
   batchId: number;
   iModel?: IModelConnection;
+  transformFromIModel?: Transform;
   viewAttachmentId?: Id64String;
 }
 
@@ -227,17 +228,20 @@ export class Batch extends Graphic {
   /** The following are valid only during a draw and reset afterward. */
   public get batchId() { return this._context.batchId; }
   public get batchIModel() { return this._context.iModel; }
+  public get transformFromBatchIModel() { return this._context.transformFromIModel; }
   public get viewAttachmentId() { return this._context.viewAttachmentId; }
 
   public setContext(batchId: number, branch: BranchState) {
     this._context.batchId = batchId;
     this._context.iModel = branch.iModel;
+    this._context.transformFromIModel = branch.transformFromIModel;
     this._context.viewAttachmentId = branch.viewAttachmentId;
   }
 
   public resetContext() {
     this._context.batchId = 0;
     this._context.iModel = undefined;
+    this._context.transformFromIModel = undefined;
     this._context.viewAttachmentId = undefined;
   }
 
@@ -312,6 +316,7 @@ export class Branch extends Graphic {
   public readonly secondaryClassifiers?: PlanarClassifier[];
   public readonly viewAttachmentId?: Id64String;
   public readonly disableClipStyle?: boolean;
+  public readonly transformFromExternalIModel?: Transform;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -330,6 +335,7 @@ export class Branch extends Graphic {
     this.frustum = opts.frustum;
     this.viewAttachmentId = opts.viewAttachmentId;
     this.disableClipStyle = opts.disableClipStyle;
+    this.transformFromExternalIModel = opts.transformFromIModel;
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);
