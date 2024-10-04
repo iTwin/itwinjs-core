@@ -7,7 +7,7 @@
  */
 
 import { BeDuration, Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Matrix4d, Point2d, Point3d, Vector3d, XAndY } from "@itwin/core-geometry";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Vector3d, XAndY } from "@itwin/core-geometry";
 import { SnapRequestProps } from "@itwin/core-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -772,9 +772,9 @@ export class AccuSnap implements Decorator {
       let displayTransform;
       if (undefined !== thisHit.modelId) {
         displayTransform = thisHit.viewport.view.computeDisplayTransform({
-        modelId: thisHit.modelId,
-        elementId: thisHit.sourceId,
-        viewAttachmentId: thisHit.viewAttachment?.id,
+          modelId: thisHit.modelId,
+          elementId: thisHit.sourceId,
+          viewAttachmentId: thisHit.viewAttachment?.id,
         });
       }
 

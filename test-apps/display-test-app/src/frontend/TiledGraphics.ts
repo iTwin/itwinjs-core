@@ -25,7 +25,7 @@ class Reference extends TileTreeReference {
   public override get treeOwner() { return this._ref.treeOwner; }
   public override async getToolTip(hit: HitDetail) { return this._ref.getToolTip(hit); }
   public override canSupplyToolTip(hit: HitDetail) { return this._ref.canSupplyToolTip(hit); }
-  public override getToolTipPromise(hit: HitDetail) { return this._ref.getToolTipPromise(hit); }
+  public override async getToolTipPromise(hit: HitDetail) { return this._ref.getToolTipPromise(hit); }
 
   protected override getSymbologyOverrides() { return this._provider.ovrs; }
 
