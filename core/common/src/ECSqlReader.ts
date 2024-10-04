@@ -409,15 +409,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       const propName = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = this.getRowInternal()[prop.index];
       if (typeof val !== "undefined" && val !== null) {
-        let uniquePropName = propName;
-        if (uniqueNames.has(propName)) {
-          uniqueNames.set(propName, uniqueNames.get(propName)! + 1);
-          uniquePropName = `${propName}_${uniqueNames.get(propName)!}`;
-        } else {
-          uniqueNames.set(propName,0);
-        }
-
-        Object.defineProperty(formattedRow, uniquePropName, {
+        Object.defineProperty(formattedRow, propName, {
           value: val,
           enumerable: true,
         });
