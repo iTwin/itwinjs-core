@@ -68,7 +68,7 @@ export interface TileDrawArgParams {
   /** @alpha */
   maximumScreenSpaceError?: number;
   /** @alpha */
-  transformToIModel?: Transform;
+  transformFromIModel?: Transform;
 }
 
 /**
@@ -277,7 +277,7 @@ export class TileDrawArgs {
     this.groupNodeId = params.groupNodeId;
     this.boundingRange = params.boundingRange;
     this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
-    this.transformToIModel = params.transformToIModel;
+    this.transformToIModel = params.transformFromIModel;
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)

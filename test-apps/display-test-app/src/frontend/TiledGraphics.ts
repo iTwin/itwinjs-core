@@ -72,22 +72,27 @@ class Provider implements TiledGraphicsProvider {
     const creator = new ViewCreator3d(attachedIModel);
     const view = await creator.createDefaultView();
 
-    const ecefTransform = vp.iModel.ecefLocation?.getTransform();
-    const worldTf = attachedIModel.ecefLocation?.getTransform().inverse();
-    const transform = ecefTransform && worldTf ? worldTf.multiplyTransformTransform(ecefTransform) : Transform.createIdentity();
+    const transform = computeTransformFromSecondaryIModel({ primary: vp.iModel, secondary: attachedIModel });
     return new Provider(view, vp, transform);
   }
 
   public computeTransform(tree: TileTree): Transform {
-    if (!tree.iModel.ecefLocation) {
-      return tree.iModelTransform;
-    }
-
-    const dbToEcef = tree.iModel.ecefLocation.getTransform();
-    const ecefTransform = dbToEcef.multiplyTransformTransform(tree.iModelTransform);
-    const worldTf = this.viewport.iModel.getEcefTransform().inverse();
-    return worldTf ? worldTf.multiplyTransformTransform(ecefTransform, ecefTransform) : tree.iModelTransform;
+    return computeTransformFromSecondaryIModel({ primary: this.viewport.iModel, secondary: tree.iModel, tileTreeToWorld: tree.iModelTransform });
   }
+}
+
+function computeTransformFromSecondaryIModel(args: { primary: IModelConnection, secondary: IModelConnection, tileTreeToWorld?: Transform }): Transform {
+  const { primary, secondary } = args;
+  const tileTreeToWorld = args.tileTreeToWorld ?? Transform.createIdentity();
+
+  if (!secondary.ecefLocation?.isValid || !primary.ecefLocation?.isValid) {
+    return tileTreeToWorld;
+  }
+
+  const dbToEcef = secondary.ecefLocation.getTransform();
+  const ecefTransform = dbToEcef.multiplyTransformTransform(tileTreeToWorld);
+  const worldTf = primary.getEcefTransform().inverse();
+  return worldTf ? worldTf.multiplyTransformTransform(ecefTransform, ecefTransform) : tileTreeToWorld;
 }
 
 const providersByViewport = new Map<Viewport, Provider>();

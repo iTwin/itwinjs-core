@@ -35,7 +35,7 @@ export namespace Pixel {
     /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
     /** @internal */
-    public readonly transformToIModel?: Transform;
+    public readonly transformFromIModel?: Transform;
     /** @internal */
     public readonly tileId?: string;
     /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
@@ -69,7 +69,7 @@ export namespace Pixel {
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
       this.viewAttachmentId = args?.viewAttachmentId;
-      this.transformToIModel = args?.transformToIModel;
+      this.transformFromIModel = args?.transformToIModel;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -124,7 +124,7 @@ export namespace Pixel {
         tileId: this.tileId,
         isClassifier: this.isClassifier,
         sourceIModel: this.iModel,
-        transformToSourceIModel: this.transformToIModel,
+        transformToSourceIModel: this.transformFromIModel,
         viewAttachment,
       };
     }

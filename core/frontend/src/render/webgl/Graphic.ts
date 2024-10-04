@@ -81,7 +81,7 @@ export class GraphicOwner extends Graphic {
 export interface BatchContext {
   batchId: number;
   iModel?: IModelConnection;
-  transformToIModel?: Transform;
+  transformFromIModel?: Transform;
   viewAttachmentId?: Id64String;
 }
 
@@ -228,20 +228,20 @@ export class Batch extends Graphic {
   /** The following are valid only during a draw and reset afterward. */
   public get batchId() { return this._context.batchId; }
   public get batchIModel() { return this._context.iModel; }
-  public get transformToBatchIModel() { return this._context.transformToIModel; }
+  public get transformFromBatchIModel() { return this._context.transformFromIModel; }
   public get viewAttachmentId() { return this._context.viewAttachmentId; }
 
   public setContext(batchId: number, branch: BranchState) {
     this._context.batchId = batchId;
     this._context.iModel = branch.iModel;
-    this._context.transformToIModel = branch.transformToIModel;
+    this._context.transformFromIModel = branch.transformToIModel;
     this._context.viewAttachmentId = branch.viewAttachmentId;
   }
 
   public resetContext() {
     this._context.batchId = 0;
     this._context.iModel = undefined;
-    this._context.transformToIModel = undefined;
+    this._context.transformFromIModel = undefined;
     this._context.viewAttachmentId = undefined;
   }
 

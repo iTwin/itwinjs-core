@@ -37,7 +37,7 @@ export interface SnapRequestProps {
   geometryClass?: GeometryClass;
   intersectCandidates?: Id64Array;
   decorationGeometry?: DecorationGeometryProps[];
-  geometryToWorld?: TransformProps;
+  modelToWorld?: TransformProps;
 }
 
 /** Information returned from the back end to the front end holding the result of a *snap* operation.

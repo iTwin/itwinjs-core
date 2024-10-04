@@ -599,7 +599,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 interface BatchInfo {
   featureTable: RenderFeatureTable;
   iModel?: IModelConnection;
-  transformToIModel?: Transform;
+  transformFromIModel?: Transform;
   tileId?: string;
   viewAttachmentId?: Id64String;
 }
@@ -650,7 +650,7 @@ class PixelBuffer implements Pixel.Buffer {
         return {
           featureTable: batch.featureTable,
           iModel: batch.batchIModel,
-          transformToIModel: batch.transformToBatchIModel,
+          transformFromIModel: batch.transformFromBatchIModel,
           tileId: batch.tileId,
           viewAttachmentId: batch.viewAttachmentId,
         };
@@ -744,7 +744,7 @@ class PixelBuffer implements Pixel.Buffer {
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
       iModel = batchInfo.iModel;
-      transformToIModel = batchInfo.transformToIModel;
+      transformToIModel = batchInfo.transformFromIModel;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
     }

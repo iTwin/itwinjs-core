@@ -707,7 +707,7 @@ export class AccuSnap implements Decorator {
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
-      geometryToWorld: thisHit.transformToSourceIModel?.toJSON(),
+      modelToWorld: thisHit.transformFromSourceIModel?.toJSON(),
     };
 
     const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
