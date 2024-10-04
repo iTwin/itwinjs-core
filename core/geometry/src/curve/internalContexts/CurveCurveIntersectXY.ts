@@ -459,7 +459,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     extendB1: boolean,
     reversed: boolean,
   ): void {
-    // inverseA transforms arcA to its local coordinates, where it is the unit xy-circle.
+    // inverseA transforms arcA to its local coordinates, where it is the unit xy-circle
     const inverseA = matrixA.inverse();
     if (inverseA) {
       // localB defines the arc formed by transforming arcB into the local coordinates of arcA
