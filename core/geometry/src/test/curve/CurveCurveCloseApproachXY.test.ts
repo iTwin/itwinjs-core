@@ -160,7 +160,7 @@ describe("CurveCurveCloseApproachXY", () => {
       ck, allGeometry, geometryA, geometryA.startPoint(), geometryA.fractionToPoint(0.5), geometryA.endPoint(),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLine");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineLine1", () => {
     const ck = new Checker();
@@ -192,7 +192,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLine1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineLine2", () => {
     const ck = new Checker();
@@ -229,7 +229,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLine2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLineString", () => {
     const ck = new Checker();
@@ -239,7 +239,7 @@ describe("CurveCurveCloseApproachXY", () => {
       ck, allGeometry, geometryA, geometryA.startPoint(), geometryA.fractionToPoint(0.5), geometryA.endPoint(),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineLineString1", () => {
     const ck = new Checker();
@@ -282,7 +282,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLineString1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineLineString2", () => {
     const ck = new Checker();
@@ -324,7 +324,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLineString2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineArc", () => {
     const ck = new Checker();
@@ -336,7 +336,7 @@ describe("CurveCurveCloseApproachXY", () => {
       ck, allGeometry, geometryA, geometryA.startPoint(), geometryA.fractionToPoint(0.5), geometryA.endPoint(),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineArc1", () => {
     const ck = new Checker();
@@ -371,7 +371,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineArc1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineArc2", () => {
     const ck = new Checker();
@@ -410,7 +410,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const expectedMinLenSqr = 1;
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineArc2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineArc3", () => {
     const ck = new Checker();
@@ -451,7 +451,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineArc3");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineArc4", () => {
     const ck = new Checker();
@@ -491,7 +491,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const expectedMinLenSqr = 0.25; // 0.5 * 0.5
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineArc4");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LinePath1", () => {
     const ck = new Checker();
@@ -507,7 +507,7 @@ describe("CurveCurveCloseApproachXY", () => {
       ck, allGeometry, geometryA, Point3d.create(1, 2), Point3d.create(5, 2), Point3d.create(10, 0),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LinePath1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LinePath2", () => {
     const ck = new Checker();
@@ -603,7 +603,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testCoordinate(minLenSqr1, expectedMinLenSqr);
     ck.testCoordinate(minLenSqr2, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LinePath2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLoop1", () => {
     const ck = new Checker();
@@ -621,7 +621,7 @@ describe("CurveCurveCloseApproachXY", () => {
       ck, allGeometry, geometryA, Point3d.create(1, 2), Point3d.create(5, 2), Point3d.create(10, 0),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLoop1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineLoop2", () => {
     const ck = new Checker();
@@ -713,7 +713,7 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testCoordinate(minLenSqr1, expectedMinLenSqr);
     ck.testCoordinate(minLenSqr2, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLoop2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcArc", () => {
     const ck = new Checker();
@@ -722,7 +722,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const arcB = Arc3d.createCircularStartMiddleEnd(Point3d.create(3, 2), Point3d.create(-1, 1.5), Point3d.create(0, -2));
     testVaryingSubsets(ck, allGeometry, arcA, arcB);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcArcFar", () => {
     const ck = new Checker();
@@ -731,7 +731,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const arcB = Arc3d.createXY(Point3d.create(5, 2), 2);
     testVaryingSubsets(ck, allGeometry, arcA, arcB, 1);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcArcFar");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcArcInside", () => {
     const ck = new Checker();
@@ -741,7 +741,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const arcB = Arc3d.createXY(Point3d.create(2, 3), 2);
     testVaryingSubsets(ck, allGeometry, arcA, arcB, maxDistance);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcArcInside");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleArcArc1", () => {
     const ck = new Checker();
@@ -779,7 +779,7 @@ describe("CurveCurveCloseApproachXY", () => {
     }
     ck.testLE(numExpectedIntersections, numIntersectionsFound);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcArc1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleArcArc2", () => {
     const ck = new Checker();
@@ -796,7 +796,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
     ck.testExactNumber(0, approaches.length); // distance between circles is more than max distance
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcArc2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleArcArc3", () => {
     const ck = new Checker();
@@ -833,7 +833,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcArc3");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleArcArc4", () => {
     const ck = new Checker();
@@ -886,7 +886,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcArc4");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   function test2Ellipses(
     ck: Checker,
@@ -972,7 +972,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const numExpectedPerpCloseApproach = 8;
     test2Ellipses(ck, allGeometry, geometryA, geometryB, numExpectedIntersections, numExpectedPerpCloseApproach);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "2EllipsesWithIntersection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("2EllipsesWithoutIntersection", () => {
     const ck = new Checker();
@@ -983,7 +983,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const numExpectedPerpCloseApproach = 8;
     test2Ellipses(ck, allGeometry, geometryA, geometryB, numExpectedIntersections, numExpectedPerpCloseApproach);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "2EllipsesWithoutIntersection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("2EllipsesWithDifferentCenters", () => {
     const ck = new Checker();
@@ -994,7 +994,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const numExpectedPerpCloseApproach = 8;
     test2Ellipses(ck, allGeometry, geometryA, geometryB, numExpectedIntersections, numExpectedPerpCloseApproach);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "2EllipsesWithDifferentCenters");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CoPlanarArcArcIntersection1", () => {
     const ck = new Checker();
@@ -1023,7 +1023,7 @@ describe("CurveCurveCloseApproachXY", () => {
     }
     ck.testLE(numExpectedIntersections, numIntersectionsFound);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "CoPlanarArcArcIntersection1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CoPlanarArcArcIntersection2", () => {
     const ck = new Checker();
@@ -1054,7 +1054,7 @@ describe("CurveCurveCloseApproachXY", () => {
     }
     ck.testLE(numExpectedIntersections, numIntersectionsFound);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "CoPlanarArcArcIntersection2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("NonCoPlanarArcArcIntersection1", () => {
     const ck = new Checker();
@@ -1083,7 +1083,7 @@ describe("CurveCurveCloseApproachXY", () => {
     }
     ck.testLE(numExpectedIntersections, numIntersectionsFound);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "NonCoPlanarArcArcIntersection1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("NonCoPlanarArcArcIntersection2", () => {
     const ck = new Checker();
@@ -1114,7 +1114,7 @@ describe("CurveCurveCloseApproachXY", () => {
     }
     ck.testLE(numExpectedIntersections, numIntersectionsFound);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "NonCoPlanarArcArcIntersection2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineStringLineString", () => {
     const ck = new Checker();
@@ -1123,7 +1123,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const cpB = LineString3d.create([1, 3], [4, 2.5], [6, 4]);
     testVaryingSubsets(ck, allGeometry, cpA, cpB);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineStringLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineStringLineStringLong", () => {
     const ck = new Checker();
@@ -1142,7 +1142,7 @@ describe("CurveCurveCloseApproachXY", () => {
     allGeometry.length = 0;
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 0.3);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineStringLineStringLong03");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleLineStringLineString", () => {
     const ck = new Checker();
@@ -1186,7 +1186,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineStringLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArcLineString", () => {
     const ck = new Checker();
@@ -1195,7 +1195,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const cpB = LineString3d.create([1, 3], [4, 2.5], [6, 4]);
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 2);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SingleArcLineString", () => {
     const ck = new Checker();
@@ -1235,7 +1235,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const expectedMinLenSqr = 0.25; // 0.5 * 0.5
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcLineString");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineLineString", () => {
     const ck = new Checker();
@@ -1256,7 +1256,7 @@ describe("CurveCurveCloseApproachXY", () => {
     allGeometry.length = 0;
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 2, [0, 1]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineLineString2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineArc", () => {
     const ck = new Checker();
@@ -1285,7 +1285,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     testVaryingSubsets(ck, allGeometry, cpA, cpB1, 2, [0, 1]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineArcB");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BsplineLine", () => {
     const ck = new Checker();
@@ -1303,7 +1303,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const cpB2 = LineSegment3d.create(Point3d.create(1, -1), Point3d.create(6, -1));
     testVaryingSubsets(ck, allGeometry, cpA, cpB2, 2, [0, 1]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineLine");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PathPath", () => {
     const ck = new Checker();
@@ -1357,7 +1357,7 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "PathPath");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LoopLoop", () => {
     const ck = new Checker();
@@ -1404,7 +1404,7 @@ describe("CurveCurveCloseApproachXY", () => {
       ck.testCoordinate(xyDist, 2.5, "found expected closest approach distance");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LoopLoop");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineUnionRegion", () => {
     const ck = new Checker();
@@ -1452,7 +1452,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const expectedMinLenSqr = 36; // 6 * 6
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineUnionRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineParityRegion", () => {
     const ck = new Checker();
@@ -1500,7 +1500,7 @@ describe("CurveCurveCloseApproachXY", () => {
     const expectedMinLenSqr = 36; // 6 * 6
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineParityRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LineBagOfCurves", () => {
     const ck = new Checker();
@@ -1546,6 +1546,6 @@ describe("CurveCurveCloseApproachXY", () => {
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineBagOfCurves");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

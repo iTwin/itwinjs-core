@@ -1,7 +1,9 @@
 sep=;
 Release Tag;API Item Type;API Item Name
 internal;function;almostEqual
+internal;function;almostZero
 beta;interface;AlternateUnitLabelsProvider
+internal;function;applyConversion
 beta;class;BadUnit
 beta;class;BaseFormat
 beta;class;BasicUnit
@@ -31,6 +33,7 @@ beta;function;parseFractionalPrecision
 beta;function;parsePrecision
 beta;interface;ParseQuantityError
 beta;class;Parser
+beta;function;parseRatioType
 beta;class;ParserSpec
 beta;function;parseScientificType
 beta;function;parseShowSignOption
@@ -41,10 +44,12 @@ beta;class;QuantityError
 beta;type;QuantityParseResult
 beta;interface;QuantityProps
 beta;enum;QuantityStatus
+beta;enum;RatioType
 beta;enum;ScientificType
 beta;function;scientificTypeToString
 beta;enum;ShowSignOption
 beta;function;showSignOptionToString
+beta;enum;UnitConversionInvert
 beta;interface;UnitConversionProps
 beta;interface;UnitConversionSpec
 alpha;interface;UnitExtraData

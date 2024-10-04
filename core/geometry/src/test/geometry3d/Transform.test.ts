@@ -59,7 +59,7 @@ describe("Transform.Inverse", () => {
         ck.testCoordinate(xyz.y, point2dB[i].y);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -102,7 +102,7 @@ describe("Transform.InitFromRange", () => {
     ck.testPoint3d(worldToNpc.origin as Point3d, Point3d.create(-xyz0.x, -xyz0.y, -xyz0.z));
     ck.testTrue(npcToWorld.matrix.isIdentity);
     ck.testPoint3d(npcToWorld.origin as Point3d, xyz0);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -143,7 +143,7 @@ describe("Transform.CreateOriginAndMatrix", () => {
         ck.testTrue(transformA.isIdentity);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -166,7 +166,7 @@ describe("Transform.Singular", () => {
       const pointC = transform.multiplyInversePoint3dArray([]);
       ck.testUndefined(pointC);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -195,7 +195,7 @@ describe("Transform.MultiplyTransformMatrix3d", () => {
     transformA1.multiplyTransformMatrix3d(matrixB, transformA1); // A1 = [AB a]
     ck.testFalse(transformA.isAlmostEqual(transformA1));
     ck.testTransform(transformA1, transformE);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -226,7 +226,7 @@ describe("Transform.MultiplyMatrix3dTransform", () => {
     matrixA.multiplyMatrixTransform(transformB1, transformB1); // B1 = [AB Ab]
     ck.testFalse(transformA.isAlmostEqual(transformB1));
     ck.testTransform(transformB1, transformE);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -243,7 +243,7 @@ describe("Transform.Identity", () => {
     ck.testFalse(myIdentity0 === myIdentity1, "createIdentity makes distinct objects for user identity");
     ck.testFalse(systemIdentity0 === myIdentity0, "system identity object is different then user identity object");
     ck.testFalse(systemIdentity0 === myIdentity1, "system identity object is different then user identity object");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -298,7 +298,7 @@ describe("Transform.CloneRigid", () => {
     const translateA = Transform.createTranslation(shift);
     const translateB = Transform.createOriginAndMatrix(shift, undefined);
     ck.testTransform(translateA, translateB);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -323,7 +323,7 @@ describe("Transform.CreateRigidFromOriginAndColumns", () => {
 
     }
     ck.testUndefined(Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorU, AxisOrder.XYZ));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -335,7 +335,7 @@ describe("Transform.GetMatrix", () => {
     ck.testTransform(transform0, transform1);
     const matrix = transform1.getMatrix();
     ck.testMatrix3d(matrix, Matrix3d.identity);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -348,7 +348,7 @@ describe("Transform.CreateMatrixPickupPutdown", () => {
     const transform = Transform.createMatrixPickupPutdown(matrix, a, b);
     const c = transform.multiplyPoint3d(a);
     ck.testPoint3d(b, c);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -375,6 +375,6 @@ describe("Transform.createFlattenAlongVectorToPlane", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

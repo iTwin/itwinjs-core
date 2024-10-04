@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "omit baseuri from RequestTokenProps interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
