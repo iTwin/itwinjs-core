@@ -47,10 +47,6 @@ function createConfig(shouldInstrument) {
         path: require.resolve("path-browserify"),
         stream: require.resolve("stream-browserify"),
         zlib: require.resolve("browserify-zlib"),
-        tty: require.resolve("tty-browserify"),
-        os: require.resolve("os-browserify/browser"),
-        net: false,
-        tls: false,
       },
       alias: {
         "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",

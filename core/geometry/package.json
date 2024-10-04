@@ -4,7 +4,7 @@
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
-  "typings": "lib/esm/core-geometry",
+  "typings": "lib/cjs/core-geometry",
   "license": "MIT",
   "sideEffects": [
     "./lib/esm/core-geometry.js"
