@@ -425,6 +425,8 @@ export enum ECObjectsStatus {
     // (undocumented)
     MissingSchemaUrl = 35070,
     // (undocumented)
+    NewerSchemaVersion = 35081,
+    // (undocumented)
     SchemaContextUndefined = 35075,
     // (undocumented)
     Success = 0,
@@ -1842,6 +1844,10 @@ export interface SchemaItemProps {
     // (undocumented)
     readonly name?: string;
     // (undocumented)
+    readonly originalECXmlMajorVersion?: number;
+    // (undocumented)
+    readonly originalECXmlMinorVersion?: number;
+    // (undocumented)
     readonly schema?: string;
     // (undocumented)
     readonly schemaItemType?: string;
@@ -2013,6 +2019,8 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 // @internal
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
+    // (undocumented)
+    static isECXmlVersionNewer(ecXmlMajorVersionToCheck?: number, ecXmlMinorVersionToCheck?: number): boolean;
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
@@ -2209,6 +2217,8 @@ export class XmlParser extends AbstractParser<Element> {
     findItem(itemName: string): [string, string, Element] | undefined;
     // (undocumented)
     getClassCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple>;
+    // (undocumented)
+    get getECXmlVersion(): ECXmlVersion | undefined;
     // (undocumented)
     getItems(): Iterable<[string, string, Element]>;
     // (undocumented)
