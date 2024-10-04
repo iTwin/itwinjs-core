@@ -119,7 +119,6 @@ class BearingParserSpec extends ParserSpec {
     const parsedRadians = Parser.parseQuantityString(adjustedString, this);
     if (Parser.isParsedQuantity(parsedRadians)) {
       if (prefix === "N" && suffix === "E") {
-
         if (isCCW)
           parsedRadians.value = (2 * Math.PI) - parsedRadians.value;
       } else if (prefix === "N" && suffix === "W") {

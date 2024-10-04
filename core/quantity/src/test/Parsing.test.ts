@@ -459,7 +459,6 @@ describe("Parsing tests:", () => {
     const parserSpec = await ParserSpec.create(format, unitsAndAltLabelsProvider, persistenceUnit, unitsAndAltLabelsProvider);
     for (const testEntry of testData) {
       const result = Parser.parseQuantityString(testEntry.value, parserSpec);
-
       expect(Parser.isParsedQuantity(result)).to.be.true;
       if (Parser.isParsedQuantity(result)) {
         expect(Math.fround(result.value * 1000000)).to.be.eql(Math.fround(testEntry.magnitude * 1000000));
