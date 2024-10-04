@@ -37,7 +37,7 @@ describe("Point3d", () => {
     ck.testTrue(Point3d.create(epsilon, epsilon).isAlmostEqualMetric(alwaysZero), "is almost zero (epsilon)");
     ck.testPoint3d(alwaysZero, alwaysZeroA);
     ck.checkpoint("Point3d.zeros");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("XYAndZ", () => {
@@ -46,7 +46,7 @@ describe("Point3d", () => {
     ck.testFalse(XYZ.isXYAndZ({ x: 1, y: 2 }));
     ck.testFalse(XYZ.isXYAndZ({ y: 2, z: 1 }));
     ck.testFalse(XYZ.isXYAndZ({ x: 1, z: 2 }));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Diffs", () => {
@@ -161,7 +161,7 @@ describe("Point3d", () => {
       }
     }
     ck.checkpoint("Point3d.Diffs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createFrom", () => {
@@ -185,7 +185,7 @@ describe("Point3d", () => {
 
     ck.testExactNumber(0, Point3d.createFrom(new Float64Array([])).maxAbs());
     ck.testExactNumber(0, Vector3d.createFrom(new Float64Array([])).maxAbs());
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Point3dArrayCarrier", () => {
@@ -200,7 +200,7 @@ describe("Point3d", () => {
     ck.testPoint3d(carrier.data[2], carrierReverse.data[1]);
     ck.testPoint3d(carrier.data[3], carrierReverse.data[0]);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -210,7 +210,7 @@ describe("Point3d.setFrom", () => {
     const thisPoint: Point3d = Point3d.create(1, 2, 3);
     const pointZero: Point3d = Point3d.create(0, 0, 0);
     thisPoint.setFrom(other);
-    expect(thisPoint).to.deep.equal(pointZero);
+    expect(thisPoint).toEqual(pointZero);
   });
 });
 
@@ -229,7 +229,7 @@ describe("Vector3d", () => {
     ck.testVector3d(vectorAB, vectorABxyz);
 
     ck.checkpoint("Vector3d.hello");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CrossProducts", () => {
@@ -243,7 +243,7 @@ describe("Vector3d", () => {
     ck.testCoordinate(vectorA.crossProductStartEndXY(pointB0, pointB1), vectorA.tripleProduct(vectorB, unitZ), "crossProductXY");
 
     ck.checkpoint("Vector3d.DotProducts");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("XYAngle", () => {
@@ -262,7 +262,7 @@ describe("Vector3d", () => {
     }
 
     ck.checkpoint("Point3d.zeros");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -276,7 +276,7 @@ it("NormalizeWithDefault", () => {
   const vectorD = vectorC.normalizeWithDefault(0, 0, 1);
   ck.testVector3d(vectorD, Vector3d.unitZ());
   ck.checkpoint("Point3dArray.HelloWorld");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("RotateVectorAroundVector", () => {
@@ -296,7 +296,7 @@ it("RotateVectorAroundVector", () => {
     ck.testAngleNoShift(theta1, Angle.createDegrees(90));
   }
   ck.testUndefined(Vector3d.createRotateVectorAroundVector(vectorA, Vector3d.create(0, 0, 0)));
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 describe("Point3d.setFromPoint3d", () => {
@@ -304,7 +304,7 @@ describe("Point3d.setFromPoint3d", () => {
     const thisPoint: Point3d = Point3d.create(1, 2, 3);
     const pointZero: Point3d = Point3d.create(0, 0, 0);
     thisPoint.setFromPoint3d();
-    expect(thisPoint).to.deep.equal(pointZero);
+    expect(thisPoint).toEqual(pointZero);
   });
 });
 
@@ -313,15 +313,15 @@ describe("Point3d.Point3dToJson", () => {
     const point: Point3d = Point3d.create(1, 2, 3);
     const expectedJson: XYZProps = { x: 1, y: 2, z: 3 };
     const outputJson: XYZProps = point.toJSONXYZ();
-    expect(outputJson).to.deep.equal(expectedJson);
+    expect(outputJson).toEqual(expectedJson);
   }),
     it("Point3d.Point3dToJsonNegative", () => {
       const point: Point3d = Point3d.create(1, 2, 3);
       const expectedJson: XYZProps = { x: 1, y: 3, z: 2 };
       const outputJson: any = point.toJSONXYZ();
-      expect(outputJson.x).equal(expectedJson.x);
-      expect(outputJson.y).not.equal(expectedJson.y);
-      expect(outputJson.z).not.equal(expectedJson.z);
+      expect(outputJson.x).toBe(expectedJson.x);
+      expect(outputJson.y).not.toBe(expectedJson.y);
+      expect(outputJson.z).not.toBe(expectedJson.z);
     });
 });
 
@@ -329,7 +329,7 @@ describe("Point3d.accessX", () => {
   it("Point3d.accessX", () => {
     const args: any = "args";
     const x: any = Point3d.accessX(args);
-    expect(x).equal(undefined);
+    expect(x).toBeUndefined();
   });
 });
 
@@ -337,7 +337,7 @@ describe("Point3d.accessY", () => {
   it("Point3d.accessY", () => {
     const args: any = "args";
     const y: any = Point3d.accessY(args);
-    expect(y).equal(undefined);
+    expect(y).toBeUndefined();
   });
 });
 
@@ -345,7 +345,7 @@ describe("Point3d.accessZ", () => {
   it("Point3d.accessZ", () => {
     const args: any = "args";
     const z: any = Point3d.accessZ(args);
-    expect(z).equal(undefined);
+    expect(z).toBeUndefined();
   });
 });
 
@@ -353,24 +353,24 @@ describe("Point3d.x", () => {
   it("Point3d.xNotGiven", () => {
     const xyz: XYZProps = { y: 2, z: 3 };
     const x: number = Point3d.x(xyz);
-    expect(x).equal(0);
+    expect(x).toBe(0);
   }),
     it("Point3d.xDefined", () => {
       const xyz: XYZProps = { x: 1, y: 2, z: 3 };
       const x: number = Point3d.x(xyz);
-      expect(x).equal(1);
+      expect(x).toBe(1);
     }),
     it("Point3d.xUndefinedDefaultNotGiven", () => {
       let xyz: XYZProps | undefined;
       const defaultValue: number = 0;
       const x: number = Point3d.x(xyz);
-      expect(x).equal(defaultValue);
+      expect(x).toBe(defaultValue);
     }),
     it("Point3d.xUndefinedDefaultGiven", () => {
       let xyz: XYZProps | undefined;
       const defaultValue: number = 5;
       const x: number = Point3d.x(xyz, defaultValue);
-      expect(x).equal(defaultValue);
+      expect(x).toBe(defaultValue);
     });
 });
 
@@ -378,24 +378,24 @@ describe("Point3d.y", () => {
   it("Point3d.yNotGiven", () => {
     const xyz: XYZProps = { x: 1, z: 3 };
     const y: number = Point3d.y(xyz);
-    expect(y).equal(0);
+    expect(y).toBe(0);
   }),
     it("Point3d.yDefined", () => {
       const xyz: XYZProps = { x: 1, y: 2, z: 3 };
       const y: number = Point3d.y(xyz);
-      expect(y).equal(2);
+      expect(y).toBe(2);
     }),
     it("Point3d.yUndefinedDefaultNotGiven", () => {
       let xyz: XYZProps | undefined;
       const defaultValue: number = 0;
       const y: number = Point3d.y(xyz);
-      expect(y).equal(defaultValue);
+      expect(y).toBe(defaultValue);
     }),
     it("Point3d.yUndefinedDefaultGiven", () => {
       let xyz: XYZProps | undefined;
       const defaultValue: number = 5;
       const y: number = Point3d.y(xyz, defaultValue);
-      expect(y).equal(defaultValue);
+      expect(y).toBe(defaultValue);
     });
 });
 
@@ -403,24 +403,24 @@ describe("Point3d.z", () => {
   it("Point3d.zNotGiven", () => {
     const xyz: XYZProps = { x: 1, y: 2 };
     const z: number = Point3d.z(xyz);
-    expect(z).equal(0);
+    expect(z).toBe(0);
   }),
     it("Point3d.zDefined", () => {
       const xyz: XYZProps = { x: 1, y: 2, z: 3 };
       const z: number = Point3d.z(xyz);
-      expect(z).equal(3);
+      expect(z).toBe(3);
     }),
     it("Point3d.zUndefinedDefaultNotGiven", () => {
       let xyz: XYZProps | undefined;
       const defaultValue: number = 0;
       const z: number = Point3d.z(xyz);
-      expect(z).equal(defaultValue);
+      expect(z).toBe(defaultValue);
     }),
     it("Point3d.zUndefinedDefaultGiven", () => {
       let xyz: XYZProps | undefined;
       const defaultValue: number = 5;
       const z: number = Point3d.z(xyz, defaultValue);
-      expect(z).equal(defaultValue);
+      expect(z).toBe(defaultValue);
     });
 });
 
@@ -429,7 +429,7 @@ describe("Point3d.createFromPacked", () => {
     const xyz = new Float64Array([1, 2, 3, 10, 15, 20]);
     const pointIndex: number = 100;
     const output: any = Point3d.createFromPacked(xyz, pointIndex);
-    expect(output).to.deep.equal(undefined);
+    expect(output).toBeUndefined();
   });
 });
 
@@ -438,7 +438,7 @@ describe("Point3d.createFromPackedXYZW", () => {
     const xyz = new Float64Array([1, 2, 3, 10, 15, 20]);
     const pointIndex: number = 100;
     const output: any = Point3d.createFromPackedXYZW(xyz, pointIndex);
-    expect(output).to.deep.equal(undefined);
+    expect(output).toBeUndefined();
   });
 });
 
@@ -448,8 +448,8 @@ describe("Point3d.createArrayFromPackedXYZ", () => {
     const point1: Point3d = Point3d.create(1, 2, 3);
     const point2: Point3d = Point3d.create(10, 15, 20);
     const arr: Point3d[] = Point3d.createArrayFromPackedXYZ(xyz);
-    expect(arr[0]).to.deep.equal(point1);
-    expect(arr[1]).to.deep.equal(point2);
+    expect(arr[0]).toEqual(point1);
+    expect(arr[1]).toEqual(point2);
   });
 });
 
@@ -458,7 +458,7 @@ describe("Vector3d.setFromVector3d", () => {
     const thisVector: Vector3d = Vector3d.create(1, 2, 3);
     const vectorZero: Vector3d = Vector3d.create(0, 0, 0);
     thisVector.setFromVector3d();
-    expect(thisVector).to.deep.equal(vectorZero);
+    expect(thisVector).toEqual(vectorZero);
   });
 });
 
@@ -468,8 +468,8 @@ describe("Vector3d.createArrayFromPackedXYZ", () => {
     const vector1: Vector3d = Vector3d.create(1, 2, 3);
     const vector2: Vector3d = Vector3d.create(10, 15, 20);
     const arr: Vector3d[] = Vector3d.createArrayFromPackedXYZ(xyz);
-    expect(arr[0]).to.deep.equal(vector1);
-    expect(arr[1]).to.deep.equal(vector2);
+    expect(arr[0]).toEqual(vector1);
+    expect(arr[1]).toEqual(vector2);
   });
 });
 
@@ -478,13 +478,13 @@ describe("Vector3d.createVectorFromArray", () => {
     const nums: any = [1, 2, 3];
     const expectedVector: Vector3d = Vector3d.create(1, 2, 3);
     const outputVector: Vector3d = Vector3d.createFrom(nums);
-    expect(outputVector).to.deep.equal(expectedVector);
+    expect(outputVector).toEqual(expectedVector);
   }),
     it("Vector3d.createVectorFromArrayDefaultZ", () => {
       const nums: any = [1, 2];
       const expectedVector: Vector3d = Vector3d.create(1, 2, 0);
       const outputVector: Vector3d = Vector3d.createFrom(nums);
-      expect(outputVector).to.deep.equal(expectedVector);
+      expect(outputVector).toEqual(expectedVector);
     });
 });
 
@@ -493,7 +493,7 @@ describe("Vector3d.fractionOfProjectionToVector", () => {
     const thisVector: Vector3d = Vector3d.create(1, 2, 3);
     const targetVector: Vector3d = Vector3d.create(0, 0, 0);
     const fraction: number = thisVector.fractionOfProjectionToVector(targetVector);
-    expect(fraction).equal(0);
+    expect(fraction).toBe(0);
   });
 });
 
@@ -502,7 +502,7 @@ describe("Vector3d.scaleToLength", () => {
     const thisVector: Vector3d = Vector3d.create(0, 0, 0);
     const length: number = 10;
     const output: any = thisVector.scaleToLength(length);
-    expect(output).equal(undefined);
+    expect(output).toBeUndefined();
   });
 });
 
@@ -511,7 +511,7 @@ describe("Vector3d.normalize", () => {
     const thisVector: Vector3d = Vector3d.create(0, 0, 0);
     const expectedVector: Vector3d = Vector3d.create(1, 0, 0);
     const output: Vector3d = thisVector.normalizeWithDefault(0, 0, 0);
-    expect(output).to.deep.equal(expectedVector);
+    expect(output).toEqual(expectedVector);
   });
 
   it("Vector3d.createNormalized", () => {
@@ -522,7 +522,7 @@ describe("Vector3d.normalize", () => {
     vec.setZero();
     ck.testVector3d(unitVec, Vector3d.createNormalized(1, 1, 0, vec)!, "expect normalized vector with initialized result");
     ck.testUndefined(Vector3d.createNormalized(), "expect undefined when input is zero vector");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -531,13 +531,13 @@ describe("Vector3d.rotate90", () => {
     const thisVector: Vector3d = Vector3d.create(1, 2, 0);
     const rotatedVector: Vector3d = Vector3d.create(-2, 1, 0);
     const outputVector: Vector3d = thisVector.rotate90CCWXY();
-    expect(outputVector).to.deep.equal(rotatedVector);
+    expect(outputVector).toEqual(rotatedVector);
   }),
     it("Vector3d.rotate90CWXY", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 0);
       const rotatedVector: Vector3d = Vector3d.create(2, -1, 0);
       const outputVector: Vector3d = thisVector.rotate90CWXY();
-      expect(outputVector).to.deep.equal(rotatedVector);
+      expect(outputVector).toEqual(rotatedVector);
     });
 });
 
@@ -547,7 +547,7 @@ describe("Vector3d.dotProductStartEndXYZW", () => {
     const pointA: Point3d = Point3d.create(4, 5, 6);
     const weight: number = 0;
     const output: number = thisVector.dotProductStartEndXYZW(pointA, 10, 15, 20, weight);
-    expect(output).equal(0);
+    expect(output).toBe(0);
   });
 });
 
@@ -574,7 +574,7 @@ describe("Vector3d.planarRadiansTo", () => {
     const vectorB: Vector3d = Vector3d.create(4, 5, 6);
     const planeNormal: Vector3d = Vector3d.create(0, 0, 0);
     const output: number = thisVector.planarRadiansTo(vectorB, planeNormal);
-    expect(output).equal(0);
+    expect(output).toBe(0);
   });
 });
 
@@ -583,21 +583,21 @@ describe("Vector3d.isParallelTo", () => {
     const thisVector: Vector3d = Vector3d.create(1, 2, 3);
     const other: Vector3d = Vector3d.create(0, 0, 0);
     const output: boolean = thisVector.isParallelTo(other);
-    expect(output).equal(false);
+    expect(output).toBe(false);
   }),
     it("Vector3d.isParallelToTrueWithGivenTolerances", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 3);
       const other: Vector3d = Vector3d.create(1.01, 2.01, 3.01);
       const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
       const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
-      expect(output).equal(true);
+      expect(output).toBe(true);
     }),
     it("Vector3d.isParallelToFalseWithGivenTolerances", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 3);
       const other: Vector3d = Vector3d.create(1.01, 2.01, 3.01);
       const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
       const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
-      expect(output).equal(false);
+      expect(output).toBe(false);
     });
 });
 
@@ -606,21 +606,21 @@ describe("Vector3d.isPerpendicularTo", () => {
     const thisVector: Vector3d = Vector3d.create(1, 2, 3);
     const other: Vector3d = Vector3d.create(0, 0, 0);
     const output: boolean = thisVector.isPerpendicularTo(other);
-    expect(output).equal(false);
+    expect(output).toBe(false);
   }),
     it("Vector3d.isPerpendicularToTrueWithGivenTolerances", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 3);
       const other: Vector3d = Vector3d.create(-2.01, 1.01, 3.01);
       const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
       const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
-      expect(output).equal(true);
+      expect(output).toBe(true);
     }),
     it("Vector3d.isPerpendicularToFalseWithGivenTolerances", () => {
       const thisVector: Vector3d = Vector3d.create(1, 2, 3);
       const other: Vector3d = Vector3d.create(-2.01, 1.01, 3.01);
       const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
       const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
-      expect(output).equal(false);
+      expect(output).toBe(false);
     });
 });
 
@@ -655,7 +655,7 @@ describe("Geometry", () => {
         ck.testExactNumber(baseAxis, Geometry.cyclic3dAxis(axis), "Cyclic axis reduction");
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("lexical", () => {
       const ck = new bsiChecker.Checker();
@@ -672,6 +672,6 @@ describe("Geometry", () => {
           ck.testExactNumber(1, Geometry.lexicalXYZLessThan(pointJ, pointI));
         }
       }
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });

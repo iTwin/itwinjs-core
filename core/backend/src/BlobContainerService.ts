@@ -115,7 +115,7 @@ export namespace BlobContainer {
   export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
 
   /** Information required to request an access token for a container. */
-  export interface RequestTokenProps extends AccessContainerProps {
+  export interface RequestTokenProps extends Omit<AccessContainerProps,"baseUri">  {
     /** the level of access requested. If not specified, defaults to `"writeIfPossible"`. */
     accessLevel?: RequestAccessLevel;
     /** the number of seconds before the token should expire.

@@ -792,12 +792,13 @@ export class SnapshotConnection extends IModelConnection {
 
   /** Open an IModelConnection to a remote read-only snapshot iModel from a key that will be resolved by the backend.
    * @note This method is intended for web applications.
+   * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     RpcManager.setIModel({ iModelId: "undefined", key: fileKey });
 
-    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey);
+    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey); // eslint-disable-line deprecation/deprecation
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
     const connection = new SnapshotConnection(openResponse);
     connection.routingContext = routingContext;

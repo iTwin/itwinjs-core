@@ -10952,7 +10952,7 @@ export class SheetViewState extends ViewState2d {
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
@@ -11070,6 +11070,7 @@ export class SnapshotConnection extends IModelConnection {
     get isRemote(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
     static openFile(filePath: string): Promise<SnapshotConnection>;
+    // @deprecated
     static openRemote(fileKey: string): Promise<SnapshotConnection>;
 }
 

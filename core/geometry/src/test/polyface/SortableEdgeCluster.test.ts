@@ -56,7 +56,7 @@ describe("SortableEdgeCluster", () => {
       const edge = nullEdges[0] as SortableEdge;
       ck.testExactNumber(5, edge.facetIndex, "confirm facet of null edge");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("singleFaceCube", () => {
     const ck = new Checker();
@@ -89,6 +89,6 @@ describe("SortableEdgeCluster", () => {
     ck.testExactNumber(0, boundary.length, "boundary edges", SortableEdge.clusterArrayToJSON(boundary));
     ck.testExactNumber(0, compound.length, "clusters", JSON.stringify(SortableEdge.clusterArrayToJSON(compound)));
     ck.testExactNumber(0, nullEdges.length, "null", JSON.stringify(SortableEdge.clusterArrayToJSON(nullEdges)));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -53,6 +53,6 @@ describe("StrokeOptions", () => {
     ck.testExactNumber(10, num10B, "maxEdgeLength with min count");
     ck.testExactNumber(num10, num10A, "max edge length with negative length");
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddPolyface");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

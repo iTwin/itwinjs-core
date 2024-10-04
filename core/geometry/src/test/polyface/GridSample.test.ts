@@ -268,7 +268,7 @@ describe("GridSampling", () => {
       x0 += 10.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "GridSampling", "HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Hello5Points", () => {
     const ck = new Checker();
@@ -307,7 +307,7 @@ describe("GridSampling", () => {
       y0 += 10.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "GridSampling", "Hello5Points");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

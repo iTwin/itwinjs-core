@@ -91,16 +91,16 @@ describe("LineSegment3d", () => {
     ck.testTrue(segmentF.isAlmostEqual(segmentA));
 
     const fraction = 0.27;
-    const worldToLocal = Transform.createRigidFromOriginAndColumns(segmentA.point0Ref, Vector3d.createStartEnd(segmentA.point0Ref, segmentA.point1Ref), Vector3d.createFrom([0,1,0]), AxisOrder.XYZ);
+    const worldToLocal = Transform.createRigidFromOriginAndColumns(segmentA.point0Ref, Vector3d.createStartEnd(segmentA.point0Ref, segmentA.point1Ref), Vector3d.createFrom([0, 1, 0]), AxisOrder.XYZ);
     const localRangeFirstHalf = segmentA.rangeBetweenFractions(0, fraction, worldToLocal?.inverse());
     ck.testRange3d(localRangeFirstHalf, Range3d.createXYZXYZ(0, 0, 0, fraction * segmentA.curveLength(), 0, 0), "rangeBetweenFractions with Transform");
 
-    const xRange = segmentA.projectedParameterRange(Vector3d.create(1,0,0));
+    const xRange = segmentA.projectedParameterRange(Vector3d.create(1, 0, 0));
     if (ck.testType(xRange, Range1d, "projectedParameterRange returns a range"))
       ck.testRange1d(xRange, Range1d.createXX(1, 6), "projectedParameterRange returns the expected range");
 
     ck.checkpoint("LineSegment3d.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PointsAlongLine", () => {
@@ -199,7 +199,7 @@ describe("LineSegment3d", () => {
       ck.testPoint3d(approach.detailB.point, Point3d.create(1, 1), "closestApproach returns expected point on extended seg1");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "ClosestApproachParallelSegments");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClosestApproach", () => {
@@ -263,7 +263,7 @@ describe("LineSegment3d", () => {
     }
     ck.show({ numSimple, numNonParallel });
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "ClosestApproach");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 

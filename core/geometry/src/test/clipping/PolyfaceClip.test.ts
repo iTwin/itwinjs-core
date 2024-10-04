@@ -97,7 +97,7 @@ describe("PolyfaceClip", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, rightClip, 0, 10, 0);
     ck.testCoordinate(area, areaLeft + areaRight);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ClipPlane");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -117,7 +117,7 @@ describe("PolyfaceClip", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, rightClip, 0, 10, 0);
     ck.testCoordinate(area, areaLeft + areaRight);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "EdgeInClipPlane");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -149,7 +149,7 @@ describe("PolyfaceClip", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedOutput, x0, y1, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ConvexClipPlaneSet");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("UnionOfConvexClipPlaneSet.Disjoint", () => {
@@ -223,7 +223,7 @@ describe("PolyfaceClip", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "UnionOfConvexClipPlaneSet.Disjoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   /** Test PolyfaceBuilder.addPolygon variants with reverse normals. */
@@ -266,7 +266,7 @@ describe("PolyfaceClip", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceG, 0, 0, 0);
     GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceP, 5, 0, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "addPolygon");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -294,7 +294,7 @@ describe("PolyfaceClip", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, 0, 0);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "Section");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -344,7 +344,7 @@ describe("PolyfaceClip", () => {
     ck.testUndefined(PolyfaceBuilder.polygonToTriangulatedPolyface(
       [Point3d.create(0, 0), Point3d.create(0, 1)]), "should fail triangulating less than 3 points");
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ClosedSection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Box", () => {
     const ck = new Checker();
@@ -386,7 +386,7 @@ describe("PolyfaceClip", () => {
       x0 += 10.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "Box");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DisconnectedClips", () => {
@@ -450,7 +450,7 @@ describe("PolyfaceClip", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DisconnectedClips");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("TwoComponentSection", () => {
@@ -556,7 +556,7 @@ describe("PolyfaceClip", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "TwoComponentSection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("UnderAndOver", () => {
@@ -631,7 +631,7 @@ describe("PolyfaceClip", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "UnderAndOver");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -690,7 +690,7 @@ describe("PolyfaceClip", () => {
       x0 = 0.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "NonConvexClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CutFillUndulating", () => {
@@ -736,7 +736,7 @@ describe("PolyfaceClip", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFillUndulating");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("CutFillCoincident", () => {
@@ -766,7 +766,7 @@ describe("PolyfaceClip", () => {
     x0 += 2 * rangeB1.xLength();
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFillCoincident");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -796,7 +796,7 @@ describe("PolyfaceClip", () => {
       GeometryCoreTestIO.captureRangeEdges(allGeometry, rangeAB, x0, y0);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFillJonas");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // cspell:word Arnoldas
@@ -860,7 +860,7 @@ describe("PolyfaceClip", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ArnoldasBox");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -909,7 +909,7 @@ describe("PolyfaceClip", () => {
 
       GeometryCoreTestIO.saveGeometry(allGeometry, "ArnoldasEarthWorks", "meshA");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("BoxClosure", () => {
@@ -938,7 +938,7 @@ describe("PolyfaceClip", () => {
       x0 += 10;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "BoxClosure");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BoxClosureNonConvex", () => {
@@ -991,12 +991,12 @@ describe("PolyfaceClip", () => {
       x0 += 5;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "BoxClosureNonConvex");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PolyfaceClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     const meshData = {
       indexedMesh: {
         point: [
@@ -1103,7 +1103,7 @@ describe("PolyfaceClip", () => {
       }
       GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutOnEdge");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ArnoldasClip", () => {
     const ck = new Checker();
@@ -1134,7 +1134,7 @@ describe("PolyfaceClip", () => {
       }
       GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", `arnoldas${caseDirectory}`);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ArnoldasSimpleClip", () => {
@@ -1161,7 +1161,7 @@ describe("PolyfaceClip", () => {
     }
     // make a single-face mesh that cuts all the way across . .
     GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "arnoldasSimpleClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ConstructClamp", () => {
@@ -1228,7 +1228,7 @@ describe("PolyfaceClip", () => {
       const addRayHit = (d: FacetLocationDetail) => { if (d.a > 0.1 * thickness) rayHits.add(d.a); return false; };
       const intersectOptions = new FacetIntersectOptions();
       intersectOptions.acceptIntersection = addRayHit; // record ray param if beyond ray.origin
-      for (const visitor = clampMesh.createVisitor(); visitor.moveToNextFacet(); ) {
+      for (const visitor = clampMesh.createVisitor(); visitor.moveToNextFacet();) {
         rayHits.clear();
         const ray = PolygonOps.centroidAreaNormal(visitor.point);
         if (ck.testDefined(ray, "have facet normal")) {
@@ -1239,7 +1239,7 @@ describe("PolyfaceClip", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ConstructClamp");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DrapeRegion", () => {
@@ -1398,7 +1398,7 @@ describe("PolyfaceClip", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DrapeRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DrapeRegion2", () => {
@@ -1424,7 +1424,7 @@ describe("PolyfaceClip", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DrapeRegion2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DeckBuilder", () => {
@@ -1494,6 +1494,6 @@ describe("PolyfaceClip", () => {
 
     ck.testType(trimmedDeck, IndexedPolyface, "created a clipped mesh");
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "DeckBuilder");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
