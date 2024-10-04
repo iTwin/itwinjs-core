@@ -1120,8 +1120,7 @@ export class TrigPolynomial {
   // tolerance for small angle decision.
   private static readonly _smallAngle: number = 1.0e-11;
 
-  // see itwinjs-core\core\geometry\internaldocs\unitCircleEllipseIntersection.md
-  // on how below variables are derived.
+  // see itwinjs-core\core\geometry\internaldocs\Polynomial.md on how below variables are derived.
   /** Standard Basis coefficients for the numerator of the y-coordinate y(t) = S(t)/W(t) in the rational semicircle parameterization. */
   public static readonly S = Float64Array.from([0.0, 2.0, -2.0]);
   /** Standard Basis coefficients for the numerator of the x-coordinate x(t) = C(t)/W(t) in the rational semicircle parameterization. */
@@ -1230,8 +1229,7 @@ export class TrigPolynomial {
     const coffs = new Float64Array(5);
     PowerPolynomial.zero(coffs);
     let degree;
-    // see itwinjs-core\core\geometry\internaldocs\unitCircleEllipseIntersection.md
-    // on how coffs (coefficient array) is built.
+    // see itwinjs-core\core\geometry\internaldocs\Polynomial.md on how coffs (coefficient array) is built.
     if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a)) {
       PowerPolynomial.accumulate(coffs, this.CW, ax);
       PowerPolynomial.accumulate(coffs, this.SW, ay);
@@ -1315,8 +1313,7 @@ export class TrigPolynomial {
     ellipseRadians: number[], circleRadians: number[],
   ): boolean {
     circleRadians.length = 0;
-    // see itwinjs-core\core\geometry\internaldocs\unitCircleEllipseIntersection.md
-    // on how below variables are derived.
+    // see itwinjs-core\core\geometry\internaldocs\Polynomial.md on how below variables are derived.
     const acc = ux * ux + uy * uy - uw * uw;
     const acs = 2.0 * (ux * vx + uy * vy - uw * vw);
     const ass = vx * vx + vy * vy - vw * vw;
