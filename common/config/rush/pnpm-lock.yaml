@@ -568,6 +568,7 @@ importers:
       '@types/sinon': ^17.0.2
       '@vitest/browser': ^2.1.1
       '@vitest/coverage-istanbul': ^2.1.0
+      '@vitest/coverage-v8': ^2.1.1
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
@@ -616,6 +617,7 @@ importers:
       '@types/sinon': 17.0.2
       '@vitest/browser': 2.1.1_igns7kyvl7xnrfppgrn4kthywy
       '@vitest/coverage-istanbul': 2.1.1_vitest@2.1.1
+      '@vitest/coverage-v8': 2.1.1_jtexx2m2ym6fkfals4xcpqq3di
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
@@ -3236,8 +3238,8 @@ packages:
     resolution: {integrity: sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==}
     engines: {node: '>=0.10.0'}
 
-  /@ampproject/remapping/2.2.1:
-    resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}
+  /@ampproject/remapping/2.3.0:
+    resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
     dependencies:
       '@jridgewell/gen-mapping': 0.3.5
@@ -3483,7 +3485,7 @@ packages:
     resolution: {integrity: sha512-BBt3opiCOxUr9euZ5/ro/Xv8/V7yJ5bjYMqG/C1YAo8MIKAnumZalCN+msbci3Pigy4lIQfPUpfMM27HMGaYEA==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@ampproject/remapping': 2.2.1
+      '@ampproject/remapping': 2.3.0
       '@babel/code-frame': 7.24.7
       '@babel/generator': 7.25.6
       '@babel/helper-compilation-targets': 7.25.2
@@ -3630,6 +3632,10 @@ packages:
       '@babel/helper-string-parser': 7.24.8
       '@babel/helper-validator-identifier': 7.24.7
       to-fast-properties: 2.0.0
+
+  /@bcoe/v8-coverage/0.2.3:
+    resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+    dev: true
 
   /@bentley/aec-units-schema/1.0.3:
     resolution: {integrity: sha512-Rpc+g75LZfDaapej3OBUOx67p5vOi9xF34gAhfWlmdm2cWeMZzjkjzVLR/Fn8NMdvhn/QS8HRAVLlXLSOtm6kg==}
@@ -5677,6 +5683,33 @@ packages:
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
       vitest: 2.1.1_@types+node@18.16.20
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /@vitest/coverage-v8/2.1.1_jtexx2m2ym6fkfals4xcpqq3di:
+    resolution: {integrity: sha512-md/A7A3c42oTT8JUHSqjP5uKTWJejzUW4jalpvs+rZ27gsURsMU8DEb+8Jf8C6Kj2gwfSHJqobDNBuoqlm0cFw==}
+    peerDependencies:
+      '@vitest/browser': 2.1.1
+      vitest: 2.1.1
+    peerDependenciesMeta:
+      '@vitest/browser':
+        optional: true
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@bcoe/v8-coverage': 0.2.3
+      '@vitest/browser': 2.1.1_igns7kyvl7xnrfppgrn4kthywy
+      debug: 4.3.7
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.1.7
+      magic-string: 0.30.11
+      magicast: 0.3.5
+      std-env: 3.7.0
+      test-exclude: 7.0.1
+      tinyrainbow: 1.2.0
+      vitest: 2.1.1_@vitest+browser@2.1.1
     transitivePeerDependencies:
       - supports-color
     dev: true

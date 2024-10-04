@@ -395,6 +395,10 @@
       "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
+      "name": "@vitest/coverage-v8",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@xmldom/xmldom",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },

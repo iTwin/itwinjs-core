@@ -16,7 +16,7 @@ export default defineConfig({
       screenshotFailures: false
     },
     coverage: {
-      provider: "istanbul", // akin to nyc,
+      provider: "v8",
       include: [
         "src/**/*"
       ],
@@ -34,7 +34,7 @@ export default defineConfig({
       reportsDirectory: "./lib/cjs/test/coverage",
     },
     pool: "threads",
-    fileParallelism: false
+    fileParallelism: false // Had to disable parallel test runs due to Worker related tests timing out and not fetching properly.
   },
   plugins: [
     DynamicPublicDirectory(dirAssets),
