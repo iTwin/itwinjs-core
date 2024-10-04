@@ -29,7 +29,12 @@ describe("ClipVolume", async () => {
   });
 
   it("should support single-primitive ClipVectors", () => {
-    const points = [Point3d.create(1.0, 1.0, 0.0), Point3d.create(2.0, 1.0, 0.0), Point3d.create(2.0, 2.0, 0.0), Point3d.create(1.0, 2.0, 0.0)];
+    const points = [
+      Point3d.create(1.0, 1.0, 0.0),
+      Point3d.create(2.0, 1.0, 0.0),
+      Point3d.create(2.0, 2.0, 0.0),
+      Point3d.create(1.0, 2.0, 0.0),
+    ];
 
     const shape = ClipShape.createShape(points, 1.0, 2.0)!;
     expect(shape).toBeDefined();

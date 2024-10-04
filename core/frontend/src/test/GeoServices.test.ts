@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
 import { GeoServices, GeoServicesOptions } from "../GeoServices";
 
 describe("GeoServices", () => {
-  function makeGeoServices(opts: Partial<GeoServicesOptions> = {}): GeoServices {
+  function makeGeoServices(opts: Partial<GeoServicesOptions> = { }): GeoServices {
     return new GeoServices({
       isIModelClosed: opts.isIModelClosed ?? (() => false),
       toIModelCoords: opts.toIModelCoords ?? (async () => Promise.resolve([])),
@@ -143,9 +143,7 @@ describe("GeoServices", () => {
 
   it("removes converter from cache even if requests produce an exception", async () => {
     const gs = makeGeoServices({
-      toIModelCoords: async () => {
-        throw new Error("oh no!");
-      },
+      toIModelCoords: async () => { throw new Error("oh no!"); },
     });
     const cv = gs.getConverter()!;
     expect(gs.getConverter()).toEqual(cv);

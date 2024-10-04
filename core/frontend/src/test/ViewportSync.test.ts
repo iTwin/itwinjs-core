@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { EmptyLocalization, ViewFlags } from "@itwin/core-common";
@@ -110,6 +110,7 @@ describe("TwoWayViewportSync", () => {
 
     test(TwoWayViewportSync, true);
     test(TwoWayViewportFrustumSync, false);
+
   });
 
   it("synchronizes selectors", () => {

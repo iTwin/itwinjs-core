@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
@@ -119,9 +119,9 @@ describe("RenderState", () => {
     expect(a.equals(b)).toBe(true); // expected same blend function dst alpha to compare as equal
 
     // Test Stencil
-    b.stencilMask = 0xf0;
+    b.stencilMask = 0xF0;
     expect(a.equals(b)).toBe(false); // expected different stencilMask to compare as !equal
-    b.stencilMask = 0xffffffff;
+    b.stencilMask = 0xFFFFFFFF;
     expect(a.equals(b)).toBe(true); // expected same stencilMask to compare as equal
 
     b.stencil.frontFunction.function = GL.StencilFunction.Greater;
@@ -214,7 +214,7 @@ describe("RenderState", () => {
     b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst, GL.BlendFactor.DefaultDst);
     b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.AlphaSaturate, GL.BlendFactor.DefaultDst);
     b.blend.setBlendFuncSeparate(GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultSrc, GL.BlendFactor.DefaultDst, GL.BlendFactor.AlphaSaturate);
-    b.stencilMask = 0xf0;
+    b.stencilMask = 0xF0;
     b.stencil.frontFunction.function = GL.StencilFunction.Greater;
     b.stencil.backFunction.function = GL.StencilFunction.Greater;
     b.stencil.frontFunction.ref = 0x08;
@@ -245,54 +245,54 @@ describe("RenderState", () => {
     const gl = System.instance.context;
     const rs = new RenderState();
 
-		type TestCase = [number, number | boolean];
-		const testCases: TestCase[] = [
-		  [GL.Capability.FrontFace, rs.frontFace],
-		  [GL.Capability.CullFaceMode, rs.cullFace],
-		  [GL.Capability.DepthFunc, rs.depthFunc],
-		  [GL.Capability.CullFace, rs.flags.cull],
-		  [GL.Capability.DepthTest, rs.flags.depthTest],
-		  [GL.Capability.Blend, rs.flags.blend],
-		  [GL.Capability.StencilTest, rs.flags.stencilTest],
-		  [GL.Capability.DepthWriteMask, rs.flags.depthMask],
+    type TestCase = [number, number | boolean];
+    const testCases: TestCase[] = [
+      [GL.Capability.FrontFace, rs.frontFace],
+      [GL.Capability.CullFaceMode, rs.cullFace],
+      [GL.Capability.DepthFunc, rs.depthFunc],
+      [GL.Capability.CullFace, rs.flags.cull],
+      [GL.Capability.DepthTest, rs.flags.depthTest],
+      [GL.Capability.Blend, rs.flags.blend],
+      [GL.Capability.StencilTest, rs.flags.stencilTest],
+      [GL.Capability.DepthWriteMask, rs.flags.depthMask],
 
-		  [GL.Capability.BlendEquationRGB, rs.blend.equationRgb],
-		  [GL.Capability.BlendEquationAlpha, rs.blend.equationAlpha],
-		  [GL.Capability.BlendSrcRgb, rs.blend.functionSourceRgb],
-		  [GL.Capability.BlendSrcAlpha, rs.blend.functionSourceAlpha],
-		  [GL.Capability.BlendDstRgb, rs.blend.functionDestRgb],
-		  [GL.Capability.BlendDstAlpha, rs.blend.functionDestAlpha],
+      [GL.Capability.BlendEquationRGB, rs.blend.equationRgb],
+      [GL.Capability.BlendEquationAlpha, rs.blend.equationAlpha],
+      [GL.Capability.BlendSrcRgb, rs.blend.functionSourceRgb],
+      [GL.Capability.BlendSrcAlpha, rs.blend.functionSourceAlpha],
+      [GL.Capability.BlendDstRgb, rs.blend.functionDestRgb],
+      [GL.Capability.BlendDstAlpha, rs.blend.functionDestAlpha],
 
-		  [GL.Capability.StencilFrontFunc, rs.stencil.frontFunction.function],
-		  [GL.Capability.StencilFrontRef, rs.stencil.frontFunction.ref],
-		  [GL.Capability.StencilFrontOpFail, rs.stencil.frontOperation.fail],
-		  [GL.Capability.StencilFrontOpZFail, rs.stencil.frontOperation.zFail],
-		  [GL.Capability.StencilFrontOpZPass, rs.stencil.frontOperation.zPass],
+      [GL.Capability.StencilFrontFunc, rs.stencil.frontFunction.function],
+      [GL.Capability.StencilFrontRef, rs.stencil.frontFunction.ref],
+      [GL.Capability.StencilFrontOpFail, rs.stencil.frontOperation.fail],
+      [GL.Capability.StencilFrontOpZFail, rs.stencil.frontOperation.zFail],
+      [GL.Capability.StencilFrontOpZPass, rs.stencil.frontOperation.zPass],
 
-		  [GL.Capability.StencilBackFunc, rs.stencil.backFunction.function],
-		  [GL.Capability.StencilBackRef, rs.stencil.backFunction.ref],
-		  [GL.Capability.StencilBackOpFail, rs.stencil.backOperation.fail],
-		  [GL.Capability.StencilBackOpZFail, rs.stencil.backOperation.zFail],
-		  [GL.Capability.StencilBackOpZPass, rs.stencil.backOperation.zPass],
+      [GL.Capability.StencilBackFunc, rs.stencil.backFunction.function],
+      [GL.Capability.StencilBackRef, rs.stencil.backFunction.ref],
+      [GL.Capability.StencilBackOpFail, rs.stencil.backOperation.fail],
+      [GL.Capability.StencilBackOpZFail, rs.stencil.backOperation.zFail],
+      [GL.Capability.StencilBackOpZPass, rs.stencil.backOperation.zPass],
 
-		  // The WebGL spec states these are 32-bit unsigned integers and initially all bits are set.
-		  // Chrome or ANGLE appears to have a bug that always leaves the high bit unset, even if you explicitly
-		  // call e.g., stencilMask(0xffffffff).
-		  // Firefox does not exhibit this bug.
-		  // Ignore for now.
-		  // [GL.Capability.StencilWriteMask, rs.stencilMask],
-		  // [GL.Capability.StencilFrontWriteMask, rs.stencil.frontFunction.mask],
-		  // [GL.Capability.StencilBackWriteMask, rs.stencil.backFunction.mask],
-		];
+      // The WebGL spec states these are 32-bit unsigned integers and initially all bits are set.
+      // Chrome or ANGLE appears to have a bug that always leaves the high bit unset, even if you explicitly
+      // call e.g., stencilMask(0xffffffff).
+      // Firefox does not exhibit this bug.
+      // Ignore for now.
+      // [GL.Capability.StencilWriteMask, rs.stencilMask],
+      // [GL.Capability.StencilFrontWriteMask, rs.stencil.frontFunction.mask],
+      // [GL.Capability.StencilBackWriteMask, rs.stencil.backFunction.mask],
+    ];
 
-		for (const testCase of testCases) {
-		  const actualValue = gl.getParameter(testCase[0]);
+    for (const testCase of testCases) {
+      const actualValue = gl.getParameter(testCase[0]);
 		  expect(testCase[1]).toEqual(actualValue);
-		}
+    }
 
-		const glBlendColor = gl.getParameter(GL.Capability.BlendColor);
-		const rsBlendColor = rs.blend.color;
-		for (let i = 0; i < 4; i++)
+    const glBlendColor = gl.getParameter(GL.Capability.BlendColor);
+    const rsBlendColor = rs.blend.color;
+    for (let i = 0; i < 4; i++)
 		  expect(rsBlendColor[i]).toEqual(glBlendColor[i]);
   });
 

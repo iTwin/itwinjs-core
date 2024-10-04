@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { Cartographic, DisplayStyle3dProps, EcefLocation, EmptyLocalization, GeoCoordinatesRequestProps, IModelConnectionProps, IModelCoordinatesRequestProps, PointWithStatus } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { FeatureGraphicsRenderer } from "../../../tile/internal";
+import {
+  FeatureGraphicsRenderer,
+} from "../../../tile/internal";
 import { BlankConnection, IModelConnection } from "../../../IModelConnection";
 import { GeoServices, GeoServicesOptions } from "../../../GeoServices";
 import { Guid, Mutable } from "@itwin/core-bentley";
@@ -46,25 +48,23 @@ export class TestConnection extends BlankConnection {
         }
       },
     });
+
   }
 
   public override getEcefTransform(): Transform {
     return Transform.identity;
   }
 
-  public override get noGcsDefined(): boolean {
-    return this._noGcsDefined;
-  }
-  public override get isClosed(): boolean {
-    return false;
-  }
+  public override get noGcsDefined(): boolean { return this._noGcsDefined; }
+  public override get isClosed(): boolean { return false; }
+
 }
 
 const createImodelProps = () => {
-  return {
+  return  {
     rootSubject: { name: "test-connection" },
     projectExtents: new Range3d(-10000, -10000, -10000, 10000, 10000, 100),
-    ecefLocation: EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({ longitude: -75.152149, latitude: 39.9296167, height: 0 })),
+    ecefLocation:  EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({ longitude: -75.152149, latitude: 39.9296167, height: 0 })),
     key: "",
     iTwinId: Guid.createValue(),
   };
@@ -113,20 +113,20 @@ const cloneCoords = (coords: XYZProps[]) => {
 };
 
 const sampleGeoServicesProps = {
-  toIModelCoords: async (request: IModelCoordinatesRequestProps) => cloneCoords(request.geoCoords),
-  fromIModelCoords: async (request: GeoCoordinatesRequestProps) => cloneCoords(request.iModelCoords),
+  toIModelCoords: async ( request: IModelCoordinatesRequestProps) => cloneCoords(request.geoCoords),
+  fromIModelCoords: async ( request: GeoCoordinatesRequestProps) => cloneCoords(request.iModelCoords),
 };
 
 const sampleiModelProps = {
   rootSubject: { name: "test-connection" },
   projectExtents: new Range3d(-10, 10, -10, -10, 10, 100),
-  ecefLocation: EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 })),
+  ecefLocation:  EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 })),
   key: "",
   iTwinId: Guid.createValue(),
 };
 
 describe("FeatureGraphicsRenderer", () => {
-  let viewportMock: ViewportMock | undefined;
+  let viewportMock: ViewportMock|undefined;
   beforeEach(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     viewportMock = new ViewportMock();
@@ -140,9 +140,14 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render non-filled paths correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({ viewport: viewportMock!.object, crs: "webMercator" });
-    const testLengths = [2, 2];
-    const testCoords = [-8368830.26, 4866490.12, -8368794.98, 4866483.84, -8368804.29, 4866426.86, -8368850.49, 4866434.57];
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
+    const testLengths = [2,2];
+    const testCoords = [
+      -8368830.26, 4866490.12,
+      -8368794.98, 4866483.84,
+      -8368804.29, 4866426.86,
+      -8368850.49, 4866434.57,
+    ];
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -159,7 +164,7 @@ describe("FeatureGraphicsRenderer", () => {
     expect(graphics.length).toEqual(2);
     for (const graphic of graphics) {
       expect(graphic.type).toEqual("linestring");
-      const linestring = graphic as GraphicLineString;
+      const linestring  = graphic as GraphicLineString;
       expect(linestring.points.length).toEqual(2);
       for (const pt of linestring.points) {
         expect(Math.abs(pt.x - testCoords[i++])).toBeLessThan(tolerance);
@@ -172,7 +177,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render filled paths correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({ viewport: viewportMock!.object, crs: "webMercator" });
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -180,10 +185,18 @@ describe("FeatureGraphicsRenderer", () => {
       return geoPoints;
     });
 
-    const testCoords = [-8368830.26, 4866490.12, -8368794.98, 4866483.84, -8368804.29, 4866426.86, -8368850.49, 4866434.57, -8368853.17, 4866437.99, -8368844.2, 4866492.5, -8368830.26, 4866490.12];
+    const testCoords = [
+      -8368830.26, 4866490.12,
+      -8368794.98, 4866483.84,
+      -8368804.29, 4866426.86,
+      -8368850.49, 4866434.57,
+      -8368853.17, 4866437.99,
+      -8368844.2, 4866492.5,
+      -8368830.26, 4866490.12,
+    ];
 
     // Make sure each render call makes translate into a single call to 'toIModelCoords' (i.e. points should NOT be converted one by one)
-    await renderer.renderPath([testCoords.length / 2], testCoords, true, 2, false);
+    await renderer.renderPath([testCoords.length/2], testCoords, true, 2, false);
     const graphics = renderer.moveGraphics();
     expect(graphics.length).toEqual(1);
     expect(graphics[0].type).toEqual("loop");
@@ -203,7 +216,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   it("render point correctly", async () => {
-    const renderer = new FeatureGraphicsRenderer({ viewport: viewportMock!.object, crs: "webMercator" });
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
@@ -211,10 +224,12 @@ describe("FeatureGraphicsRenderer", () => {
       return geoPoints;
     });
 
-    const testCoords = [-8368830.26, 4866490.12];
+    const testCoords = [
+      -8368830.26, 4866490.12,
+    ];
 
     // Make sure each render call makes translate into a single call to 'toIModelCoords' (i.e. points should NOT be converted one by one)
-    await renderer.renderPoint([testCoords.length / 2], testCoords, 2, false);
+    await renderer.renderPoint([testCoords.length/2], testCoords, 2, false);
     const graphics = renderer.moveGraphics();
     expect(graphics.length).toEqual(1);
     expect(graphics[0].type).toEqual("pointstring");
@@ -234,13 +249,19 @@ describe("FeatureGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new FeatureGraphicsRenderer({ viewport: viewportMock!.object, crs: "webMercator" });
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
-    const testLengths = [4, 4];
+    const testLengths = [4,4];
     const testCoords = [
-      -8425593.033762699, 4875527.516249214, -8425446.432177741, 4875531.597149869, -8425405.243966147, 4875392.564639658, -8425582.24195651, 4875371.3119488945,
+      -8425593.033762699, 4875527.516249214,
+      -8425446.432177741, 4875531.597149869,
+      -8425405.243966147,4875392.564639658,
+      -8425582.24195651, 4875371.3119488945,
       // duplicate
-      -8425593.033762699, 4875527.516249214, -8425446.432177741, 4875531.597149869, -8425405.243966147, 4875392.564639658, -8425582.24195651, 4875371.3119488945,
+      -8425593.033762699, 4875527.516249214,
+      -8425446.432177741, 4875531.597149869,
+      -8425405.243966147,4875392.564639658,
+      -8425582.24195651, 4875371.3119488945,
     ];
 
     // Make sure each render call makes translate into a single call to 'toIModelCoords' (i.e. points should NOT be converted one by one)
@@ -268,13 +289,19 @@ describe("FeatureGraphicsRenderer", () => {
     viewportMock!.imodel = connection;
     viewportMock!.displayStyle = new DisplayStyle3dState(styleProps, connection);
     viewportMock!.setup();
-    const renderer = new FeatureGraphicsRenderer({ viewport: viewportMock!.object, crs: "webMercator" });
+    const renderer = new FeatureGraphicsRenderer({viewport: viewportMock!.object, crs: "webMercator"});
 
-    const testLengths = [4, 4];
+    const testLengths = [4,4];
     const testCoords = [
-      -8425593.033762699, 4875527.516249214, -8425446.432177741, 4875531.597149869, -8425405.243966147, 4875392.564639658, -8425582.24195651, 4875371.3119488945,
+      -8425593.033762699, 4875527.516249214,
+      -8425446.432177741, 4875531.597149869,
+      -8425405.243966147,4875392.564639658,
+      -8425582.24195651, 4875371.3119488945,
       // duplicate
-      -8425593.033762699, 4875527.516249214, -8425446.432177741, 4875531.597149869, -8425405.243966147, 4875392.564639658, -8425582.24195651, 4875371.3119488945,
+      -8425593.033762699, 4875527.516249214,
+      -8425446.432177741, 4875531.597149869,
+      -8425405.243966147,4875392.564639658,
+      -8425582.24195651, 4875371.3119488945,
     ];
 
     await renderer.renderPath(testLengths, testCoords, false, 2, false);

@@ -1,16 +1,14 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
 import { ColorByName, ColorDef, GraphicParams, LinePixels } from "@itwin/core-common";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() {
-    super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
-  }
+  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
 }
 
 describe("DisplayParams creation tests", () => {

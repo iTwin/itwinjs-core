@@ -70,16 +70,16 @@ describe("Viewport", () => {
     function expectFlashedId(viewport: ScreenViewport, expectedId: string | undefined, expectedEvent: ChangedEvent | undefined, func: () => void): void {
       let event: ChangedEvent | undefined;
       const removeListener = viewport.onFlashedIdChanged.addListener((vp, arg) => {
-        expect(vp).toEqual(viewport);
-        expect(event).toBeUndefined();
+        expect(vp).to.equal(viewport);
+        expect(event).to.be.undefined;
         event = [arg.previous, arg.current];
       });
 
       func();
       removeListener();
 
-      expect(viewport.flashedId).toEqual(expectedId);
-      expect(event).toEqual(expectedEvent);
+		  expect(viewport.flashedId).toEqual(expectedId);
+		  expect(event).toEqual(expectedEvent);
     }
 
     it("dispatches events when flashed Id changes", () => {
@@ -113,7 +113,7 @@ describe("Viewport", () => {
       testBlankViewport((viewport) => {
         const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
         viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
-        expect(() => viewport.flashedId = "0x12345").toThrowError("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
+        expect(() => (viewport.flashedId = "0x12345")).toThrowError("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
         UnexpectedErrors.setHandler(oldHandler);
       });
     });
@@ -145,13 +145,13 @@ describe("Viewport", () => {
         function expectChangedEvent(expectedPayload: EventPayload, func: () => void): void {
           let payload: EventPayload = "none";
           const removeListener = viewport.addOnAnalysisStyleChangedListener((style) => {
-            expect(payload).toEqual("none");
+				    expect(payload).toEqual("none");
             payload = style ?? "undefined";
           });
 
           func();
           removeListener();
-          expect(payload).toEqual(expectedPayload);
+				  expect(payload).toEqual(expectedPayload);
         }
 
         const a = AnalysisStyle.fromJSON({ normalChannelName: "a" });
@@ -169,13 +169,13 @@ describe("Viewport", () => {
         const c = AnalysisStyle.fromJSON({ normalChannelName: "c" });
         expectChangedEvent(c, () => {
           const view = viewport.view.clone();
-          expect(view.displayStyle).not.toEqual(viewport.view.displayStyle);
+				  expect(view.displayStyle).not.toEqual(viewport.view.displayStyle);
           view.displayStyle.settings.analysisStyle = c;
           viewport.changeView(view);
         });
 
         expectChangedEvent("undefined", () => viewport.displayStyle.settings.analysisStyle = undefined);
-        expectChangedEvent("none", () => viewport.displayStyle.settings.analysisStyle = undefined);
+        expectChangedEvent("none", () => (viewport.displayStyle.settings.analysisStyle = undefined));
       });
     });
   });

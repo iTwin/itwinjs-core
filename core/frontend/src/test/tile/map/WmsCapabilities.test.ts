@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { WmsCapabilities } from "../../../tile/map/WmsCapabilities";
@@ -81,12 +81,9 @@ describe("WmsCapabilities", () => {
   it("should request proper URL", async () => {
     const fetchStub = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response());
     const sampleUrl = "https://service.server.com/rest/WMS";
-    const params = new URLSearchParams([
-      ["key1_1", "value1_1"],
-      ["key1_2", "value1_2"],
-    ]);
-    const queryParams: { [key: string]: string } = {};
-    params.forEach((value: string, key: string) => (queryParams[key] = value));
+    const params = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const queryParams: {[key: string]: string} = {};
+    params.forEach((value: string, key: string) =>  queryParams[key] = value);
     await WmsCapabilities.create(sampleUrl, undefined, true, queryParams);
     expect(fetchStub).toHaveBeenCalledTimes(1);
     const firstCall = fetchStub.mock.calls[0];

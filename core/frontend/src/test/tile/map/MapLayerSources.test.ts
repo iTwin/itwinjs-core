@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { MapSubLayerSettings } from "@itwin/core-common";
 import { describe, expect, it } from "vitest";
@@ -17,8 +17,9 @@ const sampleSourceJson = {
 };
 
 describe("MapLayerSources", () => {
+
   it("should create MapLayerSource with defaults", async () => {
-    const testSourceProps: MapLayerSourceProps = { name: sampleSourceJson.name, url: sampleSourceJson.url };
+    const testSourceProps: MapLayerSourceProps = {name: sampleSourceJson.name, url: sampleSourceJson.url};
     const sampleSource = MapLayerSource.fromJSON(testSourceProps);
     expect(sampleSource).toBeDefined();
     expect(sampleSource!.formatId).toEqual("WMS");
@@ -29,6 +30,7 @@ describe("MapLayerSources", () => {
   });
 
   it("should create MapLayerSource from MapLayerSourceProps", async () => {
+
     let sampleSource = MapLayerSource.fromJSON(sampleSourceJson);
     expect(sampleSource).toBeDefined();
     expect(sampleSource!.formatId).toEqual(sampleSourceJson.formatId);
@@ -59,7 +61,7 @@ describe("MapLayerSources", () => {
     // Save props not part of of props
     sampleSource!.userName = "testUser";
     sampleSource!.password = "testPassword";
-    sampleSource!.unsavedQueryParams = { unsavedParam: "unsavedParamValue" };
+    sampleSource!.unsavedQueryParams = {unsavedParam : "unsavedParamValue"};
 
     expect(sampleSource).toBeDefined();
     if (!sampleSource)
@@ -95,7 +97,7 @@ describe("MapLayerSources", () => {
     // Save props not part of of props (should have no impact on resulting JSON)
     sampleSource!.userName = "testUser";
     sampleSource!.password = "testPassword";
-    sampleSource!.unsavedQueryParams = { unsavedParam: "unsavedParamValue" };
+    sampleSource!.unsavedQueryParams = {unsavedParam : "unsavedParamValue"};
 
     const sourceProps = sampleSource!.toJSON();
     expect(sampleSourceJson.formatId).toEqual(sourceProps.formatId);

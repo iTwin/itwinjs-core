@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../IModelApp";
@@ -10,15 +10,11 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderTarget } from "../../render/RenderTarget";
 import { ViewRect } from "../../common/ViewRect";
 
-class MyTarget extends MockRender.OffScreenTarget {}
-class MyList extends MockRender.List {}
+class MyTarget extends MockRender.OffScreenTarget { }
+class MyList extends MockRender.List { }
 class MySystem extends MockRender.System {
-  public override createOffscreenTarget(rect: ViewRect): RenderTarget {
-    return new MyTarget(this, rect);
-  }
-  public override createGraphicList(list: RenderGraphic[]) {
-    return new MyList(list);
-  }
+  public override createOffscreenTarget(rect: ViewRect): RenderTarget { return new MyTarget(this, rect); }
+  public override createGraphicList(list: RenderGraphic[]) { return new MyList(list); }
 }
 
 describe("MockRender", () => {

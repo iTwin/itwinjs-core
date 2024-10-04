@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
@@ -9,20 +9,19 @@ import { IModelConnection } from "../../IModelConnection";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport, Viewport } from "../../Viewport";
 import { IModelApp } from "../../IModelApp";
-import { Tile, TileContent, TiledGraphicsProvider, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal";
+import {
+  Tile, TileContent, TiledGraphicsProvider, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+} from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 import { EmptyLocalization } from "@itwin/core-common";
 
 class TestTile extends Tile {
   public constructor(tree: TileTree) {
-    super(
-      {
-        contentId: "test",
-        range: new Range3d(0, 0, 0, 1, 1, 1),
-        maximumSize: 5,
-      },
-      tree,
-    );
+    super({
+      contentId: "test",
+      range: new Range3d(0, 0, 0, 1, 1, 1),
+      maximumSize: 5,
+    }, tree);
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
@@ -63,25 +62,17 @@ class TestTree extends TileTree {
     return BeDuration.wait(1);
   }
 
-  public get rootTile(): TestTile {
-    return this._rootTile;
-  }
-  public get is3d() {
-    return true;
-  }
-  public get maxDepth() {
-    return undefined;
-  }
-  public get viewFlagOverrides() {
-    return {};
-  }
+  public get rootTile(): TestTile { return this._rootTile; }
+  public get is3d() { return true; }
+  public get maxDepth() { return undefined; }
+  public get viewFlagOverrides() { return {}; }
 
   protected _selectTiles(): Tile[] {
     return [this.rootTile];
   }
 
-  public draw() {}
-  public prune() {}
+  public draw() { }
+  public prune() { }
 }
 
 class TestSupplier implements TileTreeSupplier {
@@ -109,9 +100,7 @@ class TestRef extends TileTreeReference {
     this._owner.load();
   }
 
-  public get treeOwner() {
-    return this._owner;
-  }
+  public get treeOwner() { return this._owner; }
 
   protected override get _isLoadingComplete(): boolean {
     return this.loadingComplete;
@@ -250,7 +239,8 @@ describe("TiledGraphicsProvider", () => {
     ref.extents.scaleAboutCenterInPlace(2.0);
     expectExtents(ref.extents);
 
-    ref.extents = new Range3d(projExtents.low.x - 10, projExtents.low.y + 20, projExtents.low.z, projExtents.high.x + 30, projExtents.high.y - 40, projExtents.high.z * 50);
+    ref.extents = new Range3d(projExtents.low.x - 10, projExtents.low.y + 20, projExtents.low.z,
+      projExtents.high.x + 30, projExtents.high.y - 40, projExtents.high.z * 50);
 
     expectExtents(new Range3d(projExtents.low.x - 10, projExtents.low.y, projExtents.low.z, projExtents.high.x + 30, projExtents.high.y, projExtents.high.z * 50));
   });

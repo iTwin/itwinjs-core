@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
@@ -20,16 +20,13 @@ import {
 } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 
-const getSampleLayerSettings = (formatId: string) => {
+const getSampleLayerSettings = ((formatId: string) => {
   return ImageMapLayerSettings.fromJSON({
-    formatId,
-    url: "https://localhost/service",
-    name: `Test ${formatId}`,
+    formatId, url: "https://localhost/service", name: `Test ${formatId}`,
   });
-};
+});
 
 describe("MapLayerImageryFormats", () => {
-
   beforeEach(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
@@ -40,7 +37,6 @@ describe("MapLayerImageryFormats", () => {
       await IModelApp.shutdown();
   });
   describe("should create proper provider", () => {
-
     beforeEach(async () => {
       const registry = new MapLayerFormatRegistry({});
       internalMapLayerImageryFormats.forEach((imageryFormat) => {
@@ -87,7 +83,7 @@ describe("MapLayerImageryFormats", () => {
     const testValidateSource = async (source: MapLayerSource, url: string) => {
       const stub = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response());
       const urlObj = new URL(url);
-      await IModelApp.mapLayerFormatRegistry.validateSource({ source });
+      await IModelApp.mapLayerFormatRegistry.validateSource({source});
       expect(stub).toHaveBeenCalled();
       const firstCall = stub.mock.calls[0][0];
       if (firstCall instanceof URL) {
@@ -96,14 +92,8 @@ describe("MapLayerImageryFormats", () => {
         expect(firstCall).toBe(urlObj.toString());
       }
 
-      const param1 = new URLSearchParams([
-        ["key1_1", "value1_1"],
-        ["key1_2", "value1_2"],
-      ]);
-      const param2 = new URLSearchParams([
-        ["key2_1", "value2_2"],
-        ["key2_2", "value2_2"],
-      ]);
+      const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+      const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
       source.savedQueryParams = {};
       source.unsavedQueryParams = {};
       param1.forEach((value: string, key: string) => {
@@ -135,7 +125,7 @@ describe("MapLayerImageryFormats", () => {
 
     it("validate WMTS source with proper URL", async () => {
       const url = "https://sub.service.com/service";
-      const source = MapLayerSource.fromJSON({ formatId: "WMTS", name: "", url });
+      const source = MapLayerSource.fromJSON({formatId:"WMTS", name: "", url});
       if (!source) {
         expect.fail("Failed to create source");
       }
@@ -145,7 +135,7 @@ describe("MapLayerImageryFormats", () => {
 
     it("validate ArcGIS source with proper URL", async () => {
       const url = "https://sub.service.com/service";
-      const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "", url });
+      const source = MapLayerSource.fromJSON({formatId:"ArcGIS", name: "", url});
       if (!source) {
         expect.fail("Failed to create source");
       }

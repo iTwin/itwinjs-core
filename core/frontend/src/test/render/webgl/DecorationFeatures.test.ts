@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, describe, it } from "vitest";
 import { ColorDef, EmptyLocalization, RenderMode } from "@itwin/core-common";
 import { GraphicType, IModelApp, ScreenViewport } from "../../../core-frontend";

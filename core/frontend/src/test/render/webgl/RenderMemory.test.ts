@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture, TextureTransparency } from "@itwin/core-common";
@@ -30,11 +30,11 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
   if (opts?.texture) {
     textureMapping = {
       texture: opts.texture,
-      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)],
+      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ],
     };
   }
 
-  const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0)];
+  const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
   const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
   for (const point of points)
     qpoints.add(point);
@@ -43,12 +43,7 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
   if (opts?.includeEdges) {
     edges = new MeshArgsEdges();
     edges.edges.edges = [];
-    for (const indexPair of [
-      [0, 1],
-      [1, 3],
-      [3, 2],
-      [2, 0],
-    ])
+    for (const indexPair of [[0, 1], [1, 3], [3, 2], [2, 0]])
       edges.edges.edges.push(new MeshEdge(indexPair[0], indexPair[1]));
   }
 

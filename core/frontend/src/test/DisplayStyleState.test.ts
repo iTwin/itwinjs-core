@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Code, DisplayStyle3dProps, EmptyLocalization, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
@@ -24,27 +24,17 @@ describe("DisplayStyleState", () => {
       await IModelApp.shutdown();
     });
 
-    const script1: RenderSchedule.ScriptProps = [
-      {
-        modelId: "0x1",
-        visibilityTimeline: [
-          { time: 1234, value: 0 },
-          { time: 5678, value: 50 },
-        ],
-        elementTimelines: [],
-      },
-    ];
+    const script1: RenderSchedule.ScriptProps = [{
+      modelId: "0x1",
+      visibilityTimeline: [{ time: 1234, value: 0 }, { time: 5678, value: 50 }],
+      elementTimelines: [],
+    }];
 
-    const script2: RenderSchedule.ScriptProps = [
-      {
-        modelId: "0x2",
-        visibilityTimeline: [
-          { time: 1234, value: 0 },
-          { time: 5678, value: 50 },
-        ],
-        elementTimelines: [],
-      },
-    ];
+    const script2: RenderSchedule.ScriptProps = [{
+      modelId: "0x2",
+      visibilityTimeline: [{ time: 1234, value: 0 }, { time: 5678, value: 50 }],
+      elementTimelines: [],
+    }];
 
     class Style extends DisplayStyle3dState {
       public readonly eventPayloads: Array<RenderSchedule.ScriptReference | undefined>;
@@ -69,9 +59,7 @@ describe("DisplayStyleState", () => {
         expect(this.scheduleScript!.modelTimelines[0].modelId).toEqual(props[0].modelId);
       }
 
-      public get isLoading() {
-        return undefined !== this._queryRenderTimelinePropsPromise;
-      }
+      public get isLoading() { return undefined !== this._queryRenderTimelinePropsPromise; }
       public async finishLoading() {
         while (this._queryRenderTimelinePropsPromise)
           await this._queryRenderTimelinePropsPromise;

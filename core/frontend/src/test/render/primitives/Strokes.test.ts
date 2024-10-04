@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { Point3d } from "@itwin/core-geometry";
 import { StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";

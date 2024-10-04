@@ -1,9 +1,11 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Tile, TileContentDecodingStatistics, TileRequestChannel, TileRequestChannels } from "../../tile/internal";
+import {
+  Tile, TileContentDecodingStatistics, TileRequestChannel, TileRequestChannels,
+} from "../../tile/internal";
 
 // Assumes no minification or uglification.
 function expectClassName(obj: Object, name: string): void {
@@ -101,7 +103,7 @@ describe("TileRequestChannels", () => {
     channels.add(c3);
 
     const tile = { isEmpty: false, isUndisplayable: false } as unknown as Tile;
-    const content = {};
+    const content = { };
 
     const expectStats = (expected: TileContentDecodingStatistics) => {
       const actual = channels.statistics.decoding;

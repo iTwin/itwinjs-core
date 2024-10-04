@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, MeshPolyline, OctEncodedNormal } from "@itwin/core-common";
@@ -12,9 +12,7 @@ import { Triangle } from "../../../common/internal/render/Primitives";
 import { VertexKey } from "../../../common/internal/render/VertexKey";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() {
-    super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
-  }
+  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
 }
 
 /**

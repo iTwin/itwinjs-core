@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
 import { ShaderProgram } from "../../../render/webgl/ShaderProgram";
-import { ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType } from "../../../render/webgl/ShaderBuilder";
+import {
+  ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
+} from "../../../render/webgl/ShaderBuilder";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ShaderBuilder", () => {
@@ -41,7 +43,11 @@ describe("ShaderBuilder", () => {
     vars.addVarying("z", VariableType.Int);
     vars.addGlobal("w", VariableType.Int, "123", true);
 
-    const expectedDecls = ["uniform highp float x;", "const int w = 123;", "out int z;\n"].join("\n");
+    const expectedDecls = [
+      "uniform highp float x;",
+      "const int w = 123;",
+      "out int z;\n",
+    ].join("\n");
 
     expect(vars.buildDeclarations(true)).toEqual(expectedDecls);
   });

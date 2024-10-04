@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { desync, isSynchronized, sync, SyncObserver } from "../../../render/webgl/Sync";
 
 describe("SyncObserver", () => {
   it("should synchronize with Sync", () => {
     const target = { syncKey: 0 };
-    const observer: SyncObserver = {};
+    const observer: SyncObserver = { };
 
     expect(isSynchronized(target, observer)).toBe(false);
     expect(sync(target, observer)).toBe(false);

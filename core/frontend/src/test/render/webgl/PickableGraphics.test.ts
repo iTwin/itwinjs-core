@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, RenderMode } from "@itwin/core-common";
@@ -65,21 +65,21 @@ describe("Pickable graphic", () => {
       expect(actual.has(id)).toBe(true);
   }
 
-  it("is pickable", { timeout: 20000 }, () => { // macOS is slow.
+  it("is pickable", { timeout: 20000 }, () => {  // macOS is slow.
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, pickable: { id: "0x123", locateOnly: false } });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
     expect(dec.pickable).toBeDefined();
     expectIds([dec.pickable!.id]);
   });
 
-  it("optionally draws only for pick", { timeout: 20000 }, () => { // macOS is slow.
+  it("optionally draws only for pick", { timeout: 20000 }, () => {  // macOS is slow.
     const dec = new BoxDecorator({ viewport, color: ColorDef.blue, pickable: { id: "0x456", locateOnly: true } });
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor]);
     expect(dec.pickable).toBeDefined();
     expectIds([dec.pickable!.id]);
   });
 
-  it("can contain multiple features", { timeout: 20000 }, () => { // macOS is slow.
+  it("can contain multiple features", { timeout: 20000 }, () => {  // macOS is slow.
     expect(viewport.viewFlags.constructions).toBe(false);
     const bgColor = viewport.view.displayStyle.backgroundColor;
 

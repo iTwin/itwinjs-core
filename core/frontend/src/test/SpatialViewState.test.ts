@@ -72,10 +72,7 @@ describe("SpatialViewState", () => {
   describe("computeFitRange", () => {
     it("unions ranges of all tile trees", () => {
       expectFitRange(createView([new Range3d(0, 1, 2, 3, 4, 5)]), new Range3d(0, 1, 2, 3, 4, 5));
-      expectFitRange(createView([
-        new Range3d(0, 1, 2, 3, 4, 5),
-        new Range3d(-1, 2, 2, 2, 5, 7),
-      ]), new Range3d(-1, 1, 2, 3, 5, 7));
+      expectFitRange(createView([new Range3d(0, 1, 2, 3, 4, 5), new Range3d(-1, 2, 2, 2, 5, 7)]), new Range3d(-1, 1, 2, 3, 5, 7));
     });
 
     it("falls back to slightly-expanded project extents upon null range", () => {

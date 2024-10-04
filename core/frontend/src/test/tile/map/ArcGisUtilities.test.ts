@@ -17,22 +17,14 @@ function stubGetServiceJson(json: any) {
 }
 
 const getSampleSource = () => {
-  return MapLayerSource.fromJSON({
+  return  MapLayerSource.fromJSON({
     name: "dummyFeatureLayer",
     url: "https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/ArcGIS/rest/services/PhillyRailLines/MapServer",
-    formatId: "Arcgis",
-  });
+    formatId: "Arcgis"});
 };
 
-const unsaved = new URLSearchParams([
-  ["key1_1", "value1_1"],
-  ["key1_2", "value1_2"],
-  ["testParam", "BAD"],
-]);
-const saved = new URLSearchParams([
-  ["key2_1", "value2_1"],
-  ["key2_2", "value2_2"],
-]);
+const unsaved = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"], ["testParam", "BAD"]]);
+const saved = new URLSearchParams([["key2_1", "value2_1"], ["key2_2", "value2_2"] ]);
 
 const getSampleSourceWithQueryParams = () => {
   const source = getSampleSource();
@@ -60,7 +52,7 @@ describe("ArcGisUtilities", () => {
   });
 
   it("should compute resolution and scale for LOD range", async () => {
-    let scales = ArcGisUtilities.computeZoomLevelsScales(5, 10);
+    let scales = ArcGisUtilities.computeZoomLevelsScales(5,10);
     expect(scales.length).toEqual(6);
     expect(scales[0].zoom).toEqual(5);
     expect(scales[5].zoom).toEqual(10);
@@ -68,22 +60,22 @@ describe("ArcGisUtilities", () => {
     // Test scales for 256px tiles
     scales = ArcGisUtilities.computeZoomLevelsScales();
     expect(scales.length).toEqual(wsg84Lods256px.length);
-    for (let i = 0; i < scales.length; i++) {
+    for (let i=0 ; i < scales.length; i++) {
       expect(Math.abs(scales[i].resolution - wsg84Lods256px[i].resolution)).toBeLessThan(tolerance);
       expect(Math.abs(scales[i].scale - wsg84Lods256px[i].scale)).toBeLessThan(tolerance);
     }
 
     // Test scales for 512px tiles
-    scales = ArcGisUtilities.computeZoomLevelsScales(0, 20, 0, 512);
+    scales = ArcGisUtilities.computeZoomLevelsScales(0,20,0,512);
     expect(scales.length).toEqual(wsg84Lods512px.length);
-    for (let i = 0; i < scales.length; i++) {
+    for (let i=0 ; i < scales.length; i++) {
       expect(Math.abs(scales[i].resolution - wsg84Lods512px[i].resolution)).toBeLessThan(tolerance);
       expect(Math.abs(scales[i].scale - wsg84Lods512px[i].scale)).toBeLessThan(tolerance);
     }
 
     // Make sure we can get zooms level one by one.
-    for (let i = 0; i < wsg84Lods256px.length; i++) {
-      scales = ArcGisUtilities.computeZoomLevelsScales(i, i, 0, 256);
+    for (let i=0 ; i < wsg84Lods256px.length; i++) {
+      scales = ArcGisUtilities.computeZoomLevelsScales(i,i,0,256);
       expect(scales.length).toEqual(1);
       expect(Math.abs(scales[0].resolution - wsg84Lods256px[i].resolution)).toBeLessThan(tolerance);
       expect(Math.abs(scales[0].scale - wsg84Lods256px[i].scale)).toBeLessThan(tolerance);
@@ -122,9 +114,7 @@ describe("ArcGisUtilities", () => {
     const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async function (_input: RequestInfo | URL, _init?: RequestInit) {
       return Promise.resolve({
         status: 200,
-        json: async () => {
-          return {};
-        },
+        json: async () => {return {};},
       } as unknown as Response);
     });
     await ArcGisUtilities.getServiceJson({ url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams() });
@@ -139,7 +129,7 @@ describe("ArcGisUtilities", () => {
     const stub = stubGetServiceJson({ content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired: false });
     const source = getSampleSourceWithQueryParamsAndCreds();
 
-    await ArcGisUtilities.validateSource({ source, ignoreCache: true, capabilitiesFilter: [] });
+    await ArcGisUtilities.validateSource({source, ignoreCache: true, capabilitiesFilter: []});
 
     expect(stub).toHaveBeenCalledOnce();
     const firstCall = stub.mock.calls[0];
@@ -153,13 +143,13 @@ describe("ArcGisUtilities", () => {
 
   it("should validate proper source", async () => {
     stubGetServiceJson({ content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired: false });
-    const result = ArcGisUtilities.validateSource({ source: getSampleSource()!, capabilitiesFilter: [] });
+    const  result = ArcGisUtilities.validateSource({source: getSampleSource()!, capabilitiesFilter: []});
     expect((await result).status).toEqual(MapLayerSourceStatus.Valid);
   });
 
   it("validate should detect invalid coordinate system", async () => {
     stubGetServiceJson({ content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired: false });
-    const result = ArcGisUtilities.validateSource({ source: getSampleSource()!, capabilitiesFilter: [] });
+    const  result = ArcGisUtilities.validateSource({source: getSampleSource()!, capabilitiesFilter: []});
     expect((await result).status).toEqual(MapLayerSourceStatus.InvalidCoordinateSystem);
   });
 
@@ -178,5 +168,6 @@ describe("ArcGisUtilities", () => {
 
     status = ArcGisUtilities.validateUrl("https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/arcgis/restXYZ/services/PhillyCityLandmarks/MapServer", "FeatureServer");
     expect(status).toEqual(MapLayerSourceStatus.InvalidUrl);
+
   });
 });

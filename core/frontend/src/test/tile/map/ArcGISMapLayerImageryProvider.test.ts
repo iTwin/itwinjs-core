@@ -1,12 +1,22 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { Cartographic, EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { ArcGisGetServiceJsonArgs, ArcGISIdentifyRequestUrl, ArcGISIdentifyRequestUrlProps, ArcGISImageryProvider, ArcGISMapLayerImageryProvider, ArcGisUtilities, MapLayerImageryProvider, QuadId } from "../../../tile/internal";
+import {
+  ArcGisGetServiceJsonArgs,
+  ArcGISIdentifyRequestUrl,
+  ArcGISIdentifyRequestUrlProps,
+  ArcGISImageryProvider,
+  ArcGISMapLayerImageryProvider,
+  ArcGisUtilities,
+  MapLayerImageryProvider,
+  QuadId,
+
+} from "../../../tile/internal";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 import { Range2dProps } from "@itwin/core-geometry";
 import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
@@ -21,8 +31,8 @@ function stubJsonFetch(json: string) {
         return JSON.parse(json);
       },
       status: 200,
-    } as unknown; // By using unknown type, I can define parts of Response I really need
-    return test as Response;
+    } as unknown;   // By using unknown type, I can define parts of Response I really need
+    return (test as Response);
   });
 }
 
@@ -176,15 +186,8 @@ describe("ArcGISMapLayerImageryProvider", () => {
 
   it("should pass fetch function to ArcGISTileMap object", async () => {
     const settings = ImageMapLayerSettings.fromJSON(sampleSource);
-    const unsaved = new URLSearchParams([
-      ["key1_1", "value1_1"],
-      ["key1_2", "value1_2"],
-      ["testParam", "BAD"],
-    ]);
-    const saved = new URLSearchParams([
-      ["key2_1", "value2_1"],
-      ["key2_2", "value2_"],
-    ]);
+    const unsaved = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"], ["testParam", "BAD"]]);
+    const saved = new URLSearchParams([["key2_1", "value2_1"], ["key2_2", "value2_"] ]);
     settings.unsavedQueryParams = indexedArrayFromUrlParams(unsaved);
     settings.savedQueryParams = indexedArrayFromUrlParams(saved);
     if (!settings)

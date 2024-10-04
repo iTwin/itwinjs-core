@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
@@ -33,8 +33,7 @@ const edgeOptions = new MeshEdgeCreationOptions(MeshEdgeCreationOptions.Type.NoE
 describe("Mesh Builder Tests", () => {
   let viewport: ScreenViewport;
 
-  beforeAll(async () => {
-    // Create a ViewState to load into a Viewport
+  beforeAll(async () => {  // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     viewport = openBlankViewport();
   });
@@ -64,7 +63,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addStrokePointLists", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, {type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -169,6 +168,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addFromPolyfaceVisitor", () => {
+
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
     points.push(new Point3d(1, 0, 0));
@@ -390,7 +390,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   function createMeshBuilder(type: MeshPrimitiveType, range: Range3d, options?: Partial<Omit<MeshBuilder.Props, "range" | "type">>): MeshBuilder {
-    options = options ?? {};
+    options = options ?? { };
     const tolerance = options.tolerance ?? 0.15;
     return MeshBuilder.create({
       quantizePositions: false,
@@ -489,8 +489,14 @@ describe("Mesh Builder Tests", () => {
       meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 }, undefined);
 
       const aux = meshBuilder.mesh.auxChannels![0];
-      expect(aux.data[0].values).toEqual([0, 1, 2, 3, 4, 0xffff, 3, 4, 0xffff, 0, 1, 2, 3, 4, 0xffff, 0, 1, 2]);
-      expectAuxChannelTable(meshBuilder.mesh, [0, 0, 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0, 0, 0, 0xffff, 0xffff, 0xffff, 0, 0, 0]);
+      expect(aux.data[0].values).toEqual([
+        0, 1, 2, 3, 4, 0xffff, 3, 4, 0xffff,
+        0, 1, 2, 3, 4, 0xffff, 0, 1, 2,
+      ]);
+      expectAuxChannelTable(meshBuilder.mesh, [
+        0, 0, 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+        0, 0, 0, 0xffff, 0xffff, 0xffff, 0, 0, 0,
+      ]);
     });
   });
 });

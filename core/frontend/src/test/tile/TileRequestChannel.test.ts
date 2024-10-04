@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
@@ -11,7 +11,9 @@ import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { createBlankConnection } from "../createBlankConnection";
-import { Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree } from "../../tile/internal";
+import {
+  Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
+} from "../../tile/internal";
 
 async function runMicroTasks(): Promise<void> {
   return BeDuration.wait(1);
@@ -30,14 +32,11 @@ class TestTile extends Tile {
   public displayable?: boolean;
 
   public constructor(tree: TestTree, channel: LoggingChannel, priority = 0) {
-    super(
-      {
-        contentId: priority.toString(),
-        range: new Range3d(0, 0, 0, 1, 1, 1),
-        maximumSize: 42,
-      },
-      tree,
-    );
+    super({
+      contentId: priority.toString(),
+      range: new Range3d(0, 0, 0, 1, 1, 1),
+      maximumSize: 42,
+    }, tree);
 
     this.requestChannel = channel;
     this.priority = priority;
@@ -157,30 +156,20 @@ class TestTree extends TileTree {
     this._rootTile = new TestTile(this, channel);
   }
 
-  public get rootTile(): TestTile {
-    return this._rootTile;
-  }
-  public get is3d() {
-    return true;
-  }
-  public get maxDepth() {
-    return undefined;
-  }
-  public get viewFlagOverrides() {
-    return {};
-  }
-  protected _selectTiles(): Tile[] {
-    return [];
-  }
-  public draw() {}
-  public prune() {}
+  public get rootTile(): TestTile { return this._rootTile; }
+  public get is3d() { return true; }
+  public get maxDepth() { return undefined; }
+  public get viewFlagOverrides() { return {}; }
+  protected _selectTiles(): Tile[] { return []; }
+  public draw() { }
+  public prune() { }
 }
 
 function mockViewport(iModel: IModelConnection, viewportId = 1): Viewport {
   return {
     viewportId,
     iModel,
-    invalidateScene: () => {},
+    invalidateScene: () => { },
   } as Viewport;
 }
 
@@ -657,9 +646,7 @@ describe("TileRequestChannel", () => {
 
     function expectStats(expected: Partial<TileRequestChannelStatistics>) {
       const stats = channel.statistics;
-      // eslint-disable-next-line guard-for-in
-      for (const propName in expected) {
-        // eslint-disable-line guard-for-in
+      for (const propName in expected) { // eslint-disable-line guard-for-in
         const key = propName as keyof TileRequestChannelStatistics;
         expect(stats[key]).toEqual(expected[key]);
       }
@@ -787,7 +774,7 @@ describe("TileRequestChannel", () => {
   it("records decoding time statistics", () => {
     const channel = new TileRequestChannel("test", 100);
     const tile = { isEmpty: false, isUndisplayable: false } as unknown as Tile;
-    const content = {};
+    const content = { };
 
     const expectStats = (expected: TileContentDecodingStatistics) => {
       const actual = channel.statistics.decoding;

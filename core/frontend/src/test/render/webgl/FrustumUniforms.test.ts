@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { FrustumUniforms, FrustumUniformType } from "../../../render/webgl/FrustumUniforms";
 
@@ -10,12 +10,8 @@ class TestUniforms extends FrustumUniforms {
     super();
   }
 
-  public testSetPlanes(top: number, bottom: number, left: number, right: number): void {
-    this.setPlanes(top, bottom, left, right);
-  }
-  public testSetFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
-    this.setFrustum(nearPlane, farPlane, type);
-  }
+  public testSetPlanes(top: number, bottom: number, left: number, right: number): void { this.setPlanes(top, bottom, left, right); }
+  public testSetFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void { this.setFrustum(nearPlane, farPlane, type); }
 }
 
 describe("FrustumUniforms", () => {

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
@@ -141,38 +141,32 @@ function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
 
 describe("Material", () => {
   it("should pack and unpack parameters", () => {
-    expectMaterialParams(
-      makeMaterialParams({
-        diffuseColor: ColorDef.black,
-        diffuse: 0.0,
-        transparency: 0.0,
-        specular: 0.0,
-        specularExponent: 0.0,
-        specularColor: ColorDef.black,
-      }),
-    );
+    expectMaterialParams(makeMaterialParams({
+      diffuseColor: ColorDef.black,
+      diffuse: 0.0,
+      transparency: 0.0,
+      specular: 0.0,
+      specularExponent: 0.0,
+      specularColor: ColorDef.black,
+    }));
 
-    expectMaterialParams(
-      makeMaterialParams({
-        diffuseColor: ColorDef.white,
-        diffuse: 1.0,
-        transparency: 1.0,
-        specular: 1.0,
-        specularExponent: 1234.5,
-        specularColor: ColorDef.white,
-      }),
-    );
+    expectMaterialParams(makeMaterialParams({
+      diffuseColor: ColorDef.white,
+      diffuse: 1.0,
+      transparency: 1.0,
+      specular: 1.0,
+      specularExponent: 1234.5,
+      specularColor: ColorDef.white,
+    }));
 
-    expectMaterialParams(
-      makeMaterialParams({
-        diffuseColor: ColorDef.red,
-        diffuse: 0.95,
-        transparency: 0.12,
-        specular: 0.7,
-        specularExponent: -5.4321,
-        specularColor: ColorDef.blue,
-      }),
-    );
+    expectMaterialParams(makeMaterialParams({
+      diffuseColor: ColorDef.red,
+      diffuse: 0.95,
+      transparency: 0.12,
+      specular: 0.7,
+      specularExponent: -5.4321,
+      specularColor: ColorDef.blue,
+    }));
 
     // eslint-disable-next-line deprecation/deprecation
     expectMaterialParams(RenderMaterial.Params.defaults);

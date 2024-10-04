@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { ColorDef, ColorIndex } from "@itwin/core-common";
 import { ColorMap } from "../../../common/internal/render/ColorMap";
@@ -17,28 +17,28 @@ describe("ColorMap", () => {
   it("test insert function", () => {
     /** Test static getMaxIndex function */
     const a: ColorMap = new ColorMap();
-    expect(a.insert(0xff0000)).toEqual(0);
+    expect(a.insert(0xFF0000)).toEqual(0);
     expect(a.length).toEqual(1);
     expect(a.hasTransparency).toBe(false);
-    expect(a.insert(0x0000ff)).toEqual(1);
+    expect(a.insert(0x0000FF)).toEqual(1);
     expect(a.length).toEqual(2);
     expect(a.hasTransparency).toBe(false);
-    expect(a.insert(0x0000ff)).toEqual(1);
+    expect(a.insert(0x0000FF)).toEqual(1);
     expect(a.length).toEqual(2);
     expect(a.hasTransparency).toBe(false);
-    expect(a.insert(0xff0000)).toEqual(0);
+    expect(a.insert(0xFF0000)).toEqual(0);
     expect(a.length).toEqual(2);
     expect(a.hasTransparency).toBe(false);
-    expect(a.insert(0xffffff)).toEqual(2);
+    expect(a.insert(0xFFFFFF)).toEqual(2);
     expect(a.length).toEqual(3);
     expect(a.hasTransparency).toBe(false);
-    expect(a.insert(0x0000ff)).toEqual(1);
+    expect(a.insert(0x0000FF)).toEqual(1);
     expect(a.length).toEqual(3);
     expect(a.hasTransparency).toBe(false);
-    expect(a.insert(0xff0000)).toEqual(0);
+    expect(a.insert(0xFF0000)).toEqual(0);
     expect(a.length).toEqual(3);
     expect(a.hasTransparency).toBe(false);
-    expect(a.insert(0xffffff)).toEqual(2);
+    expect(a.insert(0xFFFFFF)).toEqual(2);
     expect(a.length).toEqual(3);
     expect(a.hasTransparency).toBe(false);
   });
@@ -49,21 +49,21 @@ describe("ColorMap", () => {
     expect(a.hasTransparency).toBe(false);
     a.insert(0x01000000);
     expect(a.hasTransparency).toBe(true);
-    a.insert(0xff000000);
+    a.insert(0xFF000000);
     expect(a.hasTransparency).toBe(true);
-    a.insert(0x7fffffff);
+    a.insert(0x7FFFFFFF);
     expect(a.hasTransparency).toBe(true);
   });
 
   it("test hasTransparency function 2", () => {
     const a = new ColorMap();
-    a.insert(0xff000000);
+    a.insert(0xFF000000);
     expect(a.hasTransparency).toBe(true);
   });
 
   it("test hasTransparency function 3", () => {
     const a = new ColorMap();
-    a.insert(0x7fffffff);
+    a.insert(0x7FFFFFFF);
     expect(a.hasTransparency).toBe(true);
   });
 
@@ -77,11 +77,11 @@ describe("ColorMap", () => {
   it("test isUniform function", () => {
     const a = new ColorMap();
     expect(a.isUniform).toBe(false);
-    a.insert(0xff0000);
+    a.insert(0xFF0000);
     expect(a.isUniform).toBe(true);
-    a.insert(0x00ff00);
+    a.insert(0x00FF00);
     expect(a.isUniform).toBe(false);
-    a.insert(0x0000ff);
+    a.insert(0x0000FF);
     expect(a.isUniform).toBe(false);
   });
 
@@ -123,11 +123,11 @@ describe("ColorMap", () => {
   it("test empty function", () => {
     const a = new ColorMap();
     expect(a.isEmpty).toBe(true);
-    a.insert(0x00ffff);
+    a.insert(0x00FFFF);
     expect(a.isEmpty).toBe(false);
-    a.insert(0xffff00);
+    a.insert(0xFFFF00);
     expect(a.isEmpty).toBe(false);
-    a.insert(0xffffff);
+    a.insert(0xFFFFFF);
     expect(a.isEmpty).toBe(false);
   });
 
@@ -137,40 +137,40 @@ describe("ColorMap", () => {
     const indices = [0, 0];
     let colorIndex = new ColorIndex();
 
-    a.insert(0xffffff);
+    a.insert(0xFFFFFF);
     a.toColorIndex(colorIndex, indices);
-    expect(colorIndex.uniform!.tbgr).toEqual(0xffffff);
+    expect(colorIndex.uniform!.tbgr).toEqual(0xFFFFFF);
     expect(colorIndex.numColors).toEqual(1);
 
     a = new ColorMap();
     colorIndex = new ColorIndex();
     expect(colorIndex.uniform!.tbgr).toEqual(ColorDef.white.tbgr);
     expect(colorIndex.numColors).toEqual(1);
-    a.insert(0x0000ffff);
+    a.insert(0x0000FFFF);
     a.toColorIndex(colorIndex, indices);
     expect(colorIndex.isUniform).toEqual(true);
-    expect(colorIndex.uniform!.tbgr).toEqual(0x0000ffff);
+    expect(colorIndex.uniform!.tbgr).toEqual(0x0000FFFF);
     expect(colorIndex.numColors).toEqual(1);
 
     a = new ColorMap();
-    a.insert(0x0000ffff);
-    a.insert(0x000000ff);
+    a.insert(0x0000FFFF);
+    a.insert(0x000000FF);
     colorIndex = new ColorIndex();
-    colorIndex.initUniform(0x00ff00ff);
+    colorIndex.initUniform(0x00FF00FF);
     expect(colorIndex.numColors).toEqual(1);
     a.toColorIndex(colorIndex, indices);
     expect(colorIndex.isUniform).toEqual(false);
     expect(colorIndex.nonUniform && colorIndex.nonUniform.colors.length).toEqual(2);
     let values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
-    expect(values && values.next().value).toEqual(0x0000ffff);
-    expect(values && values.next().value).toEqual(0x000000ff);
+    expect(values && values.next().value).toEqual(0x0000FFFF);
+    expect(values && values.next().value).toEqual(0x000000FF);
     expect(values && values.next().done).toBe(true);
     expect(colorIndex.numColors).toEqual(2);
 
     a = new ColorMap();
     a.insert(0x00000000);
-    a.insert(0x0000ffff);
-    a.insert(0x000000ff);
+    a.insert(0x0000FFFF);
+    a.insert(0x000000FF);
     colorIndex = new ColorIndex();
     expect(colorIndex.numColors).toBe(1);
     a.toColorIndex(colorIndex, indices);
@@ -178,8 +178,8 @@ describe("ColorMap", () => {
     expect(colorIndex.nonUniform && colorIndex.nonUniform.colors.length).toBe(3);
     values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
     expect(values && values.next().value).toBe(0x00000000);
-    expect(values && values.next().value).toBe(0x0000ffff);
-    expect(values && values.next().value).toBe(0x000000ff);
+    expect(values && values.next().value).toBe(0x0000FFFF);
+    expect(values && values.next().value).toBe(0x000000FF);
     expect(values && values.next().done).toBe(true);
     expect(colorIndex.numColors).toBe(3);
   });

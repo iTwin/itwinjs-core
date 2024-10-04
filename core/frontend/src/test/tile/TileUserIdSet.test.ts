@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { TileUserIdSet, TileUserIdSets } from "../../tile/LRUTileList";
 
@@ -15,13 +15,20 @@ function makeTileUserIdSet(ids: number[]): TileUserIdSet {
 
 describe("TileUserIdSet", () => {
   it("compares for equality", () => {
-    const idLists = [[], [1], [2], [1, 2], [5, 199, 2, 4, 300], [1, 1, 2, 2, 5, 4, 4, 3, 3, 1, 2]];
+    const idLists = [
+      [ ],
+      [ 1 ],
+      [ 2 ],
+      [ 1, 2 ],
+      [ 5, 199, 2, 4, 300 ],
+      [ 1, 1, 2, 2, 5, 4, 4, 3, 3, 1, 2 ],
+    ];
 
     for (let i = 0; i < idLists.length; i++) {
       const list = idLists[i];
       const set = makeTileUserIdSet(list);
       expect(set.equals(set)).toBe(true);
-      const reverse = [...list];
+      const reverse = [ ...list ];
       reverse.reverse();
       expect(set.equals(makeTileUserIdSet(reverse))).toBe(true);
 

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
 import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
@@ -59,24 +59,7 @@ describe("Matrix3", () => {
 describe("Matrix4", () => {
   it("constructor works as expected", () => {
     // ensure correct conversion from 64 bit number to 32 bit number
-    const mat = Matrix4.fromValues(
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-      9007199254740991,
-    );
+    const mat = Matrix4.fromValues(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
     mat.data.forEach((v) => expect(v).toBe(9007199254740992));
   });
   it("identity works as expected", () => {

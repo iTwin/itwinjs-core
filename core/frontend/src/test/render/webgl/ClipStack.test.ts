@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
@@ -45,10 +45,7 @@ describe("ClipStack", async () => {
     };
 
     public constructor() {
-      super(
-        () => this.transform,
-        () => this.wantViewClip,
-      );
+      super(() => this.transform, () => this.wantViewClip);
 
       // Constructor invokes this method - must override afterward.
       this.allocateGpuBuffer = () => {
@@ -57,24 +54,12 @@ describe("ClipStack", async () => {
       };
     }
 
-    public get cpuBuffer() {
-      return this._cpuBuffer;
-    }
-    public get gpuBuffer() {
-      return this._gpuBuffer;
-    }
-    public get numTotalRows() {
-      return this._numTotalRows;
-    }
-    public get numRowsInUse() {
-      return this._numRowsInUse;
-    }
-    public get stack() {
-      return this._stack;
-    }
-    public get isStackDirty() {
-      return this._isStackDirty;
-    }
+    public get cpuBuffer() { return this._cpuBuffer; }
+    public get gpuBuffer() { return this._gpuBuffer; }
+    public get numTotalRows() { return this._numTotalRows; }
+    public get numRowsInUse() { return this._numRowsInUse; }
+    public get stack() { return this._stack; }
+    public get isStackDirty() { return this._isStackDirty; }
 
     public pushClip(offset = 0): void {
       const clip = createClipVector(offset);

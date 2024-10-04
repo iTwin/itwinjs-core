@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -11,8 +11,8 @@ import { headersIncludeAuthMethod } from "../../../request/utils";
 
 const sampleSource = { formatId: "ArcGIS", url: "https://sub.service.com/service", name: "Test" };
 
-class TestArcGISProvider extends ArcGISImageryProvider {
-  public override async constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
+class TestArcGISProvider extends  ArcGISImageryProvider {
+  public override async  constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
     return "";
   }
 
@@ -27,14 +27,7 @@ describe("ArcGISImageryProvider", () => {
   });
 
   it("should inject custom parameters before fetch call", async () => {
-    const settings = ImageMapLayerSettings.fromJSON({
-      ...sampleSource,
-      subLayers: [
-        { name: "layer1", id: "1", visible: false },
-        { name: "layer2", id: "2", visible: true },
-        { name: "layer3", id: "3", visible: true },
-      ],
-    });
+    const settings = ImageMapLayerSettings.fromJSON({...sampleSource, subLayers: [{name:"layer1", id: "1", visible:false}, {name:"layer2", id: "2", visible:true}, {name:"layer3", id: "3", visible:true}]});
     if (!settings)
       expect.fail("Could not create settings");
 
@@ -68,7 +61,7 @@ describe("ArcGISImageryProvider", () => {
     settings.unsavedQueryParams = indexedArrayFromUrlParams(unsaved);
     settings.savedQueryParams = indexedArrayFromUrlParams(saved);
 
-    unsaved.delete("testParam"); // check that test'
+    unsaved.delete("testParam");    // check that test'
     await provider.fetch(new URL(testUrl), { method: "GET" });
     expect(fetchStub).toHaveBeenCalledTimes(2);
     urlObj = fetchStub.mock.calls[1][0];

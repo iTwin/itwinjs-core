@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
@@ -112,14 +112,11 @@ describe("TileAdmin", () => {
       public visible = true;
 
       public constructor(tileTree: TileTree, contentSize: number, retainMemory = false) {
-        super(
-          {
-            contentId: contentSize.toString(),
-            range: new Range3d(0, 0, 0, 1, 1, 1),
-            maximumSize: 42,
-          },
-          tileTree,
-        );
+        super({
+          contentId: contentSize.toString(),
+          range: new Range3d(0, 0, 0, 1, 1, 1),
+          maximumSize: 42,
+        }, tileTree);
 
         this._contentSize = contentSize;
         this.retainMemory = retainMemory;
@@ -176,18 +173,10 @@ describe("TileAdmin", () => {
         this._rootTile = new TestTile(this, contentSize, retainMemory);
       }
 
-      public get rootTile(): TestTile {
-        return this._rootTile;
-      }
-      public get is3d() {
-        return true;
-      }
-      public get maxDepth() {
-        return undefined;
-      }
-      public get viewFlagOverrides() {
-        return {};
-      }
+      public get rootTile(): TestTile { return this._rootTile; }
+      public get is3d() { return true; }
+      public get maxDepth() { return undefined; }
+      public get viewFlagOverrides() { return { }; }
 
       protected _selectTiles(args: TileDrawArgs): Tile[] {
         const tiles = [];
@@ -233,9 +222,7 @@ describe("TileAdmin", () => {
         this._owner = tree.iModel.tiles.getTileTreeOwner(tree, supplier);
       }
 
-      public get treeOwner() {
-        return this._owner;
-      }
+      public get treeOwner() { return this._owner; }
     }
 
     class Provider implements TiledGraphicsProvider {

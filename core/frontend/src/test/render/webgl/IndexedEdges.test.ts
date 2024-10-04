@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
@@ -27,11 +27,7 @@ function createMeshArgs(opts?: { is2d?: boolean }): MeshArgs {
   edges.edges.edges = [new MeshEdge(0, 1), new MeshEdge(1, 3), new MeshEdge(3, 4)];
   edges.silhouettes.edges = [new MeshEdge(1, 2), new MeshEdge(2, 3)];
   edges.silhouettes.normals = [makeNormalPair(0, 0xffff), makeNormalPair(0x1234, 0xfedc)];
-  edges.polylines.lines = [
-    [0, 2, 4],
-    [2, 4, 3, 1],
-    [1, 0],
-  ];
+  edges.polylines.lines = [[0, 2, 4], [2, 4, 3, 1], [1, 0]];
 
   return {
     points: QPoint3dList.fromPoints([new Point3d(0, 0, 0), new Point3d(1, 1, 0), new Point3d(2, 0, 0), new Point3d(3, 1, 0), new Point3d(4, 0, 0)]),
@@ -162,48 +158,60 @@ describe("IndexedEdgeParams", () => {
       expect(edges.silhouettes).toBeUndefined();
       expect(edges.segments).toBeUndefined();
 
-      expectIndices(
-        edges.indexed!.indices,
-        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10],
-      );
-      expectEdgeTable(
-        edges.indexed!.edges,
-        [
-          // visible
-          0, 1, 1, 3, 3, 4,
-          // polylines
-          0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
-        ],
-        [
-          // silhouettes
-          1, 2, 0, 0xffff, 2, 3, 0x1234, 0xfedc,
-        ],
-      );
+      expectIndices(edges.indexed!.indices, [
+        0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2,
+        3, 3, 3, 3, 3, 3,
+        4, 4, 4, 4, 4, 4,
+        5, 5, 5, 5, 5, 5,
+        6, 6, 6, 6, 6, 6,
+        7, 7, 7, 7, 7, 7,
+        8, 8, 8, 8, 8, 8,
+        9, 9, 9, 9, 9, 9,
+        10, 10, 10, 10, 10, 10,
+      ]);
+      expectEdgeTable(edges.indexed!.edges, [
+        // visible
+        0, 1, 1, 3, 3, 4,
+        // polylines
+        0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
+      ], [
+        // silhouettes
+        1, 2, 0, 0xffff,
+        2, 3, 0x1234, 0xfedc,
+      ]);
     });
 
     it("inserts padding between segments and silhouettes when required", () => {
       const args = createMeshArgs();
       const edges = makeEdgeParams(args, 15)!;
-      expect(edges).toBeDefined();
-      expect(edges.indexed).toBeDefined();
-      expectIndices(
-        edges.indexed!.indices,
-        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10],
-      );
-      expectEdgeTable(
-        edges.indexed!.edges,
-        [
-          // visible
-          0, 1, 1, 3, 3, 4,
-          // polylines
-          0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
-        ],
-        [
-          // silhouettes
-          1, 2, 0, 0xffff, 2, 3, 0x1234, 0xfedc,
-        ],
-        6,
-      );
+      expect(edges).not.to.be.undefined;
+      expect(edges.indexed).not.to.be.undefined;
+      expectIndices(edges.indexed!.indices, [
+        0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2,
+        3, 3, 3, 3, 3, 3,
+        4, 4, 4, 4, 4, 4,
+        5, 5, 5, 5, 5, 5,
+        6, 6, 6, 6, 6, 6,
+        7, 7, 7, 7, 7, 7,
+        8, 8, 8, 8, 8, 8,
+        9, 9, 9, 9, 9, 9,
+        10, 10, 10, 10, 10, 10,
+      ]);
+      expectEdgeTable(edges.indexed!.edges, [
+        // visible
+        0, 1, 1, 3, 3, 4,
+        // polylines
+        0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
+      ], [
+        // silhouettes
+        1, 2, 0, 0xffff,
+        2, 3, 0x1234, 0xfedc,
+      ],
+      6);
 
       function makeEdgeTable(nSegs: number, nSils: number): EdgeTable {
         const meshargs = createMeshArgs();

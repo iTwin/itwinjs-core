@@ -1,15 +1,19 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings } from "@itwin/core-common";
+import {
+  Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
+} from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { ContextRealityModelState } from "../ContextRealityModelState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner } from "../tile/internal";
+import {
+  createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner,
+} from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe("ContextRealityModelState", () => {
@@ -36,15 +40,12 @@ describe("ContextRealityModelState", () => {
 
   class Style extends DisplayStyle3dState {
     public constructor() {
-      super(
-        {
-          id: "0",
-          code: Code.createEmpty(),
-          model: IModelConnection.dictionaryId,
-          classFullName: "BisCore:DisplayStyle3d",
-        },
-        imodel,
-      );
+      super({
+        id: "0",
+        code: Code.createEmpty(),
+        model: IModelConnection.dictionaryId,
+        classFullName: "BisCore:DisplayStyle3d",
+      }, imodel);
     }
 
     public attachOrbit(id: string, iTwinId?: string): ContextRealityModelState {
@@ -190,7 +191,7 @@ describe("ContextRealityModelState", () => {
       const b = style.trees[0].owner;
       expect(b).not.toEqual(a);
 
-      style.forEachRealityModel((model) => (model.planarClipMaskSettings = undefined));
+      style.forEachRealityModel((model) => model.planarClipMaskSettings = undefined);
       style.expectTrees([id]);
       expect(style.trees[0].owner).toEqual(a);
     });

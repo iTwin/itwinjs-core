@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from "vitest";
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, RenderMode } from "@itwin/core-common";
@@ -68,35 +68,35 @@ describe("Decorations", () => {
     document.body.removeChild(div);
   });
 
-  it("draws box decoration in expected location", { timeout: 20000 }, () => { // macOS is slow.
+  it("draws box decoration in expected location", { timeout: 20000 }, () => {  // macOS is slow.
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor], boxDecLocRect); // is decorator rendering at expected location?
     dec.drop();
   });
 
-  it("draws box decoration in graphic-builder-transformed location", { timeout: 20000 }, () => { // macOS is slow.
+  it("draws box decoration in graphic-builder-transformed location", { timeout: 20000 }, () => {  // macOS is slow.
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, placement: Transform.createTranslationXYZ(0.25, 0.25), points: shapePoints });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor], new ViewRect(0, 0, 10, 10)); // background should render where the decorator would have been without transform.
     dec.drop();
   });
 
-  it("draws sphere decoration in expected location", { timeout: 20000 }, () => { // macOS is slow.
+  it("draws sphere decoration in expected location", { timeout: 20000 }, () => {  // macOS is slow.
     const dec = new SphereDecorator(viewport, ColorDef.red, undefined, undefined, new Point3d(), 1.0);
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor], sphereDecBgLocRect); // when sphere is untransformed, this location should be the background
     dec.drop();
   });
 
-  it("draws sphere decoration in graphic-builder-transformed location", { timeout: 20000 }, () => { // macOS is slow.
+  it("draws sphere decoration in graphic-builder-transformed location", { timeout: 20000 }, () => {  // macOS is slow.
     const dec = new SphereDecorator(viewport, ColorDef.red, undefined, Transform.createTranslationXYZ(0.25, 0), new Point3d(), 1.0);
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
     expectColors(viewport, [dec.color], sphereDecBgLocRect); // when sphere is transformed, this location should contain the sphere
     dec.drop();
   });
 
-  it("rotates about view-independent origin", { timeout: 20000 }, () => { // macOS is slow.
+  it("rotates about view-independent origin", { timeout: 20000 }, () => {  // macOS is slow.
     const viewIndependentOrigin = new Point3d(0.5, 0.5, 0);
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints, viewIndependentOrigin });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);

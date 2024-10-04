@@ -9,12 +9,12 @@ import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { GeometryList } from "../../../common/internal/render/GeometryList";
 import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
 import { ToleranceRatio } from "../../../common/internal/render/Primitives";
+
 function verifyGeometryQueries(g: Geometry, doDecimate: boolean = false, doVertexCluster: boolean = true, hasPart: boolean = false) {
   expect(g.doDecimate()).toBe(doDecimate);
   expect(g.doVertexCluster()).toBe(doVertexCluster);
   expect(g.part() !== undefined).toBe(hasPart);
 }
-
 describe("ToleranceRatio", () => {
   it("ToleranceRatio works as expected", () => {
     expect(ToleranceRatio.vertex).toBe(0.1);
@@ -71,7 +71,6 @@ describe("GeometryList", () => {
 
     glist0.clear();
     expect(glist0.isEmpty).toBe(true);
-
   });
   it("Polyface", () => {
     const glist0 = new GeometryList();

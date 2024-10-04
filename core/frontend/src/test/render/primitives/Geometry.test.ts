@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
 import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
@@ -62,8 +62,7 @@ describe("GeometryPrimitives tests", () => {
     const strks: StrokesPrimitivePointList = strksPrims[0];
     expect(strks.points.length).toEqual(points.length);
 
-    for (const pt of points) {
-      // compare generated (stroked) points to original points
+    for (const pt of points) { // compare generated (stroked) points to original points
       expect(pointIsInArray(pt, strks.points)).toBe(true);
     }
 
@@ -78,8 +77,7 @@ describe("GeometryPrimitives tests", () => {
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
     expect(pfPrim.indexedPolyface.pointCount).toEqual(points.length);
 
-    for (const pt of points) {
-      // compare generated polyface points to original points
+    for (const pt of points) { // compare generated polyface points to original points
       expect(pointIsInPolyface(pt, pfPrim.indexedPolyface)).toBe(true);
     }
 
@@ -119,14 +117,13 @@ describe("GeometryPrimitives tests", () => {
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     const strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     const strks: StrokesPrimitivePointList = strksPrims[0];
     expect(strks.points.length).toEqual(points.length);
 
-    for (const pt of points) {
-      // compare generated (stroked) points to original points
+    for (const pt of points) { // compare generated (stroked) points to original points
       expect(pointIsInArray(pt, strks.points)).toBe(true);
     }
 

@@ -1,11 +1,21 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { Cartographic, EmptyLocalization, ImageMapLayerSettings, MapLayerProps, MapSubLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities, WmsMapLayerImageryProvider, WmtsCapabilities, WmtsMapLayerImageryProvider } from "../../../tile/internal";
+import {
+  ImageryMapTileTree,
+  MapCartoRectangle,
+  MapLayerImageryProvider,
+  MapLayerImageryProviderStatus,
+  QuadId,
+  WmsCapabilities,
+  WmsMapLayerImageryProvider,
+  WmtsCapabilities,
+  WmtsMapLayerImageryProvider,
+} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { RequestBasicCredentials } from "../../../request/Request";
 import { Point2d } from "@itwin/core-geometry";
@@ -14,7 +24,6 @@ import { createFakeTileResponse, fakeTextFetch } from "./MapLayerTestUtilities";
 const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
 
 describe("WmsMapLayerImageryProvider", () => {
-
   beforeEach(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
@@ -42,28 +51,22 @@ describe("WmsMapLayerImageryProvider", () => {
       return {} as WmsCapabilities;
     });
 
-    const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "", url: "https://sub.service.com/service" });
-    let provider = new WmsMapLayerImageryProvider(settings);
+    const settings = ImageMapLayerSettings.fromJSON({formatId:"WMS", name: "", url: "https://sub.service.com/service"});
+    let  provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
-    let url = await provider.constructUrl(0, 0, 0);
+    let url = await provider.constructUrl(0,0,0);
     const refUrl = "https://sub.service.com/service?SERVICE=WMS&VERSION=undefined&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=TRUE&LAYERS=sublayer&WIDTH=256&HEIGHT=256&SRS=EPSG%3A3857&STYLES=&BBOX=1,2,3,4";
     expect(url).toEqual(refUrl);
 
-    const param1 = new URLSearchParams([
-      ["key1_1", "value1_1"],
-      ["key1_2", "value1_2"],
-    ]);
-    const param2 = new URLSearchParams([
-      ["key2_1", "value2_2"],
-      ["key2_2", "value2_2"],
-    ]);
+    const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
     settings.savedQueryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) => (settings.savedQueryParams![key] = value));
-    param2.forEach((value: string, key: string) => (settings.unsavedQueryParams![key] = value));
+    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
-    url = await provider.constructUrl(0, 0, 0);
+    url = await provider.constructUrl(0,0,0);
     expect(url).toEqual(`${refUrl}&${param1.toString()}&${param2.toString()}`);
 
     settings.savedQueryParams = {};
@@ -71,16 +74,16 @@ describe("WmsMapLayerImageryProvider", () => {
     settings.unsavedQueryParams.SERVICE = "BAD";
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
-    url = await provider.constructUrl(0, 0, 0);
+    url = await provider.constructUrl(0,0,0);
     expect(url).toEqual(refUrl);
   });
 
   it("construct proper tooltip url", async () => {
     vi.spyOn(WmsMapLayerImageryProvider.prototype, "getCrsSupport" as any).mockImplementation(() => {
-      return { support3857: true, support4326: false };
+      return {support3857: true, support4326: false};
     });
     vi.spyOn(WmsMapLayerImageryProvider.prototype, "getVisibleLayers" as any).mockImplementation(() => {
-      return [MapSubLayerSettings.fromJSON({ name: "sublayer" })];
+      return [MapSubLayerSettings.fromJSON({name: "sublayer"})];
     });
 
     vi.spyOn(WmsMapLayerImageryProvider.prototype, "getQueryableLayers" as any).mockImplementation(() => {
@@ -97,32 +100,26 @@ describe("WmsMapLayerImageryProvider", () => {
     });
 
     vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
-      return { featureInfoFormats: ["text/html"] } as WmsCapabilities;
+      return {featureInfoFormats: ["text/html"] } as WmsCapabilities;
     });
 
     const stub = vi.spyOn(WmsMapLayerImageryProvider.prototype, "toolTipFromUrl" as any).mockImplementation(async () => {});
-    const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "", url: "https://sub.service.com/service" });
-    const provider = new WmsMapLayerImageryProvider(settings);
+    const settings = ImageMapLayerSettings.fromJSON({formatId:"WMS", name: "", url: "https://sub.service.com/service"});
+    const  provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     await provider.getToolTip([], new QuadId(0, 0, 0), Cartographic.createZero(), { getTileRectangle: () => MapCartoRectangle.createZero() } as unknown as ImageryMapTileTree);
     const refUrl = "https://sub.service.com/service?SERVICE=WMS&VERSION=undefined&REQUEST=GetFeatureInfo&LAYERS=sublayer&WIDTH=256&HEIGHT=256&SRS=EPSG%3A3857&BBOX=1,2,3,4&QUERY_LAYERS=sublayer&x=0&y=256&info_format=text/html";
     expect(stub).toHaveBeenCalled();
     expect(stub.mock.calls[0][1]).toEqual(refUrl);
 
-    const param1 = new URLSearchParams([
-      ["key1_1", "value1_1"],
-      ["key1_2", "value1_2"],
-    ]);
-    const param2 = new URLSearchParams([
-      ["key2_1", "value2_2"],
-      ["key2_2", "value2_2"],
-    ]);
+    const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
+    const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
     settings.savedQueryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) => (settings.savedQueryParams![key] = value));
-    param2.forEach((value: string, key: string) => (settings.unsavedQueryParams![key] = value));
+    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
-    await provider.getToolTip([], new QuadId(0, 0, 0), Cartographic.createZero(), { getTileRectangle: () => MapCartoRectangle.createZero() } as unknown as ImageryMapTileTree);
+    await provider.getToolTip([], new QuadId(0,0,0),  Cartographic.createZero(), ({getTileRectangle: ()=> MapCartoRectangle.createZero()} as unknown)as  ImageryMapTileTree);
 
     expect(stub).toHaveBeenCalled();
     expect(stub.mock.calls[1][1]).toEqual(`${refUrl}&${param1.toString()}&${param2.toString()}`);
@@ -144,7 +141,7 @@ describe("WmsMapLayerImageryProvider", () => {
   });
 
   it("initialize() should handle 401 error from WmtsCapabilities", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(wmsSampleSource);
+    const settings =ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       expect.fail("Could not create settings");
 
@@ -231,11 +228,10 @@ describe("WmsMapLayerImageryProvider", () => {
       url: "https://localhost/wms",
       name: "Test WMS",
       subLayers: [
-        { name: "continents", id: 0, visible: true },
-        { name: "continents2", id: 1, visible: false },
-      ],
-    };
-    let settings = ImageMapLayerSettings.fromJSON(layerPros);
+        {name: "continents", id:0, visible:true},
+        {name: "continents2", id:1, visible:false},
+      ]};
+    let settings =ImageMapLayerSettings.fromJSON(layerPros);
     if (!settings)
       expect.fail("Could not create settings");
 
@@ -245,17 +241,17 @@ describe("WmsMapLayerImageryProvider", () => {
 
     let provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
-    let url = await provider.constructUrl(0, 0, 0);
+    let url = await provider.constructUrl(0,0,0);
     let urlObj = new URL(url);
     expect(urlObj.searchParams.get("CRS")).toEqual("EPSG:4326");
 
     // Mark 'continents' and 'continents2' visible, in that case the request
     // should still be in EPSG:4326 because continents is only available in in EPSG:4326
     layerPros.subLayers![1].visible = true;
-    settings = ImageMapLayerSettings.fromJSON(layerPros);
+    settings =ImageMapLayerSettings.fromJSON(layerPros);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
-    url = await provider.constructUrl(0, 0, 0);
+    url = await provider.constructUrl(0,0,0);
     urlObj = new URL(url);
     expect(urlObj.searchParams.get("CRS")).toEqual("EPSG:4326");
 
@@ -263,17 +259,17 @@ describe("WmsMapLayerImageryProvider", () => {
     // URL should now be in EPSG:3857 because continents2 can be displayed in [4326,3857],
     // and 3857 is our favorite CRS.
     layerPros.subLayers![0].visible = false;
-    settings = ImageMapLayerSettings.fromJSON(layerPros);
+    settings =ImageMapLayerSettings.fromJSON(layerPros);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
-    url = await provider.constructUrl(0, 0, 0);
+    url = await provider.constructUrl(0,0,0);
     urlObj = new URL(url);
     expect(urlObj.searchParams.get("CRS")).toEqual("EPSG:3857");
 
     // Mark 'continents' and 'continents2' non-visible... leaving nothing to display.
     // An empty URL should be created in that case
     layerPros.subLayers![1].visible = false;
-    settings = ImageMapLayerSettings.fromJSON(layerPros);
+    settings =ImageMapLayerSettings.fromJSON(layerPros);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     url = await provider.constructUrl(0, 0, 0);
@@ -285,8 +281,9 @@ describe("WmsMapLayerImageryProvider", () => {
       formatId: "WMS",
       url: "https://localhost/wms2",
       name: "Test WMS",
-      subLayers: [{ name: "Default", id: 0, visible: true }],
-    };
+      subLayers: [
+        {name: "Default", id:0, visible:true},
+      ]};
     const settings = ImageMapLayerSettings.fromJSON(layerPros);
     if (!settings)
       expect.fail("Could not create settings");
@@ -297,14 +294,14 @@ describe("WmsMapLayerImageryProvider", () => {
 
     const provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
-    const url = await provider.constructUrl(0, 0, 0);
+    const url = await provider.constructUrl(0,0,0);
     const urlObj = new URL(url);
     expect(urlObj.searchParams.get("SRS")).toEqual("EPSG:4326");
     const bbox = urlObj.searchParams.get("BBOX");
     expect(bbox).not.toBeNull();
     if (!bbox)
       return;
-    const bboxArray = bbox.split(",").map((value) => Number(value));
+    const bboxArray = bbox?.split(",").map((value)=>Number(value));
 
     // check x/y axis is in the right order
     const p1 = Point2d.create(bboxArray[0], bboxArray[1]);
@@ -320,9 +317,10 @@ describe("WmsMapLayerImageryProvider", () => {
       formatId: "WMS",
       url: "https://localhost/wms3",
       name: "Test WMS",
-      subLayers: [{ name: "Default", id: 0, visible: true }],
-    };
-    const settings = ImageMapLayerSettings.fromJSON(layerPros);
+      subLayers: [
+        {name: "Default", id:0, visible:true},
+      ]};
+    const settings =ImageMapLayerSettings.fromJSON(layerPros);
     if (!settings)
       expect.fail("Could not create settings");
 
@@ -332,7 +330,7 @@ describe("WmsMapLayerImageryProvider", () => {
 
     const provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
-    const url = await provider.constructUrl(0, 0, 0);
+    const url = await provider.constructUrl(0,0,0);
     const urlObj = new URL(url);
     // 1.3.0 uses CRS instead of SRS
     expect(urlObj.searchParams.get("CRS")).toEqual("EPSG:4326");
@@ -342,7 +340,7 @@ describe("WmsMapLayerImageryProvider", () => {
     expect(bbox).not.toBeNull();
     if (!bbox)
       return;
-    const bboxArray = bbox.split(",").map((value) => Number(value));
+    const bboxArray = bbox?.split(",").map((value)=>Number(value));
     const p1 = Point2d.create(bboxArray[0], bboxArray[1]);
     const refPoint1 = Point2d.create(-85.05112878, -180);
     const p2 = Point2d.create(bboxArray[2], bboxArray[3]);
@@ -352,7 +350,7 @@ describe("WmsMapLayerImageryProvider", () => {
   });
 
   it("loadTile() should call IModelApp.notifications.outputMessage", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(wmsSampleSource);
+    const settings =ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       expect.fail("Could not create settings");
     const provider = new WmsMapLayerImageryProvider(settings);

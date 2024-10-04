@@ -1,28 +1,10 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Angle, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import {
-  ColorDef,
-  EmptyLocalization,
-  Feature,
-  FillFlags,
-  GeometryClass,
-  Gradient,
-  GraphicParams,
-  ImageBuffer,
-  ImageBufferFormat,
-  ImageSource,
-  ImageSourceFormat,
-  LinePixels,
-  ModelFeature,
-  RenderFeatureTable,
-  RenderMaterial,
-  RenderTexture,
-  TextureTransparency,
-} from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
@@ -128,7 +110,9 @@ describe("GraphicDescriptionBuilder", () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.ViewOverlay, context: workerContext, computeChordTolerance });
     expect(builder.wantEdges).toBe(false);
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
-    builder.addShape2d([new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5)], 2);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
 
     const descr = finish(builder);
     expect(descr.batch).toBeUndefined();
@@ -168,7 +152,9 @@ describe("GraphicDescriptionBuilder", () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.Scene, context: workerContext, computeChordTolerance });
     expect(builder.wantEdges).toBe(true);
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
-    builder.addShape2d([new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5)], 2);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
 
     const descr = finish(builder);
     expect(descr.batch).toBeUndefined();
@@ -226,7 +212,9 @@ describe("GraphicDescriptionBuilder", () => {
     });
 
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
-    builder.addShape2d([new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5)], 2);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
 
     const descr = finish(builder);
     expect(descr.translation!.x).toEqual(5 + 6);
@@ -250,7 +238,9 @@ describe("GraphicDescriptionBuilder", () => {
     });
 
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
-    builder.addShape2d([new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5)], 2);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
 
     const descr = finish(builder);
 
@@ -279,7 +269,9 @@ describe("GraphicDescriptionBuilder", () => {
       },
     });
 
-    builder.addShape2d([new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5)], 2);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
 
     const descr = finish(builder);
     const batchDescr = descr.batch!;
@@ -333,7 +325,9 @@ describe("GraphicDescriptionBuilder", () => {
       },
     });
 
-    builder.addShape2d([new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5)], 2);
+    builder.addShape2d([
+      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+    ], 2);
 
     const descr = finish(builder);
     const batchDescr = descr.batch!;
@@ -412,11 +406,7 @@ describe("GraphicDescriptionBuilder", () => {
 
   // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
   // bottom right pixel.  The rest of the square is red.
-  const pngData: Uint8Array = new Uint8Array([
-    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9,
-    112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78,
-    68, 174, 66, 96, 130,
-  ]);
+  const pngData: Uint8Array = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
 
   const gradient = Gradient.Symb.fromJSON({
     mode: 3,
@@ -424,10 +414,7 @@ describe("GraphicDescriptionBuilder", () => {
     tint: 0.042133128966509004,
     shift: 3.45912515864202,
     angle: Angle.createDegrees(92.94598821201656),
-    keys: [
-      { value: 0.6804815398789292, color: 610 },
-      { value: 0.731472008309797, color: 230 },
-    ],
+    keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 230 }],
   });
 
   it("creates and resolves textures", async () => {
@@ -453,7 +440,11 @@ describe("GraphicDescriptionBuilder", () => {
     const wkGrad = workerContext.createGradientTexture(gradient) as WorkerTexture;
     expectWorkerTexture(wkGrad, RenderTexture.Type.Normal, gradient, undefined);
 
-    const imgBuf = ImageBuffer.create(new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]), ImageBufferFormat.Rgba, 2);
+    const imgBuf = ImageBuffer.create(
+      new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]),
+      ImageBufferFormat.Rgba,
+      2,
+    );
 
     const wkBuf = workerContext.createTexture({
       type: RenderTexture.Type.TileSection,
@@ -516,7 +507,9 @@ describe("GraphicDescriptionBuilder", () => {
     const { workerContext } = await createContexts();
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.WorldDecoration, context: workerContext, computeChordTolerance });
     const addShape = () => {
-      builder.addShape2d([new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5)], 2);
+      builder.addShape2d([
+        new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      ], 2);
     };
 
     const addShapeWithMaterial = (material: RenderMaterial) => {
@@ -556,7 +549,11 @@ describe("GraphicDescriptionBuilder", () => {
     addShapeWithMaterial(pngMaterial);
 
     // 3: material with texture from ImageBuffer.
-    const imgBuf = ImageBuffer.create(new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]), ImageBufferFormat.Rgba, 2);
+    const imgBuf = ImageBuffer.create(
+      new Uint8Array([255, 0, 0, 0, 255, 0, 0, 63, 255, 0, 0, 127, 255, 0, 0, 191]),
+      ImageBufferFormat.Rgba,
+      2,
+    );
     const imgTx = workerContext.createTexture({ source: imgBuf });
     const imgMaterial = workerContext.createMaterial({ textureMapping: { texture: imgTx } });
     addShapeWithMaterial(imgMaterial);
@@ -647,7 +644,7 @@ describe("GraphicDescriptionBuilder", () => {
           break;
         case 3:
         case 4:
-          expectMaterial(mat, {});
+          expectMaterial(mat, { });
           break;
       }
     }

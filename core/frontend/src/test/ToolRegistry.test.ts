@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
@@ -22,12 +22,8 @@ class TestImmediate extends Tool {
     testVal2 = v2;
     return true;
   }
-  public static override get minArgs() {
-    return 2;
-  }
-  public static override get maxArgs() {
-    return 2;
-  }
+  public static override get minArgs() { return 2; }
+  public static override get maxArgs() { return 2; }
   public override async parseAndRun(v1: string, v2: string): Promise<boolean> {
     if (arguments.length !== 2)
       return false;
@@ -46,9 +42,7 @@ class TestCommandApp extends MockRender.App {
     TestImmediate.register(this.testNamespace);
   }
 
-  protected static supplyI18NOptions() {
-    return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` };
-  }
+  protected static supplyI18NOptions() { return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` }; }
 }
 
 async function setupToolRegistryTests() {
@@ -82,7 +76,6 @@ describe("ToolRegistry", () => {
     expect(command).toEqual(TestImmediate);
     expect(command.minArgs).toBe(2);
     expect(command.maxArgs).toBe(2);
-
     let cmdReturn = await new command().run(4, 22);
     expect(cmdReturn).toBe(true);
     expect(testVal1).toBe(4);
@@ -92,7 +85,6 @@ describe("ToolRegistry", () => {
     expect(cmdReturn).toBe(true);
     expect(testVal1).toBe(5);
     expect(testVal2).toBe(33);
-
     cmdReturn = await new command().parseAndRun("125");
     expect(cmdReturn).toBe(false);
   });
@@ -249,9 +241,8 @@ function registerTestClass(id: string, keyin: string, ns: string) {
       return true;
     }
 
-    public static override get keyin(): string {
-      return keyin;
-    }
+    public static override get keyin(): string { return keyin; }
+
   }).register(ns);
 }
 
@@ -265,8 +256,7 @@ function createTestTools(): void {
   }
 }
 
-const testCommandsString: string =
-	'[\
+const testCommandsString: string = '[\
     {\
       "commandString": "update"\
     },\

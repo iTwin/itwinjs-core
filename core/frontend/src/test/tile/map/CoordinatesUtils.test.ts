@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
 import { deflateCoordinates } from "../../../tile/internal";
@@ -9,10 +9,7 @@ import { deflateCoordinates } from "../../../tile/internal";
 describe("CoordinatesUtils", () => {
   it("should deflate coordinates array", async () => {
     // Simple deflate stride = 2
-    let doubleArray = [
-      [1, 2],
-      [3, 4],
-    ];
+    let doubleArray = [[1, 2], [3, 4]];
     let deflated: number[] = [];
     let offset = deflateCoordinates(doubleArray, deflated, 2, 0);
     expect(offset).toEqual(4);
@@ -25,10 +22,7 @@ describe("CoordinatesUtils", () => {
     expect(deflated).toEqual([1, 2, 3, 4, 5, 6]);
 
     // Simple deflate stride = 3
-    doubleArray = [
-      [1, 2, 3],
-      [4, 5, 6],
-    ];
+    doubleArray = [[1, 2, 3], [4, 5, 6]];
     deflated = [];
     offset = deflateCoordinates(doubleArray, deflated, 3, 0);
     expect(offset).toEqual(6);

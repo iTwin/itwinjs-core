@@ -1,12 +1,14 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ArcGISTileMap, QuadId } from "../../../tile/internal";
+import {
+  ArcGISTileMap, QuadId,
+} from "../../../tile/internal";
 import { BeEvent } from "@itwin/core-bentley";
 
 const fakeArcGisUrl = "https:localhost/test/rest";
@@ -15,50 +17,86 @@ const fakeArcGisUrl = "https:localhost/test/rest";
 // From tilemap, only [10,10,10], 10,11,11] are availability
 const dataset1 = {
   tilemap: {
-    adjusted: false,
-    location: { left: 9, top: 9, width: 4, height: 4 },
-    data: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+    adjusted:false,
+    location:{left:9,top:9,width:4,height:4},
+    data: [
+      0,0,0,0,
+      0,1,0,0,
+      0,0,1,0,
+      0,0,0,0],
   },
-  available: [true, false, false, true],
+  available:[true,false,false,true],
   parentContentId: "9_5_5", // NOTE: format is <level>_<column>_<row>
 };
 
 const dataset2 = {
   tilemap1: {
-    adjusted: true,
-    location: { left: 7, top: 7, width: 4, height: 8 },
-    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    adjusted:true,
+    location:{left:7,top:7,width:4, height:8},
+    data:[
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 1,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0],
   },
   tilemap2: {
-    adjusted: false,
-    location: { left: 11, top: 7, width: 8, height: 8 },
-    data: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    adjusted:false,
+    location:{left:11,top:7,width:8, height:8},
+    data: [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      1, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0],
   },
 
   tilemap3: {
-    adjusted: true,
-    location: { left: 11, top: 7, width: 0, height: 0 },
+    adjusted:true,
+    location:{left:11,top:7,width:0, height:0},
     data: [],
   },
 
-  availableClipped: [false, false, true, false],
-  available: [false, false, true, true],
+  availableClipped: [false,false,true,false],
+  available:[false,false,true,true],
   parentContentId: "9_5_5",
 };
 
 // In this dataset the tilemap does not include any of the requested tiled
 const dataset4 = {
   tilemap1: {
-    adjusted: true,
-    location: { left: 7, top: 7, width: 1, height: 8 },
-    data: [0, 0, 0, 0, 0, 0, 0, 0],
+    adjusted:true,
+    location:{left:7,top:7,width:1, height:8},
+    data:[
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0],
   },
   tilemap2: {
-    adjusted: false,
-    location: { left: 10, top: 10, width: 8, height: 8 },
-    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    adjusted:false,
+    location:{left:10,top:10,width:8, height:8},
+    data: [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 1, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0],
   },
-  available: [false, false, false, true],
+  available:[false,false,false,true],
   parentContentId: "9_5_5",
 };
 
@@ -67,20 +105,28 @@ const dataset4 = {
 const dataset5 = {
   tilemap: {
     adjusted: true,
-    location: { left: 7, top: 7, width: 0, height: 0 },
-    data: [0],
+    location:{left:7,top:7,width:0, height:0},
+    data:[0],
   },
-  available: [false, false, false, false],
+  available:[false,false,false,false],
   parentContentId: "9_5_5",
 };
 
 const dataset3 = {
   tilemap: {
-    adjusted: false,
-    location: { left: 0, top: 0, width: 8, height: 8 },
-    data: [1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    adjusted:false,
+    location:{left:0,top:0,width:8,height:8},
+    data: [
+      1, 1, 0, 0, 0, 0, 0, 0,
+      1, 1, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 1, 1, 1, 0, 0,
+      0, 0, 0, 1, 1, 1, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0],
   },
-  available: [true, true, true, true],
+  available:[true,true,true,true],
   parentContentId: "9_0_0",
 };
 
@@ -88,14 +134,22 @@ const dataset3 = {
 // the second one is only half visible
 const dataset6 = {
   tilemap: {
-    adjusted: false,
-    location: { left: 37, top: 37, width: 8, height: 8 },
-    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    adjusted:false,
+    location:{left:37,top:37,width:8,height:8},
+    data: [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 1, 1, 1, 0, 0,
+      0, 0, 0, 1, 1, 1, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0],
   },
-  available: [true, true, true, true], // first parent, fully visible
+  available:[true,true,true,true],     // first parent, fully visible
   parentContentId: "14_20_20", // NOTE: format is <level>_<column>_<row>
   sibling: {
-    available: [true, false, true, false], // second parent tile: half of it is visible
+    available:[true,false,true,false],   // second parent tile: half of it is visible
     parentContentId: "14_21_20", // NOTE: format is <level>_<column>_<row>
   },
 };
@@ -103,31 +157,43 @@ const dataset6 = {
 // dataset7 depends on dataset6 to test cache check
 const dataset7 = {
   tilemap: {
-    adjusted: false,
-    location: {
-      left: dataset6.tilemap.location.left + dataset6.tilemap.location.width,
-      top: dataset6.tilemap.location.top,
-      width: 8,
-      height: 8,
-    },
-    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    adjusted:false,
+    location:{
+      left: dataset6.tilemap.location.left+dataset6.tilemap.location.width,
+      top:dataset6.tilemap.location.top,
+      width:8, height:8},
+    data: [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      1, 0, 0, 1, 1, 1, 0, 0,
+      1, 0, 0, 1, 1, 1, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0],
   },
-  available: [false, false, true, true],
+  available:[false,false,true,true],
   parentContentId: "14_22_20", // NOTE: format is <level>_<column>_<row>
 };
 
 const dataset8 = {
   tilemap: {
-    adjusted: false,
-    location: {
-      left: dataset6.tilemap.location.left,
-      top: dataset6.tilemap.location.top + dataset6.tilemap.location.height,
-      width: 8,
-      height: 8,
-    },
-    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    adjusted:false,
+    location:{
+      left:dataset6.tilemap.location.left,
+      top:dataset6.tilemap.location.top+dataset6.tilemap.location.height,
+      width:8,height:8},
+    data: [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      1, 0, 0, 1, 1, 1, 0, 0,
+      1, 0, 0, 1, 1, 1, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0],
   },
-  available: [false, false, true, true],
+  available:[false,false,true,true],
   parentContentId: "14_20_22", // NOTE: format is <level>_<column>_<row>
 };
 
@@ -151,7 +217,7 @@ describe("ArcGISTileMap", () => {
     const childIds = parentTile.getChildIds();
     const row = Math.max(childIds[0].row - offset, 0);
     const column = Math.max(childIds[0].column - offset, 0);
-    return { level: childIds[0].level, row, column };
+    return {level:childIds[0].level, row, column};
   };
 
   const getChildrenAvailability = async (parentContentId: string, fakeTileMapData: any) => {
@@ -160,9 +226,9 @@ describe("ArcGISTileMap", () => {
     });
     const parentQuadId = QuadId.createFromContentId(parentContentId);
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
-    const childIds = parentQuadId.getChildIds();
+    const childIds =  parentQuadId.getChildIds();
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
-    return { available, tileMap, getTileMapStub, childIds };
+    return {available, tileMap, getTileMapStub, childIds};
   };
 
   afterEach(async () => {
@@ -170,13 +236,13 @@ describe("ArcGISTileMap", () => {
   });
 
   it("8x8 tilemap; simple children availability check", async () => {
-    const { available, getTileMapStub } = await getChildrenAvailability(dataset6.parentContentId, dataset6.tilemap);
+    const {available, getTileMapStub} = await getChildrenAvailability(dataset6.parentContentId, dataset6.tilemap);
     expect(available).toEqual(dataset6.available);
     expect(getTileMapStub).toHaveBeenCalledOnce();
   });
 
   it("8x8 tilemap; tile map cached", async () => {
-    const { available, getTileMapStub, tileMap, childIds } = await getChildrenAvailability(dataset6.parentContentId, dataset6.tilemap);
+    const {available, getTileMapStub, tileMap, childIds} = await getChildrenAvailability(dataset6.parentContentId, dataset6.tilemap);
     expect(available).toEqual(dataset6.available);
     expect(getTileMapStub).toHaveBeenCalledOnce();
 
@@ -188,7 +254,7 @@ describe("ArcGISTileMap", () => {
 
   it("8x8 tilemap; two children availability check, single server request", async () => {
     // eslint-disable-next-line prefer-const
-    let { available, getTileMapStub, tileMap } = await getChildrenAvailability(dataset6.parentContentId, dataset6.tilemap);
+    let {available, getTileMapStub, tileMap} = await getChildrenAvailability(dataset6.parentContentId, dataset6.tilemap);
     expect(available).toEqual(dataset6.available);
     expect(getTileMapStub).toHaveBeenCalledOnce();
 
@@ -245,16 +311,18 @@ describe("ArcGISTileMap", () => {
   });
 
   it("should serialize async requests", async () => {
+
     const waitingEvent = new BeEvent();
     let firstRequest = true;
     const waitingPromise = new Promise<void>(async (resolve, reject) => {
       try {
         if (firstRequest) {
           firstRequest = false;
-          waitingEvent.addListener(() => resolve());
+          waitingEvent.addListener(()=>resolve());
         } else {
           resolve();
         }
+
       } catch (err: any) {
         reject();
       }
@@ -266,8 +334,8 @@ describe("ArcGISTileMap", () => {
     });
     const parentQuadId = QuadId.createFromContentId(dataset6.parentContentId);
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
-    const requestPromise1 = tileMap.getChildrenAvailability(parentQuadId.getChildIds());
-    const requestPromise2 = tileMap.getChildrenAvailability(parentQuadId.getChildIds());
+    const requestPromise1 =  tileMap.getChildrenAvailability(parentQuadId.getChildIds());
+    const requestPromise2 =  tileMap.getChildrenAvailability(parentQuadId.getChildIds());
     waitingEvent.raiseEvent();
     const results = await Promise.all([requestPromise1, requestPromise2]);
 
@@ -372,7 +440,7 @@ describe("ArcGISTileMap", () => {
       return emptyBundleError;
     });
 
-    const allFalse = [false, false, false, false];
+    const allFalse = [false,false,false,false];
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, fakeFetchFunction);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
@@ -386,6 +454,7 @@ describe("ArcGISTileMap", () => {
   });
 
   it("should call the fetch function", async () => {
+
     let fetchFunctionCalls = 0;
     const fetchFunction = async (_url: URL, _options?: RequestInit): Promise<Response> => {
       fetchFunctionCalls++;

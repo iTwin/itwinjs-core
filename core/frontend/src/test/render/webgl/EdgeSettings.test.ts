@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
 import { ColorDef, HiddenLine, LinePixels, RenderMode, ViewFlags } from "@itwin/core-common";
@@ -13,9 +13,9 @@ import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 describe("EdgeSettings", () => {
   it("defaults to overriding nothing", () => {
     const es = EdgeSettings.create(undefined);
-    for (const renderMode of [RenderMode.Wireframe, RenderMode.SmoothShade]) {
+    for (const renderMode of [ RenderMode.Wireframe, RenderMode.SmoothShade ]) {
       const vf = ViewFlags.fromJSON({ renderMode });
-      for (const pass of [RenderPass.OpaqueLinear, RenderPass.HiddenEdge]) {
+      for (const pass of [ RenderPass.OpaqueLinear, RenderPass.HiddenEdge ]) {
         expect(es.computeOvrFlags(pass, vf)).toEqual(OvrFlags.None);
         es.init(undefined);
         expect(es.computeOvrFlags(pass, vf)).toEqual(OvrFlags.None);
@@ -93,12 +93,10 @@ describe("EdgeSettings", () => {
   });
 
   it("overrides nothing if view flags do not enable visible edges", () => {
-    const es = EdgeSettings.create(
-      HiddenLine.Settings.fromJSON({
-        visible: { ovrColor: true, color: 0xff00ff, width: 3, pattern: LinePixels.Solid },
-        hidden: { ovrColor: true, color: 0xff00ff, width: 3, pattern: LinePixels.Solid },
-      }),
-    );
+    const es = EdgeSettings.create(HiddenLine.Settings.fromJSON({
+      visible: { ovrColor: true, color: 0xff00ff, width: 3, pattern: LinePixels.Solid },
+      hidden: { ovrColor: true, color: 0xff00ff, width: 3, pattern: LinePixels.Solid },
+    }));
 
     const vfs = [
       ViewFlags.fromJSON({ renderMode: RenderMode.Wireframe }),
@@ -108,14 +106,14 @@ describe("EdgeSettings", () => {
     ];
 
     for (const vf of vfs)
-      for (const pass of [RenderPass.OpaqueLinear, RenderPass.HiddenEdge])
+      for (const pass of [ RenderPass.OpaqueLinear, RenderPass.HiddenEdge ])
         expect(es.computeOvrFlags(pass, vf)).toEqual(OvrFlags.None);
   });
 
   it("overrides defaults for certain render modes", () => {
     const es = EdgeSettings.create(undefined);
-    for (const renderMode of [RenderMode.HiddenLine, RenderMode.SolidFill])
-      for (const pass of [RenderPass.OpaqueLinear, RenderPass.HiddenEdge]) {
+    for (const renderMode of [ RenderMode.HiddenLine, RenderMode.SolidFill ])
+      for (const pass of [ RenderPass.OpaqueLinear, RenderPass.HiddenEdge ]) {
         const vf = ViewFlags.fromJSON({ renderMode });
 
         // If color is not explicitly overridden in solid fill mode, the shader will compute a contrasting shade of grey for each element.
@@ -127,11 +125,7 @@ describe("EdgeSettings", () => {
 
   it("clamps and inverts transparency threshold", () => {
     const inputsOutputs = [
-      [0, 1],
-      [1, 0],
-      [0.75, 0.25],
-      [-1, 1],
-      [2, 0],
+      [ 0, 1 ], [ 1, 0 ], [ 0.75, 0.25 ], [ -1, 1 ], [ 2, 0 ],
     ];
 
     for (const inputOutput of inputsOutputs) {
@@ -149,18 +143,16 @@ describe("EdgeSettings", () => {
     expect(es.getWeight(RenderPass.HiddenEdge, vf)).toEqual(es.getWeight(RenderPass.OpaqueLinear, vf));
     expect(es.getLineCode(RenderPass.HiddenEdge, vf)).toEqual(hiddenPattern);
 
-    es.init(HiddenLine.Settings.fromJSON({ visible: { width: 4, pattern: LinePixels.Code3 }, hidden: {} }));
+    es.init(HiddenLine.Settings.fromJSON({ visible: { width: 4, pattern: LinePixels.Code3 }, hidden: { } }));
     expect(es.getWeight(RenderPass.HiddenEdge, vf)).toEqual(es.getWeight(RenderPass.OpaqueLinear, vf));
     expect(es.getLineCode(RenderPass.HiddenEdge, vf)).toEqual(hiddenPattern);
   });
 
   it("does not permit hidden edges to be wider than visible edges", () => {
-    const es = EdgeSettings.create(
-      HiddenLine.Settings.fromJSON({
-        visible: { width: 2 },
-        hidden: { width: 5 },
-      }),
-    );
+    const es = EdgeSettings.create(HiddenLine.Settings.fromJSON({
+      visible: { width: 2 },
+      hidden: { width: 5 },
+    }));
 
     expect(es.getWeight(RenderPass.HiddenEdge, ViewFlags.fromJSON({ renderMode: RenderMode.SolidFill }))).toEqual(2);
   });

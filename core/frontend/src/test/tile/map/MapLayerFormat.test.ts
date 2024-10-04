@@ -1,11 +1,15 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ImageryMapLayerTreeReference, MapLayerFormat, MapLayerFormatRegistry, MapLayerImageryProvider } from "../../../tile/internal";
-import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
+import {
+  ImageryMapLayerTreeReference,
+  MapLayerFormat,
+  MapLayerFormatRegistry,
+  MapLayerImageryProvider,
+} from "../../../tile/internal";import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 
 class TestMapLayerFormat extends MapLayerFormat {
@@ -26,7 +30,7 @@ class TestMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 }
 
-class TestMapLayerSettings extends ImageMapLayerSettings {}
+class TestMapLayerSettings extends ImageMapLayerSettings { }
 
 const testMapLayer = {
   name: "TestName",
