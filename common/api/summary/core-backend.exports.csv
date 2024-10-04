@@ -175,6 +175,7 @@ beta;class;ExternalSourceGroupGroupsSources
 beta;class;ExternalSourceIsInRepository
 beta;class;ExternalSourceOwnsAttachments
 public;class;FileNameResolver
+deprecated;class;FileNameResolver
 beta;class;FolderContainsRepositories
 alpha;class;FolderLink
 public;class;FunctionalBreakdownElement
