@@ -696,27 +696,18 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const toIModel = thisHit.transformToSourceIModel;
-    let worldToViewMap = hitVp.worldToViewMap.transform0;
-    if (toIModel) {
-      const toIModelMap = Matrix4d.createTransform(toIModel);
-      worldToViewMap = toIModelMap.multiplyMatrixMatrix(worldToViewMap);
-    }
-
-    const testPoint = toIModel?.multiplyPoint3d(thisHit.testPoint) ?? thisHit.testPoint;
-    const closePoint = toIModel?.multiplyPoint3d(thisHit.hitPoint) ?? thisHit.hitPoint;
-
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId,
-      testPoint,
-      closePoint,
-      worldToView: worldToViewMap.toJSON(),
+      testPoint: thisHit.testPoint,
+      closePoint: thisHit.hitPoint,
+      worldToView: hitVp.worldToViewMap.transform0.toJSON(),
       viewFlags: hitVp.viewFlags,
       snapModes,
       snapAperture: hitVp.pixelsFromInches(hotDistanceInches),
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
+      geometryToWorld: thisHit.transformToSourceIModel?.toJSON(),
     };
 
     const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
@@ -779,9 +770,7 @@ export class AccuSnap implements Decorator {
       };
 
       let displayTransform;
-      if (undefined !== toIModel) {
-        displayTransform = toIModel.inverse();
-      } else if (undefined !== thisHit.modelId) {
+      if (undefined !== thisHit.modelId) {
         displayTransform = thisHit.viewport.view.computeDisplayTransform({
         modelId: thisHit.modelId,
         elementId: thisHit.sourceId,

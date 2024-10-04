@@ -7,7 +7,7 @@
  */
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { Matrix4dProps, XYZProps } from "@itwin/core-geometry";
+import { Matrix4dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
 import { GeometryClass } from "../GeometryParams";
 import { ViewFlagProps } from "../ViewFlags";
@@ -37,6 +37,7 @@ export interface SnapRequestProps {
   geometryClass?: GeometryClass;
   intersectCandidates?: Id64Array;
   decorationGeometry?: DecorationGeometryProps[];
+  geometryToWorld?: TransformProps;
 }
 
 /** Information returned from the back end to the front end holding the result of a *snap* operation.
