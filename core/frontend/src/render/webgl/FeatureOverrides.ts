@@ -21,37 +21,7 @@ import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture"
 import { BatchOptions } from "../../common/render/BatchOptions";
 import { DisplayParams } from "../../common/internal/render/DisplayParams";
 import { OvrFlags } from "../../common/internal/render/OvrFlags";
-
-function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
-  const maxSize = System.instance.maxTextureSize;
-  const nRgba = nEntries * nRgbaPerEntry * nTables + nExtraRgba;
-
-  if (nRgba < maxSize)
-    return { width: nRgba, height: 1 };
-
-  // Make roughly square to reduce unused space in last row
-  let width = Math.ceil(Math.sqrt(nRgba));
-
-  // Ensure a given entry's RGBA values all fit on the same row.
-  const remainder = width % nRgbaPerEntry;
-  if (0 !== remainder) {
-    width += nRgbaPerEntry - remainder;
-  }
-
-  // Compute height
-  const height = Math.ceil(nRgba / width);
-
-  assert(height <= maxSize);
-  assert(width <= maxSize);
-  assert(width * height >= nRgba);
-  assert(Math.floor(height) === height);
-  assert(Math.floor(width) === width);
-
-  // Row padding should never be necessary...
-  assert(0 === width % nRgbaPerEntry);
-
-  return { width, height };
-}
+import { computeDimensions } from "../../common/internal/render/VertexTable";
 
 export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isModelHilited: boolean): boolean {
   if (hilites.isEmpty)
@@ -131,7 +101,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
   private _initialize(map: RenderFeatureTable, ovrs: FeatureSymbology.Overrides, pickExcludes: Id64.Uint32Set, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
-    const dims = computeWidthAndHeight(nFeatures, 2);
+    const dims = computeDimensions(nFeatures, 2, 0, System.instance.maxTextureSize);
     const width = dims.width;
     const height = dims.height;
     assert(width * height >= nFeatures);

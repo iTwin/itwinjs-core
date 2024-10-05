@@ -10,12 +10,13 @@ import { TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderComponent, ProgramBuilder, VariableType,
 } from "../ShaderBuilder";
+import { addFeatureIndex } from "./FeatureSymbology";
 import { addInstancedRtcMatrix } from "./Vertex";
 
 const computeContourNdx = `
   if (u_contourLUTWidth == 0u)
       return 15.0;
-  uint lutIndex = uint(decodeUInt24(g_featureAndMaterialIndex.xyz));
+  uint lutIndex = uint(getFeatureIndex());
   bool odd = bool(lutIndex & 1u);
   lutIndex /= 2u;
   uint byteSel = lutIndex & 0x3u;
@@ -45,11 +46,7 @@ vec4 unpackAndNormalize2BytesVec4(vec4 f, bool upper) {
 const applyContours = `
   int contourNdx = int(v_contourNdx + 0.5);
   if (!u_displayContours || contourNdx > 14) // 15 => no contours
-#if 1
     return baseColor;
-#else // debug for contourNdx map
-    return vec4(0.0, 0.5, 1.0, 1.0);
-#endif
 
   const int maxDefs = ${ContourUniforms.maxContourDefs}; // max number of contour definitions allowed, have to change index arrays if this changes
   int contourNdxC = clamp(contourNdx, 0, maxDefs - 1);
@@ -102,6 +99,8 @@ float computeWorldHeight(vec4 rawPosition) {
   return height;
 }
 `;
+
+  addFeatureIndex(builder.vert);
 
   builder.addFunctionComputedVarying("v_contourNdx", VariableType.Float, "computeContourNdx", computeContourNdx);
   builder.addFunctionComputedVaryingWithArgs("v_height", VariableType.Float, "computeWorldHeight(rawPosition)", computeWorldHeight);

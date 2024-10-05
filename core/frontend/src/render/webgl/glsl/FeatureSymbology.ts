@@ -126,7 +126,7 @@ float computeLineCode() {
 }
 `;
 
-function addFeatureIndex(vert: VertexShaderBuilder): void {
+export function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_featureIndex", VariableType.Vec3);
 
   vert.addFunction(decodeUint24);

@@ -17,37 +17,7 @@ import { Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 import { BatchOptions } from "../../common/render/BatchOptions";
 import { ContourUniforms } from "./ContourUniforms";
-
-function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number): { width: number, height: number } {
-  const maxSize = System.instance.maxTextureSize;
-  const nRgba = Math.ceil(nEntries * nRgbaPerEntry);
-
-  if (nRgba <= maxSize)
-    return { width: nRgba, height: 1 };
-
-  // Make roughly square to reduce unused space in last row
-  let width = Math.ceil(Math.sqrt(nRgba));
-
-  // Ensure a given entry's RGBA values all fit on the same row.
-  const remainder = width % nRgbaPerEntry;
-  if (0 !== remainder) {
-    width += nRgbaPerEntry - remainder;
-  }
-
-  // Compute height
-  const height = Math.ceil(nRgba / width);
-
-  assert(height <= maxSize);
-  assert(width <= maxSize);
-  assert(width * height >= nRgba);
-  assert(Math.floor(height) === height);
-  assert(Math.floor(width) === width);
-
-  // Row padding should never be necessary...
-  assert(0 === width % nRgbaPerEntry);
-
-  return { width, height };
-}
+import { computeDimensions } from "../../common/internal/render/VertexTable";
 
 /** @internal */
 export type ContoursCleanup = () => void;
@@ -76,7 +46,7 @@ export class Contours implements WebGLDisposable {
 
   private _initialize(map: RenderFeatureTable) {
     const nFeatures = map.numFeatures;
-    const dims = computeWidthAndHeight(nFeatures, 1/8);
+    const dims = computeDimensions(nFeatures, 1/8, 0, System.instance.maxTextureSize);
     const width = dims.width;
     const height = dims.height;
     assert(width * height * 8 >= nFeatures);
@@ -96,8 +66,6 @@ export class Contours implements WebGLDisposable {
   }
 
   private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: ContourDisplay) {
-    // if (undefined === contours)
-    //   contours = ContourDisplay.fromJSON();
     // setup an efficient way to compare feature subcategories with lists in terrains
     const subCatMap = new Id64.Uint32Map<number>();
     // NB: index also has to be a max of 14 - has to fit in 4 bits with value 15 reserved for no terrain def
