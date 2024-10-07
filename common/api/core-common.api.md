@@ -9163,7 +9163,6 @@ export interface SnapRequestProps {
     id: Id64String;
     // (undocumented)
     intersectCandidates?: Id64Array;
-    modelToWorld?: TransformProps;
     // (undocumented)
     snapAperture?: number;
     // (undocumented)
