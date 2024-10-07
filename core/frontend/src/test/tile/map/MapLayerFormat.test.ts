@@ -9,7 +9,8 @@ import {
   MapLayerFormat,
   MapLayerFormatRegistry,
   MapLayerImageryProvider,
-} from "../../../tile/internal";import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
+} from "../../../tile/internal";
+import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 
 class TestMapLayerFormat extends MapLayerFormat {
