@@ -748,7 +748,7 @@
     },
     {
       "name": "playwright",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "prettier",

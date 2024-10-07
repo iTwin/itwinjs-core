@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import sinon from "sinon";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IModelApp } from "../IModelApp";
 import { Cartographic, EmptyLocalization, GlobeMode } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -13,25 +12,24 @@ import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe("BackgroundMapGeometry", () => {
-  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
   afterEach(async () => {
-    sandbox.restore();
+    vi.restoreAllMocks();
     if (IModelApp.initialized)
       await IModelApp.shutdown();
   });
 
   it("provide cartographics from iModel coordinates", async () => {
 
-    const wgs84CartographicFromSpatialFake = sandbox.stub(IModelConnection.prototype, "wgs84CartographicFromSpatial").callsFake(async function _(spatial: XYAndZ[]): Promise<Cartographic[]> {
+    const wgs84CartographicFromSpatialFake = vi.spyOn(IModelConnection.prototype, "wgs84CartographicFromSpatial").mockImplementation(async function _(spatial: XYAndZ[]): Promise<Cartographic[]> {
       return Promise.resolve(spatial.map((value) => Cartographic.fromRadians({ longitude: value.x, latitude: value.y, height: value.z})));
     });
 
-    const dbToCartographicFake = sandbox.stub(BackgroundMapGeometry.prototype, "dbToCartographic").callsFake(function _(db: XYAndZ, _result?: Cartographic): any {
+    const dbToCartographicFake = vi.spyOn(BackgroundMapGeometry.prototype, "dbToCartographic").mockImplementation(function _(db: XYAndZ, _result?: Cartographic): any {
       return Cartographic.fromRadians({longitude: db.x, latitude: db.y, height: db.z});
     });
 
@@ -43,14 +41,15 @@ describe("BackgroundMapGeometry", () => {
     const dataset = [{x: -1, y: -1, z: -1}, {x: 1, y: 1, z: 1}, {x: -2, y: -2, z: -2}];
     const result = await bgGeom.dbToWGS84CartographicFromGcs(dataset);
     expect(result.length).toEqual(dataset.length);
-    expect(wgs84CartographicFromSpatialFake.getCalls().length).toEqual(1);
-    expect(wgs84CartographicFromSpatialFake.getCalls()[0].args[0].length).toEqual(2);
-    expect(dbToCartographicFake.getCalls().length).toEqual(1);
+    expect(wgs84CartographicFromSpatialFake).toHaveBeenCalledOnce();
+    const firstCall = wgs84CartographicFromSpatialFake.mock.calls[0];
+    expect(firstCall[0].length).toEqual(2);
+    expect(dbToCartographicFake).toHaveBeenCalledOnce();
 
     for (let i = 0; i<dataset.length; i++) {
-      expect(dataset[i].x).to.eq(result[i].longitude);
-      expect(dataset[i].y).to.eq(result[i].latitude);
-      expect(dataset[i].z).to.eq(result[i].height);
+      expect(dataset[i].x).toEqual(result[i].longitude);
+      expect(dataset[i].y).toEqual(result[i].latitude);
+      expect(dataset[i].z).toEqual(result[i].height);
     }
   });
 });

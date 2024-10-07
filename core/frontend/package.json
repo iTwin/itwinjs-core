@@ -64,26 +64,17 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
-    "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
-    "@types/mocha": "^10.0.6",
-    "@types/sinon": "^17.0.2",
-    "@vitest/coverage-istanbul": "^2.1.0",
     "@vitest/browser": "^2.1.1",
     "@vitest/coverage-v8": "^2.1.1",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.12",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
+    "playwright": "~1.47.1",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.3.3",
     "typemoq": "^2.1.0",
@@ -107,8 +98,5 @@
     "fuse.js": "^3.3.0",
     "meshoptimizer": "~0.20.0",
     "wms-capabilities": "0.4.0"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

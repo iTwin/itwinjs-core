@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { expect } from "vitest";
 import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
@@ -253,7 +253,7 @@ export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNon
 /** Read a specific pixel. @internal */
 export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
   const pixels = readUniquePixelData(vp, new ViewRect(x, y, x + 1, y + 1), excludeNonLocatable);
-  expect(pixels.length).to.equal(1);
+  expect(pixels.length).toEqual(1);
   return pixels.array[0];
 }
 
@@ -264,7 +264,7 @@ export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatabl
 export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const buffer = vp.readImageBuffer({ rect })!;
-  expect(buffer).not.to.be.undefined;
+  expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);
   const colors = new ColorSet();
   for (const rgba of u32)
@@ -278,7 +278,7 @@ export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<C
 
   const rect = readRect ?? vp.viewRect;
   const buffer = vp.readImageBuffer({ rect })!;
-  expect(buffer).not.to.be.undefined;
+  expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);
   for (const rgba of u32) {
     const color = Color.from(rgba);
@@ -292,6 +292,6 @@ export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<C
 /** Read the color of a specific pixel. @internal */
 export function readColor(vp: Viewport, x: number, y: number): Color {
   const colors = readUniqueColors(vp, new ViewRect(x, y, x + 1, y + 1));
-  expect(colors.length).to.equal(1);
+  expect(colors.length).toEqual(1);
   return colors.array[0];
 }

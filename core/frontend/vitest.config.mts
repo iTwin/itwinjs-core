@@ -1,8 +1,6 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
-import { DynamicPublicDirectory } from "vite-multiple-assets";
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
-const dirAssets = ["./src/public", "./src/test/public"];
 export default defineConfig({
   test: {
     dir: "src",
@@ -37,7 +35,6 @@ export default defineConfig({
     fileParallelism: false // Had to disable parallel test runs due to Worker related tests timing out and not fetching properly.
   },
   plugins: [
-    DynamicPublicDirectory(dirAssets),
     viteStaticCopy({
       targets: [
         {

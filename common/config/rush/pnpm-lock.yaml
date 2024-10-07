@@ -548,7 +548,6 @@ importers:
     specifiers:
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
-      '@itwin/certa': workspace:*
       '@itwin/cloud-agnostic-core': ^2.2.4
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -562,26 +561,18 @@ importers:
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
       '@loaders.gl/draco': ^3.1.6
-      '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
-      '@types/mocha': ^10.0.6
-      '@types/sinon': ^17.0.2
       '@vitest/browser': ^2.1.1
-      '@vitest/coverage-istanbul': ^2.1.0
       '@vitest/coverage-v8': ^2.1.1
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
-      chai: ^4.3.10
-      chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
       eslint: ^8.56.0
       fuse.js: ^3.3.0
       glob: ^10.3.12
       meshoptimizer: ~0.20.0
-      mocha: ^10.2.0
-      nyc: ^15.1.0
+      playwright: ~1.47.1
       rimraf: ^3.0.2
-      sinon: ^17.0.2
       source-map-loader: ^4.0.0
       typemoq: ^2.1.0
       typescript: ~5.3.3
@@ -604,31 +595,22 @@ importers:
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-orbitgt': link:../orbitgt
       '@itwin/core-quantity': link:../quantity
       '@itwin/eslint-plugin': 4.0.2_xdgzedli73k7lw4xlyzszm74om
-      '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
-      '@types/mocha': 10.0.6
-      '@types/sinon': 17.0.2
-      '@vitest/browser': 2.1.1_rutwwehl3gxrue67moz4e3a37i
-      '@vitest/coverage-istanbul': 2.1.0_vitest@2.1.0
+      '@vitest/browser': 2.1.1_ngagn3iqlnfmtvqcnqspau7y7u
       '@vitest/coverage-v8': 2.1.1_vvzb4akewk7qhprv5gsu3bguym
       babel-loader: 8.2.5_webpack@5.76.0
       babel-plugin-istanbul: 6.1.1
-      chai: 4.3.10
-      chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
       eslint: 8.56.0
       glob: 10.3.12
-      mocha: 10.2.0
-      nyc: 15.1.0
+      playwright: 1.47.1
       rimraf: 3.0.2
-      sinon: 17.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
       typemoq: 2.1.0
       typescript: 5.3.3
@@ -5627,7 +5609,7 @@ packages:
   /@ungap/structured-clone/1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  /@vitest/browser/2.1.1_rutwwehl3gxrue67moz4e3a37i:
+  /@vitest/browser/2.1.1_ngagn3iqlnfmtvqcnqspau7y7u:
     resolution: {integrity: sha512-wLKqohwlZI24xMIEZAPwv9SVliv1avaIBeE0ou471D++BRPhiw2mubKBczFFIDHXuSL7UXb8/JQK9Ui6ttW9bQ==}
     peerDependencies:
       playwright: '*'
@@ -5648,6 +5630,7 @@ packages:
       '@vitest/utils': 2.1.1
       magic-string: 0.30.11
       msw: 2.4.9_typescript@5.3.3
+      playwright: 1.47.1
       sirv: 2.0.4
       tinyrainbow: 1.2.0
       vitest: 2.1.0_@vitest+browser@2.1.1
@@ -5690,7 +5673,7 @@ packages:
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
-      '@vitest/browser': 2.1.1_rutwwehl3gxrue67moz4e3a37i
+      '@vitest/browser': 2.1.1_ngagn3iqlnfmtvqcnqspau7y7u
       debug: 4.3.6
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
@@ -11678,7 +11661,6 @@ packages:
     resolution: {integrity: sha512-i1iyJdLftqtt51mEk6AhYFaAJCDx0xQ/O5NU8EKaWFgMjItPVma542Nh/Aq8aLCjIJSzjaiEQGW/nyqLkGF1OQ==}
     engines: {node: '>=18'}
     hasBin: true
-    dev: false
 
   /playwright/1.41.2:
     resolution: {integrity: sha512-v0bOa6H2GJChDL8pAeLa/LZC4feoAMbSQm1/jF/ySsWWoaNItvrMP7GEkvEEFyCTUYKMxjQKaTSg5up7nR6/8A==}
@@ -11697,7 +11679,6 @@ packages:
       playwright-core: 1.47.1
     optionalDependencies:
       fsevents: 2.3.2
-    dev: false
 
   /possible-typed-array-names/1.0.0:
     resolution: {integrity: sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==}
@@ -14010,7 +13991,7 @@ packages:
       jsdom:
         optional: true
     dependencies:
-      '@vitest/browser': 2.1.1_rutwwehl3gxrue67moz4e3a37i
+      '@vitest/browser': 2.1.1_ngagn3iqlnfmtvqcnqspau7y7u
       '@vitest/expect': 2.1.0
       '@vitest/mocker': 2.1.0_vite@5.4.6
       '@vitest/pretty-format': 2.1.1
