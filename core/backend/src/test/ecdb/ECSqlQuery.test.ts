@@ -451,6 +451,25 @@ describe("ECSql Query", () => {
     assert.isTrue(reader.stats.backendCpuTime > 0);
     assert.isTrue(reader.stats.backendMemUsed > 100);
   });
+  it("concurrent query use idset in IdSet virtual table", async () => {
+    const ids: string[] = [];
+    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+      ids.push(row[0]);
+    }
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 23);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    assert.equal(reader.stats.backendRowsReturned, 23);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+    assert.isTrue(reader.stats.backendMemUsed > 100);
+  });
   it("concurrent query get meta data", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
     let props = await reader.getMetaData();
