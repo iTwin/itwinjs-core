@@ -15,7 +15,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace AzuriteTest {
 
-  export const storageType = "azure" as const;
+  export const storageType = "azure";
   export const httpAddr = "127.0.0.1:10000";
   export const accountName = "devstoreaccount1";
   export const baseUri = `http://${httpAddr}/${accountName}`;
@@ -77,7 +77,7 @@ export namespace AzuriteTest {
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
-      const containerProps = { ...arg, writeable: true, baseUri, storageType };
+      const containerProps = { ...arg, writeable: true, baseUri, storageType } as const;
       const accessToken = await CloudSqlite.requestToken(containerProps);
       return CloudSqlite.createCloudContainer({ ...containerProps, accessToken });
     };
@@ -128,7 +128,7 @@ export namespace AzuriteTest {
       if (arg.userToken !== service.userToken.admin)
         throw new Error("only admins may create containers");
 
-      const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri, provider: storageType };
+      const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri, provider: storageType } as const;
       const azCont = createAzClient(address.containerId);
       const opts: azureBlob.ContainerCreateOptions = {
         metadata: {

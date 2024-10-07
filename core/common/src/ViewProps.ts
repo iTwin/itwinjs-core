@@ -255,7 +255,7 @@ export namespace ViewStoreRpc {
    * be incremented according to the rules of semantic versioning. See .\rpc\README-RpcInterfaceVersioning.md for more information.
    *  @internal
    */
-  export const version = "4.0.0" as const;
+  export const version = "4.0.0";
 
   /** an Id of a View, DisplayStyle, ModelSelector, CategorySelector, or Timeline in a ViewStore.
    * Will be a base-36 number with a leading "@".

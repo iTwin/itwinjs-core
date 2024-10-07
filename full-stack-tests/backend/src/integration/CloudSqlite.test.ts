@@ -613,7 +613,7 @@ describe("CloudSqlite", () => {
   it("Auto refresh container tokens", async () => {
     const contain1 = testContainers[0];
 
-    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
+    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true } as const;
     // must be valid token so property store can connect
     const accessToken = await CloudSqlite.requestToken(contProps);
 

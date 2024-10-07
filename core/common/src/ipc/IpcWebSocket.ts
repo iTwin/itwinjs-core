@@ -68,7 +68,7 @@ export abstract class IpcWebSocket implements IpcSocket {
     if (!listeners.has(listener))
       listeners.add(listener);
 
-    return () => listeners!.delete(listener);
+    return () => listeners.delete(listener);
   }
 
   public removeListener(channel: string, listener: IpcListener) {

@@ -114,7 +114,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
   it("getToolTipMessage should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
 
     const tooltip = await iModel.getToolTipMessage(id); // "0x338"
 
@@ -129,14 +129,14 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
   it("getGeometrySummary should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
     const result = await IModelReadRpcInterface.getClient().getGeometrySummary(iModel.getRpcProps(), { elementIds: [id], options: {} });
     expect(result).to.not.be.undefined;
   });
 
   it("requestSnap should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
 
     const worldToView = Matrix4d.createIdentity();
     const snap = await iModel.requestSnap({
@@ -375,7 +375,7 @@ describe("Snapping", () => {
 
   it("should be able to request a snap", async () => {
     const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
 
     const worldToView = Matrix4d.createIdentity();
     const snapProps = {
@@ -391,7 +391,7 @@ describe("Snapping", () => {
 
   it("should be able to cancel a snap", async () => {
     const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
 
     const worldToView = Matrix4d.createIdentity();
     const snapProps = {

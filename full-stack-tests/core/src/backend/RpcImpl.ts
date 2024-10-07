@@ -13,7 +13,7 @@ import { AzuriteTest } from "./AzuriteTest";
 import { OpenMode } from "@itwin/core-bentley";
 
 const viewContainer = "views-itwin1";
-const storageType = "azure" as const;
+const storageType = "azure";
 let removeViewStore: VoidFunction;
 let saveAuthClient: AzuriteTest.AuthorizationClient;
 

@@ -2000,7 +2000,7 @@ class ViewLookAndMove extends ViewNavigate {
     if (undefined === this._pointerLockClickEngagementListener) {
       this._pointerLockClickEngagementListener = () => {
         if (1 === this.viewTool.nPts && undefined !== IModelApp.toolAdmin.cursorView)
-          vp.canvas.requestPointerLock();
+          void vp.canvas.requestPointerLock();
       };
       document.addEventListener("click", this._pointerLockClickEngagementListener, false);
     }
@@ -2008,7 +2008,7 @@ class ViewLookAndMove extends ViewNavigate {
     if (undefined === this._pointerLockKeyEngagementListener) {
       this._pointerLockKeyEngagementListener = (ev: Event) => {
         if (0 === this.viewTool.nPts && undefined !== IModelApp.toolAdmin.cursorView && this.isNavigationKey(ev as KeyboardEvent))
-          vp.canvas.requestPointerLock();
+          void vp.canvas.requestPointerLock();
       };
       document.addEventListener("keydown", this._pointerLockKeyEngagementListener, false);
     }

@@ -51,6 +51,7 @@
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/mocha": "^10.0.6",
+    "@types/node": "~18.16.20",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
@@ -58,7 +59,7 @@
     "glob": "^10.3.12",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
   },
