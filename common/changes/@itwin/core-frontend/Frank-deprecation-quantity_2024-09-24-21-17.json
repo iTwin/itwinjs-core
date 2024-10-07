@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Refactored parseToQuantityValue to parseQuantityString in core frontend tests",
+      "comment": "",
       "type": "none"
     }
   ],
