@@ -7,7 +7,7 @@
  */
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { Matrix4dProps, XYZProps } from "@itwin/core-geometry";
+import { Matrix4dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
 import { GeometryClass } from "../GeometryParams";
 import { ViewFlagProps } from "../ViewFlags";
@@ -37,6 +37,12 @@ export interface SnapRequestProps {
   geometryClass?: GeometryClass;
   intersectCandidates?: Id64Array;
   decorationGeometry?: DecorationGeometryProps[];
+  /** A transform to be applied to the snap geometry.
+   * testPoint, closePoint, and worldToView are in "world" coordinates (the coordinates of the viewport's iModel).
+   * The snap geometry is in "model" coordinates (the coordinates of the iModel to which we're snapping).
+   * In normal cases these are the same iModel. They may differ when people draw multiple iModels into the same viewport.
+   */
+  modelToWorld?: TransformProps;
 }
 
 /** Information returned from the back end to the front end holding the result of a *snap* operation.
