@@ -20,7 +20,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 
 - [Git](https://git-scm.com/)
 - [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 20. The Node installation also includes the **npm** package manager.
-- [pnpm](https://pnpm.io/); `pnpm` is our preferred package manager when executing npm scripts in a single package. It is more performant and monorepo friendly than `npm`. We recommend installing `pnpm` using [corepack](https://pnpm.io/installation#using-corepack)
+- [pnpm](https://pnpm.io/): our required package manager. It is more performant and monorepo friendly than `npm`. We recommend installing `pnpm` using [corepack](https://pnpm.io/installation#using-corepack).
 - [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
 - [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 - [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
@@ -69,6 +69,8 @@ For incremental builds, the `rush build` command can be used to only build packa
 10. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
 11. Add and commit the changelog JSON files and any API signature updates.
 12. Publish changes on the branch and open a pull request.
+
+> If executing scripts from 'package.json` files in any of the subdirectories, we recommend using pnpm over npm, as it is more performant.
 
 If using the command line, steps 8 through 11 above can be completed in one step by running `rushchange.bat` from the imodeljs root directory.
 Only use `rushchange.bat` if none of the changes require a changelog entry.

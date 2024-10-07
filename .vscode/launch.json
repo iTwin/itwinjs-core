@@ -28,7 +28,10 @@
         "--no-file-parallelism"
       ],
       "smartStep": true,
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "outFiles": [
+        "${workspaceFolder}/core/*/lib/**/*.js"
+      ]
     },
     // CORE TESTS
     {
@@ -82,6 +85,9 @@
       "autoAttachChildProcesses": true,
       "smartStep": true,
       "console": "integratedTerminal",
+      "outFiles": [
+        "${workspaceFolder}/core/*/lib/**/*.js"
+      ]
     },
     {
       "name": "OrbitGT Tests",
@@ -115,6 +121,9 @@
       "runtimeExecutable": "pnpm",
       "autoAttachChildProcesses": true,
       "console": "integratedTerminal",
+      "outFiles": [
+        "${workspaceFolder}/core/*/lib/**/*.js"
+      ]
     },
     {
       "name": "EC Tests",
@@ -310,6 +319,9 @@
       "autoAttachChildProcesses": true,
       "smartStep": true,
       "console": "integratedTerminal",
+      "outFiles": [
+        "${workspaceFolder}/core/*/lib/**/*.js"
+      ],
       "env": {
         "NODE_ENV": "development" // needed for asserts to fire
       }
