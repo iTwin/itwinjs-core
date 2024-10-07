@@ -57,7 +57,6 @@ export default defineConfig({
       "../../package.json": "../package.json",
     }
   },
-  // TODO: NAM INVESTIGATE THIS
   optimizeDeps: {
     include: ['@itwin/core-frontend', "@itwin/core-common", "@itwin/core-bentley"],
   },
