@@ -343,9 +343,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     if (args.rowFormat === undefined) {
       args.rowFormat = QueryRowFormat.UseJsPropertyNames;
     }
-    if (args.classIdsToClassNames === undefined) {
-      args.classIdsToClassNames = true;
-    }
     const resp = this._stmt.toRow({
       classIdsToClassNames: args.classIdsToClassNames,
       useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
