@@ -28,7 +28,7 @@ import { Point4d } from "../geometry4d/Point4d";
  * @internal
  */
 export class Degree2PowerPolynomial {
-  /** The three coefficients for the quartic */
+  /** The three coefficients for the quadratic */
   public coffs: number[];
 
   constructor(c0: number = 0, c1: number = 0, c2: number = 0) {
@@ -923,6 +923,7 @@ export class AnalyticRoots {
   }
   /** Compute roots of quartic `c[0] + c[1] * x + c[2] * x^2 + c[3] * x^3 + c[4] * x^4` */
   public static appendQuarticRoots(c: Float64Array | number[], results: GrowableFloat64Array) {
+    // for details, see core\geometry\internaldocs\quarticRoots.md
     const coffs = new Float64Array(4);
     let u: number;
     let v: number;
@@ -952,7 +953,7 @@ export class AnalyticRoots {
       results.push(0);
       this.addConstant(origin, results); // apply origin
       return;
-    } else { // solve the resolvent cubic; more info: https://en.wikipedia.org/wiki/Resolvent_cubic#Second_definition
+    } else { // solve the resolvent cubic
       coffs[0] = 0.5 * r * p - 0.125 * q * q;
       coffs[1] = -r;
       coffs[2] = -0.5 * p;
@@ -1120,7 +1121,7 @@ export class TrigPolynomial {
   // tolerance for small angle decision.
   private static readonly _smallAngle: number = 1.0e-11;
 
-  // see itwinjs-core\core\geometry\internaldocs\Polynomial.md on how below variables are derived.
+  // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients.
   /** Standard Basis coefficients for the numerator of the y-coordinate y(t) = S(t)/W(t) in the rational semicircle parameterization. */
   public static readonly S = Float64Array.from([0.0, 2.0, -2.0]);
   /** Standard Basis coefficients for the numerator of the x-coordinate x(t) = C(t)/W(t) in the rational semicircle parameterization. */
@@ -1229,7 +1230,7 @@ export class TrigPolynomial {
     const coffs = new Float64Array(5);
     PowerPolynomial.zero(coffs);
     let degree;
-    // see itwinjs-core\core\geometry\internaldocs\Polynomial.md on how coffs (coefficient array) is built.
+    // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients
     if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a)) {
       PowerPolynomial.accumulate(coffs, this.CW, ax);
       PowerPolynomial.accumulate(coffs, this.SW, ay);
@@ -1275,6 +1276,7 @@ export class TrigPolynomial {
   public static solveUnitCircleEllipseIntersection(cx: number, cy: number, ux: number, uy: number,
     vx: number, vy: number, ellipseRadians: number[], circleRadians: number[]): boolean {
     circleRadians.length = 0;
+    // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients:
     const acc = ux * ux + uy * uy;
     const acs = 2.0 * (ux * vx + uy * vy);
     const ass = vx * vx + vy * vy;
@@ -1313,7 +1315,7 @@ export class TrigPolynomial {
     ellipseRadians: number[], circleRadians: number[],
   ): boolean {
     circleRadians.length = 0;
-    // see itwinjs-core\core\geometry\internaldocs\Polynomial.md on how below variables are derived.
+    // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients:
     const acc = ux * ux + uy * uy - uw * uw;
     const acs = 2.0 * (ux * vx + uy * vy - uw * vw);
     const ass = vx * vx + vy * vy - vw * vw;
