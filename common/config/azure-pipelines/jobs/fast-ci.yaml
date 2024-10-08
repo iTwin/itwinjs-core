@@ -51,7 +51,7 @@ jobs:
       - template: templates/appsec/veracode/package-veracode.yaml@build-pipeline-scripts
         parameters:
           foldersToInclude: "core,editor,domains,example-code,extensions,presentation,test-apps,tools,ui,utils" #note I skipped common, docs, full-stack-tests
-          foldersToExclude: "test"
+          foldersToExclude: "test,public"
       - script: |
           zip_file_path="$(Build.ArtifactStagingDirectory)/veracode-scan.zip"
           file_size=$(stat -c%s "$zip_file_path")
