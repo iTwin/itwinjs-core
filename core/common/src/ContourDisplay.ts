@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { compareBooleans, compareNumbers, CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
+import { compareBooleans, compareNumbers, CompressedId64Set, NonFunctionPropertiesOf, OrderedId64Iterable } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { LinePixels } from "./LinePixels";
 
@@ -251,7 +251,15 @@ export class ContourGroup {
 export interface ContourDisplayProps {
   /** See [[ContourDisplay.groups]]. */
   groups?: (ContourGroupProps | undefined)[];
+  /** See [[ContourDisplay.displayContours]]. */
+  displayContours?: boolean;
 }
+
+/** A type containing all of the properties of [[ContourDisplay]] with none of the methods and with the `readonly` modifiers removed.
+ * @see [[ContourDisplay.create]] and [[ContourDisplay.clone]].
+ * @public
+ */
+export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
 
 /** The contour display setup of a [[DisplayStyle3d]].
    * Contour display allows a user to apply specific contour line renderings to subcategories within a scene.
@@ -259,8 +267,12 @@ export interface ContourDisplayProps {
 export class ContourDisplay {
   /** A list of the groups which contain their own specific contour display settings. Defaults to an empty array. */
   public readonly groups: (ContourGroup | undefined)[] = [];
+  /** If true, contours will be displayed based on these settings. Defaults to false. */
+  public readonly displayContours: boolean;
 
   public equals(other: ContourDisplay): boolean {
+    if (this.displayContours !== other.displayContours)
+      return false;
     if (this.groups.length !== other.groups.length)
       return false;
     for (const group of this.groups) {
@@ -271,16 +283,26 @@ export class ContourDisplay {
     return true;
   }
 
-  private constructor(json?: ContourDisplayProps) {
-    if (undefined !== json && undefined !== json.groups) {
-      for (let n = 0; n < json.groups.length; n++) {
-        this.groups[n] = (json.groups[n] === undefined) ? undefined : ContourGroup.fromJSON(json.groups[n]);
-      }
-    }
+  private constructor(props?: Partial<ContourDisplayProperties>) {
+    this.displayContours = props?.displayContours ?? false;
+    this.groups = props?.groups ?? [];
   }
 
-  public static fromJSON(json?: ContourDisplayProps) {
-    return json ? new ContourDisplay(json) : new ContourDisplay({});
+  public static fromJSON(props?: ContourDisplayProps) {
+    if (!props)
+      return new ContourDisplay();
+
+    const groups: (ContourGroup | undefined)[] = [];
+    if (undefined !== props && undefined !== props.groups) {
+      for (let n = 0; n < props.groups.length; n++) {
+        groups[n] = (props.groups[n] === undefined) ? undefined : ContourGroup.fromJSON(props.groups[n]);
+      }
+    }
+
+    return new this({
+      displayContours: props?.displayContours,
+      groups,
+    });
   }
 
   public toJSON(): ContourDisplayProps {
@@ -291,6 +313,24 @@ export class ContourDisplay {
       props.groups[n] = this.groups[n]?.toJSON();
     }
 
+    props.displayContours = this.displayContours;
     return props;
+  }
+
+  /** Create a new ContourDisplay. Any properties not specified by `props` will be initialized to their default values. */
+  public static create(props?: Partial<ContourDisplayProperties>): ContourDisplay {
+    return props ? new this(props) : new ContourDisplay();
+  }
+
+  /** Create a copy of these settings, changing the `displayContours` flag. */
+  public withDisplayContours(displayContours?: boolean): ContourDisplay {
+    const newDisplayContours = displayContours ?? this.displayContours;
+    if (newDisplayContours === this.displayContours)
+      return this;
+
+    return ContourDisplay.create({
+      ...this,
+      displayContours: displayContours ?? this.displayContours,
+    });
   }
 }

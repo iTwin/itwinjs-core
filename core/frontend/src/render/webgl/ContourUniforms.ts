@@ -60,17 +60,17 @@ export class ContourUniforms {
   public update(target: Target): void {
     const plan = target.plan;
 
-    if (this.contourDisplay && plan.contours && this.contourDisplay.equals(plan.contours) && this._displayContours === plan.displayContours) {
+    if (this.contourDisplay && plan.contours && this.contourDisplay.equals(plan.contours)) {
       return;
     }
 
     desync(this);
 
-    this._displayContours = plan.displayContours;
-
     this._contourDisplay = plan.contours;
-    if (!this.contourDisplay)
+    if (undefined === this.contourDisplay)
       return;
+
+    this._displayContours = this.contourDisplay.displayContours;
 
     /* uniform packing for contourDefs:
         The line pattern code is put into 4 bits, and the width is packed into 4 bits, so together with the pattern use 8 bits.

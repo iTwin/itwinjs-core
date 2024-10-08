@@ -62,7 +62,7 @@ export class ContoursSettings implements IDisposable {
       id: "cbx_toggleDisplayContours",
       handler: (checkbox) => {
         assert(this._vp.view.is3d());
-        this._vp.view.displayStyle.settings.displayContours = checkbox.checked;
+        this._vp.view.displayStyle.settings.contours = this._vp.view.displayStyle.settings.contours.withDisplayContours(checkbox.checked);
         this.sync();
       },
     });
@@ -160,7 +160,7 @@ export class ContoursSettings implements IDisposable {
     this.loadContourDef(this._currentContourIndex);
 
     assert(this._vp.view.is3d());
-    this._checkbox.checkbox.checked = this._vp.view.displayStyle.settings.displayContours;
+    this._checkbox.checkbox.checked = this._vp.view.displayStyle.settings.contours.displayContours;
   }
 
   public dispose(): void {
