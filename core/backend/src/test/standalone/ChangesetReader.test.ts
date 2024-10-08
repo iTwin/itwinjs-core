@@ -258,7 +258,7 @@ describe("Changeset Reader API", async () => {
     rwIModel.saveChanges("user 1: data");
 
     if ("test local changes") {
-      const reader = SqliteChangesetReader.openLocalChanges({ iModel: rwIModel[_nativeDb], db: rwIModel, disableSchemaCheck: true });
+      const reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {

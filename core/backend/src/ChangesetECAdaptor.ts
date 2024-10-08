@@ -631,9 +631,6 @@ export class ChangesetECAdaptor implements IDisposable {
    * @param reader wrap changeset reader.
    */
   public constructor(public readonly reader: SqliteChangesetReader, public readonly disableMetaData = false) {
-    if (!reader.db)
-      throw new Error("SqliteChangesetReader, 'db' param must be set to a valid IModelDb or ECDb.");
-
     if (!reader.disableSchemaCheck)
       throw new Error("SqliteChangesetReader, 'disableSchemaCheck' param must be set to false.");
 
