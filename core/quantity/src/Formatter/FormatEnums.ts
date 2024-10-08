@@ -153,8 +153,17 @@ export enum ShowSignOption {
 
 // parse and toString methods
 
-/**  @beta   */
+/**
+ * @beta
+ * @deprecated scientificTypeToString will be deprecated in future versions. All int enums are refactored to string enums.
+*/
+export function scientificTypeToString(scientificType: ScientificType): string {
+  return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
+}
 
+/**
+ * @beta
+*/
 export function parseScientificType(scientificType: string, formatName: string): ScientificType {
   switch (scientificType.toLowerCase()) {
     case "normalized": return ScientificType.Normalized;
@@ -189,6 +198,20 @@ export function parseShowSignOption(showSignOption: string, formatName: string):
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'showSignOption' attribute.`);
   }
 }
+
+/**
+ * @beta
+ * @deprecated showSignOptionToString will be deprecated in future versions. All int enums are refactored to string enums.
+*/
+export function showSignOptionToString(showSign: ShowSignOption): string {
+  switch (showSign) {
+    case ShowSignOption.NegativeParentheses: return "NegativeParentheses";
+    case ShowSignOption.NoSign: return "NoSign";
+    case ShowSignOption.OnlyNegative: return "OnlyNegative";
+    case ShowSignOption.SignAlways: return "SignAlways";
+  }
+}
+
 
 /**  @beta  */
 export function parseFormatTrait(formatTraitsString: string, formatName: string): FormatTraits {
@@ -273,6 +296,21 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
     case "ratio": return FormatType.Ratio;
     default:
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
+  }
+}
+
+/** @beta
+ *  @deprecated formatTypeToString will be deprecated in future versions. All int enums are refactored to string enums.
+*/
+export function formatTypeToString(type: FormatType): string {
+  switch (type) {
+    case FormatType.Decimal: return "Decimal";
+    case FormatType.Scientific: return "Scientific";
+    case FormatType.Station: return "Station";
+    case FormatType.Fractional: return "Fractional";
+    case FormatType.Bearing: return "Bearing";
+    case FormatType.Azimuth: return "Azimuth";
+    case FormatType.Ratio: return "Ratio";
   }
 }
 
