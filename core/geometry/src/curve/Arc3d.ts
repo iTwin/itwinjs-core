@@ -387,8 +387,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param start start of arc, on an axis
    * @param middle point on arc somewhere between `start` and `end`
    * @param end point on arc directly opposite `start`
-   * @param sweep angular sweep, measured from `start` in the direction of `end`.
-   *  For a half-ellipse from `start` to `end` passing through `end`, pass `AngleSweep.createStartEndDegrees(0,180)`.
+   * @param sweep angular sweep, measured from `start` in the direction of `middle`.
+   *  For a half-ellipse from `start` to `end` passing through `middle`, pass `AngleSweep.createStartEndDegrees(0,180)`.
    *  Default value is full sweep to create the entire ellipse.
    * @param result optional preallocated result
    * @returns elliptical arc, or undefined if construction impossible.
@@ -415,8 +415,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Create a circular arc defined by start point, tangent at start point, and end point.
-   * * The circular arc is swept from start to end toward direction of the `tangentAtStart`.
-   * * If tangent is parallel to line segment from start to end, return the line segment.
+   * * The circular arc is swept from `start` to `end` in the direction of `tangentAtStart`.
+   * * If `tangentAtStart` is parallel to the line segment from `start` to `end`, return the line segment.
    */
   public static createCircularStartTangentEnd(
     start: Point3d, tangentAtStart: Vector3d, end: Point3d, result?: Arc3d,
