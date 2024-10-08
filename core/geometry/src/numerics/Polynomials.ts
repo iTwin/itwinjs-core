@@ -913,7 +913,7 @@ export class AnalyticRoots {
       // EDL April 5, 2020 replace classic GraphicsGems solver by RWDNickalls.
       // Don't know if improveRoots is needed.
       // Breaks in AnalyticRoots.test.ts checkQuartic suggest it indeed converts many e-16 errors to zero.
-      //  e-13 cases are unaffected
+      // e-13 cases are unaffected
       this.improveRoots(c, 3, results, false);
     } else {
       this.appendQuadraticRoots(c, results);
@@ -1145,7 +1145,7 @@ export class TrigPolynomial {
   /**
    * Solve a polynomial created from trigonometric condition using Trig.S, Trig.C, Trig.W.
    * * Polynomial is of degree 4:
-   * `coff[0] + coff[1] * t + coff[2] * t^2 + coff[3] * t^3 + coff[4] * t^4`
+   * `p(t) = coff[0] + coff[1] * t + coff[2] * t^2 + coff[3] * t^3 + coff[4] * t^4`
    * * Solution logic includes inferring angular roots corresponding zero leading coefficients
    * (roots at infinity).
    * @param coff coefficients.
@@ -1175,14 +1175,12 @@ export class TrigPolynomial {
       degree--;
     const roots = new GrowableFloat64Array();
     if (degree === -1) {
-      // Umm. Dunno. Nothing there.
+      // do nothing
     } else {
       if (degree === 0) {
-        // p(t) is a nonzero constant
-        // No roots, but not degenerate.
+        // p(t) is a nonzero constant; no roots but not degenerate.
       } else if (degree === 1) {
-        // p(t) = coff[1] * t + coff[0]
-        roots.push(- coff[0] / coff[1]);
+        roots.push(-coff[0] / coff[1]); // p(t) = coff[0] + coff[1] * t
       } else if (degree === 2) {
         AnalyticRoots.appendQuadraticRoots(coff, roots);
       } else if (degree === 3) {
@@ -1193,17 +1191,15 @@ export class TrigPolynomial {
         // TODO: WORK WITH BEZIER SOLVER
       }
       if (roots.length > 0) {
-        // Each solution t represents an angle with
-        // Math.Cos(theta) = C(t)/W(t) and sin(theta) = S(t)/W(t)
+        // Each solution t represents an angle with Math.Cos(theta) = C(t)/W(t) and sin(theta) = S(t)/W(t)
         // Division by W has no effect on atan2 calculations, so we just compute S(t),C(t)
         for (let i = 0; i < roots.length; i++) {
           const ss = PowerPolynomial.evaluate(this.S, roots.atUncheckedIndex(i));
           const cc = PowerPolynomial.evaluate(this.C, roots.atUncheckedIndex(i));
           radians.push(Math.atan2(ss, cc));
         }
-        // Each leading zero at the front of the coefficients corresponds to a root at -PI/2.
-        // Only make one entry....
-        // for (int i = degree; i < nominalDegree; i++)
+        // each leading zero at the front of the coefficient array corresponds to a root at -PI/2.
+        // only make one entry because we don't report multiplicity.
         if (degree < nominalDegree)
           radians.push(-0.5 * Math.PI);
       }
@@ -1272,8 +1268,12 @@ export class TrigPolynomial {
    * @param ellipseRadians solution angles in ellipse parameter space
    * @param circleRadians solution angles in circle parameter space
    */
-  public static solveUnitCircleEllipseIntersection(cx: number, cy: number, ux: number, uy: number,
-    vx: number, vy: number, ellipseRadians: number[], circleRadians: number[]): boolean {
+  public static solveUnitCircleEllipseIntersection(
+    cx: number, cy: number,
+    ux: number, uy: number,
+    vx: number, vy: number,
+    ellipseRadians: number[], circleRadians: number[],
+  ): boolean {
     circleRadians.length = 0;
     const acc = ux * ux + uy * uy;
     const acs = 2.0 * (ux * vx + uy * vy);
