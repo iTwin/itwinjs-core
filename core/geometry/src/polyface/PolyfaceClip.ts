@@ -215,7 +215,7 @@ export class PolyfaceClip {
         for (const child of region.children)
           this.addRegion(builder, child);
       } else {
-        assert(!"unexpected region encountered");
+        assert(false, "unexpected region encountered");
       }
     }
   }
