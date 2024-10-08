@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for snapping to secondary iModels within a viewport.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

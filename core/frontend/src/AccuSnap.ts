@@ -707,6 +707,7 @@ export class AccuSnap implements Decorator {
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
+      modelToWorld: thisHit.transformFromSourceIModel?.toJSON(),
     };
 
     const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
@@ -768,12 +769,16 @@ export class AccuSnap implements Decorator {
         return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
       };
 
+      let displayTransform;
+      if (undefined !== thisHit.modelId) {
+        displayTransform = thisHit.viewport.view.computeDisplayTransform({
+          modelId: thisHit.modelId,
+          elementId: thisHit.sourceId,
+          viewAttachmentId: thisHit.viewAttachment?.id,
+        });
+      }
+
       const snapPoint = Point3d.fromJSON(result.snapPoint);
-      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({
-        modelId: thisHit.modelId,
-        elementId: thisHit.sourceId,
-        viewAttachmentId: thisHit.viewAttachment?.id,
-      }) : undefined;
       displayTransform?.multiplyPoint3d(snapPoint, snapPoint);
 
       const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
