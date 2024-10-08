@@ -52,7 +52,7 @@ const applyContours = `
   int contourNdxC = clamp(contourNdx, 0, maxDefs - 1);
 
   bool even = (contourNdxC & 1) == 0;
-  vec4 rgbf = u_contourDefs[even ? contourNdxC * 3 / 2 : (contourNdxC - 1) * 3 / 2 + 2];
+  vec4 rgbfp = u_contourDefs[even ? contourNdxC * 3 / 2 : (contourNdxC - 1) * 3 / 2 + 2];
   vec4 intervalsPair = u_contourDefs[(contourNdxC / 2) * 3 + 1];
   // intervals.r => minor interval distance, intervals.g => major index count
   vec2 intervals = even ? intervalsPair.rg : intervalsPair.ba;
@@ -60,8 +60,10 @@ const applyContours = `
   float coord = v_height / intervals.r;
   // determine if this is in the vicinity of a major contour line (1/2 an interval either way, which is one limit of drawing width)
   bool maj = (fract((abs(coord) + 0.5) / intervals.g) < (1.0 / intervals.g));
-  rgbf = unpackAndNormalize2BytesVec4(rgbf, maj);
-  // rgba.a => (4-bit linecode / 4-bit weight) maj/min, where the 4-bit weight is a 3-bit weight value with one fraction bit and a 1.5 offset.   This gives a weight range of 1.5 to 9 in 0.5 increments.
+  vec4 rgbf = unpackAndNormalize2BytesVec4(rgbfp, maj);
+  // rgbf.a => (4-bit linecode / 4-bit weight) maj/min, where the 4-bit weight is a 3-bit weight value with one fraction bit and a 1.5 offset.
+  //    This gives a weight range of 1.5 to 9 in 0.5 increments.
+  //    NB: the showGeometry bit flag is stuck in at bit 16 of this, so the major line code has an extra bit in it that needs to be masked out
   int lineCodeWt = int((rgbf.a * 255.0) + 0.5);
   // first * 0.5 is for fractional part of width, then have to add 1.0 for offset, then another 1.0 for actual width bias
   float lineRadius = (float(lineCodeWt & 0xf) * 0.5 + 2.0) * 0.5;
@@ -83,9 +85,20 @@ const applyContours = `
   float offset = trunc((abs(dx) > abs(dy)) ? gl_FragCoord.y : gl_FragCoord.x);
   offset = mod(offset, patLength);
   uint msk = 1u << uint(offset);
-  contourAlpha *= (patterns[lineCodeWt / 16] & msk) > 0u ? 1.0 : 0.0;
+  contourAlpha *= (patterns[(lineCodeWt / 16) & 0xf] & msk) > 0u ? 1.0 : 0.0;
   contourAlpha = min(contourAlpha, 1.0);
+  if (rgbfp.a / 65536.0 < 0.5) { // showGeometry == 0
+    if (contourAlpha < 0.5)
+      discard;
+    return vec4(rgbf.rgb, 1.0);
+  }
+#if 1
+  // set contour opaque even if base color is transparent
+  float alpha = contourAlpha >= 0.5 ? 1.0 : baseColor.a;
+  return vec4(mix(baseColor.rgb, rgbf.rgb, contourAlpha), alpha);
+#else
   return vec4(mix(baseColor.rgb, rgbf.rgb, contourAlpha), baseColor.a);
+#endif
 `;
 
 /** @internal */

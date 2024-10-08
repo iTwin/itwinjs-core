@@ -38,15 +38,16 @@ export class ContourUniforms {
     this._contourDefs[startNdx+2] = majorColor.colors.b * 256 + minorColor.colors.b;
   }
 
-  private packPatWidth(startNdx: number, majorPattern: number, minorPattern: number, majorWidth: number, minorWidth: number) {
+  private packPatWidth(startNdx: number, majorPattern: number, minorPattern: number, majorWidth: number, minorWidth: number, showGeometry: boolean) {
     // pack 2 bytes into this float, which is 4th float of vec4
     //   width is a 4-bit value that is biased by 1.0 and has 3-bits value with one fraction bit, so range is 1.0 to 8.5
     //   pattern is a line code index 0 to 10 (0 is solid)
     //   pack major into upper byte (upper nibble -> pattern, lower nibble -> 4-bit encoded width)
     //   pack minor into lower byte (upper nibble -> pattern, lower nibble -> 4-bit encoded width)
+    // NB: showGeometry flag is packed into the  16 bit (above major pattern)
     const majWt = Math.floor((Math.min(8.5, Math.max(1.0, majorWidth)) - 1.0) * 2 + 0.5);
     const minWt = Math.floor((Math.min(8.5, Math.max(1.0, minorWidth)) - 1.0) * 2 + 0.5);
-    this._contourDefs[startNdx+3] = majorPattern * 4096 + majWt * 256 + minorPattern * 16 + minWt;
+    this._contourDefs[startNdx+3] = (showGeometry ? 65536 : 0) + majorPattern * 4096 + majWt * 256 + minorPattern * 16 + minWt;
   }
 
   private packIntervals(startNdx: number, even: boolean, minorInterval: number, majorIntervalCount: number) {
@@ -99,7 +100,7 @@ export class ContourUniforms {
       const even = (index & 1) === 0;
       const colorDefsNdx = (even ? index * 1.5 : (index - 1) * 1.5 + 2) * 4;
       this.packColor (colorDefsNdx, contourDef.majorStyle.color, contourDef.minorStyle.color);
-      this.packPatWidth (colorDefsNdx, LineCode.valueFromLinePixels(contourDef.majorStyle.pattern), LineCode.valueFromLinePixels(contourDef.minorStyle.pattern), contourDef.majorStyle.pixelWidth, contourDef.minorStyle.pixelWidth);
+      this.packPatWidth (colorDefsNdx, LineCode.valueFromLinePixels(contourDef.majorStyle.pattern), LineCode.valueFromLinePixels(contourDef.minorStyle.pattern), contourDef.majorStyle.pixelWidth, contourDef.minorStyle.pixelWidth, contourDef.showGeometry);
       const intervalsPairNdx = (Math.floor(index * 0.5) * 3 + 1) * 4;
       this.packIntervals (intervalsPairNdx, even, contourDef.minorInterval, contourDef.majorIntervalCount);
     }
