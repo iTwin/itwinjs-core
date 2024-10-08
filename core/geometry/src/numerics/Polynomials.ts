@@ -986,7 +986,6 @@ export class AnalyticRoots {
       coffs[2] = 1;
       this.appendQuadraticRoots(coffs, results);
     }
-    // substitute
     this.addConstant(origin, results); // apply origin
     results.sort();
     this.improveRoots(c, 4, results, true);
