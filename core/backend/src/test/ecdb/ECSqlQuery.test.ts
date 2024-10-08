@@ -50,6 +50,7 @@ describe("ECSql Query", () => {
 
   it("verify return values for system properties", async () => {
     const doNotConvertClassIdsToClassNamesWhenAliased = true;
+    /* eslint-disable @typescript-eslint/naming-convention  */
     const testQueries = [
       //
       {
@@ -58,26 +59,26 @@ describe("ECSql Query", () => {
           id: "0x19",
           id_1: "0x19",
           className: "BisCore.DrawingCategory",
-          className_1: "BisCore.DrawingCategory"
+          className_1: "BisCore.DrawingCategory",
         },
         readerResult: {
           id: "0x19",
           id_1: "0x19",
           className: "BisCore.DrawingCategory",
-          className_1: "BisCore.DrawingCategory"
+          className_1: "BisCore.DrawingCategory",
         },
       },
       {
         query: "SELECT Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM BisCore.Element WHERE Parent.Id IS NOT NULL LIMIT 1",
         statementResult: {
-          myParentId: "0x1",
-          myParentRelClassId: "0xcf",
+          "myParentId": "0x1",
+          "myParentRelClassId": "0xcf",
           "parent.id": "0x1",
           "parent.relClassName": "BisCore.SubjectOwnsPartitionElements",
         },
         readerResult: {
-          myParentId: "0x1",
-          myParentRelClassId: "BisCore.SubjectOwnsPartitionElements",
+          "myParentId": "0x1",
+          "myParentRelClassId": "BisCore.SubjectOwnsPartitionElements",
           "parent.id": "0x1",
           "parent.relClassName": "BisCore.SubjectOwnsPartitionElements",
         },
