@@ -155,7 +155,7 @@ export enum ShowSignOption {
 
 /**
  * @beta
- * @deprecated scientificTypeToString will be deprecated in future versions. All int enums are refactored to string enums.
+ * @deprecated scientificTypeToString deprecated in 4.10. ScientificType is now a string enum and doesn't need a serialization method
 */
 export function scientificTypeToString(scientificType: ScientificType): string {
   return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
@@ -201,7 +201,7 @@ export function parseShowSignOption(showSignOption: string, formatName: string):
 
 /**
  * @beta
- * @deprecated showSignOptionToString will be deprecated in future versions. All int enums are refactored to string enums.
+ * @deprecated showSignOptionToString deprecated in 4.10. ShowSignOption is now a string enum and doesn't need a serialization method
 */
 export function showSignOptionToString(showSign: ShowSignOption): string {
   switch (showSign) {
@@ -211,7 +211,6 @@ export function showSignOptionToString(showSign: ShowSignOption): string {
     case ShowSignOption.SignAlways: return "SignAlways";
   }
 }
-
 
 /**  @beta  */
 export function parseFormatTrait(formatTraitsString: string, formatName: string): FormatTraits {
@@ -300,7 +299,7 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
 }
 
 /** @beta
- *  @deprecated formatTypeToString will be deprecated in future versions. All int enums are refactored to string enums.
+ *  @deprecated formatTypeToString deprecated in 4.10. FormatType is now a string enum and doesn't need a serialization method
 */
 export function formatTypeToString(type: FormatType): string {
   switch (type) {

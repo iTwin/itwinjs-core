@@ -11,9 +11,9 @@ import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision,
-  getTraitString, parseFormatTrait, parseFormatType, formatTypeToString, parsePrecision, parseRatioType, parseScientificType, parseShowSignOption,
-  RatioType, ScientificType, scientificTypeToString,
-  ShowSignOption, showSignOptionToString,
+  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseRatioType, parseScientificType, parseShowSignOption,
+  RatioType, ScientificType,
+  ShowSignOption,
 } from "./FormatEnums";
 import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
