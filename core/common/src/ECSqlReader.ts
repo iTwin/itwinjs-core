@@ -404,7 +404,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       return this.getRowInternal();
     }
     const formattedRow = {};
-    const uniqueNames = new Map<string, number>();
     for (const prop of this._props) {
       const propName = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = this.getRowInternal()[prop.index];
