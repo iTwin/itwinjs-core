@@ -488,6 +488,7 @@ describe("ECSql Query", () => {
         },
       },
     ];
+    /* eslint-enable @typescript-eslint/naming-convention  */
     const builder = new QueryOptionsBuilder();
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
     builder.setConvertClassIdsToNames(true);
