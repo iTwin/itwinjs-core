@@ -39,6 +39,7 @@ export class ContoursSettings implements IDisposable {
   private _majorColor: ColorInput;
   private _minorWidth: Slider;
   private _majorWidth: Slider;
+  private _dispElemCkbx: CheckBox;
   private _checkbox: CheckBox;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
@@ -125,9 +126,21 @@ export class ContoursSettings implements IDisposable {
     tb.label!.style.fontWeight = "bold";
     this._subCatTextBox = tb;
 
+    const hr1a = document.createElement("hr");
+    hr1a.style.borderColor = "grey";
+    this._element.appendChild(hr1a);
+
+    this._dispElemCkbx = createCheckBox({
+      parent: this._element,
+      name: "Show Element",
+      id: "cbx_toggleShowElement",
+      tooltip: "Display element where contours are not applied",
+      handler: () => {},
+    });
     const hr1 = document.createElement("hr");
     hr1.style.borderColor = "grey";
     this._element.appendChild(hr1);
+
     const label1 = document.createElement("label");
     label1.innerText = "Major Contours";
     label1.style.display = "inline";
@@ -193,6 +206,7 @@ export class ContoursSettings implements IDisposable {
         },
         majorIntervalCount: this.tryParseFloat(this._majorIntervalCount.input.value),
         minorInterval: this.tryParseFloat(this._minorInterval.input.value),
+        showGeometry: this._dispElemCkbx.checkbox.checked,
       },
     };
   }
@@ -211,6 +225,7 @@ export class ContoursSettings implements IDisposable {
     this._minorLineStyle.select.value = curContourDef.minorStyle.pattern.toString();
     this._majorIntervalCount.input.value = curContourDef.majorIntervalCount.toString();
     this._minorInterval.input.value = curContourDef.minorInterval.toString();
+    this._dispElemCkbx.checkbox.checked = curContourDef.showGeometry ?? true;
   }
 
   private applyContourDef() {
