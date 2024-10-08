@@ -156,8 +156,8 @@ export class AngleSweep implements BeJSONFunctions {
     static fromJSON(json?: AngleSweepProps): AngleSweep;
     interpolate(fraction: number, other: AngleSweep): AngleSweep;
     isAlmostEqual(other: AngleSweep): boolean;
-    isAlmostEqualAllowPeriodShift(other: AngleSweep): boolean;
-    isAlmostEqualNoPeriodShift(other: AngleSweep): boolean;
+    isAlmostEqualAllowPeriodShift(other: AngleSweep, radianTol?: number): boolean;
+    isAlmostEqualNoPeriodShift(other: AngleSweep, radianTol?: number): boolean;
     isAngleInSweep(angle: Angle): boolean;
     get isCCW(): boolean;
     get isEmpty(): boolean;
@@ -282,7 +282,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     getFractionToDistanceScale(): number | undefined;
     // @internal
     getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial;
-    isAlmostEqual(otherGeometry: GeometryQuery): boolean;
+    isAlmostEqual(otherGeometry: GeometryQuery, distanceTol?: number, radianTol?: number): boolean;
     get isCircular(): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
@@ -4612,11 +4612,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 // @public
 export class PolyfaceClip {
     static clipPolyface(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet): Polyface | undefined;
-    static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): Polyface;
+    static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): IndexedPolyface;
     // @internal
     static clipPolyfaceClipPlaneToBuilders(polyface: Polyface, clipper: PlaneAltitudeEvaluator, destination: ClippedPolyfaceBuilders): void;
-    static clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): Polyface;
-    static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): Polyface;
+    static clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): IndexedPolyface;
+    static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): IndexedPolyface;
     // @internal
     static clipPolyfaceConvexClipPlaneSetToBuilders(polyface: Polyface, clipper: ConvexClipPlaneSet, destination: ClippedPolyfaceBuilders): void;
     static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelect?: number): void;
