@@ -2,17 +2,21 @@
 
 Below we explain the algorithm used in `Arc3d.createCircularStartTangentEnd` to create a circular arc using start point, tangent at start, and end point.
 
-All we need is to find center of the circle. We know that the center would be on the perpendicular line to `TangentAtStart`. If we draw a line from start to end (call it `startToEnd`) then the perpendicular line to `startToEnd` would hit the perpendicular line to `TangentAtStart` on the circle. It's because two adjacent chords that form a right angle always subtend a semi-circle (thus the third leg forming a triangle is a diameter).
+We first set up a frame of three perpendicular unit vectors using `Matrix3d.createRigidFromColumns`:
+* `frameColX` lies along `tangentAtStart`,
+* the circle normal lies along the cross product of `tangentAtStart` and the vector `startToEnd`, and
+* `frameColY` lies along the cross product of the normal and `tangentAtStart`.
 
-if we create a matrix called `frame` using `Matrix3d.createRigidFromColumns(tangentAtStart, startToEnd, AxisOrder.XYZ)` then column X would lay on `TangentAtStart` and column Y would lay on he perpendicular line to `TangentAtStart`. Now using the angle between `startToEnd` and column Y we find the radius on circle (thus find the center).
+We seek a formula for the radius of the circle. From the radius, we can find the circle center by moving a distance of radius from `start` along `frameColY`. From the center and the two input points, we can compute the arc sweep. Then we are done.
 
-Suppose `v = startToEnd`, `w = column Y`, and `d` is the circle diameter. Then:
+The key to finding the radius is the inscribed right triangle pictured below, with one vertex at `start`, with hypotenuse along a diameter, and with leg along `startToEnd`. We know this is a right triangle from the inscribed angle theorem of classical geometry.
 
-$$v.w = ||v|| ||w|| \cos(\theta) = ||v|| \frac{||v||}{d} = \frac{||v||^2}{d} $$
+Suppose `v = startToEnd`, `w = frameColY`, `r` is the radius we seek, and $\theta$ is the right triangle's angle at `start`. Then with
 
-Therefore,
+$$v\cdot w = ||v|| ||w|| \cos\theta = ||v|| \frac{||v||}{2r} = \frac{||v||^2}{2r},$$
 
-$$\frac{||v||.||v||}{2v.w} = \frac{||v||^2}{2\frac{||v||^2}{d}} = \frac{d}{2} = radius$$
+we have:
 
+$$\frac{v\cdot v}{2v\cdot w} = \frac{||v||^2}{2\frac{||v||^2}{2r}} = r.$$
 
 ![>](./figs/Arc3d/createCircularStartTangentEnd.png)
