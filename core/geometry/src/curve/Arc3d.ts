@@ -932,7 +932,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return this.isCircular ? this._matrix.columnXMagnitude() : undefined;
   }
 
-  /** Return the larger of the two defining vectors. */
+  /** Return the larger length of the two defining vectors. */
   public maxVectorLength(): number {
     return Math.max(this._matrix.columnXMagnitude(), this._matrix.columnYMagnitude());
   }
@@ -1160,12 +1160,12 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     };
   }
   /** Test if this arc is almost equal to another GeometryQuery object */
-  public override isAlmostEqual(otherGeometry: GeometryQuery): boolean {
+  public override isAlmostEqual(otherGeometry: GeometryQuery, distanceTol: number = Geometry.smallMetricDistance, radianTol: number = Geometry.smallAngleRadians): boolean {
     if (otherGeometry instanceof Arc3d) {
       const other = otherGeometry;
-      return this._center.isAlmostEqual(other._center)
-        && this._matrix.isAlmostEqual(other._matrix)
-        && this._sweep.isAlmostEqualAllowPeriodShift(other._sweep);
+      return this._center.isAlmostEqual(other._center, distanceTol)
+        && this._matrix.isAlmostEqual(other._matrix, distanceTol)
+        && this._sweep.isAlmostEqualAllowPeriodShift(other._sweep, radianTol);
     }
     return false;
   }
