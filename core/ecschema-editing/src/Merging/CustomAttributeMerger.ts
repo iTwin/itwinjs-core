@@ -5,7 +5,7 @@
 import { CustomAttribute, CustomAttributeClass, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { type SchemaMergeContext } from "./SchemaMerger";
 import { type CustomAttributeDifference } from "../Differencing/SchemaDifference";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import { getClassEditor, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 
 type CustomAttributeSetter = (customAttribute: CustomAttribute) => Promise<void>;
 
@@ -34,12 +34,14 @@ export async function addCustomAttribute(context: SchemaMergeContext, change: Cu
   }
   if (change.appliedTo === "SchemaItem") {
     const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-    await context.editor.entities.addCustomAttribute(itemKey, caInstance);
+    const editor = await getClassEditor(context, itemKey);
+    await editor.addCustomAttribute(itemKey, caInstance);
   }
   if (change.appliedTo === "Property") {
     const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
     const [propertyName] = change.path.split(".");
-    await context.editor.entities.properties.addCustomAttribute(itemKey, propertyName, caInstance);
+    const editor = await getClassEditor(context, itemKey);
+    await editor.properties.addCustomAttribute(itemKey, propertyName, caInstance);
   }
   if (change.appliedTo === "RelationshipConstraint") {
     const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
