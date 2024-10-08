@@ -1841,7 +1841,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it.only("should bind IdSets to IdSet Virtual Table", async () => {
+  it("should bind IdSets to IdSet Virtual Table", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
