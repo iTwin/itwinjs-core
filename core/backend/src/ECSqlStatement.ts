@@ -347,7 +347,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
       classIdsToClassNames: args.classIdsToClassNames,
       useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
       abbreviateBlobs: false,
-      // on 5.x this should be removed or set to false. It is only here to maintain compatibility with 4.x
+      // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
+      // converted into classNames which is a bug that we must now support.This option preserves this special behavior until
+      // it can be removed in a future version.
       doNotConvertClassIdsToClassNamesWhenAliased: true,
     });
     return this.formatCurrentRow(resp, args.rowFormat);
