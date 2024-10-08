@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64 } from "@itwin/core-bentley";
+import { assert, dispose, Id64, OrderedId64Iterable } from "@itwin/core-bentley";
 import { ContourDisplay, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
@@ -68,10 +68,13 @@ export class Contours implements WebGLDisposable {
   private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: ContourDisplay) {
     // setup an efficient way to compare feature subcategories with lists in terrains
     const subCatMap = new Id64.Uint32Map<number>();
+    let defaultNdx = 0xf;  // default for unmatched subcategories is to not show contours
     // NB: index also has to be a max of 14 - has to fit in 4 bits with value 15 reserved for no terrain def
     for (let index = 0, len = contours.groups.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
       const subCats = contours.groups[index]?.subCategories;
-      if (subCats !== undefined) {
+      if (subCats === undefined || OrderedId64Iterable.isEmptySet(subCats)) {
+        defaultNdx = index; // change default for unmatched subcategories to this definition
+      } else {
         for (const subCat of subCats)
           subCatMap.setById(subCat, index);
       }
@@ -85,7 +88,7 @@ export class Contours implements WebGLDisposable {
     for (const feature of map.iterable(scratchPackedFeature)) {
       dataIndex = Math.floor (feature.index * 0.5);
       even = (feature.index & 1) === 0;
-      const terrainNdx  = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper) ?? 0xf; // index 15 means no contours
+      const terrainNdx  = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper) ?? defaultNdx;
       if (even)
         byteOut = terrainNdx;
       else
