@@ -109,9 +109,9 @@ vec4 getFirstFeatureRgba() {
 `;
 
 const getSecondFeatureRgba = `
-vec4 getSecondFeatureRgba() {
+vec4 getSecondFeatureRgba(bool isLinear) {
   vec2 coord = feature_texCoord;
-  coord.x += g_feature_stepX;
+  coord.x += g_feature_stepX * (isLinear ? 2.0 : 1.0);
   return TEXTURE(u_featureLUT, coord);
 }
 `;
@@ -472,6 +472,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 export function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_BlankingRegion", VariableType.Float, RenderOrder.BlankingRegion.toFixed(1));
   builder.addConstant("kRenderOrder_Linear", VariableType.Float, RenderOrder.Linear.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarLinear", VariableType.Float, RenderOrder.PlanarLinear.toFixed(1));
   builder.addConstant("kRenderOrder_Edge", VariableType.Float, RenderOrder.Edge.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarEdge", VariableType.Float, RenderOrder.PlanarEdge.toFixed(1));
   builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
@@ -635,10 +636,11 @@ const computeFeatureOverrides = `
   if (feature_invisible)
     return;
 
-  bool rgbOverridden = nthFeatureBitSet(flags, kOvrBit_Rgb);
-  bool alphaOverridden = nthFeatureBitSet(flags, kOvrBit_Alpha);
+  bool isLinear = u_renderOrder == kRenderOrder_Linear || u_renderOrder == kRenderOrder_PlanarLinear || u_renderOrder == kRenderOrder_PlanarEdge;
+  bool rgbOverridden = isLinear ? nthFeatureBitSet(emphFlags, kOvrBit_LineRgb) : nthFeatureBitSet(flags, kOvrBit_Rgb);
+  bool alphaOverridden = isLinear ? nthFeatureBitSet(emphFlags, kOvrBit_LineAlpha) : nthFeatureBitSet(flags, kOvrBit_Alpha);
   if (alphaOverridden || rgbOverridden) {
-    vec4 rgba = getSecondFeatureRgba();
+    vec4 rgba = getSecondFeatureRgba(isLinear);
     if (rgbOverridden)
       feature_rgb = rgba.rgb;
 
@@ -755,6 +757,8 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
 
   addEmphasisFlags(vert);
   vert.addGlobal("use_material", VariableType.Boolean, "true");
+  addRenderOrder(vert);
+  addRenderOrderConstants(vert);
   vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureOverrides);
   vert.set(VertexShaderComponent.ApplyFeatureColor, applyFeatureColor);
 
