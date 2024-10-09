@@ -54,7 +54,7 @@ export namespace AzuriteTest {
       return blobClient.exists();
     };
 
-    export const subtractFromCurrentWriteLockExpiryTime = async (container: CloudSqlite.CloudContainer, numOfMin: number) => {
+    export const subtractFromCurrentWriteLockExpiryTime = async (container: CloudSqlite.CloudContainer, numOfMin: number, numOfSeconds: number = 0) => {
       const blockName = "bcv_kv.bcv";
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
@@ -69,6 +69,7 @@ export namespace AzuriteTest {
           const writeLockData = JSON.parse(stmt.getValueString(0));
           const expiresTime = new Date(writeLockData.expires);
           expiresTime.setMinutes(expiresTime.getMinutes() - numOfMin);
+          expiresTime.setSeconds(expiresTime.getSeconds() - numOfSeconds);
           writeLockData.expires = expiresTime.toISOString();
           bcvDb.withSqliteStatement("UPDATE kv SET v = ? WHERE k = 'writeLock'", (stmt1) => {
             stmt1.bindString(1, JSON.stringify(writeLockData));
