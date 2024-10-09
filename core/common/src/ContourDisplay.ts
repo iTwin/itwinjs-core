@@ -7,12 +7,12 @@
  */
 
 import { compareBooleans, compareNumbers, CompressedId64Set, NonFunctionPropertiesOf, OrderedId64Iterable } from "@itwin/core-bentley";
-import { ColorDef, ColorDefProps } from "./ColorDef";
 import { LinePixels } from "./LinePixels";
+import { RgbColor, RgbColorProps } from "./RgbColor";
 
 /** JSON representation of the style settings used by either a minor or major contour. */
 export interface ContourStyleProps {
-  color?: ColorDefProps;
+  color?: RgbColorProps;
   pixelWidth?: number;
   pattern?: LinePixels;
 }
@@ -22,9 +22,9 @@ export interface ContourStyleProps {
    * @see [[Contour.minorStyle]]
    */
 export class ContourStyle {
-  /** Color that a major or minor contour line will use. Defaults to [[ColorDef.black]].*/
-  public readonly color: ColorDef;
-  /** A width in pixels of a major or minor contour line. (Range 1.5 to 9 in 0.5 increments). Defaults to 2. */
+  /** Color that a major or minor contour line will use. Defaults to black.*/
+  public readonly color: RgbColor;
+  /** A width in pixels of a major or minor contour line. (Range 1.5 to 9 in 0.5 increments). Defaults to 1. */
   public readonly pixelWidth: number;
   /** The pattern for a major or minor contour line. Defaults to [[LinePixels.Solid]]. */
   public readonly pattern: LinePixels;
@@ -43,7 +43,7 @@ export class ContourStyle {
      */
   public static compare(lhs: ContourStyle, rhs: ContourStyle): number {
     let diff = 0;
-    if ((diff = compareNumbers(lhs.color.getRgb(), rhs.color.getRgb())) !== 0)
+    if ((diff = lhs.color.compareTo(rhs.color)) !== 0)
       return diff;
     if ((diff = compareNumbers(lhs.pixelWidth, rhs.pixelWidth)) !== 0)
       return diff;
@@ -55,11 +55,11 @@ export class ContourStyle {
 
   private constructor(json?: ContourStyleProps) {
     if (undefined === json) {
-      this.color = ColorDef.black;
+      this.color = RgbColor.fromJSON({r: 0, g: 0, b: 0});
       this.pixelWidth = 1;
       this.pattern = 0;
     } else {
-      this.color = json.color ? ColorDef.create(json.color) : ColorDef.black;
+      this.color = json.color ? RgbColor.fromJSON(json.color) : RgbColor.fromJSON({r: 0, g: 0, b: 0});
       this.pixelWidth = json.pixelWidth ?? 1;
       this.pattern = json.pattern ?? 0;
     }
@@ -72,10 +72,10 @@ export class ContourStyle {
   public toJSON(): ContourStyleProps {
     const props: ContourStyleProps = {};
 
-    if (!this.color.equals(ColorDef.black))
+    if (!this.color.equals(RgbColor.fromJSON({r: 0, g: 0, b: 0})))
       props.color = this.color.toJSON();
 
-    if (2 !== this.pixelWidth)
+    if (1 !== this.pixelWidth)
       props.pixelWidth = this.pixelWidth;
 
     if (0 !== this.pattern)

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ColorDef, Contour, ContourDisplay } from "@itwin/core-common";
+import { Contour, ContourDisplay, RgbColor } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
@@ -31,11 +31,11 @@ export class ContourUniforms {
     return this._contourDisplay;
   }
 
-  private packColor(startNdx: number, majorColor: ColorDef, minorColor: ColorDef) {
+  private packColor(startNdx: number, majorColor: RgbColor, minorColor: RgbColor) {
     // pack 2 bytes major (upper) minor (lower) into each float
-    this._contourDefs[startNdx] = majorColor.colors.r * 256 + minorColor.colors.r;
-    this._contourDefs[startNdx+1] = majorColor.colors.g * 256 + minorColor.colors.g;
-    this._contourDefs[startNdx+2] = majorColor.colors.b * 256 + minorColor.colors.b;
+    this._contourDefs[startNdx] = majorColor.r * 256 + minorColor.r;
+    this._contourDefs[startNdx+1] = majorColor.g * 256 + minorColor.g;
+    this._contourDefs[startNdx+2] = majorColor.b * 256 + minorColor.b;
   }
 
   private packPatWidth(startNdx: number, majorPattern: number, minorPattern: number, majorWidth: number, minorWidth: number, showGeometry: boolean) {

@@ -14,7 +14,7 @@ import {
   TextBoxProps,
   updateSliderValue,
 } from "@itwin/frontend-devtools";
-import { ColorDef, Contour, ContourDisplay, ContourDisplayProps, ContourGroupProps, LinePixels } from "@itwin/core-common";
+import { ColorDef, Contour, ContourDisplay, ContourDisplayProps, ContourGroupProps, LinePixels, RgbColor } from "@itwin/core-common";
 import { Viewport, ViewState3d } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -191,16 +191,18 @@ export class ContoursSettings implements IDisposable {
   }
 
   private getTerrainProps(): ContourGroupProps {
+    const majorColor = ColorDef.fromJSON(ColorDef.tryComputeTbgrFromString(this._majorColor.input.value));
+    const minorColor = ColorDef.fromJSON(ColorDef.tryComputeTbgrFromString(this._minorColor.input.value));
     return {
       subCategories: CompressedId64Set.sortAndCompress(this._subCatTextBox.textbox.value.split(",")),
       contourDef:{
         majorStyle: {
-          color: ColorDef.tryComputeTbgrFromString(this._majorColor.input.value),
+          color: majorColor ? RgbColor.fromColorDef(majorColor) : undefined,
           pixelWidth: this.tryParseFloat(this._majorWidth.slider.value),
           pattern: this.tryParseFloat(this._majorLineStyle.select.value),
         },
         minorStyle: {
-          color: ColorDef.tryComputeTbgrFromString(this._minorColor.input.value),
+          color: minorColor ? RgbColor.fromColorDef(minorColor) : undefined,
           pixelWidth: this.tryParseFloat(this._minorWidth.slider.value),
           pattern: this.tryParseFloat(this._minorLineStyle.select.value),
         },
