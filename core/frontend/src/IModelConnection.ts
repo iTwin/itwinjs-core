@@ -96,7 +96,7 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
-import type { IModelReadAPI } from "@itwin/imodelread-common";
+import type { IModelReadAPI, IModelReadIpcAPI } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { IModelReadHTTPClient } from "@itwin/imodelread-client";
 
@@ -310,7 +310,7 @@ export abstract class IModelConnection extends IModel {
   protected constructor(iModelProps: IModelConnectionProps) {
     super(iModelProps);
     this._iModelReadApi = IpcApp.isValid
-      ? new IpcIModelRead(iModelProps.key)
+      ? new IpcIModelRead(iModelProps.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead"))
       : new IModelReadHTTPClient(
           `http://localhost:3001/itwins/${iModelProps.iTwinId}/imodels/${iModelProps.iModelId}/changesets/${iModelProps.changeset?.id || "latest"}/`,
           IModelApp,
