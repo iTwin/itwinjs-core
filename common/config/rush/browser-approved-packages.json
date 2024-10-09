@@ -387,8 +387,8 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@vitest/coverage-istanbul",
-      "allowedCategories": [ "backend", "common" ]
+      "name": "@vitest/coverage-v8",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@xmldom/xmldom",
