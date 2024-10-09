@@ -176,7 +176,7 @@ export class FeatureOverrides implements WebGLDisposable {
         this._anyViewIndependentTranslucent = true;
       }
     }
-    
+
     return curFlags;
   }
 

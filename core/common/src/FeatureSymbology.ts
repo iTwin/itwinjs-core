@@ -110,7 +110,7 @@ function transparencyFromJSON(transp: number | undefined): number | undefined {
   }
 
   transp = Math.max(0, Math.min(transp, 1));
-  
+
   // Fix up rounding errors...
   const smallDelta = 0.0001;
   if (1.0 - transp < smallDelta) {
@@ -249,7 +249,7 @@ export class FeatureAppearance {
     const line = this.getLineTransparency() ?? 0;
     return surf >= 1 && line >= 1;
   }
-  
+
   /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */
   public get anyOverridden(): boolean { return this.overridesSymbology || this.overridesNonLocatable; }
 

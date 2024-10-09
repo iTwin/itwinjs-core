@@ -193,7 +193,7 @@ export class Settings implements IDisposable {
     const addTransparency = (name: string) => {
       const div = document.createElement("div");
       parent.appendChild(div);
-      
+
       const cb = createCheckBox({
         parent: div,
         name,
@@ -210,7 +210,7 @@ export class Settings implements IDisposable {
           updateTransparencies();
         },
       });
-      
+
       const input = createNumericInput({
         parent: cb.div,
         display: "inline",
@@ -262,7 +262,7 @@ export class Settings implements IDisposable {
     });
 
     parent.appendChild(document.createElement("hr"));
-    
+
     const updateTransparencies = () => {
       const trans = transElem.checkbox.checked ? parseInt(transElem.input.value, 10) / 255 : undefined;
       let lineTrans;
@@ -336,7 +336,7 @@ export class Settings implements IDisposable {
     const addColorPicker = (label: string) => {
       const div = document.createElement("div");
       parent.appendChild(div);
-      
+
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       div.appendChild(checkbox);
@@ -384,7 +384,7 @@ export class Settings implements IDisposable {
       },
     });
     applyToLineCb.checkbox.disabled = true;
-    
+
     const lineColorElem = addColorPicker("Line Color");
     lineColorElem.checkbox.addEventListener("click", () => {
       if (!lineColorElem.checkbox.checked) {
