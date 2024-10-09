@@ -3,7 +3,7 @@ export default defineConfig({
   test: {
     dir: "src",
     coverage: {
-      provider: "istanbul", // akin to nyc
+      provider: "v8",
       include: [
         "src/**/*"
       ],
