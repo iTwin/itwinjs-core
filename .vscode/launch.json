@@ -19,6 +19,7 @@
         "group": "__TOP__"
       },
       "type": "node",
+      "request": "launch",
       "autoAttachChildProcesses": true,
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "program": "${workspaceFolder}/common/temp/node_modules/vitest/vitest.mjs",
@@ -27,7 +28,6 @@
         "${relativeFile}",
         "--no-file-parallelism"
       ],
-      "smartStep": true,
       "console": "integratedTerminal"
     },
     // CORE TESTS
