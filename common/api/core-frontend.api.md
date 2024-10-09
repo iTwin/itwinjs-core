@@ -184,6 +184,7 @@ import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Matrix4d } from '@itwin/core-geometry';
+import { MaybePromise } from '@itwin/core-bentley';
 import { MeshEdges } from '@itwin/core-common';
 import { MeshPolyline } from '@itwin/core-common';
 import { MeshPolylineList } from '@itwin/core-common';
@@ -15506,10 +15507,10 @@ export type WorkerProxy<T> = WorkerInterface<T> & {
 };
 
 // @beta
-export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | {
-    result: ReturnType<T>;
+export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<ReturnType<T> | {
+    result: Awaited<ReturnType<T>>;
     transfer: Transferable[];
-};
+}>;
 
 // @beta
 export interface WorkerTextureParams {
