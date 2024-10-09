@@ -66,7 +66,7 @@ describe("XYPointBuckets", () => {
       ck.testUndefined(searcher.indexGrid.getDataAtIndex(xIndexA, 1000));
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("MessyGrid", () => {
     const ck = new Checker();
@@ -104,7 +104,7 @@ describe("XYPointBuckets", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "XYPointBuckets", "MessyGrid");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

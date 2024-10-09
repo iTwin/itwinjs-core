@@ -523,28 +523,31 @@ export class AngleSweep implements BeJSONFunctions {
   }
   /**
    * Convert an AngleSweep to a JSON object.
-   * @return {*} {degrees: [startAngleInDegrees, endAngleInDegrees}
+   * @return {*} [startAngleInDegrees, endAngleInDegrees]
    */
   public toJSON(): any {
     return [this.startDegrees, this.endDegrees];
   }
   /**
-   * Test if this angle sweep and other angle sweep match with radians tolerance.
-   * * Period shifts are allowed.
+   * Test if two angle sweeps match within the given tolerance.
+   * * Period shifts are allowed, but orientations must be the same.
+   * @param other sweep to compare to this instance
+   * @param radianTol optional radian tolerance, default value `Geometry.smallAngleRadians`
    */
-  public isAlmostEqualAllowPeriodShift(other: AngleSweep): boolean {
-    // We compare angle sweeps by checking if start angle and sweep match. We cannot compare start and end because for
-    // example (0, 90) and (360, 90) have the same start (we allow period shift) and end but are not same angle sweeps.
-    return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians0, other._radians0)
-      && Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0);
+  public isAlmostEqualAllowPeriodShift(other: AngleSweep, radianTol: number = Geometry.smallAngleRadians): boolean {
+    return this.isCCW === other.isCCW // this rules out equating opposite sweeps like [0,-100] and [0,260]
+      && Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians0, other._radians0, radianTol)
+      && Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0, radianTol);
   }
   /**
-   * Test if this angle sweep and other angle sweep match with radians tolerance.
+   * Test if two angle sweeps match within the given tolerance.
    * * Period shifts are not allowed.
+   * @param other sweep to compare to this instance
+   * @param radianTol optional radian tolerance, default value `Geometry.smallAngleRadians`
    */
-  public isAlmostEqualNoPeriodShift(other: AngleSweep): boolean {
-    return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians0, other._radians0)
-      && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0);
+  public isAlmostEqualNoPeriodShift(other: AngleSweep, radianTol: number = Geometry.smallAngleRadians): boolean {
+    return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians0, other._radians0, radianTol)
+      && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0, radianTol);
   }
   /**
    * Test if start and end angles match with radians tolerance.

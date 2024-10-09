@@ -5,10 +5,9 @@
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { AnyClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
 import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import { getClassEditor, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
-import { ECClasses } from "../Editing/ECClasses";
 
 type PartialEditable<T> = {
   -readonly [P in keyof T]: T[P];
@@ -130,27 +129,6 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
   }
   if (property.isStruct()) {
     return structProperty.merge(context, itemKey, property, propertyProps as any);
-  }
-}
-
-async function getClassEditor(context: SchemaMergeContext, ecClass: ECClass | SchemaItemKey): Promise<ECClasses> {
-  const schemaItemType = ECClass.isECClass(ecClass)
-    ? ecClass.schemaItemType
-    : (await context.editor.schemaContext.getSchemaItem<ECClass>(ecClass))?.schemaItemType;
-
-  switch(schemaItemType) {
-    case SchemaItemType.EntityClass:
-      return context.editor.entities;
-    case SchemaItemType.Mixin:
-      return context.editor.mixins;
-    case SchemaItemType.StructClass:
-      return context.editor.structs;
-    case SchemaItemType.CustomAttributeClass:
-      return context.editor.customAttributes;
-    case SchemaItemType.RelationshipClass:
-      return context.editor.relationships;
-    default:
-      throw new Error("SchemaItemType not supported");
   }
 }
 

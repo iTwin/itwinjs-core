@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Deprecate `IModelHost.snapshotFileNameResolver` and `FileNameResolver`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -32,7 +32,7 @@ async function waitFor<T>(check: () => Promise<T> | T, timeout: number = 5000): 
       return res instanceof Promise ? await res : res;
     } catch (e) {
       lastError = e;
-      await BeDuration.wait(0);
+      await BeDuration.wait(2);
     }
   } while (timer.current.milliseconds < timeout);
   throw lastError;

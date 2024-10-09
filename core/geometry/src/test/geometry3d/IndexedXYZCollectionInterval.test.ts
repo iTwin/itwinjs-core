@@ -42,7 +42,7 @@ describe("IndexedXYZCollectionInterval", () => {
     fullInterval.advanceEnd();
     ck.testTrue(fullInterval.isNonEmpty, " verify restricted end");
     ck.testExactNumber(fullInterval.length, points.length, "advanceEnd capped");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
