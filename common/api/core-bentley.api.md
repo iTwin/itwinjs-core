@@ -1298,6 +1298,9 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 // @public
+export type MaybePromise<T> = T | Promise<T>;
+
+// @public
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
