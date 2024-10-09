@@ -24,7 +24,7 @@ export interface ContourStyleProps {
 export class ContourStyle {
   /** Color that a major or minor contour line will use. Defaults to black.*/
   public readonly color: RgbColor;
-  /** A width in pixels of a major or minor contour line. (Range 1.5 to 9 in 0.5 increments). Defaults to 1. */
+  /** A width in pixels of a major or minor contour line. (Range 1 to 8.5 in 0.5 increments). Defaults to 1. */
   public readonly pixelWidth: number;
   /** The pattern for a major or minor contour line. Defaults to [[LinePixels.Solid]]. */
   public readonly pattern: LinePixels;
@@ -194,6 +194,8 @@ export interface ContourGroupProps {
   contourDef?: ContourProps;
   /** See [[ContourGroup.subCategories]]. */
   subCategories?: CompressedId64Set;
+  /** See [[ContourGroup.name]]. */
+  name?: string;
 }
 
 /** Contains a description of how contours should appear for a particular set of subcategories. A contour group is an organizational concept which associates a contour appearance with a list of subcategories within an iModel.
@@ -204,8 +206,10 @@ export class ContourGroup {
 
   /** A [[Contour]] object describing how the contours for this contour group should appear. Defaults to an instantation of [[Contour]] using all of its own default properties. */
   public readonly contourDef: Contour;
+  /** A name string which helps identify this particular grouping of contours. Mainly used for callers of the API to categorize and track their grouping definitions. Defaults to "<unnamed>". */
+  public readonly name: string;
 
-  /** List of subcategory IDs to which this contour group's styling will be applied. */
+  /** List of subcategory IDs to which this contour group's styling will be applied, returned as an [[OrderedId64Iterable]]. This is created from the [[CompressedId64Set]] on the [[ContourGroupProps]] used when creating a [[ContourGroup]]. Defaults to an empty set. */
   public get subCategories(): OrderedId64Iterable {
     return CompressedId64Set.iterable(this._subCategories);
   }
@@ -219,6 +223,8 @@ export class ContourGroup {
       return false;
     if (this._subCategories !== other._subCategories)
       return false;
+    if (this.name !== other.name)
+      return false;
     return true;
   }
 
@@ -226,9 +232,11 @@ export class ContourGroup {
     if (undefined === json) {
       this.contourDef = Contour.fromJSON({});
       this._subCategories = "";
+      this.name = "<unnamed>";
     } else {
       this.contourDef = json.contourDef ? Contour.fromJSON(json.contourDef) : Contour.fromJSON({});
       this._subCategories = json.subCategories ? json.subCategories : "";
+      this.name = json.name ? json.name : "<unnamed>";
     }
   }
 
@@ -242,6 +250,9 @@ export class ContourGroup {
     if (!this.contourDef.equals(Contour.defaults))
       props.contourDef = this.contourDef.toJSON();
 
+    if (this.name !== "<unnamed>")
+      props.name = this.name;
+
     props.subCategories = this._subCategories;
     return props;
   }
@@ -250,7 +261,7 @@ export class ContourGroup {
 /** JSON representation of the contour display setup of a [[DisplayStyle3d]]. */
 export interface ContourDisplayProps {
   /** See [[ContourDisplay.groups]]. */
-  groups?: (ContourGroupProps | undefined)[];
+  groups?: ContourGroupProps[];
   /** See [[ContourDisplay.displayContours]]. */
   displayContours?: boolean;
 }
@@ -266,7 +277,7 @@ export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
    */
 export class ContourDisplay {
   /** A list of the groups which contain their own specific contour display settings. Defaults to an empty array. */
-  public readonly groups: (ContourGroup | undefined)[] = [];
+  public readonly groups: ContourGroup[];
   /** If true, contours will be displayed based on these settings. Defaults to false. */
   public readonly displayContours: boolean;
 
@@ -292,10 +303,10 @@ export class ContourDisplay {
     if (!props)
       return new ContourDisplay();
 
-    const groups: (ContourGroup | undefined)[] = [];
+    const groups: ContourGroup[] = [];
     if (undefined !== props && undefined !== props.groups) {
       for (let n = 0; n < props.groups.length; n++) {
-        groups[n] = (props.groups[n] === undefined) ? undefined : ContourGroup.fromJSON(props.groups[n]);
+        groups[n] = ContourGroup.fromJSON(props.groups[n]);
       }
     }
 

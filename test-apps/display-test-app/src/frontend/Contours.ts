@@ -28,7 +28,9 @@ export class ContoursSettings implements IDisposable {
   private readonly _vp: Viewport;
   private readonly _parent: HTMLElement;
   private readonly _element: HTMLElement;
+  private readonly _curGroupDiv: HTMLElement;
   private readonly _subCatTextBox: TextBox;
+  private readonly _nameTextBox: TextBox;
   private _currentTerrainProps: ContourGroupProps = {};
   private _currentContourIndex = 0;
   private _minorInterval: LabeledNumericInput;
@@ -41,6 +43,11 @@ export class ContoursSettings implements IDisposable {
   private _majorWidth: Slider;
   private _dispElemCkbx: CheckBox;
   private _checkbox: CheckBox;
+  private _combobox: ComboBox;
+
+  private toggleCurrentGroup(enable: boolean) {
+    this._curGroupDiv.style.display = enable ? "block" : "none";
+  }
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._currentTerrainProps.contourDef = {};
@@ -56,6 +63,14 @@ export class ContoursSettings implements IDisposable {
     this._element.style.overflowY = "none";
     const width = winSize.width * 0.98;
     this._element.style.width = `${width}px`;
+
+    this._curGroupDiv = document.createElement("div");
+    this._curGroupDiv.className = "toolMenu2";
+    this._curGroupDiv.style.display = "block";
+    this._curGroupDiv.style.overflowX = "none";
+    this._curGroupDiv.style.overflowY = "none";
+    const cgWidth = winSize.width * 0.98;
+    this._curGroupDiv.style.width = `${cgWidth}px`;
 
     this._checkbox = createCheckBox({
       parent: this._element,
@@ -77,9 +92,9 @@ export class ContoursSettings implements IDisposable {
       { name: "4", value: 4 },
     ];
 
-    const cb = createComboBox({
+    this._combobox = createComboBox({
       parent: this._element,
-      name: "Contour Definition: ",
+      name: "Contour Group: ",
       entries,
       id: "viewAttr_renderingStyle",
       value: 0,
@@ -87,25 +102,7 @@ export class ContoursSettings implements IDisposable {
         this.loadContourDef(parseInt(cbx.value, 10));
       },
     });
-    cb.label!.style.fontWeight = "bold";
-
-    const buttonDiv = document.createElement("div");
-    buttonDiv.style.textAlign = "center";
-    createButton({
-      value: "Apply",
-      handler: () => { this.applyContourDef(); },
-      parent: buttonDiv,
-      inline: true,
-      tooltip: "Apply contour settings for this definition",
-    });
-    createButton({
-      value: "Clear",
-      handler: () => { this.clearContourDef(); },
-      parent: buttonDiv,
-      inline: true,
-      tooltip: "Clear contour settings for this definition",
-    });
-    this._element.appendChild(buttonDiv);
+    this._combobox.label!.style.fontWeight = "bold";
 
     const hrt1 = document.createElement("hr");
     this._element.appendChild(hrt1);
@@ -114,10 +111,22 @@ export class ContoursSettings implements IDisposable {
     this._element.appendChild(hrt2);
     hrt2.style.borderColor = "grey";
 
+    const nameProps: TextBoxProps = {
+      label: "Name: ",
+      id: `contours_name`,
+      parent: this._curGroupDiv,
+      tooltip: "Enter an optional name to identify this grouping",
+      inline: true,
+    };
+    const nameTb = createTextBox(nameProps);
+    nameTb.textbox.style.marginBottom = bottomSpace1;
+    nameTb.label!.style.fontWeight = "bold";
+    this._nameTextBox = nameTb;
+
     const props: TextBoxProps = {
       label: "Subcategory Ids: ",
       id: `contours_subCatIds`,
-      parent: this._element,
+      parent: this._curGroupDiv,
       tooltip: "Enter comma-separated list of Subcategory Ids to associate this contour styling with",
       inline: true,
     };
@@ -128,10 +137,10 @@ export class ContoursSettings implements IDisposable {
 
     const hr1a = document.createElement("hr");
     hr1a.style.borderColor = "grey";
-    this._element.appendChild(hr1a);
+    this._curGroupDiv.appendChild(hr1a);
 
     this._dispElemCkbx = createCheckBox({
-      parent: this._element,
+      parent: this._curGroupDiv,
       name: "Show Element",
       id: "cbx_toggleShowElement",
       tooltip: "Display element where contours are not applied",
@@ -139,37 +148,64 @@ export class ContoursSettings implements IDisposable {
     });
     const hr1 = document.createElement("hr");
     hr1.style.borderColor = "grey";
-    this._element.appendChild(hr1);
+    this._curGroupDiv.appendChild(hr1);
 
     const label1 = document.createElement("label");
     label1.innerText = "Major Contours";
     label1.style.display = "inline";
     label1.style.fontWeight = "bold";
-    this._element.appendChild(label1);
+    this._curGroupDiv.appendChild(label1);
 
-    this._majorIntervalCount = this.addInterval(this._element, true);
-    this._majorColor = this.addColor(this._element, true);
-    this._majorWidth = this.addWidth(this._element, true);
-    this._majorLineStyle = this.addStyle(this._element, LinePixels.Solid, true);
+    this._majorIntervalCount = this.addInterval(this._curGroupDiv, true);
+    this._majorColor = this.addColor(this._curGroupDiv, true);
+    this._majorWidth = this.addWidth(this._curGroupDiv, true);
+    this._majorLineStyle = this.addStyle(this._curGroupDiv, LinePixels.Solid, true);
     this._majorLineStyle.div.style.marginBottom = bottomSpace2;
 
     const hr2 = document.createElement("hr");
     hr2.style.borderColor = "grey";
-    this._element.appendChild(hr2);
+    this._curGroupDiv.appendChild(hr2);
     const label2 = document.createElement("label");
     label2.innerText = "Minor Contours";
     label2.style.fontWeight = "bold";
     label2.style.display = "inline";
-    this._element.appendChild(label2);
+    this._curGroupDiv.appendChild(label2);
 
-    this._minorInterval = this.addInterval(this._element, false);
-    this._minorColor = this.addColor(this._element, false);
-    this._minorWidth = this.addWidth(this._element, false);
-    this._minorLineStyle = this.addStyle(this._element, LinePixels.Solid, false);
+    this._minorInterval = this.addInterval(this._curGroupDiv, false);
+    this._minorColor = this.addColor(this._curGroupDiv, false);
+    this._minorWidth = this.addWidth(this._curGroupDiv, false);
+    this._minorLineStyle = this.addStyle(this._curGroupDiv, LinePixels.Solid, false);
     this._minorLineStyle.div.style.marginBottom = bottomSpace2;
 
+    const buttonDiv = document.createElement("div");
+    buttonDiv.style.textAlign = "center";
+    createButton({
+      value: "Add",
+      handler: () => { this.addContourDef(); },
+      parent: buttonDiv,
+      inline: true,
+      tooltip: "Add a new contour grouping",
+    });
+    createButton({
+      value: "Apply",
+      handler: () => { this.applyContourDef(); },
+      parent: buttonDiv,
+      inline: true,
+      tooltip: "Apply contour settings for this definition",
+    });
+    createButton({
+      value: "Delete",
+      handler: () => { this.deleteContourDef(); },
+      parent: buttonDiv,
+      inline: true,
+      tooltip: "Delete contour settings for this definition",
+    });
+    this._element.appendChild(buttonDiv);
+
+    this._element.appendChild(this._curGroupDiv);
     parent.appendChild(this._element);
 
+    this.toggleCurrentGroup(false);
     this.loadContourDef(this._currentContourIndex);
 
     assert(this._vp.view.is3d());
@@ -195,6 +231,7 @@ export class ContoursSettings implements IDisposable {
     const minorColor = ColorDef.fromJSON(ColorDef.tryComputeTbgrFromString(this._minorColor.input.value));
     return {
       subCategories: CompressedId64Set.sortAndCompress(this._subCatTextBox.textbox.value.split(",")),
+      name: this._nameTextBox.textbox.value,
       contourDef:{
         majorStyle: {
           color: majorColor ? RgbColor.fromColorDef(majorColor) : undefined,
@@ -215,10 +252,21 @@ export class ContoursSettings implements IDisposable {
 
   private loadContourDef(index: number) {
     this._currentContourIndex = index;
+
     assert(this._vp.view.is3d());
-    const subCats = this._vp.view.displayStyle.settings.contours.groups[index]?.subCategories;
+
+    const groups = this._vp.view.displayStyle.settings.contours.groups;
+    if (this._currentContourIndex > groups.length - 1) {
+      this.toggleCurrentGroup(false);
+      return;
+    }
+
+    this.toggleCurrentGroup(true);
+
+    const subCats = groups[index].subCategories;
     this._subCatTextBox.textbox.value = (subCats ? [...subCats] : []).join(",") ?? "";
-    const curContourDef =  this._vp.view.displayStyle.settings.contours.groups[index]?.contourDef ?? Contour.fromJSON({});
+    this._nameTextBox.textbox.value = groups[index].name;
+    const curContourDef =  groups[index].contourDef ?? Contour.fromJSON({});
     this._majorColor.input.value = curContourDef.majorStyle.color.toHexString();
     this._minorColor.input.value = curContourDef.minorStyle.color.toHexString();
     updateSliderValue(this._majorWidth, curContourDef.majorStyle.pixelWidth.toString());
@@ -230,29 +278,63 @@ export class ContoursSettings implements IDisposable {
     this._dispElemCkbx.checkbox.checked = curContourDef.showGeometry ?? true;
   }
 
+  private addContourDef() {
+    const view = this._vp.view;
+    assert(view.is3d());
+    const contoursJson = this.getContourDisplayProps(view);
+    const groups = undefined === contoursJson.groups ? [] : contoursJson.groups;
+
+    if (groups.length + 1 > 5) {
+      return;
+    }
+
+    groups.push({});
+    contoursJson.groups = groups;
+    view.displayStyle.settings.contours = ContourDisplay.fromJSON(contoursJson);
+
+    const newNdx = groups.length - 1;
+    this.loadContourDef(newNdx);
+    this._combobox.select.value = newNdx.toString();
+
+    this.sync();
+  }
+
   private applyContourDef() {
     const view = this._vp.view;
     assert(view.is3d());
     const contoursJson = this.getContourDisplayProps(view);
-    if (undefined === contoursJson.groups)
-      contoursJson.groups = [];
-    contoursJson.groups[this._currentContourIndex] = this.getTerrainProps();
+    const groups = undefined === contoursJson.groups ? [] : contoursJson.groups;
+
+    if (this._currentContourIndex > groups.length - 1) {
+      return;
+    }
+
+    groups[this._currentContourIndex] = this.getTerrainProps();
+    contoursJson.groups = groups;
     view.displayStyle.settings.contours = ContourDisplay.fromJSON(contoursJson);
 
     this.sync();
   }
 
-  private clearContourDef() {
-    const view = this._vp.view;
-    assert(view.is3d());
-    const contoursJson = this.getContourDisplayProps(view);
-    if (undefined === contoursJson.groups)
-      contoursJson.groups = [];
-    contoursJson.groups[this._currentContourIndex] = undefined;
-    view.displayStyle.settings.contours = ContourDisplay.fromJSON(contoursJson);
-    this.loadContourDef(this._currentContourIndex);
+  private deleteContourDef() {
     assert(this._vp.view.is3d());
-    this._checkbox.checkbox.checked = this._vp.view.displayStyle.settings.displayContours;
+
+    const contoursJson = this.getContourDisplayProps(this._vp.view);
+    const groups = undefined === contoursJson.groups ? [] : contoursJson.groups;
+
+    if (this._currentContourIndex > groups.length - 1) {
+      return;
+    }
+
+    groups.splice(this._currentContourIndex, 1);
+
+    contoursJson.groups = groups;
+
+    this._vp.view.displayStyle.settings.contours = ContourDisplay.fromJSON(contoursJson);
+
+    this._currentContourIndex = 0;
+    this._combobox.select.value = "0";
+    this.loadContourDef(this._currentContourIndex);
 
     this.sync();
   }
