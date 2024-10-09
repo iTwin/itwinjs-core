@@ -113,8 +113,8 @@ export class Settings implements IDisposable {
 
     this.addColors(this._element);
     this.addTransparencies(this._element);
-    this.addWeight(this._element);
     Settings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10)));
+    this.addWeight(this._element);
 
     createCheckBox({
       parent: this._element,
@@ -135,13 +135,6 @@ export class Settings implements IDisposable {
       name: "Emphasized",
       id: "ovr_emphasized",
       handler: (cb) => this.updateAppearance("emphasized", cb.checked ? true : undefined),
-    });
-
-    createCheckBox({
-      parent: this._element,
-      name: "View-dependent transparency",
-      id: "ovr_viewDep",
-      handler: (cb) => this.updateAppearance("viewDependentTransparency", cb.checked ? true : undefined),
     });
 
     const buttonDiv = document.createElement("div");
@@ -259,6 +252,13 @@ export class Settings implements IDisposable {
         applyToLineCb.disabled = true;
         applyToLineCb.checked = false;
       }
+    });
+
+    createCheckBox({
+      parent: this._element,
+      name: "View-dependent",
+      id: "ovr_viewDep",
+      handler: (cb) => this.updateAppearance("viewDependentTransparency", cb.checked ? true : undefined),
     });
 
     parent.appendChild(document.createElement("hr"));
