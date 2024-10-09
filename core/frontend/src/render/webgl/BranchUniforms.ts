@@ -103,12 +103,9 @@ export class BranchUniforms {
 
   public pushBranch(branch: Branch): void {
     desync(this);
-
-    if (this.top.disableClipStyle)
-      branch.disableClipStyle = true;
-
     this._stack.pushBranch(branch);
-    this.setClipStyle(!!branch.disableClipStyle);
+
+    this.setClipStyle(this.top.disableClipStyle);
 
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
@@ -261,7 +258,7 @@ export class BranchUniforms {
   }
 
   // set the clip style based on the branch's disableClipStyle property
-  private setClipStyle(disableClipStyle: boolean) {
+  private setClipStyle(disableClipStyle: true | undefined) {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
       const style = vp.view.displayStyle.settings.clipStyle;
