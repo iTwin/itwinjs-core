@@ -60,6 +60,6 @@ describe("CurveExtendMode", () => {
       ck.testCoordinate(fraction < 0 ? 0 : fraction, CurveExtendOptions.correctFraction(extend1, fraction), "extend1");
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

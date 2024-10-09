@@ -78,7 +78,7 @@ describe("BandedSystem", () => {
       }
       a0 = a1;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LargeSystem", () => {
     const ck = new Checker();
@@ -98,7 +98,7 @@ describe("BandedSystem", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("LargeSystem", () => {
@@ -119,7 +119,7 @@ describe("BandedSystem", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("GrevilleBspline", () => {
     const ck = new Checker();
@@ -155,7 +155,7 @@ describe("BandedSystem", () => {
       x0 += 3.0 * range.xLength();
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BandedSystem", "GrevilleBspline");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

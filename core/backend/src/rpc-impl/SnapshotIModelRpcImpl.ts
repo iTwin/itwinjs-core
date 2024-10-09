@@ -12,6 +12,8 @@ import {
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 
+/* eslint-disable deprecation/deprecation */
+
 /** The backend implementation of SnapshotIModelRpcInterface.
  * @internal
  */

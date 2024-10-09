@@ -12,7 +12,7 @@ import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { ParserSpec } from "./ParserSpec";
-import { Quantity } from "./Quantity";
+import { applyConversion, Quantity } from "./Quantity";
 
 /** Possible parser errors
  * @beta
@@ -55,7 +55,7 @@ enum Operator {
 
 function isOperator(char: number | string): boolean {
   if(typeof char === "number"){
-    // Convert the charcode to string.
+    // Convert the CharCode to string.
     char = String.fromCharCode(char);
   }
   return Object.values(Operator).includes(char as Operator);
@@ -342,7 +342,7 @@ export class Parser {
           }
 
           if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
-            // Dont add space when the wip token is empty.
+            // Don't add space when the wip token is empty.
             continue;
           }
 
@@ -622,7 +622,7 @@ export class Parser {
           }
         }
         if (conversion) {
-          value = (value * conversion.factor) + conversion.offset;
+          value = applyConversion(value, conversion);
         }
         mag = mag + value;
         compositeUnitIndex++;
@@ -663,6 +663,10 @@ export class Parser {
       return this.parseAzimuthFormat(inString, parserSpec);
     }
 
+    if (parserSpec.format.type === FormatType.Ratio) {
+      return this.parseRatioFormat(inString, parserSpec);
+    }
+
     return this.parseAndProcessTokens(inString, parserSpec.format, parserSpec.unitConversions);
   }
 
@@ -688,9 +692,9 @@ export class Parser {
       });
     }
 
-    if(format.type === FormatType.Bearing || format.type === FormatType.Azimuth) {
+    if(format.type === FormatType.Bearing || format.type === FormatType.Azimuth || format.type === FormatType.Ratio) {
       // throw error indicating to call parseQuantityString instead
-      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Bearing and Azimuth format must be parsed using a ParserSpec. Call parseQuantityString instead.`);
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Bearing, Azimuth or Ratio format must be parsed using a ParserSpec. Call parseQuantityString instead.`);
     }
 
     return this.parseAndProcessTokens(inString, format, unitsConversions);
@@ -741,15 +745,13 @@ export class Parser {
     // we have to turn the value into an east base and counter clockwise (NW and SE are already counter clockwise)
     if (matchedPrefix === DirectionLabel.North) {
       if (matchedSuffix === DirectionLabel.West) {
-        magnitude = quarterRevolution + magnitude;
-      } else if (matchedSuffix === DirectionLabel.East) {
-        magnitude = quarterRevolution - magnitude;
+        magnitude = revolution - magnitude;
       }
     } else if (matchedPrefix === DirectionLabel.South) {
       if (matchedSuffix === DirectionLabel.West) {
-        magnitude = (3 * quarterRevolution) - magnitude;
+        magnitude = (2 * quarterRevolution) + magnitude;
       } else if (matchedSuffix === DirectionLabel.East) {
-        magnitude = (3 * quarterRevolution) + magnitude;
+        magnitude = (2 * quarterRevolution) - magnitude;
       }
     }
 
@@ -766,8 +768,7 @@ export class Parser {
 
     const revolution = this.getRevolution(spec);
     magnitude = this.normalizeAngle(magnitude, revolution);
-    const quarterRevolution = revolution / 4;
-    let azimuthBase = quarterRevolution;
+    let azimuthBase = 0.0;
     if (spec.format.azimuthBase !== undefined) {
       if (spec.azimuthBaseConversion === undefined) {
         throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.format.name}'s azimuth base.`);
@@ -779,14 +780,14 @@ export class Parser {
       }
       azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
     }
-    const azimuthCounterClockwise = spec.format.azimuthCounterClockwiseOrDefault;
+    const inputIsClockwise = spec.format.azimuthClockwiseOrDefault;
 
-    if(azimuthCounterClockwise && azimuthBase === 0) {
+    if(inputIsClockwise && azimuthBase === 0) {
       // parsed result already has the same base and orientation as our desired output
       return parsedResult;
     }
 
-    if (azimuthCounterClockwise)
+    if (inputIsClockwise)
       magnitude = azimuthBase + magnitude;
     else
       magnitude = azimuthBase - magnitude;
@@ -794,6 +795,63 @@ export class Parser {
     magnitude = this.normalizeAngle(magnitude, revolution);
 
     return { ok: true, value: magnitude };
+  }
+
+  private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
+    if (!inString)
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+
+    const parts = inString.split(":");
+    if (parts.length > 2)
+      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+
+    const numerator = parseFloat(parts[0]);
+    let denominator;
+    if (parts.length === 1) {
+      denominator = 1.0;
+    } else {
+      denominator = parseFloat(parts[1]);
+    }
+
+    if (isNaN(numerator) || isNaN(denominator))
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+
+    const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
+    const unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
+
+    if (!unitConversion) {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing input unit or unit conversion for interpreting ${spec.format.name}.`);
+    }
+
+    if (denominator === 0){
+      if (unitConversion.inversion && numerator === 1)
+        return { ok: true, value: 0.0 };
+      else
+        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+    }
+
+    let quantity: Quantity;
+    if (spec.format.units && spec.outUnit) {
+      quantity = new Quantity(spec.format.units[0][0], numerator / denominator);
+    } else {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, "Missing presentation unit or persistence unit for ratio format.");
+    }
+
+    let converted: Quantity | undefined;
+    try {
+      converted = quantity.convertTo(spec.outUnit, unitConversion);
+    } catch (err){
+      // for input of "0:N" with reversed unit
+      if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero){
+        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+      }
+    }
+
+    if (converted === undefined || !converted.isValid) {
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert from ${spec.format.units[0][0].name} to ${spec.outUnit.name} On format ${spec.format.name}.`);
+    }
+
+    return { ok: true, value: converted.magnitude };
   }
 
   // TODO: The following two methods are redundant with Formatter. We should consider consolidating them.

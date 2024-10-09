@@ -553,7 +553,6 @@ export class SheetViewState extends ViewState2d {
     }
   }
 
-  /** @internal */
   public override computeFitRange(): Range3d {
     const size = this.sheetSize;
     if (0 >= size.x || 0 >= size.y)

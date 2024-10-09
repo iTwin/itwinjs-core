@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added props for Sheet Index elements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

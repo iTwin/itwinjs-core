@@ -1296,6 +1296,41 @@ describe("Schema Difference Conflicts", () => {
       await expect(findConflictItem(differences, "ActualBaseClassEntity")).to.be.eventually.undefined;
     });
 
+    it("should not find a conflict if other properties but baseclass change", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        name: "ConflictSchema2",
+        items: {
+          BaseEntity: {
+            schemaItemType: "EntityClass",
+            modifier: "Abstract",
+          },
+          ActualBaseClassEntity: {
+            schemaItemType: "EntityClass",
+            label: "ActualBaseClassEntity",
+            description: "This describes the actual base class entity",
+            baseClass: "ConflictSchema2.BaseEntity",
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          BaseEntity: {
+            schemaItemType: "EntityClass",
+            modifier: "Abstract",
+          },
+          ActualBaseClassEntity: {
+            schemaItemType: "EntityClass",
+            baseClass: "ConflictSchema.BaseEntity",
+          },
+        },
+      };
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "ActualBaseClassEntity")).to.eventually.not.exist;
+    });
+
     it("should  not find a conflict if the new base class derives from target baseclass from referenced schemas", async () => {
       const sourceSchemaJson = {
         ...schemaHeader,
