@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 03 Oct 2024 19:15:45 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2024 20:22:04 GMT and should not be manually modified.
+
+## 4.9.4
+Wed, 09 Oct 2024 20:22:04 GMT
+
+### Updates
+
+- Fix WorkerReturnType for async implementations.
 
 ## 4.9.3
 Thu, 03 Oct 2024 19:15:45 GMT
