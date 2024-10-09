@@ -17,6 +17,7 @@ Table of contents:
   - [@itwin/appui-abstract](#itwinappui-abstract)
   - [@itwin/core-backend](#itwincore-frontend)
   - [@itwin/core-frontend](#itwincore-frontend)
+  - [@itwin/core-quantity](#itwincore-quantity)
 
 ## Revert timeline changes
 
@@ -113,3 +114,7 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 ### @itwin/core-frontend
 
 - [SnapshotConnection.openRemote]($frontend) has been deprecated. Use [CheckpointConnection.openRemote]($frontend) to open a connection to an iModel within web application.
+
+### @itwin/core-quantity
+- [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
+
