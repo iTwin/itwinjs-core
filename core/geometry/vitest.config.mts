@@ -5,7 +5,7 @@ export default defineConfig({
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/filename.test.ts"], // to honor it/describe.only
     coverage: {
-      provider: "istanbul", // akin to nyc,
+      provider: "v8",
       include: [
         "src/**/*"
       ],
