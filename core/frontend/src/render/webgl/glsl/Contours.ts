@@ -45,7 +45,7 @@ vec4 unpackAndNormalize2BytesVec4(vec4 f, bool upper) {
 
 const applyContours = `
   int contourNdx = int(v_contourNdx + 0.5);
-  if (!u_displayContours || contourNdx > 14) // 15 => no contours
+  if (contourNdx > 14) // 15 => no contours
     return baseColor;
 
   const int maxDefs = ${ContourUniforms.maxContourDefs}; // max number of contour definitions allowed, have to change index arrays if this changes
@@ -92,13 +92,9 @@ const applyContours = `
       discard;
     return vec4(rgbf.rgb, 1.0);
   }
-#if 1
   // set contour opaque even if base color is transparent
   float alpha = contourAlpha >= 0.5 ? 1.0 : baseColor.a;
   return vec4(mix(baseColor.rgb, rgbf.rgb, contourAlpha), alpha);
-#else
-  return vec4(mix(baseColor.rgb, rgbf.rgb, contourAlpha), baseColor.a);
-#endif
 `;
 
 /** @internal */
@@ -145,12 +141,6 @@ float computeWorldHeight(vec4 rawPosition) {
   builder.frag.addUniformArray("u_contourDefs", VariableType.Vec4, contourDefsSize, (prog) => {
     prog.addGraphicUniform("u_contourDefs", (uniform, params) => {
       params.target.uniforms.contours.bindcontourDefs(uniform);
-    });
-  });
-
-  builder.addUniform("u_displayContours", VariableType.Boolean, (prog) => {
-    prog.addProgramUniform("u_displayContours", (uniform, params) => {
-      params.target.uniforms.contours.bindDisplayContours(uniform);
     });
   });
 

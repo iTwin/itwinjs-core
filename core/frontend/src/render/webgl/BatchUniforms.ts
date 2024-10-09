@@ -98,7 +98,7 @@ export class BatchUniforms {
 
   public get wantContourLines(): boolean {
     const contours: ContourDisplay | undefined = this._target.plan.contours;
-    if (contours && contours.groups !== undefined && contours.groups.length) {
+    if (contours && contours.displayContours && contours.groups !== undefined && contours.groups.length) {
       for (let index = 0, len = contours.groups.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
         if (undefined !== contours.groups[index]?.subCategories)
           return true;
