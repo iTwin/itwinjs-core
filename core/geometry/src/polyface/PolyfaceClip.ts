@@ -99,14 +99,14 @@ export class PolyfaceClip {
    * * Return all surviving clip as a new mesh.
    * * WARNING: The new mesh is "points only" -- parameters, normals, etc are not interpolated
    */
-  public static clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = true) {
+  public static clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = true): IndexedPolyface {
     return this.clipPolyfaceClipPlane(polyface, clipper, insideClip, buildClosureFaces);
   }
   /** Clip each facet of polyface to the ClipPlane.
    * * Return all surviving clip as a new mesh.
    * * WARNING: The new mesh is "points only" -- parameters, normals, etc are not interpolated
    */
-  public static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = false): Polyface {
+  public static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = false): IndexedPolyface {
     const builders = ClippedPolyfaceBuilders.create(insideClip, !insideClip, buildClosureFaces);
     this.clipPolyfaceInsideOutside(polyface, clipper, builders);
     return builders.claimPolyface(insideClip ? 0 : 1, true)!;
@@ -116,7 +116,7 @@ export class PolyfaceClip {
    * * Return surviving clip as a new mesh.
    * * WARNING: The new mesh is "points only".
    */
-  public static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): Polyface {
+  public static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): IndexedPolyface {
     const visitor = polyface.createVisitor(0);
     const builder = PolyfaceBuilder.create();
     const work = new GrowableXYZArray(10);
@@ -215,7 +215,7 @@ export class PolyfaceClip {
         for (const child of region.children)
           this.addRegion(builder, child);
       } else {
-        assert(!"unexpected region encountered");
+        assert(false, "unexpected region encountered");
       }
     }
   }
