@@ -114,7 +114,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   dispose(target);
 }
 
-describe.only("BranchUniforms", async () => {
+describe("BranchUniforms", async () => {
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
