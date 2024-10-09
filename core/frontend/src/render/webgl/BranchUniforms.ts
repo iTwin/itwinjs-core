@@ -129,8 +129,8 @@ export class BranchUniforms {
     if (this.top.clipVolume)
       this.clipStack.pop();
 
-    this.resetClipStyle();
     this._stack.pop();
+    this.setClipStyle(this.top.disableClipStyle);
   }
 
   public pushViewClip(): void {
@@ -257,7 +257,7 @@ export class BranchUniforms {
     return true;
   }
 
-  // set the clip style based on the branch's disableClipStyle property
+  // set the clip style based on disableClipStyle
   private setClipStyle(disableClipStyle: true | undefined) {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
@@ -265,17 +265,6 @@ export class BranchUniforms {
       this.clipStack.insideColor.alpha = disableClipStyle ? 0 : (style.insideColor ? 1 : 0);
       this.clipStack.outsideColor.alpha = disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
       this.clipStack.intersectionStyle.alpha = disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
-    }
-  }
-
-  // reset the clip style based on the current clip style
-  private resetClipStyle() {
-    const vp = IModelApp.viewManager.selectedView;
-    if (vp) {
-      const style = vp.view.displayStyle.settings.clipStyle;
-      this.clipStack.insideColor.alpha = style.insideColor ? 1 : 0;
-      this.clipStack.outsideColor.alpha = style.outsideColor ? 1 : 0;
-      this.clipStack.intersectionStyle.alpha = style.intersectionStyle ? style.intersectionStyle.width : 0;
     }
   }
 }

@@ -114,7 +114,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   dispose(target);
 }
 
-describe("BranchUniforms", async () => {
+describe.only("BranchUniforms", async () => {
   before(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
   });
@@ -224,5 +224,140 @@ describe("BranchUniforms", async () => {
     testBranches({ clip: viewClip }, [{ clip: firstClip, disableClipStyle: true }, { clip: secondClip}, {clip: thirdClip}], true, [viewClip, firstClip, secondClip, thirdClip], [0,0,0], [1,1,1]);
 
     IModelApp.viewManager.dropViewport(vp);
+  });
+
+  it("should disable clip style in complex scene graphs", async () => {
+
+    // create a viewport
+    const imodel = createBlankConnection("imodel");
+    const viewDiv = document.createElement("div");
+    viewDiv.style.width = viewDiv.style.height = "100px";
+    document.body.appendChild(viewDiv);
+    const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
+    const vp = ScreenViewport.create(viewDiv, view);
+    IModelApp.viewManager.addViewport(vp);
+    await IModelApp.viewManager.setSelectedView(vp);
+
+    // create a clip style and assign it to the viewport
+    const testStyle = ClipStyle.fromJSON({
+      insideColor: {r: 255, g: 0, b: 0},
+      outsideColor: {r: 0, g: 255, b: 0},
+      intersectionStyle: {
+        color: {r: 0, g: 0, b: 255},
+        width: 1,
+      },
+    });
+    vp.clipStyle = testStyle;
+
+    // create target
+    const viewClip = makeClipVolume();
+    const plan = { ...createEmptyRenderPlan(), clip: viewClip.clipVector };
+    plan.viewFlags = plan.viewFlags.with("clipVolume", true);
+    const target = makeTarget();
+    target.changeRenderPlan(plan);
+    target.pushViewClip();
+
+    const uniforms = target.uniforms.branch;
+
+    /* scenario 1 scene graph:
+    *  branch 1
+    *    branch 1a: disableClipStyle = true;
+    *       branch 1a1
+    *       branch 1a2
+    *
+    * clip style should be disabled for branches 1a, 1a1, and 1a2
+    */
+
+    const branch1 = makeBranch({ clip: makeClipVolume() });
+    const branch1a = makeBranch({ clip: makeClipVolume(), disableClipStyle: true });
+    const branch1a1 = makeBranch({ clip: makeClipVolume() });
+    const branch1a2 = makeBranch({ clip: makeClipVolume() });
+
+    target.pushBranch(branch1);
+    // expect clip style to be enabled
+    expectClipStyle(uniforms, [1,1,1]);
+
+    target.pushBranch(branch1a);
+    // expect clip style to be disabled
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.pushBranch(branch1a1);
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.pushBranch(branch1a2);
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [1,1,1]);
+
+    // after this pop, all branches have been popped
+    target.popBranch();
+    expectClipStyle(uniforms, [1,1,1]);
+
+    /* scenario 2 scene graph:
+    *  branch 1
+    *    branch 1a: disableClipStyle = true;
+    *       branch 1a1
+    *         branch 1a1a
+    *       branch 1a2
+    *    branch 1b
+    * branch 2
+    *    branch 2a
+    *
+    *  clip style should be disabled for branches 1a, 1a1, 1a1a, and 1a2
+    */
+
+    const branch1a1a = makeBranch({ clip: makeClipVolume() });
+    const branch1b = makeBranch({ clip: makeClipVolume() });
+    const branch2 = makeBranch({ clip: makeClipVolume() });
+    const branch2a = makeBranch({ clip: makeClipVolume() });
+
+    target.pushBranch(branch1);
+    expectClipStyle(uniforms, [1,1,1]);
+
+    target.pushBranch(branch1a);
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.pushBranch(branch1a1);
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.pushBranch(branch1a1a);
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.pushBranch(branch1a2);
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [0,0,0]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [1,1,1]);
+
+    target.pushBranch(branch1b);
+    expectClipStyle(uniforms, [1,1,1]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [1,1,1]);
+
+    target.popBranch();
+    expectClipStyle(uniforms, [1,1,1]);
+
+    target.pushBranch(branch2);
+    expectClipStyle(uniforms, [1,1,1]);
+
+    target.pushBranch(branch2a);
+    expectClipStyle(uniforms, [1,1,1]);
   });
 });
