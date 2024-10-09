@@ -159,6 +159,27 @@ export class FeatureOverrides implements WebGLDisposable {
     lut.update(updater);
   }
 
+  private setTransparency(transparency: number, viewDependentTransparency: true | undefined, data: Texture2DDataUpdater, transparencyByteIndex: number, curFlags: OvrFlags): OvrFlags {
+    // transparency in range [0, 1]...convert to byte and invert so 0=transparent...
+    let alpha = 1.0 - transparency;
+    alpha = Math.floor(0xff * alpha + 0.5);
+    if ((0xff - alpha) < DisplayParams.minTransparency)
+      alpha = 0xff;
+
+    data.setByteAtIndex(transparencyByteIndex, alpha);
+    if (0xff === alpha) {
+      this._anyOpaque = true;
+    } else {
+      this._anyTranslucent = true;
+      if (!viewDependentTransparency) {
+        curFlags |= OvrFlags.ViewIndependentTransparency;
+        this._anyViewIndependentTranslucent = true;
+      }
+    }
+    
+    return curFlags;
+  }
+
   private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, ovr: FeatureSymbology.Overrides, pickExclude: Id64.Uint32Set | undefined, flashedIdParts: Id64.Uint32Pair | undefined, hilites: Hilites) {
     const allowHilite = true !== this._options.noHilite;
     const allowFlash = true !== this._options.noFlash;
@@ -230,23 +251,8 @@ export class FeatureOverrides implements WebGLDisposable {
       }
 
       if (undefined !== app.transparency) {
-        // transparency in range [0, 1]...convert to byte and invert so 0=transparent...
         flags |= OvrFlags.Alpha;
-        let alpha = 1.0 - app.transparency;
-        alpha = Math.floor(0xff * alpha + 0.5);
-        if ((0xff - alpha) < DisplayParams.minTransparency)
-          alpha = 0xff;
-
-        data.setByteAtIndex(dataIndex + 7, alpha);
-        if (0xff === alpha) {
-          this._anyOpaque = true;
-        } else {
-          this._anyTranslucent = true;
-          if (!app.viewDependentTransparency) {
-            flags |= OvrFlags.ViewIndependentTransparency;
-            this._anyViewIndependentTranslucent = true;
-          }
-        }
+        flags = this.setTransparency(app.transparency, app.viewDependentTransparency, data, dataIndex + 7, flags);
       }
 
       if (app.overridesWeight && app.weight) {
