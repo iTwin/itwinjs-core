@@ -155,7 +155,7 @@ export enum ShowSignOption {
 
 /**
  * @beta
- * @deprecated will be deprecated in 4.10. ScientificType is now a string enum and doesn't need a serialization method. You can access the enum directly.
+ * @deprecated in 4.10. ScientificType is now a string enum and doesn't need a serialization method. You can access the enum directly.
 */
 export function scientificTypeToString(scientificType: ScientificType): string {
   return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
@@ -201,7 +201,7 @@ export function parseShowSignOption(showSignOption: string, formatName: string):
 
 /**
  * @beta
- * @deprecated will be deprecated in 4.10. ShowSignOption is now a string enum and doesn't need a serialization method. You can access the enum directly.
+ * @deprecated in 4.10. ShowSignOption is now a string enum and doesn't need a serialization method. You can access the enum directly.
 */
 export function showSignOptionToString(showSign: ShowSignOption): string {
   switch (showSign) {
@@ -299,7 +299,7 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
 }
 
 /** @beta
- *  @deprecated will be deprecated in 4.10. FormatType is now a string enum and doesn't need a serialization method. You can access the enum directly.
+ *  @deprecated in 4.10. FormatType is now a string enum and doesn't need a serialization method. You can access the enum directly.
 */
 export function formatTypeToString(type: FormatType): string {
   switch (type) {
