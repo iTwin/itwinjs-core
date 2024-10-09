@@ -24,8 +24,8 @@ export interface TestWorker {
   throwString(): never;
   setTransfer(wantTransfer: boolean): undefined;
   createGraphic(context: WorkerGraphicDescriptionContextProps): WorkerGraphic;
-  someVeryLongRunningAsyncOperation(): Promise<number>;
-  someLongRunningAsyncOperation(): Promise<number>;
+  someVeryLongRunningAsyncOperation(): number;
+  someLongRunningAsyncOperation(): number;
   someFastSynchronousOperation(): number;
 }
 
@@ -100,7 +100,7 @@ registerWorker<TestWorker>({
 
   someVeryLongRunningAsyncOperation: async () => {
     await waitNTicks(10);
-    return ++globalTickCounter;
+    return { result: ++globalTickCounter, transfer: [] };
   },
   someLongRunningAsyncOperation: async () => {
     await waitNTicks(5);
