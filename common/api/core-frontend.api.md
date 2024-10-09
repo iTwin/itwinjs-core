@@ -4561,7 +4561,7 @@ export interface GraphicBranchOptions {
     // @internal (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     clipVolume?: RenderClipVolume;
-    disableClipStyle?: boolean;
+    disableClipStyle?: true;
     // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
     hline?: HiddenLine.Settings;
@@ -9069,7 +9069,7 @@ export interface RealityMeshGraphicParams {
     // (undocumented)
     readonly baseTransparent: boolean;
     // (undocumented)
-    readonly disableClipStyle?: boolean;
+    readonly disableClipStyle?: true;
     // (undocumented)
     readonly featureTable: PackedFeatureTable;
     // (undocumented)

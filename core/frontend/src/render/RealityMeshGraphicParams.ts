@@ -21,5 +21,5 @@ export interface RealityMeshGraphicParams {
   readonly baseTransparent: boolean;
   readonly textures?: TerrainTexture[];
   readonly layerClassifiers?: MapLayerClassifiers;
-  readonly disableClipStyle?: boolean;
+  readonly disableClipStyle?: true;
 }

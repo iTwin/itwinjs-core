@@ -163,7 +163,7 @@ export interface GraphicBranchOptions {
   /** If true, the view's [[DisplayStyleSettings.clipStyle]] will be disabled for this branch.
    * No [[ClipStyle.insideColor]], [[ClipStyle.outsideColor]], or [[ClipStyle.intersectionStyle]] will be applied.
    */
-  disableClipStyle?: boolean;
+  disableClipStyle?: true;
 }
 
 /** Clip/Transform for a branch that are varied over time.

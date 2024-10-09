@@ -30,7 +30,7 @@ function makeClipVolume(): ClipVolume {
 interface ClipInfo {
   clip?: ClipVolume;
   noViewClip?: boolean; // undefined means inherit from parent on branch stack
-  disableClipStyle?: boolean;
+  disableClipStyle?: true;
 }
 
 function makeBranch(info: ClipInfo): Branch {
@@ -74,9 +74,10 @@ function expectClipStyle(uniforms: BranchUniforms, expectedAlphas: number[]): vo
  * - A stack of branches to be pushed
  * - The expected stack of ClipVolumes on the ClipStack, including the view clip, after pushing all branches.
  * - Whether we expect the view's clip to apply to the top branch.
- * - Optionally, the expected Alpha values of the ClipStack's ClipStyle.
+ * - Optionally, the Clipstack's expected ClipStyle alpha values after the branches are pushed.
+ * - Optionally, the viewport's ClipStyle alpha values - what is expected after the branches are popped.
  */
-function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: boolean, expectedClips: Array<{ numRows: number }>, expectedClipStyleAlphaValues?: number[]): void {
+function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: boolean, expectedClips: Array<{ numRows: number }>, branchClipStyleAlphaValues?: number[], viewportClipStyleAlphaValues?: number[]): void {
   const plan = { ...createEmptyRenderPlan(), clip: viewClip.clip?.clipVector };
   plan.viewFlags = plan.viewFlags.with("clipVolume", true !== viewClip.noViewClip);
 
@@ -97,11 +98,14 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   expect(uniforms.clipStack.hasClip).to.equal(expectViewClip || expectedClips.length > 1);
   expectClipStack(target, expectedClips);
 
-  if (expectedClipStyleAlphaValues)
-    expectClipStyle(uniforms, expectedClipStyleAlphaValues);
+  if (branchClipStyleAlphaValues)
+    expectClipStyle(uniforms, branchClipStyleAlphaValues);
 
   for (const _branch of branches)
     target.popBranch();
+
+  if (viewportClipStyleAlphaValues)
+    expectClipStyle(uniforms, viewportClipStyleAlphaValues);
 
   expect(uniforms.clipStack.hasViewClip).to.equal(hadViewClip);
   expect(uniforms.clipStack.hasClip).to.equal(hadClip);
@@ -180,12 +184,12 @@ describe("BranchUniforms", async () => {
     });
     vp.clipStyle = testStyle;
 
-    // disableClipStyle is false, so we expect the inside color, outside color, and intersection style width to all be 1
-    testBranches({ clip: viewClip }, [{ clip: branchClip, disableClipStyle: false }], true, [viewClip, branchClip], [1,1,1]);
+    // disableClipStyle is undefined, so we expect the inside color, outside color, and intersection style width to all be 1
+    testBranches({ clip: viewClip }, [{ clip: branchClip }], true, [viewClip, branchClip], [1,1,1]);
 
     // disableClipStyle is true, so we expect the branch to have disabled the inside color, outside color, and intersection style width,
-    // setting all of their alpha values to 0
-    testBranches({ clip: viewClip }, [{ clip: branchClip, disableClipStyle: true }], true, [viewClip, branchClip], [0,0,0]);
+    // setting all of their alpha values to 0. After the branch is popped, we expect the viewport's clip style to be restored.
+    testBranches({ clip: viewClip }, [{ clip: branchClip, disableClipStyle: true }], true, [viewClip, branchClip], [0,0,0], [1,1,1]);
 
     IModelApp.viewManager.dropViewport(vp);
   });
@@ -194,6 +198,7 @@ describe("BranchUniforms", async () => {
     const viewClip = makeClipVolume();
     const firstClip = makeClipVolume();
     const secondClip = makeClipVolume();
+    const thirdClip = makeClipVolume();
 
     // create a viewport
     const imodel = createBlankConnection("imodel");
@@ -216,7 +221,8 @@ describe("BranchUniforms", async () => {
     });
     vp.clipStyle = testStyle;
 
-    testBranches({ clip: viewClip }, [{ clip: firstClip, disableClipStyle: true }, { clip: secondClip}], true, [viewClip, firstClip, secondClip], [0,0,0]);
+    testBranches({ clip: viewClip }, [{ clip: firstClip, disableClipStyle: true }, { clip: secondClip}, {clip: thirdClip}], true, [viewClip, firstClip, secondClip, thirdClip], [0,0,0], [1,1,1]);
+
     IModelApp.viewManager.dropViewport(vp);
   });
 });

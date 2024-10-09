@@ -103,19 +103,12 @@ export class BranchUniforms {
 
   public pushBranch(branch: Branch): void {
     desync(this);
-    this._stack.pushBranch(branch);
-    const disableClipStyle = branch.disableClipStyle || this.top.disableClipStyle;
-    const vp = IModelApp.viewManager.selectedView;
-    if (vp) {
 
-      /** If the branch has disableClipStyle set, we set these alphas to 0, therefore disabling the clip style.
-      * Otherwise, we leave it to the viewport's clip style.
-      */
-      const style = vp.view.displayStyle.settings.clipStyle;
-      this.clipStack.insideColor.alpha = disableClipStyle ? 0 : (style.insideColor ? 1 : 0);
-      this.clipStack.outsideColor.alpha = disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
-      this.clipStack.intersectionStyle.alpha = disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
-    }
+    if (this.top.disableClipStyle)
+      branch.disableClipStyle = true;
+
+    this._stack.pushBranch(branch);
+    this.setClipStyle(!!branch.disableClipStyle);
 
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
@@ -139,6 +132,7 @@ export class BranchUniforms {
     if (this.top.clipVolume)
       this.clipStack.pop();
 
+    this.resetClipStyle();
     this._stack.pop();
   }
 
@@ -264,5 +258,27 @@ export class BranchUniforms {
     }
 
     return true;
+  }
+
+  // set the clip style based on the branch's disableClipStyle property
+  private setClipStyle(disableClipStyle: boolean) {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp) {
+      const style = vp.view.displayStyle.settings.clipStyle;
+      this.clipStack.insideColor.alpha = disableClipStyle ? 0 : (style.insideColor ? 1 : 0);
+      this.clipStack.outsideColor.alpha = disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
+      this.clipStack.intersectionStyle.alpha = disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
+    }
+  }
+
+  // reset the clip style based on the current clip style
+  private resetClipStyle() {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp) {
+      const style = vp.view.displayStyle.settings.clipStyle;
+      this.clipStack.insideColor.alpha = style.insideColor ? 1 : 0;
+      this.clipStack.outsideColor.alpha = style.outsideColor ? 1 : 0;
+      this.clipStack.intersectionStyle.alpha = style.intersectionStyle ? style.intersectionStyle.width : 0;
+    }
   }
 }
