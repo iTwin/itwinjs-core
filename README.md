@@ -20,7 +20,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 
 - [Git](https://git-scm.com/)
 - [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 20. The Node installation also includes the **npm** package manager.
-- [pnpm](https://pnpm.io/): our required package manager. It is more performant and monorepo friendly than `npm`. We recommend installing `pnpm` using [corepack](https://pnpm.io/installation#using-corepack).
+- [pnpm](https://pnpm.io/): our required package manager. It is more performant and monorepo friendly than `npm`. We recommend installing `pnpm` using [`corepack enable pnpm`](https://pnpm.io/installation#using-corepack). Note you may have to use an administrator shell to run the command.
 - [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
 - [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 - [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
