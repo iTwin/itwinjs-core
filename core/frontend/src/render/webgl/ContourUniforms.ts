@@ -22,7 +22,6 @@ export class ContourUniforms {
 
   private readonly _contourDefsSize = Math.ceil(ContourUniforms.maxContourDefs * 1.5);
   private readonly _contourDefs = new Float32Array(this._contourDefsSize * 4);
-  private _displayContours?: boolean;
   private _contourDisplay?: ContourDisplay;
 
   public syncKey = 0;
@@ -44,7 +43,7 @@ export class ContourUniforms {
     //   pattern is a line code index 0 to 10 (0 is solid)
     //   pack major into upper byte (upper nibble -> pattern, lower nibble -> 4-bit encoded width)
     //   pack minor into lower byte (upper nibble -> pattern, lower nibble -> 4-bit encoded width)
-    // NB: showGeometry flag is packed into the  16 bit (above major pattern)
+    // NB: showGeometry flag is packed into bit 16 (above major pattern)
     const majWt = Math.floor((Math.min(8.5, Math.max(1.0, majorWidth)) - 1.0) * 2 + 0.5);
     const minWt = Math.floor((Math.min(8.5, Math.max(1.0, minorWidth)) - 1.0) * 2 + 0.5);
     this._contourDefs[startNdx+3] = (showGeometry ? 65536 : 0) + majorPattern * 4096 + majWt * 256 + minorPattern * 16 + minWt;
@@ -70,8 +69,6 @@ export class ContourUniforms {
     this._contourDisplay = plan.contours;
     if (undefined === this.contourDisplay)
       return;
-
-    this._displayContours = this.contourDisplay.displayContours;
 
     /* uniform packing for contourDefs:
         The line pattern code is put into 4 bits, and the width is packed into 4 bits, so together with the pattern use 8 bits.
@@ -109,10 +106,5 @@ export class ContourUniforms {
   public bindcontourDefs(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setUniform4fv(this._contourDefs);
-  }
-
-  public bindDisplayContours(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform1i(this._displayContours ? 1 : 0);
   }
 }
