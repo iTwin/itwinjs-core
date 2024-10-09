@@ -111,7 +111,7 @@ export class Settings implements IDisposable {
     this._element.style.cssFloat = "left";
     this._element.style.display = "block";
 
-    this.addColor(this._element);
+    this.addColors(this._element);
     this.addTransparency(this._element);
     this.addWeight(this._element);
     Settings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10)));
@@ -182,7 +182,7 @@ export class Settings implements IDisposable {
 
   // private reset() { this._appearance = FeatureSymbology.Appearance.defaults; }
 
-  private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized" | "viewDependentTransparency", value: any): void {
+  private updateAppearance(field: "rgb" | "transparency" | "lineRgb" | "lineTransparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized" | "viewDependentTransparency", value: any): void {
     const props = this._appearance.toJSON();
     props[field] = value;
     this._appearance = FeatureAppearance.fromJSON(props);
@@ -316,6 +316,83 @@ export class Settings implements IDisposable {
         this.updateColor(undefined);
     });
     parent.appendChild(div);
+  }
+
+  private addColors(parent: HTMLElement): void {
+    const addColorPicker = (label: string) => {
+      const div = document.createElement("div");
+      parent.appendChild(div);
+      
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      div.appendChild(checkbox);
+
+      const picker = createColorInput({
+        parent: div,
+        label,
+        value: "#ffffff",
+        display: "inline",
+        disabled: true,
+        handler: () => updateColors(),
+      });
+
+      checkbox.addEventListener("click", () => {
+        picker.input.disabled = !checkbox.checked;
+
+        if (checkbox.checked) {
+          applyToLineCb.checkbox.disabled = lineColorElem.checkbox.checked;
+        } else {
+          applyToLineCb.checkbox.disabled = true;
+          applyToLineCb.checkbox.checked = false;
+        }
+
+        updateColors();
+      });
+
+      return { checkbox, picker };
+    };
+
+    const colorElem = addColorPicker("Color");
+
+    const applyToLineCb = createCheckBox({
+      parent,
+      id: "why is this required...",
+      name: "Apply to lines",
+      handler: () => {
+        if (applyToLineCb.checkbox.checked) {
+          lineColorElem.checkbox.disabled = false;
+        } else {
+          lineColorElem.checkbox.disabled = true;
+          lineColorElem.checkbox.checked = false;
+        }
+
+        updateColors();
+      },
+    });
+    applyToLineCb.checkbox.disabled = true;
+    
+    const lineColorElem = addColorPicker("Line Color");
+    lineColorElem.checkbox.addEventListener("click", () => {
+      if (!lineColorElem.checkbox.checked) {
+        applyToLineCb.checkbox.disabled = !colorElem.checkbox.checked;
+      } else {
+        applyToLineCb.checkbox.disabled = true;
+        applyToLineCb.checkbox.checked = false;
+      }
+    });
+
+    parent.appendChild(document.createElement("hr"));
+
+    const updateColors = () => {
+      const color = colorElem.checkbox.checked ? convertHexToRgb(colorElem.picker.input.value) : undefined;
+      let lineColor;
+      if (!applyToLineCb.checkbox.checked) {
+        lineColor = lineColorElem.checkbox.checked ? convertHexToRgb(lineColorElem.picker.input.value) : false;
+      }
+
+      this.updateAppearance("rgb", color);
+      this.updateAppearance("lineRgb", lineColor);
+    };
   }
 }
 
