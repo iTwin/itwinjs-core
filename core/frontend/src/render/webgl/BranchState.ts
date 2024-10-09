@@ -46,8 +46,8 @@ export interface BranchStateOptions {
   forceViewCoords?: boolean;
   readonly viewAttachmentId?: Id64String;
   groupNodeId?: number;
-  /** If true, the view's [[DisplayStyleSettings.clipStyle]] will be disabled for this branch.
-   * No [[ClipStyle.insideColor]], [[ClipStyle.outsideColor]], or [[ClipStyle.intersectionStyle]] will be applied.
+  /** If true, the view's [DisplayStyleSettings.clipStyle]($common) will be disabled for this branch.
+   * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
    */
   disableClipStyle?: true;
 }
