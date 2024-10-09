@@ -533,8 +533,8 @@ export abstract class IModel implements IModelProps {
       rootSubject: this.rootSubject,
       projectExtents: this.projectExtents.toJSON(),
       globalOrigin: this.globalOrigin.toJSON(),
-      ecefLocation: this.ecefLocation,
-      geographicCoordinateSystem: this.geographicCoordinateSystem,
+      ecefLocation: this.ecefLocation?.toJSON(),
+      geographicCoordinateSystem: this.geographicCoordinateSystem?.toJSON(),
       ... this._getRpcProps(),
     };
   }
