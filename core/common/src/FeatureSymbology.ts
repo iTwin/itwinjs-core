@@ -129,8 +129,8 @@ function transparencyFromJSON(transp: number | undefined): number | undefined {
  * However, the color and transparency of "linear" geometry can optionally be controlled independently from the rest of the geometry via [[lineRgb]] and [[lineTransparency]].
  * Linear geometry consists of any of the following:
  * - Curves and line strings;
- * - The outlines of planar regions; and
- * - Text created using "stick" fonts (drawn as lines instead of bezier curves).
+ * - Points and point strings; and
+ * - The outlines of planar regions.
  * The edges of 3d surfaces like spheres are not considered linear geometry.
  *
  * @see [[FeatureOverrides]] to customize the appearance of multiple features.
