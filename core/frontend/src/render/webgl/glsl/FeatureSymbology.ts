@@ -252,7 +252,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
     });
   }
 
-  addLookupTable(vert, "feature", "2.0");
+  addLookupTable(vert, "feature", "3.0");
   vert.addGlobal("feature_texCoord", VariableType.Vec2);
   vert.addFunction(computeFeatureTextureCoords);
   vert.addFunction(getFirstFeatureRgba);
