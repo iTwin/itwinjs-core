@@ -54,6 +54,8 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
   builder.addBitFlagConstant("kOvrBit_Emphasized", 1);
   builder.addBitFlagConstant("kOvrBit_ViewIndependentTransparency", 2);
   builder.addBitFlagConstant("kOvrBit_InvisibleDuringPick", 3);
+  builder.addBitFlagConstant("kOvrBit_LineRgb", 4);
+  builder.addBitFlagConstant("kOvrBit_LineAlpha", 5);
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;

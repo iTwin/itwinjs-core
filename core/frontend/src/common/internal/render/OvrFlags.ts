@@ -33,6 +33,8 @@ export const enum OvrFlags { // eslint-disable-line no-restricted-syntax
    * interfering with the other 2 flags.
    */
   InvisibleDuringPick = 1 << 11,
+  LineRgb = 1 << 12,
+  LineAlpha = 1 << 13,
 
   Rgba = Rgb | Alpha,
 }
