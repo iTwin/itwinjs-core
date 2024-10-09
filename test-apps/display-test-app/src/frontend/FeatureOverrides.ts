@@ -5,9 +5,9 @@
 
 import { dispose, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
-  ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
+  ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
 } from "@itwin/frontend-devtools";
-import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels } from "@itwin/core-common";
 import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -112,7 +112,7 @@ export class Settings implements IDisposable {
     this._element.style.display = "block";
 
     this.addColors(this._element);
-    this.addTransparency(this._element);
+    this.addTransparencies(this._element);
     this.addWeight(this._element);
     Settings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10)));
 
@@ -188,8 +188,6 @@ export class Settings implements IDisposable {
     this._appearance = FeatureAppearance.fromJSON(props);
   }
 
-  private updateColor(rgb: RgbColor | undefined): void { this.updateAppearance("rgb", rgb); }
-  private updateTransparency(transparency: number | undefined): void { this.updateAppearance("transparency", transparency); }
   private updateWeight(weight: number | undefined): void { this.updateAppearance("weight", weight); }
   private updateIgnoreMaterial(ignoresMaterial: true | undefined): void { this.updateAppearance("ignoresMaterial", ignoresMaterial); }
   private updateNonLocatable(nonLocatable: true | undefined): void { this.updateAppearance("nonLocatable", nonLocatable); }
@@ -198,36 +196,83 @@ export class Settings implements IDisposable {
     this.updateAppearance("linePixels", linePixels);
   }
 
-  private addTransparency(parent: HTMLElement): void {
-    const div = document.createElement("div");
+  private addTransparencies(parent: HTMLElement): void {
+    const addTransparency = (name: string) => {
+      const div = document.createElement("div");
+      parent.appendChild(div);
+      
+      const cb = createCheckBox({
+        parent: div,
+        name,
+        id: "whatever...",
+        handler: () => {
+          input.disabled = !cb.checkbox.checked;
+          if (cb.checkbox.checked) {
+            applyToLineCb.disabled = lineTransElem.checkbox.checked;
+          } else {
+            applyToLineCb.disabled = true;
+            applyToLineCb.checked = false;
+          }
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.id = "cb_ovrTrans";
-    div.appendChild(cb);
+          updateTransparencies();
+        },
+      });
+      
+      const input = createNumericInput({
+        parent: cb.div,
+        display: "inline",
+        value: 0,
+        disabled: true,
+        min: 0,
+        max: 255,
+        step: 1,
+        handler: () => updateTransparencies(),
+      });
 
-    const label = document.createElement("label");
-    label.htmlFor = "cb_ovrTrans";
-    label.innerText = "Transparency ";
-    div.appendChild(label);
+      return { checkbox: cb.checkbox, input };
+    };
 
-    const num = createNumericInput({
-      parent: div,
-      value: 0,
-      disabled: true,
-      min: 0,
-      max: 255,
-      step: 1,
-      handler: (value) => this.updateTransparency(value / 255),
+    const transElem = addTransparency("Transp ");
+
+    const applyToLineCb = createCheckBox({
+      parent,
+      id: "ugh",
+      name: "Apply to lines",
+      handler: () => {
+        if (applyToLineCb.checked) {
+          lineTransElem.checkbox.disabled = false;
+        } else {
+          lineTransElem.checkbox.disabled = true;
+          lineTransElem.checkbox.checked = false;
+        }
+
+        updateTransparencies();
+      },
+    }).checkbox;
+    applyToLineCb.disabled = true;
+
+    const lineTransElem = addTransparency("Line Transp ");
+    lineTransElem.checkbox.addEventListener("click", () => {
+      if (!lineTransElem.checkbox.checked) {
+        applyToLineCb.disabled = !transElem.checkbox.checked;
+      } else {
+        applyToLineCb.disabled = true;
+        applyToLineCb.checked = false;
+      }
     });
-    div.appendChild(num);
 
-    cb.addEventListener("click", () => {
-      num.disabled = !cb.checked;
-      this.updateTransparency(cb.checked ? parseInt(num.value, 10) / 255 : undefined);
-    });
+    parent.appendChild(document.createElement("hr"));
+    
+    const updateTransparencies = () => {
+      const trans = transElem.checkbox.checked ? parseInt(transElem.input.value, 10) / 255 : undefined;
+      let lineTrans;
+      if (!applyToLineCb.checked) {
+        lineTrans = lineTransElem.checkbox.checked ? parseInt(lineTransElem.input.value, 10) / 255 : false;
+      }
 
-    parent.appendChild(div);
+      this.updateAppearance("transparency", trans);
+      this.updateAppearance("lineTransparency", lineTrans);
+    };
   }
 
   private addWeight(parent: HTMLElement): void {
@@ -285,37 +330,6 @@ export class Settings implements IDisposable {
       value,
       handler,
     });
-  }
-
-  private addColor(parent: HTMLElement): void {
-    const div = document.createElement("div");
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.id = "cb_ovrColor";
-    div.appendChild(cb);
-
-    const update = () => this.updateColor(convertHexToRgb(input.value));
-    const props: ColorInputProps = {
-      parent: div,
-      id: "color_ovrColor",
-      label: "Color",
-      value: "#ffffff",
-      display: "inline",
-      disabled: true,
-      handler: update,
-    };
-    const input: HTMLInputElement = createColorInput(props).input;
-
-    cb.addEventListener("click", () => {
-      input.disabled = !cb.checked;
-
-      if (cb.checked)
-        update();
-      else
-        this.updateColor(undefined);
-    });
-    parent.appendChild(div);
   }
 
   private addColors(parent: HTMLElement): void {
