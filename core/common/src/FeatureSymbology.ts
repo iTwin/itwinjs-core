@@ -124,19 +124,38 @@ function transparencyFromJSON(transp: number | undefined): number | undefined {
 
 /** Defines overrides for selected aspects of a [[Feature]]'s symbology.
  * Any member defined in the appearance overrides that aspect of symbology for all [[Feature]]s to which the appearance is applied.
+ *
+ * The [[rgb]] and [[transparency]] overrides, if defined, apply to all geometry by default.
+ * However, the color and transparency of "linear" geometry can optionally be controlled independently from the rest of the geometry via [[lineRgb]] and [[lineTransparency]].
+ * Linear geometry consists of any of the following:
+ * - Curves and line strings;
+ * - The outlines of planar regions; and
+ * - Text created using "stick" fonts (drawn as lines instead of bezier curves).
+ * The edges of 3d surfaces like spheres are not considered linear geometry.
+ *
  * @see [[FeatureOverrides]] to customize the appearance of multiple features.
  * @public
  */
 export class FeatureAppearance {
-  /** Overrides the feature's color. */
+  /** Overrides the feature's color.
+   * If [[lineRgb]] is `undefined`, this color also applies to linear geometry.
+   */
   public readonly rgb?: RgbColor;
+  /** If defined, overrides the color of linear geometry independently of [[rgb]].
+   * If `false`, linear geometry draws using its normal color; otherwise, it uses the specified color.
+   */
   public readonly lineRgb?: RgbColor | false;
   /** The width of lines and edges in pixels as an integer in [1, 31]. */
   public readonly weight?: number;
   /** The transparency in the range [0, 1] where 0 indicates fully opaque and 1 indicates fully transparent.
+   * If [[lineTransparency]] is `undefined`, this transparency also applies to linear geometry.
    * @see [[viewDependentTransparency]] for details on how this override interacts with the [DisplayStyle]($backend).
    */
   public readonly transparency?: number;
+  /** If defined, overrides the transparency of linear geometry independently of [[transparency]].
+   * If `false`, linear geometry draws using its normal transparency; otherwise, it uses the specified transparency.
+   * @see [[viewDependentTransparency]] for details on how this override interacts with the [DisplayStyle]($backend).
+   */
   public readonly lineTransparency?: number | false;
   /** The pixel pattern applied to lines and edges. */
   public readonly linePixels?: LinePixels;
