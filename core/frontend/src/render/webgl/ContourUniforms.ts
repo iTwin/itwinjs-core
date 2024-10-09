@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Contour, ContourDisplay, RgbColor } from "@itwin/core-common";
+import { ContourDisplay, RgbColor } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
@@ -16,11 +16,8 @@ import { LineCode } from "./LineCode";
  * @internal
  */
 export class ContourUniforms {
-  // max number of concurrent contour definitions supported
-  //   uses 1.5x this number of indexable vec4 uniforms, also limited to 14 by the feature lookup texture packing scheme
-  public static readonly maxContourDefs = 5;
-
-  private readonly _contourDefsSize = Math.ceil(ContourUniforms.maxContourDefs * 1.5);
+  // We use 1.5x ContourDisplay.maxContourGroups of indexable vec4 uniforms, also limited to 14 by the feature lookup texture packing scheme
+  private readonly _contourDefsSize = Math.ceil(ContourDisplay.maxContourGroups * 1.5);
   private readonly _contourDefs = new Float32Array(this._contourDefsSize * 4);
   private _contourDisplay?: ContourDisplay;
 
@@ -92,8 +89,8 @@ export class ContourUniforms {
            (If just 1 contour def remains then it takes 2 vec4 uniforms, of which 1.5 is actually used.)
     */
 
-    for (let index = 0, len = this.contourDisplay.groups.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
-      const contourDef = this.contourDisplay.groups[index]?.contourDef ?? Contour.fromJSON({});;
+    for (let index = 0, len = this.contourDisplay.groups.length; index < len && index < ContourDisplay.maxContourGroups; ++index) {
+      const contourDef = this.contourDisplay.groups[index].contourDef;
       const even = (index & 1) === 0;
       const colorDefsNdx = (even ? index * 1.5 : (index - 1) * 1.5 + 2) * 4;
       this.packColor (colorDefsNdx, contourDef.majorStyle.color, contourDef.minorStyle.color);

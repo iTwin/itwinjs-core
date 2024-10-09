@@ -16,8 +16,6 @@ import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
 import { Contours } from "./Contours";
 import { OvrFlags } from "../../common/internal/render/OvrFlags";
-import { ContourDisplay } from "@itwin/core-common";
-import { ContourUniforms } from "./ContourUniforms";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
@@ -97,14 +95,8 @@ export class BatchUniforms {
   }
 
   public get wantContourLines(): boolean {
-    const contours: ContourDisplay | undefined = this._target.plan.contours;
-    if (contours && contours.displayContours && contours.groups !== undefined && contours.groups.length) {
-      for (let index = 0, len = contours.groups.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
-        if (undefined !== contours.groups[index]?.subCategories)
-          return true;
-      }
-    }
-    return false;
+    const contours = this._target.plan.contours;
+    return undefined !== contours && contours.displayContours && contours.groups.length > 0;
   }
 
   public bindContourLUT(uniform: UniformHandle): void {

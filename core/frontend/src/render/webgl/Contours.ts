@@ -16,7 +16,6 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 import { BatchOptions } from "../../common/render/BatchOptions";
-import { ContourUniforms } from "./ContourUniforms";
 import { computeDimensions } from "../../common/internal/render/VertexTable";
 
 /** @internal */
@@ -70,9 +69,9 @@ export class Contours implements WebGLDisposable {
     const subCatMap = new Id64.Uint32Map<number>();
     let defaultNdx = 0xf;  // default for unmatched subcategories is to not show contours
     // NB: index also has to be a max of 14 - has to fit in 4 bits with value 15 reserved for no terrain def
-    for (let index = 0, len = contours.groups.length; index < len && index < ContourUniforms.maxContourDefs; ++index) {
-      const subCats = contours.groups[index]?.subCategories;
-      if (subCats === undefined || OrderedId64Iterable.isEmptySet(subCats)) {
+    for (let index = 0, len = contours.groups.length; index < len && index < ContourDisplay.maxContourGroups; ++index) {
+      const subCats = contours.groups[index].subCategories;
+      if (OrderedId64Iterable.isEmptySet(subCats)) {
         defaultNdx = index; // change default for unmatched subcategories to this definition
       } else {
         for (const subCat of subCats)

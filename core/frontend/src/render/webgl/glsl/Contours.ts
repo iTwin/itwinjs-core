@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module WebGL
  */
-import { ContourUniforms } from "../ContourUniforms";
+import { ContourDisplay } from "@itwin/core-common";
 import { TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderComponent, ProgramBuilder, VariableType,
@@ -48,7 +48,7 @@ const applyContours = `
   if (contourNdx > 14) // 15 => no contours
     return baseColor;
 
-  const int maxDefs = ${ContourUniforms.maxContourDefs}; // max number of contour definitions allowed, have to change index arrays if this changes
+  const int maxDefs = ${ContourDisplay.maxContourGroups}; // max number of contour definitions allowed, have to change index arrays if this changes
   int contourNdxC = clamp(contourNdx, 0, maxDefs - 1);
 
   bool even = (contourNdxC & 1) == 0;

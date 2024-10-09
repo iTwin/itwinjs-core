@@ -280,14 +280,16 @@ export class ContourDisplay {
   public readonly groups: ContourGroup[];
   /** If true, contours will be displayed based on these settings. Defaults to false. */
   public readonly displayContours: boolean;
+  /** The maximum number of contour groups that the system will allow. */
+  public static readonly maxContourGroups = 5;
 
   public equals(other: ContourDisplay): boolean {
     if (this.displayContours !== other.displayContours)
       return false;
     if (this.groups.length !== other.groups.length)
       return false;
-    for (const group of this.groups) {
-      const match = other.groups.find((element) => element?.equals(group));
+    for (let index = 0, len = this.groups.length; index < len && index < ContourDisplay.maxContourGroups; ++index) {
+      const match = this.groups[index].equals(other.groups[index]);
       if (!match)
         return false;
     }
@@ -321,7 +323,7 @@ export class ContourDisplay {
 
     props.groups = [];
     for (let n = 0; n < this.groups.length; n++) {
-      props.groups[n] = this.groups[n]?.toJSON();
+      props.groups[n] = this.groups[n].toJSON();
     }
 
     props.displayContours = this.displayContours;
