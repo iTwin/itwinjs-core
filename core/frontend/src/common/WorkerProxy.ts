@@ -52,7 +52,7 @@ export type WorkerInterface<T> = {
  * @see [[WorkerImplementation]].
  * @beta
  */
-export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<ReturnType<T> | { result: ReturnType<T>, transfer: Transferable[] }>;
+export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<ReturnType<T> | { result: Awaited<ReturnType<T>>, transfer: Transferable[] }>;
 
 /** Given an interface T that defines the operations provided by a worker, produce an interface to which the implementation of those operations must conform.
  * The return type of each function is enhanced to permit supplying a list of values to be transferred from the worker to the main thread.

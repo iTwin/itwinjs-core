@@ -24,8 +24,8 @@ export interface TestWorker {
   throwString(): never;
   setTransfer(wantTransfer: boolean): undefined;
   createGraphic(context: WorkerGraphicDescriptionContextProps): WorkerGraphic;
-  someVeryLongRunningAsyncOperation(): number;
-  someLongRunningAsyncOperation(): number;
+  someVeryLongRunningAsyncOperation(): Promise<number>;
+  someLongRunningAsyncOperation(): Promise<number>;
   someFastSynchronousOperation(): number;
 }
 

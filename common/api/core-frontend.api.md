@@ -15712,7 +15712,7 @@ export type WorkerProxy<T> = WorkerInterface<T> & {
 
 // @beta
 export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<ReturnType<T> | {
-    result: ReturnType<T>;
+    result: Awaited<ReturnType<T>>;
     transfer: Transferable[];
 }>;
 
