@@ -228,10 +228,16 @@ export class FeatureAppearance {
   public get overridesLinePixels(): boolean { return undefined !== this.linePixels; }
   public get overridesWeight(): boolean { return undefined !== this.weight; }
 
+  /** Get the color that will be applied to linear geometry, or undefined if not overridden.
+   * This is the same as [[rgb]] if [[lineRgb]] is `undefined`.
+   */
   public getLineRgb(): RgbColor | undefined {
     return false !== this.lineRgb ? (this.lineRgb ?? this.rgb) : undefined;
   }
 
+  /** Get the transparency that will be applied to linear geometry, or undefined if not overridden.
+   * This is the same as [[transparency]] if [[lineTransparency]] is `undefined`.
+   */
   public getLineTransparency(): number | undefined {
     return false !== this.lineTransparency ? (this.lineTransparency ?? this.transparency) : undefined;
   }

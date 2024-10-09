@@ -3138,9 +3138,7 @@ export class FeatureAppearance {
     static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
     static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
-    // (undocumented)
     getLineRgb(): RgbColor | undefined;
-    // (undocumented)
     getLineTransparency(): number | undefined;
     readonly ignoresMaterial?: true;
     // (undocumented)
