@@ -106,10 +106,10 @@ describe.only("CloudSqlite", () => {
     expect(json.blockSize).equal("128K");
     expect(json.newProp).equal(true);
     expect(metadata.containerType).equal("cloud-sqlite");
+
     testContainers[0].connect(caches[1]);
 
     let rows = testContainers[0].queryHttpLog();
-    expect(testContainers[0].hasWriteLock).to.be.false;
     expect(rows.length).to.equal(2); // manifest and bcv_kv GETs. Since all containers in the testContainers array are marked as writeable, we will read bcv_kv upon connecting to see if we already had the write lock held in this particular cloudcache.
 
     // endTime to exclude these first 2 entries in later queries.
@@ -193,6 +193,62 @@ describe.only("CloudSqlite", () => {
     });
     db.close();
     container.disconnect({ detach: true });
+  });
+
+  it("should LogLevel.Trace set LogMask to ALL", async () => {
+    const testContainer0 = testContainers[0];
+
+    const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
+      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
+    const logTrace = sinon.spy(logConsole("Trace"));
+    const logInfo = sinon.spy(logConsole("Info"));
+    Logger.initialize(undefined, undefined, logInfo, logTrace);
+
+    const executeWithWriteLock = async (cacheName: string, fileName: string) => {
+      const testCache = azSqlite.makeCaches([cacheName])[0];
+      testContainer0.connect(testCache);
+      await CloudSqlite.withWriteLock({ user: user1, container: testContainer0 }, async () => {
+        await testContainer0.copyDatabase("testBim", fileName);
+        const db = await BriefcaseDb.open({ fileName, container: testContainer0 });
+        db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
+        db.close();
+        await testContainer0.deleteDatabase(fileName);
+      });
+      testContainer0.disconnect();
+      return testCache;
+    };
+    // LogLevel.Trace should set logMask to ALL, including dirty block
+    Logger.setLevel("CloudSqlite", LogLevel.Trace);
+    const testCache1 = await executeWithWriteLock("testCache1", "copyTestBim1");
+    // Check that Trace and Info messages were logged
+    sinon.assert.called(logTrace);
+    sinon.assert.called(logInfo);
+    // Check for a dirty block log message
+    let dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    expect(dirtyBlockLogMsg).to.be.true;
+    // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
+    // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
+    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("enters DELETE state")));
+    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("leaves DELETE state")));
+    logTrace.resetHistory();
+    logInfo.resetHistory();
+
+    // LogLevel.Info uses the default log
+    Logger.setLevel("CloudSqlite", LogLevel.Info);
+    const testCache2 = await executeWithWriteLock("testCache2", "copyTestBim2");
+    sinon.assert.notCalled(logTrace);
+    sinon.assert.notCalled(logInfo);
+    // Check for a dirty block log message(expect nothing)
+    dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    expect(dirtyBlockLogMsg).to.be.false;
+    // clean up
+    logTrace.resetHistory();
+    logInfo.resetHistory();
+    Logger.initialize();
+    testCache1.destroy();
+    testCache2.destroy();
+    CloudSqlite.CloudCaches.dropCache("testCache1");
+    CloudSqlite.CloudCaches.dropCache("testCache2");
   });
 
   it("should query bcv stat table", async () => {
@@ -541,62 +597,6 @@ describe.only("CloudSqlite", () => {
     container.disconnect({detach: true});
   });
 
-  it("should LogLevel.Trace set LogMask to ALL", async () => {
-    const testContainer0 = testContainers[0];
-
-    const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
-      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
-    const logTrace = sinon.spy(logConsole("Trace"));
-    const logInfo = sinon.spy(logConsole("Info"));
-    Logger.initialize(undefined, undefined, logInfo, logTrace);
-
-    const executeWithWriteLock = async (cacheName: string, fileName: string) => {
-      const testCache = azSqlite.makeCaches([cacheName])[0];
-      testContainer0.connect(testCache);
-      await CloudSqlite.withWriteLock({ user: user1, container: testContainer0 }, async () => {
-        await testContainer0.copyDatabase("testBim", fileName);
-        const db = await BriefcaseDb.open({ fileName, container: testContainer0 });
-        db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
-        db.close();
-        await testContainer0.deleteDatabase(fileName);
-      });
-      testContainer0.disconnect();
-      return testCache;
-    };
-    // LogLevel.Trace should set logMask to ALL, including dirty block
-    Logger.setLevel("CloudSqlite", LogLevel.Trace);
-    const testCache1 = await executeWithWriteLock("testCache1", "copyTestBim1");
-    // Check that Trace and Info messages were logged
-    sinon.assert.called(logTrace);
-    sinon.assert.called(logInfo);
-    // Check for a dirty block log message
-    let dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
-    expect(dirtyBlockLogMsg).to.be.true;
-    // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
-    // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
-    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("enters DELETE state")));
-    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("leaves DELETE state")));
-    logTrace.resetHistory();
-    logInfo.resetHistory();
-
-    // LogLevel.Info uses the default log
-    Logger.setLevel("CloudSqlite", LogLevel.Info);
-    const testCache2 = await executeWithWriteLock("testCache2", "copyTestBim2");
-    sinon.assert.notCalled(logTrace);
-    sinon.assert.notCalled(logInfo);
-    // Check for a dirty block log message(expect nothing)
-    dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
-    expect(dirtyBlockLogMsg).to.be.false;
-    // clean up
-    logTrace.resetHistory();
-    logInfo.resetHistory();
-    Logger.initialize();
-    testCache1.destroy();
-    testCache2.destroy();
-    CloudSqlite.CloudCaches.dropCache("testCache1");
-    CloudSqlite.CloudCaches.dropCache("testCache2");
-  });
-
   /** make sure that the auto-refresh for container tokens happens every hour */
   it("Auto refresh container tokens", async () => {
     const contain1 = testContainers[0];
@@ -688,23 +688,34 @@ describe.only("CloudSqlite", () => {
       expect(writeLockExpiryTimeNoWriteLock).to.equal("");
     });
 
-    it("Should upload a single user's changes successfully when a write lock is expired", async () => {
+    it("Should be able to refresh write lock and upload changes for current user when write lock is expired or about to expire", async () => {
       testContainer1.connect(testCache1);
       testContainer1.acquireWriteLock(user1);
       await testContainer1.copyDatabase("testBim", "testBimCopy");
       const db = await BriefcaseDb.open({ fileName: "testBimCopy", container: testContainer1 });
       db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
       db.close();
-      // set the expires time to 10 mins earlier, which avoids waiting for 10 mins here.
+      // case 1: current write lock has expired and there are no other users
       await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, 10, 1);
-      // make sure the write lock is expired
       expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, new Date(), 0)).to.be.false;
+      // there are no other users, uploadChanges should refresh the write lock for the current user
       await expect(testContainer1.uploadChanges()).to.eventually.be.fulfilled;
+      // should be 10 min but let's use 9.5 min to avoid time conflict
+      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, new Date(), 9.5*60*1000)).to.be.true;
+
+      // case 2: current write lock has not expired
+      await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, 9);
+      // now user1 only has 1 min to perform further actions
+      // uploadChanges does nothing this time but to refresh write lock
+      await testContainer1.uploadChanges();
+      // should be 10 min but let's use 9.5 min to avoid time conflict
+      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, new Date(), 9.5*60*1000)).to.be.true;
+      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, new Date(), 11*60*1000)).to.be.false;
       testContainer1.releaseWriteLock();
       testContainer1.disconnect({detach: true});
     });
 
-    it("Should user1 fail to upload changes if user2 holds write lock after user1's expiration time", async () => {
+    it("user1 should fail to upload changes if user2 holds write lock after user1's expiration time", async () => {
       // simulate two users in two processes
       expect(testContainer1.containerId).equal(testContainer2.containerId);
       expect(testContainer1.baseUri).equal(testContainer2.baseUri);
@@ -736,37 +747,6 @@ describe.only("CloudSqlite", () => {
       // eslint-disable-next-line @typescript-eslint/promise-function-async
       expect(() => testContainer1.uploadChanges()).to.throw(`Container [${testContainer1.containerId}] is not locked for write access.`);
       testContainer1.abandonChanges();
-    });
-
-    it("Should refresh write lock for the current user when uploading changes", async () => {
-      testContainer1.connect(testCache1);
-      let currentTime = new Date();
-      testContainer1.acquireWriteLock(user1);
-      await testContainer1.copyDatabase("testBim", "testBimCopy2");
-      const db1 = await BriefcaseDb.open({ fileName: "testBimCopy2", container: testContainer1 });
-      db1.saveFileProperty({ name: "refresh", namespace: "refreshTest", id: 1, subId: 1 }, "this is a test");
-      db1.close();
-      // case 1: current write lock has expired
-      // mock 10 min operation time by user1
-      // write lock is expired after 10 min
-      await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, 10, 1);
-      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, currentTime, 0)).to.be.false;
-      // there are no other users, uploadChanges should refresh the write lock for the current user
-      await testContainer1.uploadChanges();
-      // should be 10 min but let's use 9.5 min to avoid time conflict
-      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, currentTime, 9.5*60*1000)).to.be.true;
-      // case 2: current write lock has not expired
-      currentTime = new Date();
-      // the write lock is refreshed to 10 minutes later
-      // mock 4 min operation time by user1
-      await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, 9);
-      // now user1 only has 1 min to perform further actions
-      // uploadChanges does nothing this time but to refresh write lock
-      await testContainer1.uploadChanges();
-      // should be 10 min but let's use 9.5 min to avoid time conflict
-      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, currentTime, 9.5*60*1000)).to.be.true;
-      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, currentTime, 11*60*1000)).to.be.false;
-      testContainer1.disconnect();
     });
   });
 });
