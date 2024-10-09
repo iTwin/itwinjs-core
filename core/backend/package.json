@@ -98,11 +98,7 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@bentley/imodeljs-native": "4.9.30",
-=======
     "@bentley/imodeljs-native": "4.10.9",
->>>>>>> 988e711958 (Fix regression caused by ClassId conversion to class name vs hexid (#7238))
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.5",
