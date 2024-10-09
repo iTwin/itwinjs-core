@@ -342,7 +342,7 @@ class AdaptiveSubdivisionQ1IntervalErrorProcessor extends QuadrantFractionsProce
   /** Remember the initial value of the fraction f to be perturbed. */
   public override announceQuadrantBegin(q: QuadrantFractions, reversed: boolean): boolean {
     assert(q.quadrant === 1);
-    assert(!reversed); // ASSUME bracket and q.fractions have same ordering
+    assert(!reversed); // ASSUME [bracket0, bracket1] and q.fractions have the same ordering
     // the first fraction might be an extra point for computing the first 3-pt arc.
     assert(q.fractions.length === 4 || (q.fractions.length === 3 && q.interpolateStartTangent));
     this._error0 = this._error1 = Geometry.largeCoordinateResult;
@@ -454,7 +454,7 @@ class AdaptiveSubdivisionQ1ErrorProcessor extends QuadrantFractionsProcessor {
     const interpolateStartTangent = Geometry.isAlmostEqualEitherNumber(f0, this._fractionRangeQ1.low, this._fractionRangeQ1.high, 0);
     const interpolateEndTangent = Geometry.isAlmostEqualEitherNumber(f1, this._fractionRangeQ1.low, this._fractionRangeQ1.high, 0);
     if (!interpolateStartTangent && undefined === fPrev)
-      fPrev = this.getPreviousFraction(f0); // createLastArc caller doesn't supply fPrev
+      fPrev = this.getPreviousFraction(f0); // createLastArc doesn't supply fPrev to announceArc
     const fractions = (undefined === fPrev) ? [f0, f, f1] : [fPrev, f0, f, f1];
     const q1 = [QuadrantFractions.create(1, fractions, interpolateStartTangent, interpolateEndTangent)];
     const processor = AdaptiveSubdivisionQ1IntervalErrorProcessor.create(this.fullEllipseXY, f0, f, f1);
@@ -817,12 +817,13 @@ export class EllipticalArcApproximationContext {
       arc.sweep.setStartEndRadians(startAngle.radians, arc.sweep.endRadians);
       return arc; // returned arc starts at arcStart, ends at arcEnd
     };
-    const createFirstArc = (f0: number, f1: number, reverse: boolean): void => {
+    const createFirstArc = (f0: number, f1: number): void => {
       // This arc starts at the first sample f0 and ends at f1.
+      // This arc interpolates point and tangent at f0, but only point at f1.
       ellipticalArc.fractionToPointAndDerivative(f0, ray);
       ellipticalArc.fractionToPoint(f1, pt1);
-      if (reverse)
-        ray.direction.scaleInPlace(-1);
+      if (f0 > f1)
+        ray.direction.scaleInPlace(-1); // computed arc is retrograde
       const arc = arcBetween2Samples(ray, pt1, false);
       if (arc)
         processor.announceArc(arc, undefined, f0, f1);
@@ -838,12 +839,14 @@ export class EllipticalArcApproximationContext {
       if (arc)
         processor.announceArc(arc, fPrev, f1, f2);
     };
-    const createLastArc = (f0: number, f1: number, reverse: boolean): void => {
-      // This arc starts at f0 and ends at the last sample f1. It is the only arc to use f1.
+    const createLastArc = (f0: number, f1: number): void => {
+      // This arc starts at f0 and ends at the last sample f1.
+      // This arc interpolates point and tangent at f1, but only point at f0.
       ellipticalArc.fractionToPoint(f0, pt0);
       ellipticalArc.fractionToPointAndDerivative(f1, ray);
-      if (!reverse)
-        ray.direction.scaleInPlace(-1);
+      if (f1 > f0)
+        ray.direction.scaleInPlace(-1); // computed arc is retrograde
+      // compute last arc from f1 to f0, then reverse
       const arc = arcBetween2Samples(ray, pt0, true);
       if (arc)
         processor.announceArc(arc, undefined, f0, f1);
@@ -874,13 +877,13 @@ export class EllipticalArcApproximationContext {
       if (!processor.announceQuadrantBegin(q, reversed))
         continue;
       if (q.interpolateStartTangent)
-        createFirstArc(q.fractions[0], q.fractions[1], reversed);
+        createFirstArc(q.fractions[0], q.fractions[1]);
       // the first inner arc approximates the ellipse over [f[1],f[2]]; the last inner arc, over [f[n-3],f[n-2]]
       for (let i = 0; i + 2 < n - 1; ++i)
         createInnerArc(q.fractions[i], q.fractions[i + 1], q.fractions[i + 2]);
       if (n > 2) { // the final arc approximates [f[n-2],f[n-1]]
         if (q.interpolateEndTangent)
-          createLastArc(q.fractions[n - 2], q.fractions[n - 1], reversed);
+          createLastArc(q.fractions[n - 2], q.fractions[n - 1]);
         else
           createInnerArc(q.fractions[n - 3], q.fractions[n - 2], q.fractions[n - 1]);
       }
