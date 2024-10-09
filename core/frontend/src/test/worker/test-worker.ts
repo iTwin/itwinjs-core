@@ -100,8 +100,10 @@ registerWorker<TestWorker>({
 
   someVeryLongRunningAsyncOperation: async () => {
     await waitNTicks(10);
-    return ++globalTickCounter;
+    // return ++globalTickCounter;
+    return { result: ++globalTickCounter, transfer: [] };
   },
+
   someLongRunningAsyncOperation: async () => {
     await waitNTicks(5);
     return ++globalTickCounter;
