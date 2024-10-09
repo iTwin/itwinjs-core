@@ -135,10 +135,8 @@ export interface ImdlVertexTable {
   readonly width: number;
   /** The height of the lookup texture. */
   readonly height: number;
-  /** True if vertex data is compressed. */
-  readonly isCompressed: boolean;
-  /** The size of the compressed data */
-  readonly compressedSize: number;
+  /** The size of the compressed data, only set if data is compressed. */
+  readonly compressedSize?: number;
   /** True if [[uniformColor]] has transparency or the embedded color table contains transparent colors. */
   readonly hasTranslucency: boolean;
   /** Describes the number (0, 1, or more than 1) of features contained in the vertex table. */
