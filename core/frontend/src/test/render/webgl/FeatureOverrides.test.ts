@@ -325,7 +325,7 @@ describe("FeatureOverrides", () => {
             const data = ovrs!.lutData!;
             expect(data).not.to.be.undefined;
 
-            const numBytesPerFeature = 8; // 2 RGBA values per feature
+            const numBytesPerFeature = 12; // 3 RGBA values per feature
             expect(data.length).to.equal(2 * numBytesPerFeature);
 
             const tex = new Texture2DDataUpdater(data);
