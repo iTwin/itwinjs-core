@@ -454,18 +454,15 @@ describe("FeatureOverrides", () => {
     beforeEach(() => IModelApp.viewManager.addDecorator(decorator));
     afterEach(() => IModelApp.viewManager.dropDecorator(decorator));
     
-    function expectColors(overrides: Array<[string, FeatureAppearance]>, expectedColors: ColorDef[]): void {
+    function expectColors(defaultAppearance: FeatureAppearance | undefined, expectedColors: ColorDef[]): void {
       testBlankViewport((vp) => {
-        const provider: FeatureOverrideProvider = {
-          addFeatureOverrides: (ovrs) => {
-            for (const entry of overrides) {
-              ovrs.override({
-                elementId: entry[0],
-                appearance: entry[1],
-              });
-            }
-          },
-        };
+        if (defaultAppearance) {
+          vp.addFeatureOverrideProvider({
+            addFeatureOverrides: (ovrs) => {
+              ovrs.setDefaultOverrides(defaultAppearance);
+            },
+          });
+        }
 
         vp.viewFlags = vp.viewFlags.copy({
           lighting: false,
@@ -474,7 +471,6 @@ describe("FeatureOverrides", () => {
         });
         
         vp.displayStyle.backgroundColor = bgColor;
-        vp.addFeatureOverrideProvider(provider);
 
         vp.view.lookAtViewAlignedVolume(new Range3d(-2, -2, -2, 2, 2, 2));
         vp.synchWithView();
@@ -491,8 +487,13 @@ describe("FeatureOverrides", () => {
       });
     }
 
+    it("is not overridden by default", () => {
+      // Just a sanity test to make sure everything is rendering normally.
+      expectColors(undefined, [lineColor, pointColor, shapeColor]);
+    });
+    
     it("is the same as surfaces by default", () => {
-      expectColors([], [lineColor, pointColor, shapeColor]);
+      expectColors(FeatureAppearance.fromRgb(ColorDef.white), [ColorDef.white]);
     });
 
     it("optionally ignores surface overrides", () => {
