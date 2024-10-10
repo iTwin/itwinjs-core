@@ -715,6 +715,56 @@ describe.only("CloudSqlite", () => {
       testContainer1.disconnect({detach: true});
     });
 
+    it("releaseWriteLock should not work if cloudcache is different from one who acquired the lock", async () => {
+      expect(testContainer1.containerId).equal(testContainer2.containerId);
+      expect(testContainer1.baseUri).equal(testContainer2.baseUri);
+      testContainer1.connect(testCache1);
+      testContainer1.acquireWriteLock(user1);
+
+      testContainer2.connect(testCache2);
+      expect(() => testContainer2.acquireWriteLock(user2)).throws("is currently locked by another user.").property("errorNumber", DbResult.BE_SQLITE_BUSY);
+      await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, 10, 1);
+      testContainer2.acquireWriteLock(user2);
+
+      // user1 tries to release the write lock acquired by user2. It should fail silently.
+      testContainer1.releaseWriteLock();
+      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer2, new Date(), 9 * 60 * 1000)).to.be.true;
+      testContainer2.releaseWriteLock();
+      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer2, new Date(), 1)).to.be.false;
+      testContainer1.disconnect({detach: true});
+      testContainer2.disconnect({detach: true});
+    });
+
+    it("abandonChanges should only release the write lock if the write lock belongs to caller", async () => {
+      const createLocalChanges = async () => {
+        await testContainer1.copyDatabase("testBim", "testBimCopy2");
+        const db = await BriefcaseDb.open({ fileName: "testBimCopy2", container: testContainer1 });
+        db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
+        db.close();
+        expect(testContainer1.queryDatabase("testBimCopy2")?.dirtyBlocks).to.be.greaterThan(0);
+      };
+
+      testContainer1.connect(testCache1);
+      testContainer1.acquireWriteLock(user1);
+      // make some changes, abandon them and assert write lock is gone.
+      await createLocalChanges();
+      testContainer1.abandonChanges();
+      expect(testContainer1.queryDatabase("testBimCopy2")).to.be.undefined;
+      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, new Date(), 1)).to.be.false;
+
+      // user1 grabs write lock, make some changes. user2 grabs write lock. user1 abandons their changes and assert write lock is still there.
+      testContainer1.acquireWriteLock(user1);
+      await createLocalChanges();
+      await azSqlite.subtractFromCurrentWriteLockExpiryTime(testContainer1, 10, 1);
+      testContainer2.connect(testCache2);
+      testContainer2.acquireWriteLock(user2);
+
+      testContainer1.abandonChanges();
+      expect(testContainer1.queryDatabase("testBimCopy2")).to.be.undefined;
+      expect (await azSqlite.isWriteLockValidForAtLeast(testContainer1, new Date(), 5 * 60 * 1000)).to.be.true;
+      testContainer2.releaseWriteLock();
+    });
+
     it("user1 should fail to upload changes if user2 holds write lock after user1's expiration time", async () => {
       // simulate two users in two processes
       expect(testContainer1.containerId).equal(testContainer2.containerId);
