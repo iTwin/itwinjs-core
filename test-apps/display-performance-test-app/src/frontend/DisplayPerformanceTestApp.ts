@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -17,6 +18,7 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { DptaEnvConfig } from "../common/DisplayPerfEnvConfig";
+import { child_process } from "child_process";
 
 export const envConfiguration: DptaEnvConfig = {};
 let runner: TestRunner;
@@ -89,7 +91,7 @@ export class DisplayPerfTestApp {
 
     const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback) ? runner.curConfig.frontendTilesNopFallback : false;
 
-    if(frontendTilesNopFallback){
+    if (frontendTilesNopFallback) {
       await DisplayPerfRpcInterface.getClient().consoleLog("Nop fallback enabled for frontend tiles.");
     }
 
@@ -168,13 +170,18 @@ async function main() {
   } catch (err: any) {
     await DisplayPerfTestApp.logException(err);
   } finally {
+    console.log("Frontend: terminating");
     await DisplayPerfRpcInterface.getClient().terminate();
   }
-
-  return IModelApp.shutdown();
+  console.log("Frontend: shutting down");
+  await IModelApp.shutdown();
+  console.log("Frontend: shut down");
 }
 
 window.onload = async () => {
+
+  console.log("Frontend: initializing...");
+
   // Choose RpcConfiguration based on whether we are in electron or browser
   RpcConfiguration.developmentMode = true;
   RpcConfiguration.disableRoutingValidation = true;
