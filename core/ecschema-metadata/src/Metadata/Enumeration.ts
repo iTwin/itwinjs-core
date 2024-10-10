@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { SchemaReadHelper } from "../Deserialization/Helper";
 import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
 import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -154,12 +155,16 @@ export class Enumeration extends SchemaItem {
   public override fromJSONSync(enumerationProps: EnumerationProps) {
     super.fromJSONSync(enumerationProps);
     if (undefined === this._type) {
-      if (/int/i.test(enumerationProps.type))
+      if (/int/i.test(enumerationProps.type)) {
         this._type = PrimitiveType.Integer;
-      else if (/string/i.test(enumerationProps.type))
+      } else if (/string/i.test(enumerationProps.type)) {
         this._type = PrimitiveType.String;
-      else
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);
+      } else {
+        if (SchemaReadHelper.isECXmlVersionNewer(enumerationProps.originalECXmlMajorVersion, enumerationProps.originalECXmlMinorVersion))
+          this._type = PrimitiveType.String;
+        else
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);
+      }
     } else {
       const primitiveTypePattern = (this.isInt) ? /int/i : /string/i;
       if (!primitiveTypePattern.test(enumerationProps.type))
