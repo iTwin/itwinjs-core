@@ -537,8 +537,8 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a RenderGraphic consisting of a list of Graphics, with optional transform and symbology overrides applied to the list */
-  public createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic {
-    return this.createGraphicBranch(branch, transform);
+  public createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
+    return this.createGraphicBranch(branch, transform, options);
   }
 
   /** Create a graphic from a [[GraphicBranch]]. */

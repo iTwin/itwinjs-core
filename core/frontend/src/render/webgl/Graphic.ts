@@ -311,6 +311,11 @@ export class Branch extends Graphic {
   public readonly appearanceProvider?: FeatureAppearanceProvider;
   public readonly secondaryClassifiers?: PlanarClassifier[];
   public readonly viewAttachmentId?: Id64String;
+<<<<<<< HEAD
+=======
+  public disableClipStyle?: true;
+  public readonly transformFromExternalIModel?: Transform;
+>>>>>>> b42bedd446 (Add disableClipStyle to BranchState (#7109))
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -328,6 +333,11 @@ export class Branch extends Graphic {
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
     this.viewAttachmentId = opts.viewAttachmentId;
+<<<<<<< HEAD
+=======
+    this.disableClipStyle = opts.disableClipStyle;
+    this.transformFromExternalIModel = opts.transformFromIModel;
+>>>>>>> b42bedd446 (Add disableClipStyle to BranchState (#7109))
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);
