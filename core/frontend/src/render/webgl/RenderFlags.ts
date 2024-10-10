@@ -187,6 +187,9 @@ export enum TextureUnit {
 
   // Normal map texture.
   NormalMap = WebGLRenderingContext.TEXTURE13,
+
+  // Contours texture.
+  Contours = WebGLRenderingContext.TEXTURE14,
 }
 
 /**

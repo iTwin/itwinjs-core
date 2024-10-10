@@ -41,6 +41,7 @@ import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vert
 import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
 import { Npc } from "@itwin/core-common";
+import { addApplyContours } from "./Contours";
 
 const constantLodTextureLookup = `
 vec4 constantLodTextureLookup(sampler2D textureSampler) {
@@ -705,6 +706,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   builder.frag.addFunction(getSurfaceColor);
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
+  addApplyContours(builder);
 
   if (flags.isTranslucent) {
     addTranslucency(builder);

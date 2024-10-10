@@ -51,9 +51,9 @@ export interface Dimensions {
 
 /** @internal */
 export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize: number): Dimensions {
-  const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
+  const nRgba = Math.ceil(nEntries * nRgbaPerEntry) + nExtraRgba;
 
-  if (nRgba < maxSize)
+  if (nRgba <= maxSize)
     return { width: nRgba, height: 1 };
 
   // Make roughly square to reduce unused space in last row
@@ -66,9 +66,7 @@ export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtr
   }
 
   // Compute height
-  let height = Math.ceil(nRgba / width);
-  if (width * height < nRgba)
-    ++height;
+  const height = Math.ceil(nRgba / width);
 
   assert(height <= maxSize);
   assert(width <= maxSize);

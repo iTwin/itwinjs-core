@@ -358,6 +358,10 @@ describe("DisplayStyleSettings overrides", () => {
         display: false,
       },
     },
+    contours: {
+      displayContours: false,
+      groups: [ ],
+    },
     hline: {
       transThreshold: 0x7f,
       visible: {

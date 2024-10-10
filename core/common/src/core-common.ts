@@ -114,6 +114,7 @@ export * from "./TerrainSettings";
 export * from "./TextureMapping";
 export * from "./TextureProps";
 export * from "./ThematicDisplay";
+export * from "./ContourDisplay";
 export * from "./Thumbnail";
 export * from "./TileProps";
 export * from "./Tween";

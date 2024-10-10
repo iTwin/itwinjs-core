@@ -148,6 +148,15 @@ public;namespace;ContextRealityModelProps
 public;class;ContextRealityModels
 public;interface;ContextRealityModelsArgs
 public;interface;ContextRealityModelsContainer
+public;class;Contour
+public;class;ContourDisplay
+public;type;ContourDisplayProperties
+public;interface;ContourDisplayProps
+public;class;ContourGroup
+public;interface;ContourGroupProps
+public;interface;ContourProps
+public;class;ContourStyle
+public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 internal;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps

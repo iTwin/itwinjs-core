@@ -27,6 +27,7 @@ import { TextureDrape } from "./TextureDrape";
 import { ThematicSensors } from "./ThematicSensors";
 import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../common/render/BatchOptions";
+import { Contours } from "./Contours";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -89,6 +90,7 @@ export interface BatchContext {
 export class PerTargetBatchData {
   public readonly target: Target;
   protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
+  protected _contours?: Contours;
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
@@ -97,6 +99,7 @@ export class PerTargetBatchData {
 
   public dispose(): void {
     this._thematicSensors = dispose(this._thematicSensors);
+    this._contours = this._contours?.dispose();
     for (const value of this._featureOverrides.values())
       dispose(value);
 
@@ -127,12 +130,28 @@ export class PerTargetBatchData {
     return ovrs;
   }
 
+  public getContours(batch: Batch): Contours {
+    if (this._contours && !this._contours.matchesTargetAndFeatureCount(this.target, batch.featureTable))
+      this._contours = this._contours.dispose();
+
+    if (!this._contours) {
+      this._contours = Contours.createFromTarget(this.target, batch.options);
+      this._contours.initFromMap(batch.featureTable);
+    } else {
+      this._contours.update(batch.featureTable);
+    }
+    return this._contours;
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (this._thematicSensors)
       stats.addThematicTexture(this._thematicSensors.bytesUsed);
 
     for (const ovrs of this._featureOverrides.values())
       stats.addFeatureOverrides(ovrs.byteLength);
+
+    if (this._contours)
+      stats.addContours(this._contours.byteLength);
   }
 
   /** Exposed strictly for tests. */
@@ -193,6 +212,10 @@ export class PerTargetData {
 
   public getFeatureOverrides(target: Target): FeatureOverrides {
     return this.getBatchData(target).getFeatureOverrides(this._batch);
+  }
+
+  public getContours(target: Target): Contours {
+    return this.getBatchData(target).getContours(this._batch);
   }
 
   private getBatchData(target: Target): PerTargetBatchData {
@@ -294,6 +317,10 @@ export class Batch extends Graphic {
 
   public getOverrides(target: Target): FeatureOverrides {
     return this.perTargetData.getFeatureOverrides(target);
+  }
+
+  public getContours(target: Target): Contours {
+    return this.perTargetData.getContours(target);
   }
 
   public onTargetDisposed(target: Target) {
