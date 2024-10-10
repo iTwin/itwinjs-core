@@ -12,11 +12,11 @@
  */
 export const enum OvrFlags { // eslint-disable-line no-restricted-syntax
   None = 0,
-  Visibility = 1 << 0,
+  LineRgb = 1 << 0,
   Rgb = 1 << 1,
   Alpha = 1 << 2,
   /** ignore material color, specular properties, and texture. */
-  IgnoreMaterial = 1 << 3,
+  LineAlpha = 1 << 3,
   Flashed = 1 << 4,
   /* do not draw during pick - allows geometry beneath to be picked. */
   NonLocatable = 1 << 5,
@@ -33,6 +33,8 @@ export const enum OvrFlags { // eslint-disable-line no-restricted-syntax
    * interfering with the other 2 flags.
    */
   InvisibleDuringPick = 1 << 11,
+  Visibility = 1 << 12,
+  IgnoreMaterial = 1 << 13,
 
   Rgba = Rgb | Alpha,
 }

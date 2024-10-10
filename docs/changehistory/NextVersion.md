@@ -8,6 +8,7 @@ Table of contents:
 - [Revert timeline changes](#revert-timeline-changes)
 - [Display](#display)
   - [Instancing](#instancing)
+  - [Overriding line color](#overriding-line-color)
   - [Context Reality model visibility](#context-reality-model-visibility)
   - [Contour Display](#contour-display)
 - [Interactive Tools](#interactive-tools)
@@ -54,6 +55,12 @@ For the stop sign example described above, you might have a [glTF model](https:/
 ```ts
 [[include:Gltf_Instancing]]
 ```
+
+### Overriding line color
+
+iTwin.js allows you to [dynamically override](https://www.itwinjs.org/learning/display/symbologyoverrides/) aspects of the appearance of geometry at display time. However, unlike [SubCategoryAppearance]($common) and [GeometryParams]($common), which can distinguish between "line color" and "fill color", [FeatureAppearance]($common) only provides a single color override that applies to both types of geometry.
+
+To address this discrepancy, we've [added](https://github.com/iTwin/itwinjs-core/pull/7251) a way to dynamically override the color and transparency of linear geometry independently from the rest of the geometry. Linear geometry includes open curves, line strings, point strings, and the outlines of planar regions. [FeatureAppearance.lineRgb]($common) controls the color of linear geometry, and [FeatureAppearance.lineTransparency]($common) controls the transparency. Both of these properties can be `undefined`, in which case the existing `rgb` or `transparency` property affects linear geometry - just as it always has. Or, they can be `false`, indicating that no color/transparency override is applied to linear geometry. Or, they can specify a transparency value or `RgbColor` that applies only to linear geometry.
 
 ### Context Reality model visibility
 
