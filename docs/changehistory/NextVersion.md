@@ -8,6 +8,8 @@ Table of contents:
 - [Revert timeline changes](#revert-timeline-changes)
 - [Display](#display)
   - [Instancing](#instancing)
+  - [Context Reality model visibility](#context-reality-model-visibility)
+  - [Contour Display](#contour-display)
 - [Interactive Tools](#interactive-tools)
   - [Element Locate](#element-locate)
 - [Presentation](#presentation)
@@ -140,11 +142,10 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 
 - [IModelHost.snapshotFileNameResolver]($backend) and [FileNameResolver]($backend) have been deprecated. Make sure to provide resolved file path to [SnapshotConnection.openFile]($frontend).
 
-
 ### @itwin/core-frontend
 
 - [SnapshotConnection.openRemote]($frontend) has been deprecated. Use [CheckpointConnection.openRemote]($frontend) to open a connection to an iModel within web application.
 
 ### @itwin/core-quantity
-- [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
 
+- [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
