@@ -708,6 +708,8 @@ export enum BisCodeSpec {
     physicalType = "bis:PhysicalType",
     renderMaterial = "bis:RenderMaterial",
     sheet = "bis:Sheet",
+    sheetIndex = "bis:SheetIndex",
+    sheetIndexEntry = "bis:SheetIndexEntry",
     spatialCategory = "bis:SpatialCategory",
     spatialLocationType = "bis:SpatialLocationType",
     subCategory = "bis:SubCategory",
@@ -9076,6 +9078,19 @@ export interface SheetBorderTemplateProps extends ElementProps {
     width?: number;
 }
 
+// @beta
+export interface SheetIndexEntryProps extends ElementProps {
+    entryPriority: number;
+}
+
+// @beta
+export type SheetIndexFolderProps = SheetIndexEntryProps;
+
+// @beta
+export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
+    sheetIndex?: RelatedElementProps;
+}
+
 // @public
 export interface SheetProps extends ElementProps {
     // (undocumented)
@@ -9088,6 +9103,11 @@ export interface SheetProps extends ElementProps {
     sheetTemplate?: Id64String;
     // (undocumented)
     width?: number;
+}
+
+// @beta
+export interface SheetReferenceProps extends SheetIndexEntryProps {
+    sheet?: RelatedElementProps;
 }
 
 // @beta
@@ -9244,6 +9264,7 @@ export interface SnapRequestProps {
     id: Id64String;
     // (undocumented)
     intersectCandidates?: Id64Array;
+    modelToWorld?: TransformProps;
     // (undocumented)
     snapAperture?: number;
     // (undocumented)
@@ -9296,7 +9317,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // (undocumented)
     openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
-    // (undocumented)
+    // @deprecated (undocumented)
     openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
 }
 
@@ -11311,7 +11332,7 @@ export class WhiteOnWhiteReversalSettings {
     toJSON(): WhiteOnWhiteReversalProps | undefined;
 }
 
-// @internal
+// @internal @deprecated
 export abstract class WipRpcInterface extends RpcInterface {
     // (undocumented)
     attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;

@@ -1,6 +1,45 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 13 Sep 2024 15:12:41 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2024 20:23:41 GMT and should not be manually modified.
+
+## 4.9.4
+Wed, 09 Oct 2024 20:22:04 GMT
+
+### Updates
+
+- fix regression related to classid
+
+## 4.9.3
+Thu, 03 Oct 2024 19:15:45 GMT
+
+_Version update only_
+
+## 4.9.2
+Wed, 02 Oct 2024 15:14:43 GMT
+
+_Version update only_
+
+## 4.9.1
+Wed, 25 Sep 2024 20:10:58 GMT
+
+### Updates
+
+- Removed added tests for boolean exps in select statement
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+### Updates
+
+- Added tests cases as we now support boolean exps in select statements
+- Added support for CTE in subquery for the command "PRAGMA parseTree"
+- Added support for CTE without columns and also for insert statement to use ONLY keyword
+- Add openGroup() and writeToFile to sqliteChagnesetReader
+- Exposing a new function `computeGraphemeOffsets` that calculates the grapheme offsets for a RunLayoutResult.
+- set LogMask to ALl if CloudSqlite LoggerCatetory is Trace
+- Optional base uri added to TokenProps interface
+- base uri added to BlobContainer.TokenProps interface
+- Newly created WorkspaceDbs will have version 0.0.0. All prerelease (0.x.x or x.x.x-identifier) WorkspaceDbs can be edited. 
 
 ## 4.8.7
 Fri, 13 Sep 2024 15:11:17 GMT

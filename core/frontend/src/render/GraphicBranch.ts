@@ -18,7 +18,7 @@ import { RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 
 /** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
@@ -145,6 +145,11 @@ export interface GraphicBranchOptions {
   hline?: HiddenLine.Settings;
   /** The iModel from which the graphics originate, if different than that associated with the view. */
   iModel?: IModelConnection;
+  /** An optional transform from the coordinate system of [[iModel]] to those of a different [[IModelConnection]].
+   * This is used by [[AccuSnap]] when displaying one iModel in the context of another iModel (i.e., the iModel associated
+   * with the [[Viewport]]).
+   */
+  transformFromIModel?: Transform;
   /** @internal */
   frustum?: GraphicBranchFrustum;
   /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */
@@ -155,6 +160,10 @@ export interface GraphicBranchOptions {
    * @internal
    */
   viewAttachmentId?: Id64String;
+  /** If true, the view's [DisplayStyleSettings.clipStyle]($common) will be disabled for this branch.
+   * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
+   */
+  disableClipStyle?: true;
 }
 
 /** Clip/Transform for a branch that are varied over time.

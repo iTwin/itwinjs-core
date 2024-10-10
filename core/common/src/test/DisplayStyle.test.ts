@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { GlobeMode } from "../BackgroundMapSettings";

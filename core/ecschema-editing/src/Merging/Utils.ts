@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ECClasses } from "../Editing/ECClasses";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import { ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { ECClass, ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 
 /**
  * Convenience-method around updateSchemaItemKey that returns the full name instead of a SchemaItemKey.
@@ -58,4 +59,28 @@ export async function locateSchemaItem(context: SchemaMergeContext, itemName: st
   }
 
   return schemaItem;
+}
+
+/**
+ * @internal
+ */
+export async function getClassEditor(context: SchemaMergeContext, ecClass: ECClass | SchemaItemKey): Promise<ECClasses> {
+  const schemaItemType = ECClass.isECClass(ecClass)
+    ? ecClass.schemaItemType
+    : (await context.editor.schemaContext.getSchemaItem<ECClass>(ecClass))?.schemaItemType;
+
+  switch(schemaItemType) {
+    case SchemaItemType.EntityClass:
+      return context.editor.entities;
+    case SchemaItemType.Mixin:
+      return context.editor.mixins;
+    case SchemaItemType.StructClass:
+      return context.editor.structs;
+    case SchemaItemType.CustomAttributeClass:
+      return context.editor.customAttributes;
+    case SchemaItemType.RelationshipClass:
+      return context.editor.relationships;
+    default:
+      throw new Error("SchemaItemType not supported");
+  }
 }

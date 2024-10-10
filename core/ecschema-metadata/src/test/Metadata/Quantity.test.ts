@@ -72,7 +72,7 @@ describe("Quantity", () => {
         assert.fail(`Expected a parsed from bearing DMS input string ${inputString}`);
       }
       const value = parseResult.value;
-      assert.equal(value, 5.239042082173978); // 1.5 times pi + value
+      assert.equal(value, 2.6149395518005045);
 
       const formatterResult = Formatter.formatQuantity(value, bearingDMSFormatter);
       assert.equal(formatterResult, inputString);

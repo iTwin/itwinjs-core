@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -46,7 +46,7 @@ describe("Triangulation", () => {
     ck.testUndefined(Triangulator.createTriangulatedGraphFromPoints([Point3d.create(0, 0, 0)]));
     ck.testUndefined(Triangulator.createTriangulatedGraphFromLoops([]));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TriangulateLoops", () => {
     const ck = new Checker();
@@ -119,7 +119,7 @@ describe("Triangulation", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulateAndFlip");
     ck.checkpoint("TriangulateAndFlip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("TriangulateBadLoops", () => {
@@ -167,7 +167,7 @@ describe("Triangulation", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulateBadLoops");
     ck.checkpoint("TriangulateAndFlip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SquareWaves", () => {
@@ -214,7 +214,7 @@ describe("Triangulation", () => {
       x0 += 100.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "SquareWaves");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -288,13 +288,13 @@ describe("MonotoneFaces", () => {
       const segmentA = Sample.convertPointsToSegments(loopA);
       testGraphFromSegments(ck, id * 30, segmentA, true, `LoopA${id++}`, false);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("loopB", () => {
     const ck = new Checker();
     testGraphFromSegments(ck, 0, loopB, true, "LoopB");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("HashMerge", () => {
@@ -340,7 +340,7 @@ describe("MonotoneFaces", () => {
       dx += a * (numLine + 4);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "HashMerge");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -577,7 +577,7 @@ describe("Triangulation", () => {
       x0 += 2.0 * dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PieCuts");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("FacetsInCircle", () => {
@@ -602,7 +602,7 @@ describe("Triangulation", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "Circles");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DegeneratePolygons", () => {
     const ck = new Checker();
@@ -629,7 +629,7 @@ describe("Triangulation", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "DegeneratePolygons");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("facets for ACS", () => {
     const ck = new Checker();
@@ -677,7 +677,7 @@ describe("Triangulation", () => {
       counter0++;
     }
     GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "ACSArrows");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BowTies", () => {
     const ck = new Checker();
@@ -704,7 +704,7 @@ describe("Triangulation", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "BowTies");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("FlexQuad", () => {
@@ -732,7 +732,7 @@ describe("Triangulation", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "FlexQuad");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PinchedTriangulation", () => {
@@ -798,7 +798,7 @@ describe("Triangulation", () => {
       dx += 20;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PinchedTriangulation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   const dartInTriangleOuter = [
@@ -839,7 +839,7 @@ describe("Triangulation", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "DartInTriangle");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   function messyShapePointsJson(ex0: number = 0, ey0: number = 0, ex1: number = 0, ey1: number = 0): any {
     return [
@@ -1002,7 +1002,7 @@ describe("Triangulation", () => {
     x0 += 3.0 * range.xLength();
     tryTriangulation(allGeometry, cleanerPoints, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "MessyPolygon");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   /**
@@ -1082,7 +1082,7 @@ describe("Triangulation", () => {
     const graph2 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
     ck.testTrue(tryExpandConvex2(ck, allGeometry, graph1, graph2, position), "tryExpandConvex2 failed on DartInTriangle.");
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-DartInTriangle");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ExpandConvexFaces-MessyPolygon", () => {
@@ -1095,7 +1095,7 @@ describe("Triangulation", () => {
     const graph2 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
     ck.testTrue(tryExpandConvex2(ck, allGeometry, graph1, graph2, position), "tryExpandConvex2 failed on MessyPolygon.");
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-MessyPolygon");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ExpandConvexFaces-Fractals", () => {
@@ -1126,7 +1126,7 @@ describe("Triangulation", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-Fractals");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("TriangulatePoints", () => {
@@ -1148,12 +1148,12 @@ describe("Triangulation", () => {
     const polyface = PolyfaceBuilder.pointsToTriangulatedPolyface(pts);
     if (ck.testDefined(polyface, "builder produced a mesh")) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface);
-      for (const visitor = polyface.createVisitor(); visitor.moveToNextFacet(); ) {
+      for (const visitor = polyface.createVisitor(); visitor.moveToNextFacet();) {
         ck.testExactNumber(visitor.numEdgesThisFacet, 3, "each mesh facet is a triangle");
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulatePoints");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("TriangulatorHang", () => {
@@ -1237,6 +1237,6 @@ describe("Triangulation", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationHang");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

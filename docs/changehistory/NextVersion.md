@@ -12,13 +12,18 @@ Table of contents:
   - [Element Locate](#element-locate)
 - [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
-  - [API Deprecations](#api-deprecations)
+- [Quantity](#quantity)
+- [API Deprecations](#api-deprecations)
+  - [@itwin/appui-abstract](#itwinappui-abstract)
+  - [@itwin/core-backend](#itwincore-frontend)
+  - [@itwin/core-frontend](#itwincore-frontend)
+  - [@itwin/core-quantity](#itwincore-quantity)
 
 ## Revert timeline changes
 
 At present, the sole method to reverse a defective changeset is to remove it from the iModel hub, which can lead to numerous side effects. A preferable approach would be to reverse the changeset in the timeline and introduce it as a new changeset. Although this method remains intrusive and necessitates a schema lock, it is safer because it allows for the reversal to restore previous changes, ensuring that nothing is permanently lost from the timeline.
 
-[IModelDb.revertAndPushChanges]($core-backend) Allow to push a single changeset that undo all changeset from tip to specified changeset in history.
+[BriefcaseDb.revertAndPushChanges]($backend) Allow to push a single changeset that undo all changeset from tip to specified changeset in history.
 
 Some detail and requirements are as following.
 
@@ -96,6 +101,33 @@ After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used 
 
 A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md). The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
 
+## Quantity
+
+- Add support for 'Ratio' format type (e.g. "1:2")
+  - Example: Formatting a Ratio
+  - Assuming that a `UnitsProvider` has been registered and initialized, here's how to format a ratio:
+
+```ts
+const ratioFormatProps: FormatProps = {
+    type: "Ratio",
+    ratioType: "OneToN",  // Formats the ratio in "1:N" form
+    composite: {
+        includeZero: true,
+        units: [
+            { name: "Units.HORIZONTAL_PER_VERTICAL" },
+        ],
+    },
+};
+
+const ratioFormat = new Format("Ratio");
+ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
+```
+
+- Add support for unit inversion during unit conversion
+
+- Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
+- The previous applies to azimuthBase as well, if provided.
+
 ## API deprecations
 
 ### @itwin/appui-abstract
@@ -103,3 +135,16 @@ A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesS
 - `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
 
 - `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.
+
+### @itwin/core-backend
+
+- [IModelHost.snapshotFileNameResolver]($backend) and [FileNameResolver]($backend) have been deprecated. Make sure to provide resolved file path to [SnapshotConnection.openFile]($frontend).
+
+
+### @itwin/core-frontend
+
+- [SnapshotConnection.openRemote]($frontend) has been deprecated. Use [CheckpointConnection.openRemote]($frontend) to open a connection to an iModel within web application.
+
+### @itwin/core-quantity
+- [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
+
