@@ -3138,10 +3138,14 @@ export class FeatureAppearance {
     static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
     static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
+    getLineRgb(): RgbColor | undefined;
+    getLineTransparency(): number | undefined;
     readonly ignoresMaterial?: true;
     // (undocumented)
     get isFullyTransparent(): boolean;
     readonly linePixels?: LinePixels;
+    readonly lineRgb?: RgbColor | false;
+    readonly lineTransparency?: number | false;
     get matchesDefaults(): boolean;
     readonly nonLocatable?: true;
     // (undocumented)
@@ -3169,6 +3173,8 @@ export interface FeatureAppearanceProps {
     emphasized?: true;
     ignoresMaterial?: true;
     linePixels?: LinePixels;
+    lineRgb?: RgbColorProps | false;
+    lineTransparency?: number | false;
     nonLocatable?: true;
     rgb?: RgbColorProps;
     transparency?: number;
