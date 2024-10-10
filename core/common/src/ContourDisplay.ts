@@ -214,6 +214,10 @@ export class ContourGroup {
     return CompressedId64Set.iterable(this._subCategories);
   }
 
+  public subCategoriesEqual(other: ContourGroup): boolean {
+    return this._subCategories === other._subCategories;
+  }
+
   public equals(other: ContourGroup | undefined): boolean {
     if (this === undefined && other === undefined)
       return true;

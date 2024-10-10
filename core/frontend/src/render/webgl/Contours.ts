@@ -27,28 +27,39 @@ const scratchPackedFeature = PackedFeature.createWithIndex();
 export class Contours implements WebGLDisposable {
   public readonly target: Target;
   private readonly _options: BatchOptions;
-  public readonly contours?: ContourDisplay;
+  private _contours?: ContourDisplay;
   private _lut?: Texture2DHandle;
   private _lutWidth = 0;
+  private _numFeatures = 0;
 
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
 
-  public matchesTarget(target: Target): boolean {
-    if (target !== this.target)
-      return false;
-    if (this.contours === undefined && target.plan.contours === undefined)
+  public matchesTargetAndFeatureCount(target: Target, map: RenderFeatureTable): boolean {
+    // checking for target change or texture size requirement change
+    return target === this.target && this._numFeatures === map.numFeatures;
+  }
+
+  private matchesSubCategories(): boolean {
+    if (this._contours === undefined && this.target.plan.contours === undefined)
       return true;
-    if (this.contours === undefined || target.plan.contours === undefined)
+    if (this._contours === undefined || this.target.plan.contours === undefined)
       return false;
-    return this.contours.equals(target.plan.contours);
+    if (this._contours.groups.length !== this.target.plan.contours.groups.length)
+      return false;
+    for (let index = 0, len = this._contours.groups.length; index < len && index < ContourDisplay.maxContourGroups; ++index) {
+      if (!this._contours.groups[index].subCategoriesEqual(this.target.plan.contours.groups[index]))
+        return false;
+    }
+    return true;
   }
 
   private _initialize(map: RenderFeatureTable) {
-    const nFeatures = map.numFeatures;
-    const dims = computeDimensions(nFeatures, 1/8, 0, System.instance.maxTextureSize);
+    assert(0 < map.numFeatures);
+    this._numFeatures = map.numFeatures;
+    const dims = computeDimensions(this._numFeatures, 1/8, 0, System.instance.maxTextureSize);
     const width = dims.width;
     const height = dims.height;
-    assert(width * height * 8 >= nFeatures);
+    assert(width * height * 8 >= this._numFeatures);
 
     const data = new Uint8Array(width * height * 4);
     const creator = new Texture2DDataUpdater(data);
@@ -58,9 +69,9 @@ export class Contours implements WebGLDisposable {
   }
 
   private _update(map: RenderFeatureTable, lut: Texture2DHandle) {
+    assert(this._numFeatures === map.numFeatures);
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
-    const contours: ContourDisplay | undefined = this.target.plan.contours;
-    this.buildLookupTable(updater, map, contours!);
+    this.buildLookupTable(updater, map, this.target.plan.contours!);
     lut.update(updater);
   }
 
@@ -87,7 +98,7 @@ export class Contours implements WebGLDisposable {
     for (const feature of map.iterable(scratchPackedFeature)) {
       dataIndex = Math.floor (feature.index * 0.5);
       even = (feature.index & 1) === 0;
-      const terrainNdx  = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper) ?? defaultNdx;
+      const terrainNdx = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper) ?? defaultNdx;
       if (even)
         byteOut = terrainNdx;
       else
@@ -100,7 +111,7 @@ export class Contours implements WebGLDisposable {
   private constructor(target: Target, options: BatchOptions) {
     this.target = target;
     this._options = options;
-    this.contours = target.plan.contours;
+    this._contours = target.plan.contours;
   }
 
   public static createFromTarget(target: Target, options: BatchOptions) {
@@ -115,13 +126,15 @@ export class Contours implements WebGLDisposable {
   }
 
   public initFromMap(map: RenderFeatureTable) {
-    const nFeatures = map.numFeatures;
-    assert(0 < nFeatures);
     this._lut = dispose(this._lut);
     this._initialize(map);
   }
 
   public update(features: RenderFeatureTable) {
+    if (this.matchesSubCategories())
+      return;
+    this._contours = this.target.plan.contours;
+
     // _lut can be undefined if context was lost, (gl.createTexture returns null)
     if (this._lut) {
       this._update(features, this._lut);
