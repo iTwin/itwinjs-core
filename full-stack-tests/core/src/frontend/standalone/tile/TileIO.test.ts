@@ -72,7 +72,7 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
       renderMode: options?.renderMode ?? RenderMode.SmoothShade,
       visibleEdges: options?.visibleEdges ?? false,
     }),
-    displayStyle: { },
+    displayStyle: {},
   } as unknown as ViewState;
 }
 
@@ -613,7 +613,7 @@ describe("mirukuru TileTree", () => {
       await ElectronApp.startup({
         iModelApp: {
           localization: new EmptyLocalization(),
-          rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+          rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface],
           tileAdmin,
         },
       });
@@ -777,7 +777,7 @@ describe("TileAdmin", () => {
       await super.startup({
         tileAdmin: props,
         localization: new EmptyLocalization(),
-        rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+        rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface],
       });
 
       if (ProcessDetector.isElectronAppFrontend) {
@@ -785,7 +785,7 @@ describe("TileAdmin", () => {
           iModelApp: {
             tileAdmin: props,
             localization: new EmptyLocalization(),
-            rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
+            rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface],
           },
         });
       }
@@ -816,7 +816,7 @@ describe("TileAdmin", () => {
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const document = parseImdlDocument({
+        const document = await parseImdlDocument({
           data: response,
           batchModelId: "0x1c",
           is3d: true,
