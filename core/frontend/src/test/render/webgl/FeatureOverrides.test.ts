@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
 import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable, RenderMode } from "@itwin/core-common";
+import { ColorByName, ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable, RenderMode, RgbColor } from "@itwin/core-common";
 import { ViewRect } from "../../../common/ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -18,7 +18,6 @@ import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 import { Decorator } from "../../../ViewManager";
 import { DecorateContext } from "../../../ViewContext";
 import { GraphicType } from "../../../common/render/GraphicType";
-import { FeatureOverrideProvider } from "../../../FeatureOverrideProvider";
 
 describe("FeatureOverrides", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -420,7 +419,7 @@ describe("FeatureOverrides", () => {
     });
   });
 
-  describe.only("line color and transparency", () => {
+  describe("line color and transparency", () => {
     const lineId = "0xa";
     const pointId = "0xb";
     const shapeId = "0xc";
@@ -428,7 +427,8 @@ describe("FeatureOverrides", () => {
     const pointColor = ColorDef.green;
     const shapeColor = ColorDef.red;
     const bgColor = ColorDef.black;
-    
+    const yellow = ColorDef.create(ColorByName.yellow);
+
     const decorator: Decorator = {
       decorate: (context: DecorateContext) => {
         const builder = context.createGraphic({
@@ -453,7 +453,7 @@ describe("FeatureOverrides", () => {
 
     beforeEach(() => IModelApp.viewManager.addDecorator(decorator));
     afterEach(() => IModelApp.viewManager.dropDecorator(decorator));
-    
+
     function multiplyAlpha(color: ColorDef): ColorDef {
       const colors = color.colors;
       const a = (0xff - colors.t) / 0xff;
@@ -478,7 +478,7 @@ describe("FeatureOverrides", () => {
           renderMode: RenderMode.SmoothShade,
           visibleEdges: false,
         });
-        
+
         vp.displayStyle.backgroundColor = bgColor;
 
         vp.view.lookAtViewAlignedVolume(new Range3d(-2, -2, -2, 2, 2, 2));
@@ -490,8 +490,6 @@ describe("FeatureOverrides", () => {
         expectedColors.push(bgColor);
 
         const actualColors = readUniqueColors(vp);
-        console.log(`expected ${JSON.stringify(expectedColors.map((x) => x.toHexString()))} actual ${JSON.stringify(actualColors.array.map((x) => x.toHexString()))}`);
-
         expect(actualColors.length).to.equal(expectedColors.length);
         for (const color of expectedColors) {
           expect(actualColors.containsColorDef(color)).to.be.true;
@@ -500,10 +498,10 @@ describe("FeatureOverrides", () => {
     }
 
     it("is not overridden by default", () => {
-      // Just a sanity test to make sure everything is rendering normally.
+      // Just a sanity test to verify the baseline for the rest of the tests.
       expectColors(undefined, [lineColor, pointColor, shapeColor]);
     });
-    
+
     it("is the same as surfaces by default", () => {
       expectColors(FeatureAppearance.fromRgb(ColorDef.white), [ColorDef.white]);
       expectColors(FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)), [ColorDef.white.withTransparency(127)]);
@@ -512,30 +510,47 @@ describe("FeatureOverrides", () => {
 
     it("optionally ignores surface overrides", () => {
       expectColors(FeatureAppearance.fromRgb(ColorDef.white).clone({ lineRgb: false }), [ColorDef.white, lineColor, pointColor]);
+
       expectColors(
         FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineRgb: false, lineTransparency: false }),
-        [ColorDef.white.withTransparency(127), pointColor, lineColor]
+        [ColorDef.white.withTransparency(127), pointColor, lineColor],
       );
+
       expectColors(
         FeatureAppearance.fromTransparency(0.5).clone({ lineTransparency: false }),
-        [lineColor, pointColor, shapeColor.withTransparency(127)]
+        [lineColor, pointColor, shapeColor.withTransparency(127)],
       );
+
       expectColors(
         FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineRgb: false }),
-        [ColorDef.white.withTransparency(127), lineColor.withTransparency(127), pointColor.withTransparency(127)]
+        [ColorDef.white.withTransparency(127), lineColor.withTransparency(127), pointColor.withTransparency(127)],
       );
+
       expectColors(
         FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineTransparency: false }),
-        [ColorDef.white.withTransparency(127), ColorDef.white]
+        [ColorDef.white.withTransparency(127), ColorDef.white],
       );
     });
 
-    it("optionally uses different overrides than surfaces", () => {
-      
-    });
+    it("can be overridden independently from surfaces", () => {
+      expectColors(
+        FeatureAppearance.fromJSON({ rgb: RgbColor.fromColorDef(ColorDef.white), lineRgb: RgbColor.fromColorDef(yellow) }),
+        [yellow, ColorDef.white],
+      );
 
-    it("can be overridden when surfaces are not", () => {
-      
+      expectColors(
+        FeatureAppearance.fromJSON({ lineTransparency: 0.5 }),
+        [shapeColor, lineColor.withTransparency(127), pointColor.withTransparency(127)],
+      );
+
+      expectColors(
+        FeatureAppearance.fromJSON({
+          rgb: RgbColor.fromColorDef(ColorDef.white),
+          lineRgb: false,
+          lineTransparency: 0.5,
+        }),
+        [ColorDef.white, lineColor.withTransparency(127), pointColor.withTransparency(127)],
+      );
     });
   });
 });
