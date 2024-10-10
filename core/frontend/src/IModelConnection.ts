@@ -1,86 +1,29 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module IModelConnection
  */
 
 import {
-  assert,
-  BeEvent,
-  CompressedId64Set,
-  GeoServiceStatus,
-  GuidString,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-  Logger,
-  OneAtATimeAction,
-  OpenMode,
-  PickAsyncMethods,
-  TransientIdSequence,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
+  PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d,
-  Cartographic,
-  CodeProps,
-  CodeSpec,
-  DbQueryRequest,
-  DbResult,
-  EcefLocation,
-  EcefLocationProps,
-  ECSqlReader,
-  ElementLoadOptions,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
   ElementMeshRequestProps,
-  ElementProps,
-  EntityQueryParams,
-  FontMap,
-  GeoCoordStatus,
-  GeographicCRSProps,
-  GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps,
-  GeometrySummaryRequestProps,
-  ImageSourceFormat,
-  IModel,
-  IModelConnectionProps,
-  IModelError,
-  IModelReadRpcInterface,
-  IModelStatus,
-  mapToGeoServiceStatus,
-  MassPropertiesPerCandidateRequestProps,
-  MassPropertiesPerCandidateResponseProps,
-  MassPropertiesRequestProps,
-  MassPropertiesResponseProps,
-  ModelExtentsProps,
-  ModelProps,
-  ModelQueryParams,
-  NoContentError,
-  Placement,
-  Placement2d,
-  Placement3d,
-  QueryBinder,
-  QueryOptions,
-  QueryOptionsBuilder,
-  QueryRowFormat,
-  RpcManager,
-  SnapRequestProps,
-  SnapResponseProps,
-  SnapshotIModelRpcInterface,
-  SubCategoryAppearance,
-  SubCategoryResultRow,
-  TextureData,
-  TextureLoadProps,
-  ThumbnailProps,
-  ViewDefinitionProps,
-  ViewIdString,
-  ViewQueryParams,
-  ViewStateLoadProps,
-  ViewStateProps,
-  ViewStoreRpc,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
+  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
+  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
+  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
+  ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import type { IModelReadAPI, IModelReadIpcAPI } from "@itwin/imodelread-common";
+import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
+import { IModelReadHTTPClient } from "@itwin/imodelread-client";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -96,9 +39,6 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
-import type { IModelReadAPI, IModelReadIpcAPI } from "@itwin/imodelread-common";
-import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
-import { IModelReadHTTPClient } from "@itwin/imodelread-client";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -143,9 +83,7 @@ export abstract class IModelConnection extends IModel {
   /** A cache of information about SubCategories chiefly used for rendering.
    * @internal
    */
-  public get subcategories(): SubCategoriesCache {
-    return this.categories.cache;
-  }
+  public get subcategories(): SubCategoriesCache { return this.categories.cache; }
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
   /** The Geographic location services available for this iModelConnection. */
@@ -153,13 +91,9 @@ export abstract class IModelConnection extends IModel {
   /** @internal Whether GCS has been disabled for this iModelConnection. */
   protected _gcsDisabled = false;
   /** @internal Return true if a GCS is not defined for this iModelConnection; also returns true if GCS is defined but disabled. */
-  public get noGcsDefined(): boolean {
-    return this._gcsDisabled || undefined === this.geographicCoordinateSystem;
-  }
+  public get noGcsDefined(): boolean { return this._gcsDisabled || undefined === this.geographicCoordinateSystem; }
   /** @internal */
-  public disableGCS(disable: boolean): void {
-    this._gcsDisabled = disable;
-  }
+  public disableGCS(disable: boolean): void { this._gcsDisabled = disable; }
   /** The displayed extents of this iModel, initialized to [IModel.projectExtents]($common). The displayed extents can be made larger via
    * [[expandDisplayedExtents]], but never smaller, to accommodate data sources like reality models that may exceed the project extents.
    * @note Do not modify these extents directly - use [[expandDisplayedExtents]] only.
@@ -175,56 +109,38 @@ export abstract class IModelConnection extends IModel {
   public routingContext: IModelRoutingContext = IModelRoutingContext.default;
 
   /** Type guard for instanceof [[BriefcaseConnection]] */
-  public isBriefcaseConnection(): this is BriefcaseConnection {
-    return false;
-  }
+  public isBriefcaseConnection(): this is BriefcaseConnection { return false; }
 
   /** Type guard for instanceof [[CheckpointConnection]]
    * @beta
-   */
-  public isCheckpointConnection(): this is CheckpointConnection {
-    return false;
-  }
+  */
+  public isCheckpointConnection(): this is CheckpointConnection { return false; }
 
   /** Type guard for instanceof [[SnapshotConnection]] */
-  public isSnapshotConnection(): this is SnapshotConnection {
-    return false;
-  }
+  public isSnapshotConnection(): this is SnapshotConnection { return false; }
 
   /** Type guard for instanceof [[BlankConnection]] */
-  public isBlankConnection(): this is BlankConnection {
-    return false;
-  }
+  public isBlankConnection(): this is BlankConnection { return false; }
 
   /** Returns `true` if this is a briefcase copy of an iModel that is synchronized with iModelHub. */
-  public get isBriefcase(): boolean {
-    return this.isBriefcaseConnection();
-  }
+  public get isBriefcase(): boolean { return this.isBriefcaseConnection(); }
 
   /** Returns `true` if this is a *snapshot* iModel.
    * @see [[SnapshotConnection.openSnapshot]]
    */
-  public get isSnapshot(): boolean {
-    return this.isSnapshotConnection();
-  }
+  public get isSnapshot(): boolean { return this.isSnapshotConnection(); }
 
   /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection). */
-  public get isBlank(): boolean {
-    return this.isBlankConnection();
-  }
+  public get isBlank(): boolean { return this.isBlankConnection(); }
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
-  public get isReadonly(): boolean {
-    return this.openMode === OpenMode.Readonly;
-  }
+  public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
   /** Check if the IModelConnection is open (i.e. it has a *connection* to a backend server).
    * Returns false for [[BlankConnection]] instances and after [[IModelConnection.close]] has been called.
    * @note no RPC operations are valid on this IModelConnection if this method returns false.
    */
-  public get isOpen(): boolean {
-    return !this.isClosed;
-  }
+  public get isOpen(): boolean { return !this.isClosed; }
 
   /** Check if the IModelConnection is closed (i.e. it has no *connection* to a backend server).
    * Returns true for [[BlankConnection]] instances and after [[IModelConnection.close]] has been called.
@@ -258,9 +174,7 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this.fontMap) {
       this.fontMap = new FontMap();
       if (this.isOpen) {
-        const fontProps = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(
-          this.getRpcProps(),
-        );
+        const fontProps = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps());
         this.fontMap.addFonts(fontProps.fonts);
       }
     }
@@ -272,31 +186,28 @@ export abstract class IModelConnection extends IModel {
    * @param defaultClass If no base class of the className is registered, return this value.
    * @note this method is async since it may have to query the server to get the class hierarchy.
    */
-  public async findClassFor<T extends typeof EntityState>(
-    className: string,
-    defaultClass: T | undefined,
-  ): Promise<T | undefined> {
+  public async findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined> {
     let ctor = IModelApp.lookupEntityClass(className) as T | undefined;
-    if (undefined !== ctor) return ctor;
+    if (undefined !== ctor)
+      return ctor;
 
     // it's not registered, we need to query its class hierarchy.
     ctor = defaultClass; // in case we cant find a registered class that handles this class
 
     // wait until we get the full list of base classes from backend
     if (this.isOpen) {
-      const baseClasses = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getClassHierarchy(
-        this.getRpcProps(),
-        className,
-      );
+      const baseClasses = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getClassHierarchy(this.getRpcProps(), className);
 
       // Make sure some other async code didn't register this class while we were await-ing above
       ctor = IModelApp.lookupEntityClass(className) as T | undefined;
-      if (undefined !== ctor) return ctor;
+      if (undefined !== ctor)
+        return ctor;
 
       // walk through the list until we find a registered base class
       baseClasses.some((baseClass: string) => {
         const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
-        if (test === undefined) return false; // nope, not registered
+        if (test === undefined)
+          return false; // nope, not registered
 
         ctor = test; // found it, save it
         IModelApp.registerEntityState(className, ctor); // and register the fact that our starting class is handled by this subclass.
@@ -312,9 +223,9 @@ export abstract class IModelConnection extends IModel {
     this._iModelReadApi = IpcApp.isValid
       ? new IpcIModelRead(iModelProps.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead"))
       : new IModelReadHTTPClient(
-          `http://localhost:3001/itwins/${iModelProps.iTwinId}/imodels/${iModelProps.iModelId}/changesets/${iModelProps.changeset?.id || "latest"}/`,
-          IModelApp,
-        );
+        `http://localhost:3001/itwins/${iModelProps.iTwinId}/imodels/${iModelProps.iModelId}/changesets/${iModelProps.changeset?.id || "latest"}/`,
+        IModelApp,
+      );
     super.initialize(iModelProps.name!, iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
@@ -369,10 +280,7 @@ export abstract class IModelConnection extends IModel {
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(
-          this.getRpcProps(),
-          request,
-        );
+        return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
@@ -385,10 +293,7 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public async querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(
-      this.getRpcProps(),
-      compressedCategoryIds,
-    );
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(this.getRpcProps(), compressedCategoryIds);
   }
 
   /**
@@ -397,9 +302,7 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public async queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryAllUsedSpatialSubCategories(
-      this.getRpcProps(),
-    );
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryAllUsedSpatialSubCategories(this.getRpcProps());
   }
 
   /** Execute a query and stream its results
@@ -418,10 +321,11 @@ export abstract class IModelConnection extends IModel {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
    */
-  public async *query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
-    while (await reader.step()) yield reader.formatCurrentRow();
+    while (await reader.step())
+      yield reader.formatCurrentRow();
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
@@ -462,17 +366,8 @@ export abstract class IModelConnection extends IModel {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
-  public async *restartQuery(
-    token: string,
-    ecsql: string,
-    params?: QueryBinder,
-    options?: QueryOptions,
-  ): AsyncIterableIterator<any> {
-    for await (const row of this.createQueryReader(
-      ecsql,
-      params,
-      new QueryOptionsBuilder(options).setRestartToken(token).getOptions(),
-    )) {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -481,22 +376,12 @@ export abstract class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the generated statement is invalid or would return too many rows.
    */
   public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> {
-    return new Set(
-      this.isOpen
-        ? await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryEntityIds(
-            this.getRpcProps(),
-            params,
-          )
-        : undefined,
-    );
+    return new Set(this.isOpen ? await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryEntityIds(this.getRpcProps(), params) : undefined);
   }
 
-  private _snapRpc = new OneAtATimeAction<SnapResponseProps>(async (props: SnapRequestProps) =>
-    IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(
-      this.getRpcProps(),
-      IModelApp.sessionId,
-      props,
-    ),
+  private _snapRpc = new OneAtATimeAction<SnapResponseProps>(
+    async (props: SnapRequestProps) =>
+      IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props),
   );
 
   /** Request a snap from the backend.
@@ -525,14 +410,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Request element clip containment status from the backend. */
-  public async getGeometryContainment(
-    requestProps: GeometryContainmentRequestProps,
-  ): Promise<GeometryContainmentResponseProps> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometryContainment(
-      this.getRpcProps(),
-      requestProps,
-    );
-  }
+  public async getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometryContainment(this.getRpcProps(), requestProps); }
 
   /** Obtain a summary of the geometry belonging to one or more [GeometricElement]($backend)s suitable for debugging and diagnostics.
    * @param requestProps Specifies the elements to query and options for how to format the output.
@@ -541,10 +419,7 @@ export abstract class IModelConnection extends IModel {
    * @see [GeometryStreamIterator]($common) to more directly inspect a geometry stream.
    */
   public async getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometrySummary(
-      this.getRpcProps(),
-      requestProps,
-    );
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getGeometrySummary(this.getRpcProps(), requestProps);
   }
 
   /** Request a named texture image from the backend.
@@ -565,20 +440,12 @@ export abstract class IModelConnection extends IModel {
    * @note For better performance use [[getMassPropertiesPerCandidate]] when called from a loop with identical operations and a single candidate per iteration.
    */
   public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(
-      this.getRpcProps(),
-      requestProps,
-    );
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps);
   }
 
   /** Request mass properties for multiple elements from the backend. */
-  public async getMassPropertiesPerCandidate(
-    requestProps: MassPropertiesPerCandidateRequestProps,
-  ): Promise<MassPropertiesPerCandidateResponseProps[]> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(
-      this.getRpcProps(),
-      requestProps,
-    );
+  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
   }
 
   /** Produce encoded [Polyface]($core-geometry)s from the geometry stream of a [GeometricElement]($backend).
@@ -593,10 +460,7 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public async generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(
-      this.getRpcProps(),
-      requestProps,
-    );
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(this.getRpcProps(), requestProps);
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
@@ -622,10 +486,7 @@ export abstract class IModelConnection extends IModel {
     }
 
     const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-    return Cartographic.fromDegrees(
-      { longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z },
-      result,
-    );
+    return Cartographic.fromDegrees({ longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z }, result);
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
@@ -637,9 +498,7 @@ export abstract class IModelConnection extends IModel {
    * @see [[spatialToCartographicFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    return this.noGcsDefined
-      ? this.spatialToCartographicFromEcef(spatial, result)
-      : this.spatialToCartographicFromGcs(spatial, result);
+    return (this.noGcsDefined ? this.spatialToCartographicFromEcef(spatial, result) : this.spatialToCartographicFromGcs(spatial, result));
   }
 
   /** Convert points in this iModel's spatial coordinate system to [Cartographic]($common) coordinates using either a [[GeoConverter]] or the iModel's [EcefLocation]($common).
@@ -665,17 +524,18 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal */
-  public async cartographicFromSpatialWithGcs(
-    spatial: XYAndZ[],
-    datumOrGCRS?: string | GeographicCRSProps,
-  ): Promise<Cartographic[]> {
-    if (this.noGcsDefined) return spatial.map((p) => this.spatialToCartographicFromEcef(p));
+  public async cartographicFromSpatialWithGcs(spatial: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Cartographic[]> {
+    if (this.noGcsDefined)
+      return spatial.map((p) => this.spatialToCartographicFromEcef(p));
 
-    if (!this.isGeoLocated) throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
+    if (!this.isGeoLocated)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (!this.isOpen) throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+    if (!this.isOpen)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
 
-    if (spatial.length === 0) return [];
+    if (spatial.length === 0)
+      return [];
 
     const geoConverter = this.geoServices.getConverter(datumOrGCRS);
     assert(undefined !== geoConverter);
@@ -734,9 +594,7 @@ export abstract class IModelConnection extends IModel {
    * @see [[cartographicToSpatialFromEcef]] to synchronously convert points using the iModel's ECEF transform.
    */
   public async cartographicToSpatial(cartographic: Cartographic, result?: Point3d): Promise<Point3d> {
-    return this.noGcsDefined
-      ? this.cartographicToSpatialFromEcef(cartographic, result)
-      : this.cartographicToSpatialFromGcs(cartographic, result);
+    return (this.noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
   }
 
   /** Convert [Cartographic]($common) coordinates into points in this iModel's spatial coordinate system using a [[GeoConverter]] or the iModel's [EcefLocation]($common).
@@ -746,7 +604,8 @@ export abstract class IModelConnection extends IModel {
    * @see [[cartographicFromSpatial]] to perform the inverse conversion.
    */
   public async spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]> {
-    if (this.noGcsDefined) return cartographic.map((p) => this.cartographicToSpatialFromEcef(p));
+    if (this.noGcsDefined)
+      return cartographic.map((p) => this.cartographicToSpatialFromEcef(p));
 
     const geoCoords = cartographic.map((p) => Point3d.create(p.longitudeDegrees, p.latitudeDegrees, p.height));
     return this.toSpatialFromGcs(geoCoords);
@@ -760,11 +619,15 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public async toSpatialFromGcs(geoCoords: XYAndZ[], datumOrGCRS?: string | GeographicCRSProps): Promise<Point3d[]> {
-    if (!this.isGeoLocated) throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (!this.isOpen) throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+    if (!this.isGeoLocated)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (geoCoords.length === 0) return [];
+    if (!this.isOpen)
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not open");
+
+    if (geoCoords.length === 0)
+      return [];
 
     const geoConverter = this.geoServices.getConverter(datumOrGCRS);
     assert(undefined !== geoConverter);
@@ -800,7 +663,8 @@ export abstract class IModelConnection extends IModel {
 
   /** @internal */
   public getMapEcefToDb(bimElevationBias: number): Transform {
-    if (!this.ecefLocation) return Transform.createIdentity();
+    if (!this.ecefLocation)
+      return Transform.createIdentity();
 
     const mapEcefToDb = this.ecefLocation.getTransform().inverse();
     if (!mapEcefToDb) {
@@ -829,14 +693,12 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this._geodeticToSeaLevel) {
       const elevationProvider = new BingElevationProvider();
       this._geodeticToSeaLevel = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
-      this._geodeticToSeaLevel
-        .then((geodeticToSeaLevel) => {
-          this._geodeticToSeaLevel = geodeticToSeaLevel;
-          this.onMapElevationLoaded.raiseEvent(this);
-        })
-        .catch((_error) => (this._geodeticToSeaLevel = 0.0));
+      this._geodeticToSeaLevel.then((geodeticToSeaLevel) => {
+        this._geodeticToSeaLevel = geodeticToSeaLevel;
+        this.onMapElevationLoaded.raiseEvent(this);
+      }).catch((_error) => this._geodeticToSeaLevel = 0.0);
     }
-    return "number" === typeof this._geodeticToSeaLevel ? this._geodeticToSeaLevel : undefined;
+    return ("number" === typeof this._geodeticToSeaLevel) ? this._geodeticToSeaLevel : undefined;
   }
 
   /** The altitude (geodetic) at the project center. This will return undefined only if the request for the offset to Bing Elevation
@@ -847,14 +709,12 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this._projectCenterAltitude) {
       const elevationProvider = new BingElevationProvider();
       this._projectCenterAltitude = elevationProvider.getHeightValue(this.projectExtents.center, this);
-      this._projectCenterAltitude
-        .then((projectCenterAltitude) => {
-          this._projectCenterAltitude = projectCenterAltitude;
-          this.onMapElevationLoaded.raiseEvent(this);
-        })
-        .catch((_error) => (this._projectCenterAltitude = 0.0));
+      this._projectCenterAltitude.then((projectCenterAltitude) => {
+        this._projectCenterAltitude = projectCenterAltitude;
+        this.onMapElevationLoaded.raiseEvent(this);
+      }).catch((_error) => this._projectCenterAltitude = 0.0);
     }
-    return "number" === typeof this._projectCenterAltitude ? this._projectCenterAltitude : undefined;
+    return ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
   }
 }
 
@@ -863,31 +723,21 @@ export abstract class IModelConnection extends IModel {
  * @public
  */
 export class BlankConnection extends IModelConnection {
-  public override isBlankConnection(): this is BlankConnection {
-    return true;
-  }
+  public override isBlankConnection(): this is BlankConnection { return true; }
 
   /** The Guid that identifies the iTwin for this BlankConnection.
    * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
-  public override get iTwinId(): GuidString | undefined {
-    return this._iTwinId;
-  }
-  public override set iTwinId(iTwinId: GuidString | undefined) {
-    this._iTwinId = iTwinId;
-  }
+  public override get iTwinId(): GuidString | undefined { return this._iTwinId; }
+  public override set iTwinId(iTwinId: GuidString | undefined) { this._iTwinId = iTwinId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
-  public override get iModelId(): undefined {
-    return undefined;
-  } // GuidString | undefined for the superclass, but always undefined for BlankConnection
+  public override get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
   /** A BlankConnection is always considered closed because it does not have a specific backend nor associated iModel.
    * @returns `true` is always returned since RPC operations and iModel queries are not valid.
    * @note Even though true is always returned, it is still valid to call [[close]] to dispose frontend resources.
    */
-  public get isClosed(): boolean {
-    return true;
-  }
+  public get isClosed(): boolean { return true; }
 
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
    * @param props The properties to use for the new BlankConnection.
@@ -898,10 +748,7 @@ export class BlankConnection extends IModelConnection {
       rootSubject: { name: props.name },
       projectExtents: props.extents,
       globalOrigin: props.globalOrigin,
-      ecefLocation:
-        props.location instanceof Cartographic
-          ? EcefLocation.createFromCartographicOrigin(props.location)
-          : props.location,
+      ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
       iTwinId: props.iTwinId,
     });
@@ -926,27 +773,19 @@ export class BlankConnection extends IModelConnection {
  */
 export class SnapshotConnection extends IModelConnection {
   /** Type guard for instanceof [[SnapshotConnection]] */
-  public override isSnapshotConnection(): this is SnapshotConnection {
-    return true;
-  }
+  public override isSnapshotConnection(): this is SnapshotConnection { return true; }
 
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString {
-    return super.iModelId!;
-  } // GuidString | undefined for the superclass, but required for SnapshotConnection
+  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
 
   /** Returns `true` if [[close]] has already been called. */
-  public get isClosed(): boolean {
-    return this._isClosed ? true : false;
-  }
+  public get isClosed(): boolean { return this._isClosed ? true : false; }
   private _isClosed?: boolean;
 
   /** Returns `true` if this is a connection to a remote snapshot iModel resolved by the backend.
    * @see [[openRemote]]
    */
-  public get isRemote(): boolean {
-    return this._isRemote ? true : false;
-  }
+  public get isRemote(): boolean { return this._isRemote ? true : false; }
   private _isRemote?: boolean;
 
   /** Open an IModelConnection to a read-only snapshot iModel from a file name.
@@ -986,7 +825,8 @@ export class SnapshotConnection extends IModelConnection {
    * @see [[openFile]], [[openRemote]]
    */
   public async close(): Promise<void> {
-    if (this.isClosed) return;
+    if (this.isClosed)
+      return;
 
     this.beforeClose();
     try {
@@ -1000,8 +840,7 @@ export class SnapshotConnection extends IModelConnection {
 }
 
 /** @public */
-export namespace IModelConnection {
-  // eslint-disable-line no-redeclare
+export namespace IModelConnection { // eslint-disable-line no-redeclare
 
   /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
   export interface ViewSpec {
@@ -1018,9 +857,7 @@ export namespace IModelConnection {
     private _loaded = new Map<string, ModelState>();
 
     /** @internal */
-    public get loaded(): Map<string, ModelState> {
-      return this._loaded;
-    }
+    public get loaded(): Map<string, ModelState> { return this._loaded; }
 
     /** An iterator over all currently-loaded models. */
     public [Symbol.iterator](): Iterator<ModelState> {
@@ -1028,12 +865,10 @@ export namespace IModelConnection {
     }
 
     /** @internal */
-    constructor(private _iModel: IModelConnection) {}
+    constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [RepositoryModel]($backend). */
-    public get repositoryModelId(): string {
-      return "0x1";
-    }
+    public get repositoryModelId(): string { return "0x1"; }
 
     /** @internal */
     public async getDictionaryModel(): Promise<Id64String> {
@@ -1046,11 +881,7 @@ export namespace IModelConnection {
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen
-        ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getModelProps(iModel.getRpcProps(), [
-            ...Id64.toIdSet(modelIds),
-          ])
-        : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getModelProps(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
     }
 
     /** Find a ModelState in the set of loaded Models by ModelId. */
@@ -1066,7 +897,8 @@ export namespace IModelConnection {
       let unloaded: Set<string> | undefined;
       for (const id of Id64.iterable(modelIds)) {
         if (undefined === this.getLoaded(id)) {
-          if (undefined === unloaded) unloaded = new Set<string>();
+          if (undefined === unloaded)
+            unloaded = new Set<string>();
 
           unloaded.add(id);
         }
@@ -1078,7 +910,8 @@ export namespace IModelConnection {
     /** load a set of Models by Ids. After the returned Promise resolves, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = this.filterLoaded(modelIds);
-      if (undefined === notLoaded) return; // all requested models are already loaded
+      if (undefined === notLoaded)
+        return; // all requested models are already loaded
 
       try {
         const propArray = await this.getProps(notLoaded);
@@ -1093,8 +926,7 @@ export namespace IModelConnection {
       try {
         for (const props of modelProps) {
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
-          if (undefined === this.getLoaded(props.id!)) {
-            // do not overwrite if someone else loads it while we await
+          if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
             this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
@@ -1120,12 +952,7 @@ export namespace IModelConnection {
      */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen
-        ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(
-            iModel.getRpcProps(),
-            [...Id64.toIdSet(modelIds)],
-          )
-        : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
     }
 
     /** For each [GeometricModel]($backend) specified by Id, attempts to obtain the union of the volumes of all geometric elements within that model.
@@ -1136,14 +963,13 @@ export namespace IModelConnection {
      */
     public async queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
       const iModel = this._iModel;
-      if (!iModel.isOpen) return [];
+      if (!iModel.isOpen)
+        return [];
 
-      if (typeof modelIds === "string") modelIds = [modelIds];
+      if (typeof modelIds === "string")
+        modelIds = [modelIds];
 
-      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelExtents(
-        iModel.getRpcProps(),
-        modelIds,
-      );
+      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelExtents(iModel.getRpcProps(), modelIds);
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
@@ -1152,28 +978,28 @@ export namespace IModelConnection {
      */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
       const iModel = this._iModel;
-      if (!iModel.isOpen) return [];
+      if (!iModel.isOpen)
+        return [];
       const params: ModelQueryParams = { ...queryParams }; // make a copy
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
       if (!queryParams.wantPrivate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
 
         params.where += "IsPrivate=FALSE ";
       }
       if (!queryParams.wantTemplate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
 
         params.where += "IsTemplate=FALSE ";
       }
-      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelProps(
-        iModel.getRpcProps(),
-        params,
-      );
+      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelProps(iModel.getRpcProps(), params);
     }
 
     /** Asynchronously stream ModelProps using the specified ModelQueryParams. */
-    public async *query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps> {
+    public async * query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps> {
       // NOTE: this implementation has the desired API signature, but its implementation must be improved to actually page results
       const modelPropsArray: ModelProps[] = await this.queryProps(queryParams);
       for (const modelProps of modelPropsArray) {
@@ -1197,17 +1023,13 @@ export namespace IModelConnection {
   /** The collection of Elements for an [[IModelConnection]]. */
   export class Elements {
     /** @internal */
-    public constructor(private _iModel: IModelConnection) {}
+    public constructor(private _iModel: IModelConnection) { }
 
     /** The Id of the [root subject element]($docs/bis/guide/references/glossary.md#subject-root) for this iModel. */
-    public get rootSubjectId(): Id64String {
-      return "0x1";
-    }
+    public get rootSubjectId(): Id64String { return "0x1"; }
 
     /** Get a set of element ids that satisfy a query */
-    public async queryIds(params: EntityQueryParams): Promise<Id64Set> {
-      return this._iModel.queryEntityIds(params);
-    }
+    public async queryIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
 
     /** Get an array of [[ElementProps]] given one or more element ids.
      * @note This method returns **all** of the properties of the element (excluding GeometryStream), which may be a very large amount of data - consider using
@@ -1215,12 +1037,7 @@ export namespace IModelConnection {
      */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen
-        ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getElementProps(
-            this._iModel.getRpcProps(),
-            [...Id64.toIdSet(arg)],
-          )
-        : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getElementProps(this._iModel.getRpcProps(), [...Id64.toIdSet(arg)]) : [];
     }
 
     /** Obtain the properties of a single element, optionally specifying specific properties to include or exclude.
@@ -1234,18 +1051,9 @@ export namespace IModelConnection {
      * @returns The properties of the requested element; or `undefined` if no element exists with the specified identifier or the iModel is not open.
      * @throws [IModelError]($common) if the element exists but could not be loaded.
      */
-    public async loadProps(
-      identifier: Id64String | GuidString | CodeProps,
-      options?: ElementLoadOptions,
-    ): Promise<ElementProps | undefined> {
+    public async loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined> {
       const imodel = this._iModel;
-      return imodel.isOpen
-        ? IModelReadRpcInterface.getClientForRouting(imodel.routingContext.token).loadElementProps(
-            imodel.getRpcProps(),
-            identifier,
-            options,
-          )
-        : undefined;
+      return imodel.isOpen ? IModelReadRpcInterface.getClientForRouting(imodel.routingContext.token).loadElementProps(imodel.getRpcProps(), identifier, options) : undefined;
     }
 
     /** Get an array  of [[ElementProps]] that satisfy a query
@@ -1254,12 +1062,7 @@ export namespace IModelConnection {
      */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
       const iModel = this._iModel;
-      return iModel.isOpen
-        ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(
-            iModel.getRpcProps(),
-            params,
-          )
-        : [];
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params) : [];
     }
 
     /** Obtain the [Placement]($common)s of a set of [GeometricElement]($backend)s.
@@ -1268,16 +1071,17 @@ export namespace IModelConnection {
      * @returns an array of placements, each having an additional `elementId` property identifying the element from which the placement was obtained.
      * @note Any Id that does not identify a geometric element with a valid bounding box and origin is omitted from the returned array.
      */
-    public async getPlacements(
-      elementIds: Iterable<Id64String>,
-      options?: Readonly<GetPlacementsOptions>,
-    ): Promise<Array<Placement & { elementId: Id64String }>> {
+    public async getPlacements(elementIds: Iterable<Id64String>, options?: Readonly<GetPlacementsOptions>): Promise<Array<Placement & { elementId: Id64String }>> {
       let ids: Id64String[];
-      if (typeof elementIds === "string") ids = [elementIds];
-      else if (!Array.isArray(elementIds)) ids = Array.from(elementIds);
-      else ids = elementIds;
+      if (typeof elementIds === "string")
+        ids = [elementIds];
+      else if (!Array.isArray(elementIds))
+        ids = Array.from(elementIds);
+      else
+        ids = elementIds;
 
-      if (ids.length === 0) return [];
+      if (ids.length === 0)
+        return [];
 
       const select3d = `
         SELECT
@@ -1324,9 +1128,7 @@ export namespace IModelConnection {
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, {
-        rowFormat: QueryRowFormat.UseJsPropertyNames,
-      })) {
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {
@@ -1335,15 +1137,12 @@ export namespace IModelConnection {
         };
 
         let placement;
-        if (undefined === row.lz) placement = Placement2d.fromJSON({ bbox, origin, angle: row.rotation });
+        if (undefined === row.lz)
+          placement = Placement2d.fromJSON({ bbox, origin, angle: row.rotation });
         else
-          placement = Placement3d.fromJSON({
-            bbox,
-            origin,
-            angles: { yaw: row.yaw, pitch: row.pitch, roll: row.roll },
-          });
+          placement = Placement3d.fromJSON({ bbox, origin, angles: { yaw: row.yaw, pitch: row.pitch, roll: row.roll } });
 
-        const placementWithId = placement as Placement & { elementId: Id64String };
+        const placementWithId = (placement as Placement & { elementId: Id64String });
         placementWithId.elementId = row.id;
         placements.push(placementWithId);
       }
@@ -1357,20 +1156,17 @@ export namespace IModelConnection {
     private _loaded?: CodeSpec[];
 
     /** @internal */
-    constructor(private _iModel: IModelConnection) {}
+    constructor(private _iModel: IModelConnection) { }
 
     /** Loads all CodeSpec from the remote IModelDb. */
     private async _loadAllCodeSpecs(): Promise<void> {
-      if (this._loaded) return;
+      if (this._loaded)
+        return;
 
       this._loaded = [];
-      const codeSpecArray: any[] = await IModelReadRpcInterface.getClientForRouting(
-        this._iModel.routingContext.token,
-      ).getAllCodeSpecs(this._iModel.getRpcProps());
+      const codeSpecArray: any[] = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getAllCodeSpecs(this._iModel.getRpcProps());
       for (const codeSpec of codeSpecArray) {
-        this._loaded.push(
-          CodeSpec.createFromJson(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties),
-        );
+        this._loaded.push(CodeSpec.createFromJson(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
       }
     }
 
@@ -1385,7 +1181,8 @@ export namespace IModelConnection {
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
-      if (!found) throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
+      if (!found)
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
       return found;
     }
@@ -1398,7 +1195,8 @@ export namespace IModelConnection {
     public async getByName(name: string): Promise<CodeSpec> {
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
-      if (!found) throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
+      if (!found)
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
       return found;
     }
@@ -1407,39 +1205,25 @@ export namespace IModelConnection {
   /** The collection of views for an [[IModelConnection]]. */
   export class Views {
     /** @internal */
-    constructor(private _iModel: IModelConnection) {}
+    constructor(private _iModel: IModelConnection) { }
     private _writeViewStoreProxy?: PickAsyncMethods<ViewStoreRpc.Writer>;
     private _readViewStoreProxy?: PickAsyncMethods<ViewStoreRpc.Reader>;
 
     public get viewStoreWriter() {
-      return (this._writeViewStoreProxy ??= new Proxy(this, {
+      return this._writeViewStoreProxy ??= new Proxy(this, {
         get(views, methodName: string) {
           const iModel = views._iModel;
-          return async (...args: any[]) =>
-            IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(
-              iModel.getRpcProps(),
-              ViewStoreRpc.version,
-              true,
-              methodName,
-              ...args,
-            );
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), ViewStoreRpc.version, true, methodName, ...args);
         },
-      }) as unknown as PickAsyncMethods<ViewStoreRpc.Writer>);
+      }) as unknown as PickAsyncMethods<ViewStoreRpc.Writer>;
     }
     public get viewsStoreReader() {
-      return (this._readViewStoreProxy ??= new Proxy(this, {
+      return this._readViewStoreProxy ??= new Proxy(this, {
         get(views, methodName: string) {
           const iModel = views._iModel;
-          return async (...args: any[]) =>
-            IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(
-              iModel.getRpcProps(),
-              ViewStoreRpc.version,
-              false,
-              methodName,
-              ...args,
-            );
+          return async (...args: any[]) => IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).callViewStore(iModel.getRpcProps(), ViewStoreRpc.version, false, methodName, ...args);
         },
-      }) as unknown as PickAsyncMethods<ViewStoreRpc.Reader>);
+      }) as unknown as PickAsyncMethods<ViewStoreRpc.Reader>;
     }
 
     /** Query for an array of ViewDefinitionProps
@@ -1448,21 +1232,20 @@ export namespace IModelConnection {
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
       const iModel = this._iModel;
-      if (iModel.isClosed) return [];
+      if (iModel.isClosed)
+        return [];
 
       const params: ViewQueryParams = { ...queryParams }; // make a copy
       params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
 
         params.where += "IsPrivate=FALSE ";
       }
-      const viewProps = await IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(
-        iModel.getRpcProps(),
-        params,
-      );
-      assert(viewProps.length === 0 || "categorySelectorId" in viewProps[0], "invalid view definition"); // spot check that the first returned element is-a ViewDefinitionProps
+      const viewProps = await IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params);
+      assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
       return viewProps as ViewDefinitionProps[];
     }
 
@@ -1496,9 +1279,7 @@ export namespace IModelConnection {
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;
-      return iModel.isOpen
-        ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getDefaultViewId(iModel.getRpcProps())
-        : Id64.invalid;
+      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getDefaultViewId(iModel.getRpcProps()) : Id64.invalid;
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
@@ -1509,9 +1290,7 @@ export namespace IModelConnection {
           compressExcludedElementIds: true,
         },
       };
-      const viewProps = await IModelReadRpcInterface.getClientForRouting(
-        this._iModel.routingContext.token,
-      ).getViewStateData(this._iModel.getRpcProps(), viewDefinitionId, options);
+      const viewProps = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewStateData(this._iModel.getRpcProps(), viewDefinitionId, options);
       const viewState = await this.convertViewStatePropsToViewState(viewProps);
       return viewState;
     }
@@ -1519,9 +1298,7 @@ export namespace IModelConnection {
     /** Return the [[ViewState]] object associated with the [[ViewStateProps]] passed in. */
     public async convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState> {
       const className = viewProps.viewDefinitionProps.classFullName;
-      const ctor = (await this._iModel.findClassFor<typeof EntityState>(className, undefined)) as
-        | typeof ViewState
-        | undefined;
+      const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
       if (undefined === ctor)
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", () => viewProps);
@@ -1540,20 +1317,13 @@ export namespace IModelConnection {
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
       // eslint-disable-next-line deprecation/deprecation
-      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(
-        this._iModel.getRpcProps(),
-        _viewId.toString(),
-      );
+      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
-      if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png) throw new NoContentError();
+      if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
+        throw new NoContentError();
 
-      return {
-        format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png",
-        width: intValues[2],
-        height: intValues[3],
-        image: new Uint8Array(val.buffer, 16, intValues[0]),
-      };
+      return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }
   }
 
