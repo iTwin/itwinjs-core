@@ -331,7 +331,7 @@ describe("Merge conflict & locking", () => {
     const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     /* we should be able to apply all changesets */
     await b3.pullChanges();
-    expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
+    expect(onChangesetConflictStub.callCount).eq(0, "native conflict handler should not be called BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
     b1.close();
     b2.close();
