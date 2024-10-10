@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "got rid of some blank spaces and refactored the toString methods",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

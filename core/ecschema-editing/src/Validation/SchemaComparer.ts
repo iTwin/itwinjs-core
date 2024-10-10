@@ -12,7 +12,7 @@ import {
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
   SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, Unit,
 } from "@itwin/ecschema-metadata";
-import { formatTraitsToArray, formatTypeToString, scientificTypeToString, showSignOptionToString } from "@itwin/core-quantity";
+import { formatTraitsToArray } from "@itwin/core-quantity";
 import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate";
 import { SchemaCompareVisitor } from "./SchemaCompareVisitor";
@@ -505,8 +505,8 @@ export class SchemaComparer {
       promises.push(this._reporter.reportFormatDelta(formatA, "roundFactor", formatA.roundFactor, formatB.roundFactor, this._compareDirection));
 
     if (formatA.type !== formatB.type) {
-      const typeAString = formatTypeToString(formatA.type);
-      const typeBString = formatTypeToString(formatB.type);
+      const typeAString = formatA.type;
+      const typeBString = formatB.type;
       promises.push(this._reporter.reportFormatDelta(formatA, "type", typeAString, typeBString, this._compareDirection));
     }
 
@@ -517,14 +517,14 @@ export class SchemaComparer {
       promises.push(this._reporter.reportFormatDelta(formatA, "minWidth", formatA.minWidth, formatB.minWidth, this._compareDirection));
 
     if (formatA.scientificType !== formatB.scientificType) {
-      const typeAString = formatA.scientificType !== undefined ? scientificTypeToString(formatA.scientificType) : undefined;
-      const typeBString = formatB.scientificType !== undefined ? scientificTypeToString(formatB.scientificType) : undefined;
+      const typeAString = formatA.scientificType !== undefined ? formatA.scientificType : undefined;
+      const typeBString = formatB.scientificType !== undefined ? formatB.scientificType : undefined;
       promises.push(this._reporter.reportFormatDelta(formatA, "scientificType", typeAString, typeBString, this._compareDirection));
     }
 
     if (formatA.showSignOption !== formatB.showSignOption) {
-      const optionA = showSignOptionToString(formatA.showSignOption);
-      const optionB = showSignOptionToString(formatB.showSignOption);
+      const optionA = formatA.showSignOption;
+      const optionB = formatB.showSignOption;
       promises.push(this._reporter.reportFormatDelta(formatA, "showSignOption", optionA, optionB, this._compareDirection));
     }
 

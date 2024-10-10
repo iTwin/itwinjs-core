@@ -730,7 +730,7 @@ export class Parser {
       matchedSuffix = DirectionLabel.West;
     }
 
-    if (matchedPrefix === null && matchedSuffix === null) {
+    if (matchedPrefix === null || matchedSuffix === null) {
       return { ok: false, error: ParseError.BearingPrefixOrSuffixMissing };
     }
 

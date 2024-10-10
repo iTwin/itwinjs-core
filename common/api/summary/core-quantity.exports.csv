@@ -20,6 +20,7 @@ beta;enum;FormatTraits
 beta;function;formatTraitsToArray
 beta;enum;FormatType
 beta;function;formatTypeToString
+deprecated;function;formatTypeToString
 beta;enum;FractionalPrecision
 internal;function;getItemNamesFromFormatString
 beta;function;getTraitString
@@ -47,8 +48,10 @@ beta;enum;QuantityStatus
 beta;enum;RatioType
 beta;enum;ScientificType
 beta;function;scientificTypeToString
+deprecated;function;scientificTypeToString
 beta;enum;ShowSignOption
 beta;function;showSignOptionToString
+deprecated;function;showSignOptionToString
 beta;enum;UnitConversionInvert
 beta;interface;UnitConversionProps
 beta;interface;UnitConversionSpec
