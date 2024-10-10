@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add polygon selection option to SelectTool",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
