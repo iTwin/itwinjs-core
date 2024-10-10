@@ -40,10 +40,10 @@ export const enum FeatureSymbologyOptions {
 /** @internal */
 export function addOvrFlagConstants(builder: ShaderBuilder): void {
   // NB: These are the bit positions of each flag in OvrFlags enum - not the flag values
-  builder.addBitFlagConstant("kOvrBit_Visibility", 0);
+  builder.addBitFlagConstant("kOvrBit_LineRgb", 0);
   builder.addBitFlagConstant("kOvrBit_Rgb", 1);
   builder.addBitFlagConstant("kOvrBit_Alpha", 2);
-  builder.addBitFlagConstant("kOvrBit_IgnoreMaterial", 3);
+  builder.addBitFlagConstant("kOvrBit_LineAlpha", 3);
   builder.addBitFlagConstant("kOvrBit_Flashed", 4);
   builder.addBitFlagConstant("kOvrBit_NonLocatable", 5);
   builder.addBitFlagConstant("kOvrBit_LineCode", 6);
@@ -54,8 +54,8 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
   builder.addBitFlagConstant("kOvrBit_Emphasized", 1);
   builder.addBitFlagConstant("kOvrBit_ViewIndependentTransparency", 2);
   builder.addBitFlagConstant("kOvrBit_InvisibleDuringPick", 3);
-  builder.addBitFlagConstant("kOvrBit_LineRgb", 4);
-  builder.addBitFlagConstant("kOvrBit_LineAlpha", 5);
+  builder.addBitFlagConstant("kOvrBit_Visibility", 4);
+  builder.addBitFlagConstant("kOvrBit_IgnoreMaterial", 5);
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
@@ -631,14 +631,14 @@ const computeFeatureOverrides = `
 
   bool nonLocatable = (u_shaderFlags[kShaderBit_IgnoreNonLocatable] ? nthFeatureBitSet(flags, kOvrBit_NonLocatable) : false);
   v_feature_emphasis += kEmphFlag_NonLocatable * float(nthFeatureBitSet(flags, kOvrBit_NonLocatable));
-  bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility);
+  bool invisible = nthFeatureBitSet(emphFlags, kOvrBit_Visibility);
   feature_invisible = invisible || nonLocatable;
   if (feature_invisible)
     return;
 
   bool isLinear = u_renderOrder == kRenderOrder_Linear || u_renderOrder == kRenderOrder_PlanarLinear || u_renderOrder == kRenderOrder_PlanarEdge;
-  bool rgbOverridden = isLinear ? nthFeatureBitSet(emphFlags, kOvrBit_LineRgb) : nthFeatureBitSet(flags, kOvrBit_Rgb);
-  bool alphaOverridden = isLinear ? nthFeatureBitSet(emphFlags, kOvrBit_LineAlpha) : nthFeatureBitSet(flags, kOvrBit_Alpha);
+  bool rgbOverridden = isLinear ? nthFeatureBitSet(flags, kOvrBit_LineRgb) : nthFeatureBitSet(flags, kOvrBit_Rgb);
+  bool alphaOverridden = isLinear ? nthFeatureBitSet(flags, kOvrBit_LineAlpha) : nthFeatureBitSet(flags, kOvrBit_Alpha);
   if (alphaOverridden || rgbOverridden) {
     vec4 rgba = getSecondFeatureRgba(isLinear);
     if (rgbOverridden)
@@ -655,7 +655,7 @@ const computeFeatureOverrides = `
                                   nthFeatureBitSet(flags, kOvrBit_LineCode),
                                   value.z * 256.0);
 
-  feature_ignore_material = nthFeatureBitSet(flags, kOvrBit_IgnoreMaterial);
+  feature_ignore_material = nthFeatureBitSet(emphFlags, kOvrBit_IgnoreMaterial);
   use_material = use_material && !feature_ignore_material;
 
   v_feature_emphasis += kEmphFlag_Flash * extractNthFeatureBit(flags, kOvrBit_Flashed);
