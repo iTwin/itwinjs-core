@@ -219,7 +219,7 @@ export class ContourGroup {
   /** A name string which helps identify this particular grouping of contours. Mainly used for callers of the API to categorize and track their grouping definitions. Defaults to "<unnamed>". */
   public readonly name: string;
 
-  /** List of subcategory IDs to which this contour group's styling will be applied, returned as an [[OrderedId64Iterable]]. This is created from the [[CompressedId64Set]] on the [[ContourGroupProps]] used when creating a [[ContourGroup]]. Defaults to an empty set. */
+  /** List of subcategory IDs to which this contour group's styling will be applied, returned as an [[OrderedId64Iterable]]. This is created from the [[CompressedId64Set]] on the [[ContourGroupProps]] used when creating a [[ContourGroup]]. If this is empty, this group styling will apply to all iModel geometry not explicitly associated with their own group styling. Defaults to an empty set. */
   public get subCategories(): OrderedId64Iterable {
     return CompressedId64Set.iterable(this._subCategories);
   }
