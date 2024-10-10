@@ -130,7 +130,7 @@ export class PerTargetBatchData {
   }
 
   public getContours(batch: Batch): Contours {
-    if (this._contours && !this._contours.matchesTarget(this.target))
+    if (this._contours && !this._contours.matchesTargetAndFeatureCount(this.target, batch.featureTable))
       this._contours = this._contours.dispose();
 
     if (!this._contours) {
