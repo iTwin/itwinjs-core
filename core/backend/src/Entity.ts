@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData, PropertyMetaDataCallback } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -55,6 +55,7 @@ export class Entity {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
+    // eslint-disable-next-line deprecation/deprecation
     this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
   }
 
@@ -82,7 +83,7 @@ export class Entity {
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    */
-  public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) {
+  public forEachProperty(func: PropertyCallback | PropertyMetaDataCallback, includeCustom: boolean = true) { // eslint-disable-line deprecation/deprecation
     this.iModel.forEachMetaData(this.classFullName, true, func, includeCustom);
   }
 
