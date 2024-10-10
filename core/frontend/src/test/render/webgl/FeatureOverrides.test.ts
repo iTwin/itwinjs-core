@@ -511,7 +511,23 @@ describe("FeatureOverrides", () => {
     });
 
     it("optionally ignores surface overrides", () => {
-      
+      expectColors(FeatureAppearance.fromRgb(ColorDef.white).clone({ lineRgb: false }), [ColorDef.white, lineColor, pointColor]);
+      expectColors(
+        FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineRgb: false, lineTransparency: false }),
+        [ColorDef.white.withTransparency(127), pointColor, lineColor]
+      );
+      expectColors(
+        FeatureAppearance.fromTransparency(0.5).clone({ lineTransparency: false }),
+        [lineColor, pointColor, shapeColor.withTransparency(127)]
+      );
+      expectColors(
+        FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineRgb: false }),
+        [ColorDef.white.withTransparency(127), lineColor.withTransparency(127), pointColor.withTransparency(127)]
+      );
+      expectColors(
+        FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineTransparency: false }),
+        [ColorDef.white.withTransparency(127), ColorDef.white]
+      );
     });
 
     it("optionally uses different overrides than surfaces", () => {
