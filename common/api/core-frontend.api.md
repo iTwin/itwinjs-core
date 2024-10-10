@@ -4562,6 +4562,7 @@ export interface GraphicBranchOptions {
     // @internal (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     clipVolume?: RenderClipVolume;
+    disableClipStyle?: true;
     // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
     hline?: HiddenLine.Settings;
@@ -9069,6 +9070,8 @@ export interface RealityMeshGraphicParams {
     // (undocumented)
     readonly baseTransparent: boolean;
     // (undocumented)
+    readonly disableClipStyle?: true;
+    // (undocumented)
     readonly featureTable: PackedFeatureTable;
     // (undocumented)
     readonly layerClassifiers?: MapLayerClassifiers;
@@ -10022,7 +10025,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
-    createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
+    createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
     createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined;
