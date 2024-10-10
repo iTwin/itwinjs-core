@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable, RenderMode } from "@itwin/core-common";
 import { ViewRect } from "../../../common/ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -13,8 +13,12 @@ import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Target } from "../../../render/webgl/Target";
 import { Texture2DDataUpdater } from "../../../render/webgl/Texture";
 import { Batch, Branch } from "../../../render/webgl/Graphic";
-import { testBlankViewport } from "../../openBlankViewport";
+import { readUniqueColors, testBlankViewport } from "../../openBlankViewport";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { Decorator } from "../../../ViewManager";
+import { DecorateContext } from "../../../ViewContext";
+import { GraphicType } from "../../../common/render/GraphicType";
+import { FeatureOverrideProvider } from "../../../FeatureOverrideProvider";
 
 describe("FeatureOverrides", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -413,6 +417,94 @@ describe("FeatureOverrides", () => {
 
       runTest(false);
       runTest(true);
+    });
+  });
+
+  describe.only("line color and transparency", () => {
+    const lineId = "0xa";
+    const pointId = "0xb";
+    const shapeId = "0xc";
+    const lineColor = ColorDef.blue;
+    const pointColor = ColorDef.green;
+    const shapeColor = ColorDef.red;
+    const bgColor = ColorDef.black;
+    
+    const decorator: Decorator = {
+      decorate: (context: DecorateContext) => {
+        const builder = context.createGraphic({
+          pickable: { id: lineId },
+          type: GraphicType.Scene,
+        });
+
+        builder.setSymbology(lineColor, lineColor, 1);
+        builder.addLineString2d([new Point2d(-1, -1), new Point2d(-1, 1)], 0);
+
+        builder.activateFeature(new Feature(pointId));
+        builder.setSymbology(pointColor, pointColor, 1);
+        builder.addPointString2d([new Point2d(1, -1)], 0);
+
+        builder.activateFeature(new Feature(shapeId));
+        builder.setSymbology(shapeColor, shapeColor, 1);
+        builder.addShape2d([new Point2d(0, 0), new Point2d(1, 0), new Point2d(0, 1), new Point2d(0, 0)], 0);
+
+        context.addDecorationFromBuilder(builder);
+      },
+    };
+
+    beforeEach(() => IModelApp.viewManager.addDecorator(decorator));
+    afterEach(() => IModelApp.viewManager.dropDecorator(decorator));
+    
+    function expectColors(overrides: Array<[string, FeatureAppearance]>, expectedColors: ColorDef[]): void {
+      testBlankViewport((vp) => {
+        const provider: FeatureOverrideProvider = {
+          addFeatureOverrides: (ovrs) => {
+            for (const entry of overrides) {
+              ovrs.override({
+                elementId: entry[0],
+                appearance: entry[1],
+              });
+            }
+          },
+        };
+
+        vp.viewFlags = vp.viewFlags.copy({
+          lighting: false,
+          renderMode: RenderMode.SmoothShade,
+          visibleEdges: false,
+        });
+        
+        vp.displayStyle.backgroundColor = bgColor;
+        vp.addFeatureOverrideProvider(provider);
+
+        vp.view.lookAtViewAlignedVolume(new Range3d(-2, -2, -2, 2, 2, 2));
+        vp.synchWithView();
+
+        vp.renderFrame();
+
+        const actualColors = readUniqueColors(vp);
+        expectedColors = [...expectedColors, bgColor];
+
+        expect(actualColors.length).to.equal(expectedColors.length);
+        for (const color of expectedColors) {
+          expect(actualColors.containsColorDef(color)).to.be.true;
+        }
+      });
+    }
+
+    it("is the same as surfaces by default", () => {
+      expectColors([], [lineColor, pointColor, shapeColor]);
+    });
+
+    it("optionally ignores surface overrides", () => {
+      
+    });
+
+    it("optionally uses different overrides than surfaces", () => {
+      
+    });
+
+    it("can be overridden when surfaces are not", () => {
+      
     });
   });
 });
