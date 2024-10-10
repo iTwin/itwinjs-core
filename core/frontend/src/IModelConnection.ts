@@ -23,7 +23,7 @@ import {
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import type { IModelReadAPI, IModelReadIpcAPI } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
-import { IModelReadHTTPClient } from "@itwin/imodelread-client";
+import { IModelReadHTTPClient } from "@itwin/imodelread-client-http";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";

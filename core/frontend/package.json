@@ -96,7 +96,7 @@
     "@itwin/object-storage-core": "^2.2.5",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
-    "@itwin/imodelread-client": "workspace:^",
+    "@itwin/imodelread-client-http": "workspace:^",
     "@itwin/imodelread-client-ipc": "workspace:^",
     "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^3.1.6",

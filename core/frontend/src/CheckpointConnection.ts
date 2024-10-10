@@ -13,7 +13,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { IpcApp } from "./IpcApp";
-import { IModelReadHTTPClient } from "@itwin/imodelread-client";
+import { IModelReadHTTPClient } from "@itwin/imodelread-client-http";
 
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
