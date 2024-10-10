@@ -21,8 +21,6 @@ import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../Whit
 import { SkyGradient } from "../SkyBox";
 import { GroundPlane } from "../GroundPlane";
 import { Atmosphere } from "../Atmosphere";
-import { RgbColor } from "../RgbColor";
-import { ColorDef } from "../ColorDef";
 
 describe("DisplayStyleSettings", () => {
   describe("whiteOnWhiteReversal", () => {
@@ -331,7 +329,7 @@ describe("DisplayStyleSettings", () => {
   });
 });
 
-describe.only("DisplayStyleSettings overrides", () => {
+describe("DisplayStyleSettings overrides", () => {
   const baseProps: DisplayStyle3dSettingsProps = {
     viewflags: {
       backgroundMap: true,
