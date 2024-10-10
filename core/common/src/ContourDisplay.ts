@@ -10,7 +10,9 @@ import { compareBooleans, compareNumbers, CompressedId64Set, NonFunctionProperti
 import { LinePixels } from "./LinePixels";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 
-/** JSON representation of the style settings used by either a minor or major contour. */
+/** JSON representation of the style settings used by either a minor or major contour.
+ * @public
+ */
 export interface ContourStyleProps {
   color?: RgbColorProps;
   pixelWidth?: number;
@@ -18,9 +20,10 @@ export interface ContourStyleProps {
 }
 
 /** The style settings used by either a minor or major contour.
-   * @see [[Contour.majorStyle]]
-   * @see [[Contour.minorStyle]]
-   */
+ * @see [[Contour.majorStyle]]
+ * @see [[Contour.minorStyle]]
+ * @public
+ */
 export class ContourStyle {
   /** Color that a major or minor contour line will use. Defaults to black.*/
   public readonly color: RgbColor;
@@ -37,10 +40,11 @@ export class ContourStyle {
   }
 
   /** Compares two contour styles.
-     * @param lhs First contour style to compare
-     * @param rhs Second contour style to compare
-     * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
-     */
+   * @param lhs First contour style to compare
+   * @param rhs Second contour style to compare
+   * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
+   * @public
+   */
   public static compare(lhs: ContourStyle, rhs: ContourStyle): number {
     let diff = 0;
     if ((diff = lhs.color.compareTo(rhs.color)) !== 0)
@@ -85,7 +89,9 @@ export class ContourStyle {
   }
 }
 
-/** JSON representation of the rendering styling settings that apply to a specific set of subcategories within a [[ContourGroup]]. */
+/** JSON representation of the rendering styling settings that apply to a specific set of subcategories within a [[ContourGroup]].
+ * @public
+ */
 export interface ContourProps {
   /** See [[Contour.majorStyle]]. */
   majorStyle?: ContourStyleProps;
@@ -100,10 +106,11 @@ export interface ContourProps {
 }
 
 /** The rendering styling settings that apply to a specific set of subcategories within a [[ContourGroup]].
-   * This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other.
-   * The minor contour occurs at a defined interval in meters. These intervals draw at a fixed height; they are not dependent on the range of the geometry to which they are applied.
-   * The major contour is dependent on the minor contour. The interval of its occurence is not measured directly in meters; rather it is a count of minor contour intervals between its occurrences.
-   */
+ * This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other.
+ * The minor contour occurs at a defined interval in meters. These intervals draw at a fixed height; they are not dependent on the range of the geometry to which they are applied.
+ * The major contour is dependent on the minor contour. The interval of its occurence is not measured directly in meters; rather it is a count of minor contour intervals between its occurrences.
+ * @public
+ */
 export class Contour {
   /** Settings that describe how a major contour is styled. Defaults to an instantation of [[ContourStyle]] using `pixelWidth` of 2 and default values for the other properties. */
   public readonly majorStyle: ContourStyle;
@@ -188,7 +195,9 @@ export class Contour {
   }
 }
 
-/** JSON representation of the description of how contours should appear for a particular set of subcategories. */
+/** JSON representation of the description of how contours should appear for a particular set of subcategories.
+ * @public
+ */
 export interface ContourGroupProps {
   /** See [[ContourGroup.contourDef]]. */
   contourDef?: ContourProps;
@@ -199,8 +208,9 @@ export interface ContourGroupProps {
 }
 
 /** Contains a description of how contours should appear for a particular set of subcategories. A contour group is an organizational concept which associates a contour appearance with a list of subcategories within an iModel.
-   * @see [[Contour]]
-   */
+ * @see [[Contour]]
+ * @public
+ */
 export class ContourGroup {
   private _subCategories: CompressedId64Set;
 
@@ -262,7 +272,9 @@ export class ContourGroup {
   }
 }
 
-/** JSON representation of the contour display setup of a [[DisplayStyle3d]]. */
+/** JSON representation of the contour display setup of a [[DisplayStyle3d]].*
+ * @public
+ */
 export interface ContourDisplayProps {
   /** See [[ContourDisplay.groups]]. */
   groups?: ContourGroupProps[];
@@ -278,6 +290,7 @@ export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
 
 /** The contour display setup of a [[DisplayStyle3d]].
  * Contour display allows a user to apply specific contour line renderings to subcategories within a scene.
+ * @public
  */
 export class ContourDisplay {
   /** A list of the groups which contain their own specific contour display settings. Defaults to an empty array.

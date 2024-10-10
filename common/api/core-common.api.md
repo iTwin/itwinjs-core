@@ -1807,18 +1807,26 @@ export class Contour {
 
 // @public
 export class ContourDisplay {
+    static create(props?: Partial<ContourDisplayProperties>): ContourDisplay;
+    readonly displayContours: boolean;
     // (undocumented)
     equals(other: ContourDisplay): boolean;
     // (undocumented)
-    static fromJSON(json?: ContourDisplayProps): ContourDisplay;
-    readonly groups: (ContourGroup | undefined)[];
+    static fromJSON(props?: ContourDisplayProps): ContourDisplay;
+    readonly groups: ContourGroup[];
+    static readonly maxContourGroups = 5;
     // (undocumented)
     toJSON(): ContourDisplayProps;
+    withDisplayContours(displayContours?: boolean): ContourDisplay;
 }
 
 // @public
+export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
+
+// @public
 export interface ContourDisplayProps {
-    groups?: (ContourGroupProps | undefined)[];
+    displayContours?: boolean;
+    groups?: ContourGroupProps[];
 }
 
 // @public
@@ -1828,7 +1836,10 @@ export class ContourGroup {
     equals(other: ContourGroup | undefined): boolean;
     // (undocumented)
     static fromJSON(json?: ContourGroupProps): ContourGroup;
+    readonly name: string;
     get subCategories(): OrderedId64Iterable;
+    // (undocumented)
+    subCategoriesEqual(other: ContourGroup): boolean;
     // (undocumented)
     toJSON(): ContourGroupProps;
 }
@@ -1836,6 +1847,7 @@ export class ContourGroup {
 // @public
 export interface ContourGroupProps {
     contourDef?: ContourProps;
+    name?: string;
     subCategories?: CompressedId64Set;
 }
 
@@ -1850,7 +1862,7 @@ export interface ContourProps {
 
 // @public
 export class ContourStyle {
-    readonly color: ColorDef;
+    readonly color: RgbColor;
     static compare(lhs: ContourStyle, rhs: ContourStyle): number;
     // (undocumented)
     equals(other: ContourStyle): boolean;
@@ -1865,7 +1877,7 @@ export class ContourStyle {
 // @public
 export interface ContourStyleProps {
     // (undocumented)
-    color?: ColorDefProps;
+    color?: RgbColorProps;
     // (undocumented)
     pattern?: LinePixels;
     // (undocumented)
