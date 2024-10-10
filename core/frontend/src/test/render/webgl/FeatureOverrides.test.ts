@@ -454,6 +454,15 @@ describe("FeatureOverrides", () => {
     beforeEach(() => IModelApp.viewManager.addDecorator(decorator));
     afterEach(() => IModelApp.viewManager.dropDecorator(decorator));
     
+    function multiplyAlpha(color: ColorDef): ColorDef {
+      const colors = color.colors;
+      const a = (0xff - colors.t) / 0xff;
+      colors.r = colors.r * a;
+      colors.g = colors.g * a;
+      colors.b = colors.b * a;
+      return ColorDef.from(colors.r, colors.g, colors.b, 0);
+    }
+
     function expectColors(defaultAppearance: FeatureAppearance | undefined, expectedColors: ColorDef[]): void {
       testBlankViewport((vp) => {
         if (defaultAppearance) {
@@ -477,8 +486,11 @@ describe("FeatureOverrides", () => {
 
         vp.renderFrame();
 
+        expectedColors = expectedColors.map((x) => multiplyAlpha(x));
+        expectedColors.push(bgColor);
+
         const actualColors = readUniqueColors(vp);
-        expectedColors = [...expectedColors, bgColor];
+        console.log(`expected ${JSON.stringify(expectedColors.map((x) => x.toHexString()))} actual ${JSON.stringify(actualColors.array.map((x) => x.toHexString()))}`);
 
         expect(actualColors.length).to.equal(expectedColors.length);
         for (const color of expectedColors) {
@@ -494,6 +506,8 @@ describe("FeatureOverrides", () => {
     
     it("is the same as surfaces by default", () => {
       expectColors(FeatureAppearance.fromRgb(ColorDef.white), [ColorDef.white]);
+      expectColors(FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)), [ColorDef.white.withTransparency(127)]);
+      expectColors(FeatureAppearance.fromTransparency(0.5), [lineColor.withTransparency(127), pointColor.withTransparency(127), shapeColor.withTransparency(127)]);
     });
 
     it("optionally ignores surface overrides", () => {
