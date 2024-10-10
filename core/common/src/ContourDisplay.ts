@@ -273,14 +273,16 @@ export interface ContourDisplayProps {
 export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
 
 /** The contour display setup of a [[DisplayStyle3d]].
-   * Contour display allows a user to apply specific contour line renderings to subcategories within a scene.
-   */
+ * Contour display allows a user to apply specific contour line renderings to subcategories within a scene.
+ */
 export class ContourDisplay {
-  /** A list of the groups which contain their own specific contour display settings. Defaults to an empty array. */
+  /** A list of the groups which contain their own specific contour display settings. Defaults to an empty array.
+   * @see [[ContourDisplay.maxContourGroups]]
+   */
   public readonly groups: ContourGroup[];
   /** If true, contours will be displayed based on these settings. Defaults to false. */
   public readonly displayContours: boolean;
-  /** The maximum number of contour groups that the system will allow. */
+  /** The maximum number of contour groups that the system will allow. Any contour groups added to the `groups` array beyond this number will be ignored. */
   public static readonly maxContourGroups = 5;
 
   public equals(other: ContourDisplay): boolean {

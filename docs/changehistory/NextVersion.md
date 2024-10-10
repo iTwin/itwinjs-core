@@ -58,74 +58,29 @@ A new rendering technique has been added to iTwin.js which allows a user to appl
 
 iTwin.js now provides the following API to use this feature:
 
-- [DisplayStyle3dSettings]($common) now has a `contours` property which contains all of the subcategories-to-styling association data necessary to enable this feature. That object is of type [ContourDisplay.Settings]($common).
-- [ContourDisplay.Settings]($common) defines how contours are displayed in the iModel based on a list of [ContourDisplay.Terrain]($common) objects in the `terrains` property.
-- [ContourDisplay.Terrain]($common) describes an assocation of subcategories to contour styling. It contains an array of subcategory IDs titled `subCategories`. Those subcategories will have the contour styling within the same terrain's [ContourDisplay.Contour]($common) `contourDef` object applied to them.
-- [ContourDisplay.Contour]($common) describes the rendering styling settings that apply to a specific set of subcategories within a [ContourDisplay.Terrain]($common). This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other. The minor contour occurs at a defined interval in meters. These intervals draw at a fixed height; they are not dependent on the range of the geometry to which they are applied. The major contour is dependent on the minor contour. The interval of its occurence is not measured directly in meters; rather it is a count of minor contour intervals between its occurrences. The properties describing how major and minor contours are styled are listed here:
-  - `majorColor` is the color that a major contour line will use. Defaults to [ColorDef.black]($common).
-  - `minorColor` is the color that a minor contour line will use. Defaults to [ColorDef.black]($common).
-  - `majorPixelWidth` is the width in pixels of a major contour line. (Range 1.5 to 9 in 0.5 increments). Defaults to 2.
-  - `minorPixelWidth` is the width in pixels of a minor contour line. (Range 1.5 to 9 in 0.5 increments). Defaults to 1.
-  - `majorPattern` is the pattern for a major contour line. Defaults to [LinePixels.Solid]($common).
-  - `minorPattern` is the pattern for a minor contour line. Defaults to [LinePixels.Solid]($common).
+- [DisplayStyle3dSettings]($common) now has a `contours` property which contains all of the subcategories-to-styling association data necessary to enable this feature. That object is of type [ContourDisplay]($common).
+- [ContourDisplay]($common) defines how contours are displayed in the iModel based on a list of [ContourGroup]($common) objects in the `groups` property. Whether or not contours will be displayed in the viewport is controlled by this object's `displayContours` property, which defaults to false.
+- [ContourGroup]($common) describes an assocation of subcategories to contour styling. It contains a set of subcategory IDs titled `subCategories`. Those subcategories will have the contour styling within the same group's [Contour]($common) `contourDef` object applied to them.
+- [Contour]($common) describes the rendering settings that apply to a specific set of subcategories within a [ContourGroup]($common). This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other. The minor contour occurs at a defined interval in meters. These intervals draw at a fixed height; they are not dependent on the range of the geometry to which they are applied. The major contour is dependent on the minor contour. The interval of its occurence is not measured directly in meters; rather it is a count of minor contour intervals between its occurrences. The properties describing how major and minor contours are styled are listed here:
+  - `majorStyle` is the style that a major contour line will use. Defaults to an instantation of [ContourStyle]($common) using `pixelWidth` of 2 and default values for the other properties.
+  - `minorStyle` is the style that a minor contour line will use. Defaults to an instantation of [ContourStyle]($common) using default values for the properties.
   - `minorInterval` is the interval for the minor contour in the associated terrain in meters. Defaults to 1.
   - `majorIntervalCount` is the count of minor contour intervals that define a major interval (integer > 0). Defaults to 5.
+  - `showGeometry`, if true, shows underlying geometry along with the associated contours. If false, only shows the contours, not the underlying geometry. Defaults to true.
+- [ContourStyle]($common) describes the style settings used by either a major or minor contour. It contains the following properties:
+  - `color` is a color used by the major or minor contour of type [RgbColor]($common). Defaults to black.
+  - `pixelWidth` is the width in pixels of a major or minor contour line, using range 1 to 8.5 in 0.5 increments. Defaults to 1.
+  - `pattern` is the line pattern applied to a major or minor contour line of type [LinePixels]($common). Defaults to [LinePixels.Solid]($common).
 
 Consult the following code for an example of enabling and configuring contour display in iTwin.js:
 
 ```ts
-private enableAndConfigureContourDisplay(viewport: Viewport): boolean {
-  const isContourDisplaySupported = (vw: ViewState) => vw.is3d();
-
-  const view = viewport.view;
-
-  if (!isContourDisplaySupported(view))
-    return false; // Contour display settings are only valid for 3d views
-
-  // Create a ContourDisplay.SettingsProps object with the desired contour settings
-  const contourDisplaySettingsProps: ContourDisplay.SettingsProps = {
-    terrains: [ // the list of terrains associating groups of subcategories with contour stylings
-      {
-        contourDef: {
-          majorColor: ColorDef.red.toJSON(),
-          minorColor: ColorDef.blue.toJSON(),
-          majorPixelWidth: 3,
-          minorPixelWidth: 1,
-          majorPattern: LinePixels.Solid,
-          minorPattern: LinePixels.Code3,
-          minorInterval: 2,
-          majorIntervalCount: 8,
-        },
-        subCategories: [ "0x5b", "0x5a" ],
-      },
-      {
-        contourDef: {
-          majorColor: ColorDef.black.toJSON(),
-          minorColor: ColorDef.white.toJSON(),
-          majorPixelWidth: 4,
-          minorPixelWidth: 2,
-          majorPattern: LinePixels.Code4,
-          minorPattern: LinePixels.Solid,
-          minorInterval: 1,
-          majorIntervalCount: 7,
-        },
-        subCategories: [ "0x5c", "0x6a" ],
-      },
-    ],
-  };
-
-  // Create a ContourDisplay.Settings object using the props created above
-  const contourDisplaySettings = ContourDisplay.Settings.fromJSON(contourDisplaySettingsProps);
-
-  // Change the contours object on the 3d display style state to contain the new object
-  (view as ViewState3d).getDisplayStyle3d().settings.contours = contourDisplaySettings;
-
-  // Sync the viewport with the new view state
-  viewport.synchWithView();
-
-  return true;
-}
+[[include:Setup_ContourDisplay]]
 ```
+
+Here is a sample screenshot of applying some contour display settings to a terrain iModel:
+
+![contour display example](./assets/contour-display.png "Example of applying contour line settings to an iModel of some terrain")
 
 ## Interactive Tools
 
