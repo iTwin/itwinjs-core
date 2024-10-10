@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "fix regression related to classid",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

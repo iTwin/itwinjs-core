@@ -436,7 +436,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
    */
   private getPointCurveClosestApproachXYNewton(curveP: CurvePrimitive, pointQ: Point3d): CurveLocationDetail | undefined {
     if (!(curveP instanceof Arc3d) && !(curveP instanceof LineSegment3d)) {
-      assert(!"getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
+      assert(false, "getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
       return undefined;
     }
     const seeds = [0.2, 0.4, 0.6, 0.8]; // HEURISTIC: arcs have up to 4 perpendiculars; lines have only 1
@@ -757,7 +757,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;
     if (geomA instanceof CurveChainWithDistanceIndex) {
-      assert(!"call handleCurveChainWithDistanceIndex(geomA) instead");
+      assert(false, "call handleCurveChainWithDistanceIndex(geomA) instead");
       return;
     }
     const index0 = this._results.length;
