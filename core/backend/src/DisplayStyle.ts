@@ -254,9 +254,9 @@ export class DisplayStyle3d extends DisplayStyle {
       if (targetElementProps?.jsonProperties?.styles?.contours?.groups) {
         const groups = targetElementProps.jsonProperties.styles.contours.groups;
         for (const group of groups) {
-          const subCategories = group.subCategories;
-          const remappedSubCategories: Id64String[] = [];
-          if (subCategories) {
+          if (group.subCategories) {
+            const subCategories = CompressedId64Set.decompressArray(group.subCategories);
+            const remappedSubCategories: Id64String[] = [];
             for (const subCategoryId of subCategories) {
               const remappedSubCategoryId: Id64String = context.findTargetElementId(subCategoryId);
               if (Id64.isValidId64(remappedSubCategoryId)) {
