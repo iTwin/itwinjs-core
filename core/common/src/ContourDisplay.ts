@@ -277,7 +277,7 @@ export class ContourGroup {
    */
   public readonly name: string;
 
-  /** The set of subcategories belonging to this group, or an empty set if this is a default group.
+  /** The set of subcategories belonging to this group, or an empty set if this is a default group. If more than one empty set exists in the [[ContourDisplay]] object's `groups` array, the last entry in that array is used for rendering the default styling.
    * @see [[isDefaultGroup]] to test if this is a default group.
    */
   public get subCategories(): OrderedId64Iterable {
