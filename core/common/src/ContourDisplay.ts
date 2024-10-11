@@ -112,10 +112,14 @@ export interface ContourProps {
   showGeometry?: boolean;
 }
 
-/** The rendering styling settings that apply to a specific set of subcategories within a [[ContourGroup]].
- * This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other.
- * The minor contour occurs at a defined interval in meters. These intervals draw at a fixed height; they are not dependent on the range of the geometry to which they are applied.
- * The major contour is dependent on the minor contour. The interval of its occurence is not measured directly in meters; rather its occurence is determined by the major interval count thusly: every nth contour will be styled as a major contour where n = the major interval count. For example, if you set this number to 1, every contour will be styled as a major contour. When it is 2, every other contour will be styled as a major contour, and so on.
+/** Describes how to generate and style contour lines for geometry within a single [[ContourGroup]].
+ * Contours provide a way to visualize elevation within a 3d scene by drawing lines at fixed intervals along the z-axis.
+ * There are actually 2 kinds of contour lines: major and minor. Each kind can be styled independently.
+ * A contour line is generated every [[minorInterval]] meters. Every `nth` line will be a *major* contour, where `n` = [[majorInterval]]; the intervening lines will
+ * all be *minor* contours.
+ * For example, with a [[majorInterval]] of `1`, every contour will be major; of `2`, every other contour will be major; and of `3`, there will be two minor contours in between
+ * each major contour.
+ *
  * @public
  */
 export class Contour {
