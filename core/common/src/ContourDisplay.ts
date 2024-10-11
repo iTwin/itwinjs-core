@@ -155,9 +155,9 @@ export class Contour {
   public readonly majorStyle: ContourStyle;
   /** Settings that describe how a minor contour is styled. Defaults to an instantation of [[ContourStyle]] using default values for the properties. */
   public readonly minorStyle: ContourStyle;
-  /** The interval for the minor contour occurrence in meters. Defaults to 1. */
+  /** The interval for the minor contour occurrence in meters; these can be specified as fractional. Defaults to 1. If a value <= 0 is specified, this will be treated as 1 meter. */
   public readonly minorInterval: number;
-  /** The count of minor contour intervals that define a major interval (integer > 0). Defaults to 5. */
+  /** The count of minor contour intervals that define a major interval (integer > 0). A value of 1 means no minor contours will be shown, only major contours. Defaults to 5. If a value < 1 is specified, this will be treated as 1. */
   public readonly majorIntervalCount: number;
   /** If true, show underlying geometry along with the associated contours. If false, only show the contours, not the underlying geometry. Defaults to true. */
   public readonly showGeometry: boolean;
