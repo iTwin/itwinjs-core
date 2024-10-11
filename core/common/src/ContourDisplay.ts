@@ -143,9 +143,9 @@ export type ContourProperties = NonFunctionPropertiesOf<Contour>;
 /** Describes how to generate and style contour lines for geometry within a single [[ContourGroup]].
  * Contours provide a way to visualize elevation within a 3d scene by drawing lines at fixed intervals along the z-axis.
  * There are actually 2 kinds of contour lines: major and minor. Each kind can be styled independently.
- * A contour line is generated every [[minorInterval]] meters. Every `nth` line will be a *major* contour, where `n` = [[majorInterval]]; the intervening lines will
+ * A contour line is generated every [[minorInterval]] meters. Every `nth` line will be a *major* contour, where `n` = [[majorIntervalCount]]; the intervening lines will
  * all be *minor* contours.
- * For example, with a [[majorInterval]] of `1`, every contour will be major; of `2`, every other contour will be major; and of `3`, there will be two minor contours in between
+ * For example, with a [[majorIntervalCount]] of `1`, every contour will be major; of `2`, every other contour will be major; and of `3`, there will be two minor contours in between
  * each major contour.
  *
  * @public
