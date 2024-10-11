@@ -79,7 +79,7 @@ iTwin.js now provides the following API to use this feature:
   - `majorStyle` is the style that a major contour line will use. Defaults to an instantation of [ContourStyle]($common) using `pixelWidth` of 2 and default values for the other properties.
   - `minorStyle` is the style that a minor contour line will use. Defaults to an instantation of [ContourStyle]($common) using default values for the properties.
   - `minorInterval` is the interval for the minor contour occurrence in meters; these can be specified as fractional. Defaults to 1. If a value <= 0 is specified, this will be treated as 1 meter.
-  - `majorIntervalCount` is the count of minor contour intervals that define a major interval (integer > 0). A value of 1 means no minor contours will be shown, only major contours. Defaults to 5. If a value < 1 is specified, this will be treated as 1.
+  - `majorIntervalCount` is the count of minor contour intervals that define a major interval (integer > 0). A value of 1 means no minor contours will be shown, only major contours. Defaults to 5. If a value < 1 is specified, this will be treated as 1. If a non-integer value is specified, it will be treated as if it were rounded to the nearest integer.
   - `showGeometry`, if true, shows underlying geometry along with the associated contours. If false, only shows the contours, not the underlying geometry. Defaults to true.
 - [ContourStyle]($common) describes the style settings used by either a major or minor contour. It contains the following properties:
   - `color` is a color used by the major or minor contour of type [RgbColor]($common). Defaults to black.
