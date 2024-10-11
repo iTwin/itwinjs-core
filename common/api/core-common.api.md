@@ -1811,7 +1811,6 @@ export class Contour {
 export class ContourDisplay {
     static create(props?: Partial<ContourDisplayProperties>): ContourDisplay;
     readonly displayContours: boolean;
-    // (undocumented)
     equals(other: ContourDisplay): boolean;
     // (undocumented)
     static fromJSON(props?: ContourDisplayProps): ContourDisplay;
@@ -1819,7 +1818,7 @@ export class ContourDisplay {
     static readonly maxContourGroups = 5;
     // (undocumented)
     toJSON(): ContourDisplayProps;
-    withDisplayContours(displayContours?: boolean): ContourDisplay;
+    withDisplayContours(displayContours: boolean): ContourDisplay;
 }
 
 // @public
@@ -1834,13 +1833,12 @@ export interface ContourDisplayProps {
 // @public
 export class ContourGroup {
     readonly contourDef: Contour;
-    // (undocumented)
     equals(other: ContourGroup | undefined): boolean;
     // (undocumented)
     static fromJSON(json?: ContourGroupProps): ContourGroup;
+    get isDefaultGroup(): boolean;
     readonly name: string;
     get subCategories(): OrderedId64Iterable;
-    // (undocumented)
     subCategoriesEqual(other: ContourGroup): boolean;
     // (undocumented)
     toJSON(): ContourGroupProps;
@@ -1866,7 +1864,6 @@ export interface ContourProps {
 export class ContourStyle {
     readonly color: RgbColor;
     static compare(lhs: ContourStyle, rhs: ContourStyle): number;
-    // (undocumented)
     equals(other: ContourStyle): boolean;
     // (undocumented)
     static fromJSON(json?: ContourStyleProps): ContourStyle;
@@ -1878,11 +1875,8 @@ export class ContourStyle {
 
 // @public
 export interface ContourStyleProps {
-    // (undocumented)
     color?: RgbColorProps;
-    // (undocumented)
     pattern?: LinePixels;
-    // (undocumented)
     pixelWidth?: number;
 }
 
