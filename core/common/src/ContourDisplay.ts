@@ -288,8 +288,9 @@ export interface ContourDisplayProps {
  */
 export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
 
-/** The contour display setup of a [[DisplayStyle3d]].
- * Contour display allows a user to apply specific contour line renderings to subcategories within a scene.
+/** Settings that specify how to apply [contour lines]($docs/learning/display/ContourDisplay.md) to groups of geometry
+ * within a 3d scene.
+ * @see [[DisplayStyle3dSettings.contours]] to associate contour settings with a display style.
  * @public
  */
 export class ContourDisplay {
