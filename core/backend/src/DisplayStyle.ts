@@ -251,8 +251,8 @@ export class DisplayStyle3d extends DisplayStyle {
         targetElementProps.jsonProperties.styles.planProjections = remappedPlanProjections;
       }
 
-      if (targetElementProps?.jsonProperties?.styles?.contours?.groups) {
-        const groups = targetElementProps.jsonProperties.styles.contours.groups;
+      const groups = targetElementProps?.jsonProperties?.styles?.contours?.groups;
+      if (groups) {
         for (const group of groups) {
           if (group.subCategories) {
             const subCategories = CompressedId64Set.decompressArray(group.subCategories);
