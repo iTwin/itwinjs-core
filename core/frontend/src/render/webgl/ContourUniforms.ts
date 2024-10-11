@@ -50,8 +50,9 @@ export class ContourUniforms {
     // minorInterval is a float of interval in meters, majorIntervalCount is an int > 0 count of minor inteverals per major interval
     // minorInterval is stored in r or b (0 or 2) and majorIntervalCount is stored in g or a (1 or 3) depending on even or odd index
     const offset = (even ? 0 : 1) * 2;
-    this._contourDefs[startNdx+offset] = minorInterval;
-    this._contourDefs[startNdx+offset+1] = Math.floor(majorIntervalCount + 0.5);
+    this._contourDefs[startNdx+offset] = minorInterval <= 0.0 ? 1.0 : minorInterval;
+    majorIntervalCount = Math.floor(majorIntervalCount + 0.5);
+    this._contourDefs[startNdx+offset+1] = majorIntervalCount < 1.0 ? 1.0 : majorIntervalCount;
   }
 
   public update(target: Target): void {
