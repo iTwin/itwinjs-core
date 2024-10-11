@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { ContourDisplay } from "../ContourDisplay";
 import { LinePixels } from "../LinePixels";
 
-describe.only("ContourDisplay", () => {
+describe("ContourDisplay", () => {
   it("Ensure ContourDisplay derives values properly from JSON, including setting defaults and round-tripping through JSON", () => {
     function verifyDefaults(contourDisplay: ContourDisplay) {
       expect(contourDisplay.displayContours).to.equal(false);
