@@ -22,6 +22,12 @@ export interface ContourStyleProps {
   pattern?: LinePixels;
 }
 
+/** A type containing all of the properties of [[ContourStyle]] with none of the methods and with the `readonly` modifiers removed.
+ * Used by [[ContourStyle.create]] and [[ContourStyle.clone]].
+ * @public
+ */
+export type ContourStyleProperties = NonFunctionPropertiesOf<ContourStyle>;
+
 /** The style settings used by either a minor or major contour.
  * @see [[Contour.majorStyle]]
  * @see [[Contour.minorStyle]]
@@ -64,20 +70,21 @@ export class ContourStyle {
     return diff;
   }
 
-  private constructor(json?: ContourStyleProps) {
-    if (undefined === json) {
-      this.color = RgbColor.fromJSON({r: 0, g: 0, b: 0});
-      this.pixelWidth = 1;
-      this.pattern = 0;
-    } else {
-      this.color = json.color ? RgbColor.fromJSON(json.color) : RgbColor.fromJSON({r: 0, g: 0, b: 0});
-      this.pixelWidth = json.pixelWidth ?? 1;
-      this.pattern = json.pattern ?? 0;
-    }
+  private constructor(props?: Partial<ContourStyleProperties>) {
+    this.color = props?.color ?? RgbColor.fromJSON({r: 0, g: 0, b: 0});
+    this.pixelWidth = props?.pixelWidth ?? 1;
+    this.pattern = props?.pattern ?? LinePixels.Solid;
   }
 
-  public static fromJSON(json?: ContourStyleProps) {
-    return json ? new ContourStyle(json) : new ContourStyle({});
+  public static fromJSON(props?: ContourStyleProps) {
+    if (!props)
+      return new ContourStyle();
+
+    return new this({
+      color: props?.color ? RgbColor.fromJSON(props.color) : undefined,
+      pixelWidth: props?.pixelWidth,
+      pattern: props?.pattern,
+    });
   }
 
   public toJSON(): ContourStyleProps {
@@ -93,6 +100,21 @@ export class ContourStyle {
       props.pattern = this.pattern;
 
     return props;
+  }
+
+  /** Create a new ContourStyle. Any properties not specified by `props` will be initialized to their default values. */
+  public static create(props?: Partial<ContourStyleProperties>): ContourStyle {
+    return props ? new this(props) : new ContourStyle();
+  }
+
+  /** Create a copy of this ContourStyle, identical except for any properties specified by `changedProps`.
+   * Any properties of `changedProps` explicitly set to `undefined` will be reset to their default values.
+   */
+  public clone(changedProps?: Partial<ContourStyleProperties>): ContourStyle {
+    if (!changedProps)
+      return this;
+
+    return ContourStyle.create({ ...this, ...changedProps });
   }
 }
 
@@ -111,6 +133,12 @@ export interface ContourProps {
   /** See [[Contour.showGeometry]] */
   showGeometry?: boolean;
 }
+
+/** A type containing all of the properties of [[Contour]] with none of the methods and with the `readonly` modifiers removed.
+ * Used by [[Contour.create]] and [[Contour.clone]].
+ * @public
+ */
+export type ContourProperties = NonFunctionPropertiesOf<Contour>;
 
 /** The rendering styling settings that apply to a specific set of subcategories within a [[ContourGroup]].
  * This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other.
@@ -152,24 +180,25 @@ export class Contour {
       || compareBooleans(lhs.showGeometry, rhs.showGeometry);
   }
 
-  private constructor(json?: ContourProps) {
-    if (undefined === json) {
-      this.majorStyle = ContourStyle.fromJSON({ pixelWidth: 2 });
-      this.minorStyle = ContourStyle.fromJSON();
-      this.minorInterval = 1;
-      this.majorIntervalCount = 5;
-      this.showGeometry = true;
-    } else {
-      this.majorStyle = json.majorStyle ? ContourStyle.fromJSON(json.majorStyle) : ContourStyle.fromJSON({ pixelWidth: 2 });
-      this.minorStyle = json.minorStyle ? ContourStyle.fromJSON(json.minorStyle) : ContourStyle.fromJSON();
-      this.minorInterval = json.minorInterval ?? 1;
-      this.majorIntervalCount = json.majorIntervalCount ?? 5;
-      this.showGeometry = json.showGeometry ?? true;
-    }
+  private constructor(props?: Partial<ContourProperties>) {
+    this.majorStyle = props?.majorStyle ?? ContourStyle.fromJSON({ pixelWidth: 2 });
+    this.minorStyle = props?.minorStyle ?? ContourStyle.fromJSON();
+    this.minorInterval = props?.minorInterval ?? 1;
+    this.majorIntervalCount = props?.majorIntervalCount ?? 5;
+    this.showGeometry = props?.showGeometry ?? true;
   }
 
-  public static fromJSON(json?: ContourProps) {
-    return json ? new Contour(json) : new Contour({});
+  public static fromJSON(props?: ContourProps) {
+    if (!props)
+      return new Contour();
+
+    return new this({
+      majorStyle: props?.majorStyle ? ContourStyle.fromJSON(props.majorStyle) : undefined,
+      minorStyle: props?.minorStyle ? ContourStyle.fromJSON(props.minorStyle) : undefined,
+      minorInterval: props?.minorInterval,
+      majorIntervalCount: props?.majorIntervalCount,
+      showGeometry: props?.showGeometry,
+    });
   }
 
   public toJSON(): ContourProps {
@@ -192,6 +221,21 @@ export class Contour {
 
     return props;
   }
+
+  /** Create a new Contour. Any properties not specified by `props` will be initialized to their default values. */
+  public static create(props?: Partial<ContourProperties>): Contour {
+    return props ? new this(props) : new Contour();
+  }
+
+  /** Create a copy of this Contour, identical except for any properties specified by `changedProps`.
+   * Any properties of `changedProps` explicitly set to `undefined` will be reset to their default values.
+   */
+  public clone(changedProps?: Partial<ContourProperties>): Contour {
+    if (!changedProps)
+      return this;
+
+    return Contour.create({ ...this, ...changedProps });
+  }
 }
 
 /** JSON representation of a [[ContourGroup]].
@@ -205,6 +249,12 @@ export interface ContourGroupProps {
   /** See [[ContourGroup.name]]. */
   name?: string;
 }
+
+/** A type containing all of the properties of [[ContourGroup]] with none of the methods and with the `readonly` modifiers removed.
+ * Used by [[ContourGroup.create]] and [[ContourGroup.clone]].
+ * @public
+ */
+export type ContourGroupProperties = NonFunctionPropertiesOf<ContourGroup>;
 
 /** Defines a group of objects to which to apply [[Contour]] lines in a particular style.
  * The [[ContourDisplay]] settings can contain multiple groups.
@@ -257,20 +307,21 @@ export class ContourGroup {
     return true;
   }
 
-  private constructor(json?: ContourGroupProps) {
-    if (undefined === json) {
-      this.contourDef = Contour.fromJSON({});
-      this._subCategories = "";
-      this.name = "";
-    } else {
-      this.contourDef = json.contourDef ? Contour.fromJSON(json.contourDef) : Contour.fromJSON({});
-      this._subCategories = json.subCategories ? json.subCategories : "";
-      this.name = json.name ? json.name : "";
-    }
+  private constructor(props?: Partial<ContourGroupProperties>) {
+    this.contourDef = props?.contourDef ?? Contour.fromJSON();
+    this._subCategories = props?.subCategories ? CompressedId64Set.sortAndCompress(props.subCategories) : "";
+    this.name = props?.name ?? "";
   }
 
-  public static fromJSON(json?: ContourGroupProps) {
-    return json ? new ContourGroup(json) : new ContourGroup({});
+  public static fromJSON(props?: ContourGroupProps) {
+    if (!props)
+      return new ContourGroup();
+
+    return new this({
+      contourDef: props?.contourDef ? Contour.fromJSON(props.contourDef) : undefined,
+      name: props?.name,
+      subCategories: props?.subCategories ? CompressedId64Set.iterable(props.subCategories) : undefined,
+    });
   }
 
   public toJSON(): ContourGroupProps {
@@ -284,6 +335,21 @@ export class ContourGroup {
 
     props.subCategories = this._subCategories;
     return props;
+  }
+
+  /** Create a new ContourGroup. Any properties not specified by `props` will be initialized to their default values. */
+  public static create(props?: Partial<ContourGroupProperties>): ContourGroup {
+    return props ? new this(props) : new ContourGroup();
+  }
+
+  /** Create a copy of this ContourGroup, identical except for any properties specified by `changedProps`.
+   * Any properties of `changedProps` explicitly set to `undefined` will be reset to their default values.
+   */
+  public clone(changedProps?: Partial<ContourGroupProperties>): ContourGroup {
+    if (!changedProps)
+      return this;
+
+    return ContourGroup.create({ ...this, ...changedProps });
   }
 }
 
@@ -355,7 +421,7 @@ export class ContourDisplay {
 
     return new this({
       displayContours: props?.displayContours,
-      groups,
+      groups: props.groups ? groups : undefined,
     });
   }
 
@@ -379,5 +445,15 @@ export class ContourDisplay {
   /** Create a copy of these settings, changing the `displayContours` flag as specified. */
   public withDisplayContours(displayContours: boolean): ContourDisplay {
     return displayContours === this.displayContours ? this : ContourDisplay.create({ ...this, displayContours });
+  }
+
+  /** Create a copy of this ContourDisplay, identical except for any properties specified by `changedProps`.
+   * Any properties of `changedProps` explicitly set to `undefined` will be reset to their default values.
+   */
+  public clone(changedProps?: Partial<ContourDisplayProperties>): ContourDisplay {
+    if (!changedProps)
+      return this;
+
+    return ContourDisplay.create({ ...this, ...changedProps });
   }
 }
