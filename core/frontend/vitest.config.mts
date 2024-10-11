@@ -58,11 +58,6 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['@itwin/core-frontend', "@itwin/core-common", "@itwin/core-bentley"],
+    include: ["@itwin/core-common", "@itwin/core-bentley", "@itwin/core-geometry", "@itwin/core-quantity", "@itwin/appui-abstract", "@itwin/core-orbitgt"],
   },
-  build: {
-    commonjsOptions: {
-      include: [/@itwin\/core-frontend/, /@itwin\/core-common/, /@itwin\/core-bentley/, /node_modules/],
-    }
-  }
 })

@@ -78,7 +78,7 @@ describe("Viewport", () => {
       func();
       removeListener();
 
-		  expect(viewport.flashedId).toEqual(expectedId);
+      expect(viewport.flashedId).toEqual(expectedId);
 		  expect(event).toEqual(expectedEvent);
     }
 
@@ -145,13 +145,13 @@ describe("Viewport", () => {
         function expectChangedEvent(expectedPayload: EventPayload, func: () => void): void {
           let payload: EventPayload = "none";
           const removeListener = viewport.addOnAnalysisStyleChangedListener((style) => {
-				    expect(payload).toEqual("none");
+            expect(payload).toEqual("none");
             payload = style ?? "undefined";
           });
 
           func();
           removeListener();
-				  expect(payload).toEqual(expectedPayload);
+          expect(payload).toEqual(expectedPayload);
         }
 
         const a = AnalysisStyle.fromJSON({ normalChannelName: "a" });
@@ -169,7 +169,7 @@ describe("Viewport", () => {
         const c = AnalysisStyle.fromJSON({ normalChannelName: "c" });
         expectChangedEvent(c, () => {
           const view = viewport.view.clone();
-				  expect(view.displayStyle).not.toEqual(viewport.view.displayStyle);
+          expect(view.displayStyle).not.toEqual(viewport.view.displayStyle);
           view.displayStyle.settings.analysisStyle = c;
           viewport.changeView(view);
         });

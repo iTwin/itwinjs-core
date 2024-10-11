@@ -444,7 +444,7 @@ describe("Quantity formatter", async () => {
       const toUnit = await quantityFormatter.findUnitByName(toUnitName);
       const unitConversion = await quantityFormatter.getConversion(fromUnit, toUnit);
       const convertedValue = (magnitude * unitConversion.factor) + unitConversion.offset;
-      expect(withinTolerance(convertedValue, expectedValue, tolerance), `Expected ${expectedValue} ${toUnitName}, got ${convertedValue} ${toUnitName}`).toBe(true);
+      expect(withinTolerance(convertedValue, expectedValue, tolerance)).toBe(true);
     }
 
     it("UnitConversionTests, USCustomaryLengths", async () => {

@@ -76,16 +76,16 @@ describe("AccuSnap", () => {
     }
 
     function expectSnapDetail(response: SnapResponse, expected: SnapDetailProps): SnapDetail {
-		  expect(response).toBeInstanceOf(SnapDetail);
+      expect(response).toBeInstanceOf(SnapDetail);
       const detail = response as SnapDetail;
 
       expectPoint(detail.snapPoint, expected.point);
 
-		  expect(detail.normal).toBeDefined();
+      expect(detail.normal).toBeDefined();
       expectPoint(detail.normal!, expected.normal);
 
       const segment = detail.primitive as LineSegment3d;
-		  expect(segment).toBeInstanceOf(LineSegment3d);
+      expect(segment).toBeInstanceOf(LineSegment3d);
       expectPoint(segment.point0Ref, expected.curve[0]);
       expectPoint(segment.point1Ref, expected.curve[1]);
 
@@ -98,7 +98,7 @@ describe("AccuSnap", () => {
       const response = new LocateResponse();
       const detail = await AccuSnap.requestSnap(makeHitDetail(vp, hit), snapModes, 1, 1, undefined, response);
       if (detail) {
-		    expect(response.snapStatus).toEqual(SnapStatus.Success);
+        expect(response.snapStatus).toEqual(SnapStatus.Success);
         return detail;
       } else {
         expect(response.snapStatus).not.to.equal(SnapStatus.Success);
@@ -119,11 +119,11 @@ describe("AccuSnap", () => {
 
     it("fails for intersection on map, model, or classifier", async () => {
       const modes = [SnapMode.Intersection];
-		  await testSnap({ sourceId: "0x123", modelId: "0x123" }, (response) => expect(response).toEqual(SnapStatus.NoSnapPossible), modes);
-		  await testSnap({ isClassifier: true }, (response) => expect(response).toEqual(SnapStatus.NoSnapPossible), modes);
+      await testSnap({ sourceId: "0x123", modelId: "0x123" }, (response) => expect(response).toEqual(SnapStatus.NoSnapPossible), modes);
+      await testSnap({ isClassifier: true }, (response) => expect(response).toEqual(SnapStatus.NoSnapPossible), modes);
       await testSnap(
         { sourceId: "0x123", modelId: "0x123" },
-		    (response) => expect(response).toEqual(SnapStatus.NoSnapPossible),
+        (response) => expect(response).toEqual(SnapStatus.NoSnapPossible),
         modes,
         (vp) => vp.mapLayerFromHit = () => { return [] as any; },
       );
