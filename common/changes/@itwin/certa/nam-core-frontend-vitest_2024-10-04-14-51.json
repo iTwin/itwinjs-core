@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/certa",
-      "comment": "",
+      "comment": "Update playwright to 1.47.1",
       "type": "none"
     }
   ],
