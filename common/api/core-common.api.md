@@ -1791,13 +1791,15 @@ export interface ContextRealityModelsContainer {
 
 // @public
 export class Contour {
+    clone(changedProps?: Partial<ContourProperties>): Contour;
     static compare(lhs: Contour, rhs: Contour): number;
+    static create(props?: Partial<ContourProperties>): Contour;
     // (undocumented)
     static readonly defaults: Contour;
     // (undocumented)
     equals(other: Contour): boolean;
     // (undocumented)
-    static fromJSON(json?: ContourProps): Contour;
+    static fromJSON(props?: ContourProps): Contour;
     readonly majorIntervalCount: number;
     readonly majorStyle: ContourStyle;
     readonly minorInterval: number;
@@ -1809,6 +1811,7 @@ export class Contour {
 
 // @public
 export class ContourDisplay {
+    clone(changedProps?: Partial<ContourDisplayProperties>): ContourDisplay;
     static create(props?: Partial<ContourDisplayProperties>): ContourDisplay;
     readonly displayContours: boolean;
     equals(other: ContourDisplay): boolean;
@@ -1832,10 +1835,12 @@ export interface ContourDisplayProps {
 
 // @public
 export class ContourGroup {
+    clone(changedProps?: Partial<ContourGroupProperties>): ContourGroup;
     readonly contourDef: Contour;
+    static create(props?: Partial<ContourGroupProperties>): ContourGroup;
     equals(other: ContourGroup | undefined): boolean;
     // (undocumented)
-    static fromJSON(json?: ContourGroupProps): ContourGroup;
+    static fromJSON(props?: ContourGroupProps): ContourGroup;
     get isDefaultGroup(): boolean;
     readonly name: string;
     get subCategories(): OrderedId64Iterable;
@@ -1845,11 +1850,17 @@ export class ContourGroup {
 }
 
 // @public
+export type ContourGroupProperties = NonFunctionPropertiesOf<ContourGroup>;
+
+// @public
 export interface ContourGroupProps {
     contourDef?: ContourProps;
     name?: string;
     subCategories?: CompressedId64Set;
 }
+
+// @public
+export type ContourProperties = NonFunctionPropertiesOf<Contour>;
 
 // @public
 export interface ContourProps {
@@ -1862,16 +1873,21 @@ export interface ContourProps {
 
 // @public
 export class ContourStyle {
+    clone(changedProps?: Partial<ContourStyleProperties>): ContourStyle;
     readonly color: RgbColor;
     static compare(lhs: ContourStyle, rhs: ContourStyle): number;
+    static create(props?: Partial<ContourStyleProperties>): ContourStyle;
     equals(other: ContourStyle): boolean;
     // (undocumented)
-    static fromJSON(json?: ContourStyleProps): ContourStyle;
+    static fromJSON(props?: ContourStyleProps): ContourStyle;
     readonly pattern: LinePixels;
     readonly pixelWidth: number;
     // (undocumented)
     toJSON(): ContourStyleProps;
 }
+
+// @public
+export type ContourStyleProperties = NonFunctionPropertiesOf<ContourStyle>;
 
 // @public
 export interface ContourStyleProps {
