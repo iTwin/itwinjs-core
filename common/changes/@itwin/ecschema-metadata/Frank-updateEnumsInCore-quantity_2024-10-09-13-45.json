@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "refactored the toString methods used in this file",
+      "comment": "",
       "type": "none"
     }
   ],

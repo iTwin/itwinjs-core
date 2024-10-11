@@ -118,3 +118,5 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 ### @itwin/core-quantity
 - [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
 
+- Refactored `FormatType`, `ScientificType`, `ShowSignOption` from int enums to string enums and added `RatioType` as a string enum. Relevant toString functions, including [formatTypeToString]($quantity), [scientificTypeToString]($quantity), and [showSignOptionToString]($quantity), have been deprecated because they don't need serialization methods.
+

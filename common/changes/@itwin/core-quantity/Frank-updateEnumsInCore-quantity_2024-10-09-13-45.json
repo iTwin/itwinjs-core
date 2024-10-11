@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-quantity",
-      "comment": "got rid of some blank spaces and refactored the toString methods",
+      "comment": "deprecate FormatEnums toString() methods, convert int enums to string enums",
       "type": "none"
     }
   ],
