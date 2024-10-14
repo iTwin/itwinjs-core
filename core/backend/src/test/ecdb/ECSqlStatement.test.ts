@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@itwin/core-bentley";
 import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
@@ -12,7 +12,6 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { Exception } from "@opentelemetry/api";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();

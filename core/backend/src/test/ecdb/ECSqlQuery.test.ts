@@ -736,7 +736,7 @@ describe("ECSql Query", () => {
     const ids: string[] = ["ABC", "0x1","YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
 
     try{
-      const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+      imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
     }catch(err: any){
       assert.equal(err.message, "unsupported type");
     }
