@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix WorkerReturnType for async implementations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
