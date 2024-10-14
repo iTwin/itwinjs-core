@@ -71,7 +71,7 @@ export class EdgeSettings {
       return OvrFlags.None;
 
     // Alpha always overridden - transparent edges only supported in wireframe mode.
-    let flags = this.getColor(vf) ? OvrFlags.Rgba : OvrFlags.Alpha;
+    let flags = this.getColor(vf) ? (OvrFlags.Rgba | OvrFlags.LineRgb | OvrFlags.LineAlpha) : (OvrFlags.Alpha | OvrFlags.LineAlpha);
 
     if (undefined !== this.getLineCode(pass, vf))
       flags |= OvrFlags.LineCode;
