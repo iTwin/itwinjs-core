@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { CompressedId64Set, Guid } from "@itwin/core-bentley";
-import { DisplayStyleSettingsProps, IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
+import { DisplayStyle3dSettingsProps, DisplayStyleSettingsProps, IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
 import { DisplayStyle3d, IModelElementCloneContext, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -81,6 +81,29 @@ describe("DisplayStyle", () => {
   });
 
   describe("onClone", () => {
+    it("remaps contour display subCategories when cloning", () => {
+      const cloneContext = new IModelElementCloneContext(db, db2);
+      const displayStyleJsonProps: DisplayStyle3dSettingsProps = {
+        contours: {
+          groups: [
+            {
+              subCategories: CompressedId64Set.sortAndCompress(["0x1", "0x2", "0x3", "0x4"]),
+            },
+          ],
+        },
+      };
+      const displayStyleId = DisplayStyle3d.insert(db, IModel.dictionaryId, "TestStyle", displayStyleJsonProps);
+
+      cloneContext.remapElement("0x1", "0xa");
+      cloneContext.remapElement("0x3", "0xc");
+      const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
+      const displayStyleClone = cloneContext.cloneElement(displayStyle);
+
+      const contourSubCatsClone = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties.styles.contours.groups[0].subCategories);
+      expect(contourSubCatsClone.length).to.equal(2);
+      expect(contourSubCatsClone).to.contain.members(["0xa", "0xc"]);
+    });
+
     it("remaps excludedElements when cloning", () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
       const displayStyleJsonProps: DisplayStyleSettingsProps = {excludedElements: ["0x1", "0x2", "0x3", "0x4"]};

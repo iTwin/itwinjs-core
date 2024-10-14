@@ -60,6 +60,7 @@ import { Constructor } from '@itwin/core-bentley';
 import { ContentIdProvider } from '@itwin/core-common';
 import { ContextRealityModel } from '@itwin/core-common';
 import { ContextRealityModelProps } from '@itwin/core-common';
+import { ContourDisplay } from '@itwin/core-common';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { CurvePrimitive } from '@itwin/core-geometry';
 import { DeprecatedBackgroundMapProps } from '@itwin/core-common';
@@ -184,6 +185,7 @@ import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Matrix4d } from '@itwin/core-geometry';
+import { MaybePromise } from '@itwin/core-bentley';
 import { MeshEdges } from '@itwin/core-common';
 import { MeshPolyline } from '@itwin/core-common';
 import { MeshPolylineList } from '@itwin/core-common';
@@ -4561,12 +4563,14 @@ export interface GraphicBranchOptions {
     // @internal (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     clipVolume?: RenderClipVolume;
+    disableClipStyle?: true;
     // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
     hline?: HiddenLine.Settings;
     iModel?: IModelConnection;
     // @internal
     secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
+    transformFromIModel?: Transform;
     // @internal
     viewAttachmentId?: Id64String;
 }
@@ -4897,6 +4901,8 @@ export class HitDetail {
     get testPoint(): Point3d;
     // @internal
     get tileId(): string | undefined;
+    // @internal (undocumented)
+    get transformFromSourceIModel(): Transform | undefined;
     // @beta
     get viewAttachment(): ViewAttachmentHitInfo | undefined;
     get viewport(): ScreenViewport;
@@ -4920,6 +4926,8 @@ export interface HitDetailProps {
     readonly testPoint: Point3d;
     // @internal
     readonly tileId?: string;
+    // @internal (undocumented)
+    readonly transformFromSourceIModel?: Transform;
     // @beta
     readonly viewAttachment?: ViewAttachmentHitInfo;
     readonly viewport: ScreenViewport;
@@ -8562,6 +8570,7 @@ export namespace Pixel {
             iModel?: IModelConnection;
             tileId?: string;
             viewAttachmentId?: string;
+            transformFromIModel?: Transform;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
@@ -8580,6 +8589,8 @@ export namespace Pixel {
         // @internal (undocumented)
         readonly tileId?: string;
         toHitProps(viewport: Viewport): Pixel.HitProps;
+        // @internal (undocumented)
+        readonly transformFromIModel?: Transform;
         readonly type: GeometryType;
         // @beta
         readonly viewAttachmentId?: Id64String;
@@ -8605,6 +8616,8 @@ export namespace Pixel {
         subCategoryId?: Id64String;
         // @internal
         tileId?: string;
+        // @internal (undocumented)
+        transformFromSourceIModel?: Transform;
         // @beta
         viewAttachment?: ViewAttachmentHitInfo;
     }
@@ -9057,6 +9070,8 @@ export interface RealityMeshGraphicParams {
     readonly baseColor: ColorDef | undefined;
     // (undocumented)
     readonly baseTransparent: boolean;
+    // (undocumented)
+    readonly disableClipStyle?: true;
     // (undocumented)
     readonly featureTable: PackedFeatureTable;
     // (undocumented)
@@ -9813,6 +9828,8 @@ export namespace RenderMemory {
         // @internal (undocumented)
         addConsumer(type: ConsumerType, numBytes: number): void;
         // @internal (undocumented)
+        addContours(numBytes: number): void;
+        // @internal (undocumented)
         addEdgeTable(numBytes: number): void;
         // @internal (undocumented)
         addFeatureOverrides(numBytes: number): void;
@@ -9901,6 +9918,8 @@ export interface RenderPlan {
     readonly clip?: ClipVector;
     // (undocumented)
     readonly clipStyle: ClipStyle;
+    // (undocumented)
+    readonly contours?: ContourDisplay;
     // (undocumented)
     readonly ellipsoid?: RenderPlanEllipsoid;
     // (undocumented)
@@ -10011,7 +10030,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
-    createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
+    createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
     createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined;
@@ -12286,6 +12305,8 @@ export interface TileDrawArgParams {
     now: BeTimePoint;
     parentsAndChildrenExclusive: boolean;
     symbologyOverrides: FeatureSymbology.Overrides | undefined;
+    // @alpha (undocumented)
+    transformFromIModel?: Transform;
     tree: TileTree;
     viewFlagOverrides: ViewFlagOverrides;
 }
@@ -12350,6 +12371,8 @@ export class TileDrawArgs {
     get tileSizeModifier(): number;
     // @internal
     readonly touchedTiles: Set<Tile>;
+    // @alpha (undocumented)
+    transformFromIModel?: Transform;
     readonly tree: TileTree;
     readonly viewClip?: ClipVector;
     get viewFlagOverrides(): ViewFlagOverrides;
@@ -12716,6 +12739,8 @@ export abstract class TileTreeReference {
     getTerrainHeight(_terrainHeights: Range1d): void;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined>;
     getToolTipPromise(hit: HitDetail): Promise<HTMLElement | string | undefined> | undefined;
+    // @beta (undocumented)
+    getTransformFromIModel(): Transform | undefined;
     protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides;
     get isGlobal(): boolean;
     get isLoadingComplete(): boolean;
@@ -15694,10 +15719,10 @@ export type WorkerProxy<T> = WorkerInterface<T> & {
 };
 
 // @beta
-export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | {
-    result: ReturnType<T>;
+export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<ReturnType<T> | {
+    result: Awaited<ReturnType<T>>;
     transfer: Transferable[];
-};
+}>;
 
 // @beta
 export interface WorkerTextureParams {

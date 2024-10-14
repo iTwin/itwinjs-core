@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Thu, 03 Oct 2024 19:17:08 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2024 20:23:41 GMT and should not be manually modified.
+
+## 4.9.4
+Wed, 09 Oct 2024 20:22:04 GMT
+
+### Updates
+
+- Add MaybePromise utility type.
 
 ## 4.9.3
 Thu, 03 Oct 2024 19:15:45 GMT

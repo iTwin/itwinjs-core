@@ -103,37 +103,18 @@ export class CurveFactory {
         path.tryAddChild(LineSegment3d.create(pointA.interpolate(fraction0, pointB), pointA.interpolate(fraction1, pointB)));
     }
   }
-
   /**
-   * Create a circular arc from start point, tangent at start, and another point (endpoint) on the arc.
-   * @param pointA
-   * @param tangentA
-   * @param pointB
+   * Create a circular arc defined by start point, tangent at start point, and end point.
+   * * The circular arc is swept from start to end toward direction of the `tangentAtStart`.
+   * * If tangent is parallel to line segment from start to end, return `undefined`.
    */
-  public static createArcPointTangentPoint(pointA: Point3d, tangentA: Vector3d, pointB: Point3d): Arc3d | undefined {
-    const vectorV = Vector3d.createStartEnd(pointA, pointB);
-    const frame = Matrix3d.createRigidFromColumns(tangentA, vectorV, AxisOrder.XYZ);
-    if (frame !== undefined) {
-      const vv = vectorV.dotProduct(vectorV);
-      const vw = frame.dotColumnY(vectorV);
-      const alpha = Geometry.conditionalDivideCoordinate(vv, 2 * vw);
-      if (alpha !== undefined) {
-        const vector0 = frame.columnY();
-        vector0.scaleInPlace(-alpha);
-        const vector90 = frame.columnX();
-        vector90.scaleInPlace(alpha);
-        const centerToEnd = vector0.plus(vectorV);
-        const sweepAngle = vector0.angleTo(centerToEnd);
-        let sweepRadians = sweepAngle.radians;  // That's always positive and less than PI.
-        if (tangentA.dotProduct(centerToEnd) < 0.0) // ah, sweepRadians is the wrong way
-          sweepRadians = 2.0 * Math.PI - sweepRadians;
-        const center = pointA.plusScaled(vector0, -1.0);
-        return Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, sweepRadians));
-      }
-    }
-    return undefined;
+  public static createArcPointTangentPoint(start: Point3d, tangentAtStart: Vector3d, end: Point3d): Arc3d | undefined {
+    const ret = Arc3d.createCircularStartTangentEnd(start, tangentAtStart, end);
+    if (ret instanceof Arc3d)
+      return ret;
+    else
+      return undefined;
   }
-
   /**
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
    *  * If the radius parameter is a number, that radius is used throughout.
@@ -466,26 +447,18 @@ export class CurveFactory {
   }
 
   /**
-   * Create a circular arc from start point, tangent at start, radius, optional plane normal, arc sweep
+   * Create a circular arc from start point, tangent at start, radius, optional plane normal, arc sweep.
    * * The vector from start point to center is in the direction of upVector crossed with tangentA.
-   * @param pointA start point
-   * @param tangentA vector in tangent direction at the start
+   * @param start start point.
+   * @param tangentAtStart vector in tangent direction at the start.
    * @param radius signed radius.
-   * @param upVector optional out-of-plane vector.  Defaults to positive Z
-   * @param sweep angular range.  If single `Angle` is given, start angle is at 0 degrees (the start point).
-   *
+   * @param upVector optional out-of-plane vector. Defaults to positive Z.
+   * @param sweep angular range. If single `Angle` is given, start angle is at 0 degrees (the start point).
    */
-  public static createArcPointTangentRadius(pointA: Point3d, tangentA: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep): Arc3d | undefined {
-    if (upVector === undefined)
-      upVector = Vector3d.unitZ();
-    const vector0 = upVector.unitCrossProduct(tangentA);
-    if (vector0 === undefined)
-      return undefined;
-    const center = pointA.plusScaled(vector0, radius);
-    // reverse the A-to-center vector and bring it up to scale ...
-    vector0.scaleInPlace(-radius);
-    const vector90 = tangentA.scaleToLength(Math.abs(radius))!; // (Cannot fail -- prior unitCrossProduct would have failed first)
-    return Arc3d.create(center, vector0, vector90, AngleSweep.create(sweep));
+  public static createArcPointTangentRadius(
+    start: Point3d, tangentAtStart: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep,
+  ): Arc3d | undefined {
+    return Arc3d.createCircularStartTangentRadius(start, tangentAtStart, radius, upVector, sweep);
   }
 
   /**
