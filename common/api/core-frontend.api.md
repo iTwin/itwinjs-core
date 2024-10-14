@@ -60,6 +60,7 @@ import { Constructor } from '@itwin/core-bentley';
 import { ContentIdProvider } from '@itwin/core-common';
 import { ContextRealityModel } from '@itwin/core-common';
 import { ContextRealityModelProps } from '@itwin/core-common';
+import { ContourDisplay } from '@itwin/core-common';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { CurvePrimitive } from '@itwin/core-geometry';
 import { DeprecatedBackgroundMapProps } from '@itwin/core-common';
@@ -4562,6 +4563,7 @@ export interface GraphicBranchOptions {
     // @internal (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     clipVolume?: RenderClipVolume;
+    disableClipStyle?: true;
     // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
     hline?: HiddenLine.Settings;
@@ -9069,6 +9071,8 @@ export interface RealityMeshGraphicParams {
     // (undocumented)
     readonly baseTransparent: boolean;
     // (undocumented)
+    readonly disableClipStyle?: true;
+    // (undocumented)
     readonly featureTable: PackedFeatureTable;
     // (undocumented)
     readonly layerClassifiers?: MapLayerClassifiers;
@@ -9824,6 +9828,8 @@ export namespace RenderMemory {
         // @internal (undocumented)
         addConsumer(type: ConsumerType, numBytes: number): void;
         // @internal (undocumented)
+        addContours(numBytes: number): void;
+        // @internal (undocumented)
         addEdgeTable(numBytes: number): void;
         // @internal (undocumented)
         addFeatureOverrides(numBytes: number): void;
@@ -9912,6 +9918,8 @@ export interface RenderPlan {
     readonly clip?: ClipVector;
     // (undocumented)
     readonly clipStyle: ClipStyle;
+    // (undocumented)
+    readonly contours?: ContourDisplay;
     // (undocumented)
     readonly ellipsoid?: RenderPlanEllipsoid;
     // (undocumented)
@@ -10022,7 +10030,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     abstract createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
-    createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
+    createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
     createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined;

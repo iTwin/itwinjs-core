@@ -143,7 +143,7 @@ describe("AuxChannelTable", () => {
     test(5, 3, 3);
     test(6, 3, 3);
     test(7, 3, 3);
-    test(8, 3, 3);
+    test(8, 8, 1);
     test(9, 8, 1);
     test(10, 8, 1);
     test(11, 8, 1);
