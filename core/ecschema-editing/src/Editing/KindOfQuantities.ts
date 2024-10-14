@@ -84,6 +84,15 @@ export class KindOfQuantities extends SchemaItems {
     }
   }
 
+  public async addPresentationFormatString(koqKey: SchemaItemKey, formatString: string) {
+    try {
+      const kindOfQuantity = await this.getSchemaItem<MutableKindOfQuantity>(koqKey);
+      await kindOfQuantity.processPresentationUnits(formatString);
+    } catch(e: any) {
+      throw new SchemaEditingError(ECEditingStatus.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
+    }
+  }
+
   /**
    * @param koqKey A schemaItemKey of the editing KindOfQuantity.
    * @param parent A SchemaItemKey of the parent Format.

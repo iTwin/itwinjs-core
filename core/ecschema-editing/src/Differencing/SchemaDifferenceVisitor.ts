@@ -71,6 +71,8 @@ export class SchemaDifferenceWalker {
         return this._visitor.visitInvertedUnitDifference(difference, index, array);
       case SchemaItemType.KindOfQuantity:
         return this._visitor.visitKindOfQuantityDifference(difference, index, array);
+      case SchemaOtherTypes.KoqPresentationFormat:
+        return this._visitor.visitKoqPresentationFormatDifference(difference, index, array);
       case SchemaItemType.Mixin:
         return this._visitor.visitMixinDifference(difference, index, array);
       case SchemaItemType.Phenomenon:

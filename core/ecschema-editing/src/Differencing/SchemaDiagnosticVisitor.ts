@@ -10,7 +10,7 @@ import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
   AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass,
-  Enumeration, Mixin, Property, PropertyProps,
+  Enumeration, Format, KindOfQuantity, Mixin, OverrideFormat, Property, PropertyProps,
   RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem,
 } from "@itwin/ecschema-metadata";
 import {
@@ -22,6 +22,7 @@ import {
   type DifferenceType,
   type EntityClassMixinDifference,
   type EnumeratorDifference,
+  type KoqPresentationFormatDifference,
   type RelationshipConstraintClassDifference,
   type RelationshipConstraintDifference,
   type SchemaDifference,
@@ -105,9 +106,11 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.CustomAttributeInstanceClassMissing:
         return this.visitMissingCustomAttributeInstance(diagnostic);
 
+      case SchemaCompareCodes.PresentationUnitMissing:
+        return this.visitMissingPresentationUnit(diagnostic);
+
       // Currently not handled...
       case SchemaCompareCodes.FormatUnitMissing:
-      case SchemaCompareCodes.PresentationUnitMissing:
       case SchemaCompareCodes.UnitLabelOverrideDelta:
         break;
     }
@@ -448,6 +451,27 @@ export class SchemaDiagnosticVisitor {
       });
     }
     return;
+  }
+
+  private visitMissingPresentationUnit(diagnostic: AnyDiagnostic) {
+    const koq = diagnostic.ecDefinition as KindOfQuantity;
+    const [presentationFormat] = diagnostic.messageArgs as [Format | OverrideFormat];
+
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is KoqPresentationFormatDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.KoqPresentationFormat
+        && entry.itemName === koq.name;
+    });
+
+    if (modifyEntry === undefined) {
+      modifyEntry = {
+        changeType: "add",
+        schemaType: SchemaOtherTypes.KoqPresentationFormat,
+        itemName: koq.name,
+        difference: [],
+      };
+      this.schemaItemDifferences.push(modifyEntry);
+    }
+    modifyEntry.difference.push(presentationFormat.fullName);
   }
 }
 

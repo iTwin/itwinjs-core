@@ -141,7 +141,7 @@ export class KindOfQuantity extends SchemaItem {
     return new OverrideFormat(parent, precision, unitLabelOverrides);
   }
 
-  private async processPresentationUnits(presentationUnitsJson: string | string[]): Promise<void> {
+  protected async processPresentationUnits(presentationUnitsJson: string | string[]): Promise<void> {
     const presUnitsArr = Array.isArray(presentationUnitsJson) ? presentationUnitsJson : presentationUnitsJson.split(";");
     for (const formatString of presUnitsArr) {
       const presFormatOverride: OverrideFormatProps = this.parseFormatString(formatString);

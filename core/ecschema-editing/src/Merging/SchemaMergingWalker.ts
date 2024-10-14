@@ -45,6 +45,7 @@ export class SchemaMergingWalker extends SchemaDifferenceWalker {
       ...differences.filter(filterByType(SchemaItemType.Format)),
       ...differences.filter(filterByType(SchemaItemType.KindOfQuantity)),
       ...differences.filter(filterByType(SchemaItemType.Constant)),
+      ...differences.filter(filterByType(SchemaOtherTypes.KoqPresentationFormat)),
 
       // Followed by classes and class related differences...
       ...differences.filter(filterByType(SchemaItemType.CustomAttributeClass)),

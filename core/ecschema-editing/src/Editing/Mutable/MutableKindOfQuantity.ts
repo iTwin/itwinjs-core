@@ -15,4 +15,5 @@ export abstract class MutableKindOfQuantity extends KindOfQuantity {
   public abstract override setDescription(description: string): void;
   public abstract override setRelativeError(relativeError: number): void;
   public abstract override set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined);
+  public abstract override processPresentationUnits(presentationUnitsJson: string | string[]): Promise<void>;
 }

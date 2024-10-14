@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { KindOfQuantityDifference } from "../Differencing/SchemaDifference";
+import type { KindOfQuantityDifference, KoqPresentationFormatDifference } from "../Differencing/SchemaDifference";
 import type { MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import type { SchemaItemKey } from "@itwin/ecschema-metadata";
+import { SchemaItemKey } from "@itwin/ecschema-metadata";
 import { updateSchemaItemFullName } from "./Utils";
 
 /**
@@ -58,6 +58,17 @@ export async function modifyKindOfQuantity(context: SchemaMergeContext, change: 
   if(change.difference.persistenceUnit !== undefined) {
     // TODO: It should be checked if the unit is the same, but referring to the source schema.
     throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
+  }
+}
+/**
+ * Merges a new presentation format into the target kind of quantity
+ * @internal
+*/
+export async function addPresentationFormat(context: SchemaMergeContext, change: KoqPresentationFormatDifference) {
+  for (const presentationFormat of change.difference) {
+    const koqKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+    const formatString = await updateOverrideFormat(context, presentationFormat);
+    await context.editor.kindOfQuantities.addPresentationFormatString(koqKey, formatString);
   }
 }
 
