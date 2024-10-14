@@ -678,7 +678,7 @@ describe("ECSql Query", () => {
     assert.isTrue(reader.stats.backendCpuTime > 0);
     assert.isTrue(reader.stats.backendMemUsed > 100);
   });
-  it("concurrent query use idset in IdSet virtual table", async () => {
+  it("concurrent query bind idset in IdSet virtual table", async () => {
     const ids: string[] = [];
     for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
       ids.push(row[0]);
@@ -696,6 +696,50 @@ describe("ECSql Query", () => {
     assert.equal(reader.stats.backendRowsReturned, 23);
     assert.isTrue(reader.stats.backendCpuTime > 0);
     assert.isTrue(reader.stats.backendMemUsed > 100);
+  });
+  it("concurrent query bind single id in IdSet virtual table", async () => {
+    let ids: string = "";
+    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+      ids = row[0]; // getting only the first id
+      break;
+    }
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    let rows = 0; // backend will fail to bind so no rows will be returned
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 0);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    assert.equal(reader.stats.backendRowsReturned, 0);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+  });
+  it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
+    const ids: string[] = ["0x1","ABC","YZ"];
+
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    let rows = 0; // backend will bind successfully but some of the values are not valid for IdSet VT so those values will be ignored
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 1);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    assert.equal(reader.stats.backendRowsReturned, 1);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+  });
+  it.only("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
+    const ids: string[] = ["ABC", "0x1","YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
+
+    try{
+      const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+    }catch(err: any){
+      assert.equal(err.message, "unsupported type");
+    }
   });
   it("concurrent query get meta data", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@itwin/core-bentley";
 import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
@@ -12,6 +12,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
+import { Exception } from "@opentelemetry/api";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
@@ -1896,6 +1897,64 @@ describe("ECSqlStatement", () => {
         assert.equal(result, DbResult.BE_SQLITE_ROW);
         row = stmt.getRow();
         assert.equal(row.name, `${idNumbers[0]}.txt`);
+      });
+    });
+  });
+
+  it("should bind IdSets to IdSet Virtual Table", async () => {
+    await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
+      ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlStatement) => {
+        idNumbers.forEach((idNum: number) => {
+          const expectedId = Id64.fromLocalAndBriefcaseIds(idNum, 0);
+          stmt.bindId(1, expectedId);
+          stmt.bindString(2, `${idNum}.txt`);
+          const r: ECSqlInsertResult = stmt.stepForInsert();
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+          assert.isDefined(r.id);
+          assert.equal(r.id!, expectedId);
+          ecdb.saveChanges();
+
+          ecdb.withStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
+            assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
+            const row = confstmt.getRow();
+            assert.equal(row.id, expectedId);
+            assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
+            assert.equal(row.name, `${Id64.getLocalId(expectedId).toString()}.txt`);
+          });
+          stmt.reset();
+          stmt.clearBindings();
+        });
+      });
+
+      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, ECVLib.IdSet(?) WHERE id = ECInstanceId", (stmt: ECSqlStatement) => {
+        let idSet: Id64String[] = [];
+        stmt.bindIdSet(1, idSet);
+        let result = stmt.step();
+        assert.equal(result, DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+
+        idSet = ["0X1","ABC"];
+        try{
+          stmt.bindIdSet(1, idSet);
+        }catch(err: any){
+          assert.equal(err.message, "Error binding id set");
+        }
+        result = stmt.step();
+        assert.equal(result, DbResult.BE_SQLITE_DONE);
+        stmt.reset();
+        stmt.clearBindings();
+
+        try{
+          stmt.bindId(1, idNumbers[0].toString());
+        }catch(err: any){
+          assert.equal(err.message, "Error binding Id");
+        }
+        result = stmt.step();
+        assert.equal(result, DbResult.BE_SQLITE_DONE);
       });
     });
   });
