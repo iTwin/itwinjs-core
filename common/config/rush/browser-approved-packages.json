@@ -392,7 +392,7 @@
     },
     {
       "name": "@vitest/coverage-v8",
-      "allowedCategories": [ "common,frontend" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "@xmldom/xmldom",
