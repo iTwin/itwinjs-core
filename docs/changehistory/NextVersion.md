@@ -5,7 +5,6 @@ publish: false
 
 Table of contents:
 
-- [NextVersion](#nextversion)
   - [Revert timeline changes](#revert-timeline-changes)
   - [Display](#display)
     - [Instancing](#instancing)
