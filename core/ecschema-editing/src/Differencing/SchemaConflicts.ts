@@ -86,10 +86,11 @@ interface SchemaDifferenceConflict<TCode extends ConflictCode, TType extends Sch
   readonly target: unknown;
 }
 
+/** Union type of class types */
 type EcClassTypes = SchemaItemType.CustomAttributeClass |  SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.Mixin | SchemaItemType.RelationshipClass;
 
 /**
- * Union of all supported schema item differencing types.
+ * Union of all supported schema differencing conflict types.
  * @alpha
  */
 export type AnySchemaDifferenceConflict =
