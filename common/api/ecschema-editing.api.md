@@ -95,7 +95,7 @@ export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference |
 export type AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit;
 
 // @alpha
-export type AnySchemaItemDifference = AnyClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference;
+export type AnySchemaItemDifference = AnyClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | KoqPresentationFormatDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference;
 
 // @alpha
 export type AnySchemaItemPathDifference = RelationshipConstraintDifference | RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference;
@@ -751,7 +751,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "Property" | "Schema" | "SchemaItem" | "RelationshipConstraint" | "CustomAttributeContainer" | "None";
 
 // @alpha
 export type DifferenceType = "add" | "modify";
@@ -1389,6 +1389,18 @@ export interface KindOfQuantityDifference extends SchemaItemDifference<KindOfQua
     readonly schemaType: SchemaItemType.KindOfQuantity;
 }
 
+// @alpha
+export interface KoqPresentationFormatDifference {
+    // (undocumented)
+    readonly changeType: "add";
+    // (undocumented)
+    readonly difference: string[];
+    // (undocumented)
+    readonly itemName: string;
+    // (undocumented)
+    readonly schemaType: SchemaOtherTypes.KoqPresentationFormat;
+}
+
 // @beta
 export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
     // (undocumented)
@@ -1875,13 +1887,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [OverrideFormat | Format] | undefined;
+            messageArgs?: [Format | OverrideFormat] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -2225,6 +2237,8 @@ export enum SchemaOtherTypes {
     EntityClassMixin = "EntityClassMixin",
     // (undocumented)
     Enumerator = "Enumerator",
+    // (undocumented)
+    KoqPresentationFormat = "KoqPresentationFormat",
     // (undocumented)
     Property = "Property",
     // (undocumented)

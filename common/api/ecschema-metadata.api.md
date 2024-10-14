@@ -809,6 +809,8 @@ export class KindOfQuantity extends SchemaItem {
     // (undocumented)
     protected _presentationFormats: Array<Format | OverrideFormat>;
     // (undocumented)
+    protected processPresentationUnits(presentationUnitsJson: string | string[]): Promise<void>;
+    // (undocumented)
     get relativeError(): number;
     // (undocumented)
     protected _relativeError: number;
