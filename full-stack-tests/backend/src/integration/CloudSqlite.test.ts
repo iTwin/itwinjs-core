@@ -38,7 +38,7 @@ async function waitFor<T>(check: () => Promise<T> | T, timeout: number = 5000): 
   throw lastError;
 }
 
-describe.only("CloudSqlite", () => {
+describe("CloudSqlite", () => {
   const azSqlite = AzuriteTest.Sqlite;
   let caches: CloudSqlite.CloudCache[];
   let testContainers: AzuriteTest.Sqlite.TestContainer[];
